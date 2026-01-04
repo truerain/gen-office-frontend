@@ -1,15 +1,76 @@
 // apps/demo/src/App.tsx
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { MDIContainer, useMDIStore } from '@gen-office/mdi';
 import { Home } from 'lucide-react';
 import TitleBar from './components/TitleBar';
 import HomePage from './pages/HomePage';
-import PrimitivesPage from './pages/PrimitivesPage';
-import DataGridPage from './pages/DataGridPage';
-import MDIPage from './pages/MDIPage';
-import CustomerInfoPage from './pages/customer/CustomerInfoPage';
+import { findMenuItemById } from './features/system/mocks/menuData';
+import { getLazyComponent } from './config/componentRegistry.dynamic';
+import { useAppStore } from './store/appStore';
 import '@gen-office/mdi/index.css';
 import styles from './App.module.css';
+
+// 플레이스홀더 컴포넌트
+const PlaceholderPage = ({ title }: { title: string }) => (
+  <div style={{ padding: '2rem' }}>
+    <h2>{title}</h2>
+    <p>이 페이지는 아직 구현되지 않았습니다.</p>
+  </div>
+);
+
+// 로딩 컴포넌트
+const LoadingPage = () => (
+  <div style={{ 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    height: '400px',
+    flexDirection: 'column',
+    gap: '1rem'
+  }}>
+    <div style={{
+      width: '40px',
+      height: '40px',
+      border: '3px solid #e0e0e0',
+      borderTopColor: '#a50034',
+      borderRadius: '50%',
+      animation: 'spin 1s linear infinite'
+    }}></div>
+    <p style={{ color: '#666' }}>페이지를 불러오는 중...</p>
+  </div>
+);
+
+// 알림 컴포넌트
+const Notifications = () => {
+  const notifications = useAppStore((state) => state.notifications);
+  const removeNotification = useAppStore((state) => state.removeNotification);
+
+  useEffect(() => {
+    // 3초 후 자동 제거
+    notifications.forEach((notification) => {
+      const timer = setTimeout(() => {
+        removeNotification(notification.id);
+      }, 3000);
+      return () => clearTimeout(timer);
+    });
+  }, [notifications, removeNotification]);
+
+  if (notifications.length === 0) return null;
+
+  return (
+    <div className={styles.notifications}>
+      {notifications.map((notification) => (
+        <div
+          key={notification.id}
+          className={`${styles.notification} ${styles[notification.type]}`}
+          onClick={() => removeNotification(notification.id)}
+        >
+          {notification.message}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 function App() {
   const addTab = useMDIStore((state) => state.addTab);
@@ -34,10 +95,8 @@ function App() {
     const homeTab = tabs.find(tab => tab.id === 'home');
     
     if (homeTab) {
-      // Home 탭이 이미 있으면 활성화
       setActiveTab('home');
     } else {
-      // Home 탭이 없으면 새로 생성
       addTab({
         id: 'home',
         title: 'Home',
@@ -48,34 +107,24 @@ function App() {
     }
   };
 
-  // 메뉴 클릭 핸들러
+  // 메뉴 클릭 핸들러 - 완전한 동적 로딩! ✅
   const handleOpenPage = (id: string, title: string, icon: React.ReactNode) => {
-    // 특정 페이지들은 실제 컴포넌트로 렌더링
-    let content: React.ReactNode;
+    // 1. 메뉴 데이터에서 아이템 찾기 (DB에서 가져온 데이터)
+    const menuItem = findMenuItemById(id);
+    
+    // 2. componentName으로 Lazy 컴포넌트 가져오기 (동적 import)
+    const LazyComponent = getLazyComponent(menuItem?.componentName);
+    
+    // 3. 컴포넌트 렌더링 (Suspense로 감싸기)
+    const content = LazyComponent 
+      ? (
+          <Suspense fallback={<LoadingPage />}>
+            <LazyComponent />
+          </Suspense>
+        )
+      : <PlaceholderPage title={title} />;
 
-    switch (id) {
-      case 'primitives':
-        content = <PrimitivesPage />;
-        break;
-      case 'datagrid':
-        content = <DataGridPage />;
-        break;
-      case 'mdi-demo':
-        content = <MDIPage />;
-        break;
-     case 'customer-info':
-        content = <CustomerInfoPage />;
-        break;
-      default:
-        // 나머지는 플레이스홀더
-        content = (
-          <div style={{ padding: '2rem' }}>
-            <h2>{title}</h2>
-            <p>이 페이지는 아직 구현되지 않았습니다.</p>
-          </div>
-        );
-    }
-
+    // 4. MDI 탭으로 열기
     addTab({
       id,
       title,
@@ -107,6 +156,9 @@ function App() {
           }
         />
       </main>
+
+      {/* 알림 (전역) */}
+      <Notifications />
     </div>
   );
 }

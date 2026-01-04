@@ -22,7 +22,13 @@
     "noUnusedParameters": true,
     /*"erasableSyntaxOnly": true,*/
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    /* Path Mapping - 절대 경로 설정 */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
   "include": ["src"]
 }

@@ -137,7 +137,7 @@ function CustomerTable({ data, loading }: CustomerTableProps) {
         columns={columns}
         enableSorting
         enableFiltering
-        enableSelection
+        enableRowSelection
         pageSize={10}
       />
     </div>

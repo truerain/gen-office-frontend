@@ -44,3 +44,67 @@
   font-size: var(--font-size-base);
   text-align: center;
 }
+
+/* 알림 컨테이너 */
+.notifications {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  max-width: 400px;
+}
+
+.notification {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  background-color: var(--color-surface);
+  border-left: 4px solid;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  animation: slideIn 0.3s ease-out;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.notification:hover {
+  opacity: 0.8;
+  transform: translateX(-4px);
+}
+
+.notification.info {
+  border-left-color: #2196f3;
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.notification.success {
+  border-left-color: #4caf50;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.notification.error {
+  border-left-color: #f44336;
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* 로딩 스피너 애니메이션 */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

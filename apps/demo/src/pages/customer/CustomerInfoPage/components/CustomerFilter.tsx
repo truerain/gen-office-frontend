@@ -35,13 +35,15 @@ function CustomerFilter({ filters, onFilterChange }: CustomerFilterProps) {
     <div className={styles.filterPanel}>
       <div className={styles.filterRow}>
         <div className={styles.filterItem}>
-          <Input
-            placeholder="고객명, 이메일, 회사명, 전화번호로 검색"
-            value={filters.search || ''}
-            onChange={handleSearchChange}
-            leftIcon={<Search size={16} />}
-            className={styles.searchInput}
-          />
+          <div className={styles.searchWrapper}>
+            <Search size={16} className={styles.searchIcon} />
+            <Input
+              placeholder="고객명, 이메일, 회사명, 전화번호로 검색"
+              value={filters.search || ''}
+              onChange={handleSearchChange}
+              className={styles.searchInput}
+            />
+          </div>
         </div>
 
         <div className={styles.filterItem}>

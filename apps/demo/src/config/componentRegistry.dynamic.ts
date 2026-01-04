@@ -9,7 +9,7 @@ import { lazy } from 'react';
  * 초기 번들 크기를 크게 줄일 수 있습니다.
  */
 
-type ComponentLoader = () => Promise<{ default: ComponentType<any> }>;
+type ComponentLoader = () => Promise<{ default: ComponentType<unknown> }>;
 
 /**
  * 컴포넌트 경로 매핑
@@ -35,7 +35,7 @@ const componentPaths: Record<string, ComponentLoader> = {
   // 'UserManagementPage': () => import('../pages/system/UserManagementPage'),
 
   // Demo
-  'PrimitivesPage': () => import('../pages/PrimitivesPage'),
+  'PrimitivesPage': () => import('@/pages/PrimitivesPage'),
   'DataGridPage': () => import('../pages/DataGridPage'),
   'MDIPage': () => import('../pages/MDIPage'),
   'GlobalStateDemo': () => import('../pages/GlobalStateDemo'),
