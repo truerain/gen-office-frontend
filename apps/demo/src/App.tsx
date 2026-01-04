@@ -2,6 +2,7 @@ import { Routes, Route, Link } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import PrimitivesPage from './pages/PrimitivesPage';
 import DataGridPage from './pages/DataGridPage';
+import MDIPage from './pages/MDIPage';
 import './styles/App.css';
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
             <li><Link to="/">Home</Link></li>
             <li><Link to="/primitives">Primitives</Link></li>
             <li><Link to="/datagrid">DataGrid</Link></li>
+            <li><Link to="/mdi">MDI</Link></li>
           </ul>
         </div>
       </nav>
@@ -23,6 +25,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/primitives" element={<PrimitivesPage />} />
           <Route path="/datagrid" element={<DataGridPage />} />
+          <Route path="/mdi" element={<MDIPage />} />
         </Routes>
       </main>
     </div>

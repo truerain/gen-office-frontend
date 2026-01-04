@@ -1,13 +1,14 @@
+/* Gen-Office Global Styles */
 @import './reset.css';
 @import './variables.css';
 @import './fonts/lg-smart.css';
 
-
 body {
   font-family: var(--font-family-primary);
   font-size: var(--font-size-base);
-  background-color: var(--color-bg-primary);
-  color: var(--color-fg-primary);
+  line-height: var(--line-height-normal);
+  background-color: var(--color-background);
+  color: var(--color-text);
   transition: background-color var(--transition-base), color var(--transition-base);
 }
 
@@ -18,12 +19,12 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-bg-secondary);
+  background: var(--color-surface);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border-default);
-  border-radius: var(--radius-full);
+  background: var(--color-border);
+  border-radius: var(--border-radius-full);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -32,12 +33,12 @@ body {
 
 /* Focus Visible */
 *:focus-visible {
-  outline: 2px solid var(--color-brand-primary);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 
 /* Selection */
 ::selection {
-  background-color: var(--color-brand-primary);
-  color: var(--color-fg-inverse);
+  background-color: var(--color-primary);
+  color: #ffffff;
 }

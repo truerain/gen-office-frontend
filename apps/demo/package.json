@@ -15,9 +15,11 @@
     "@gen-office/utils": "workspace:*",
     "@gen-office/primitives": "workspace:*",
     "@gen-office/datagrid": "workspace:*",
+    "@gen-office/mdi": "workspace:*",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "react-router-dom": "^6.28.0"
+    "react-router-dom": "^6.28.0",
+    "lucide-react": "^0.562.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

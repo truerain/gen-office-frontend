@@ -1,0 +1,44 @@
+/* packages/mdi/src/components/TabBar/TabBar.module.css */
+
+.tabBar {
+  display: flex;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+.tabBar.bottom {
+  border-bottom: none;
+  border-top: 1px solid var(--color-border);
+}
+
+.tabBar::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tabBar::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+
+.tabBar::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+.tabBar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
+
+.tabList {
+  display: flex;
+  gap: 0;
+  min-width: min-content;
+}
+
+/* bottom 위치일 때 탭 스타일 조정 */
+.tabBar.bottom .tabList > * {
+  border-top: none;
+  border-bottom: 1px solid var(--color-border);
+}

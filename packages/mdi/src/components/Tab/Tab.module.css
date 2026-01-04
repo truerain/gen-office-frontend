@@ -1,0 +1,96 @@
+/* packages/mdi/src/components/Tab/Tab.module.css */
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-bottom: none;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+  position: relative;
+  min-width: 120px;
+  max-width: 240px;
+}
+
+.tab:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+.tab.active {
+  background-color: var(--color-background);
+  border-bottom-color: var(--color-background);
+  z-index: 2;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--color-primary);
+}
+
+.tabContent {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex: 1;
+  min-width: 0;
+}
+
+.tabIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-secondary);
+}
+
+.tab.active .tabIcon {
+  color: var(--color-primary);
+}
+
+.tabTitle {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab.active .tabTitle {
+  color: var(--color-text);
+  font-weight: var(--font-weight-semibold);
+}
+
+.closeButton {
+  flex-shrink: 0;
+  padding: 2px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.tab:hover .closeButton,
+.closeButton:focus-visible {
+  opacity: 1;
+}
+
+.tab.active .closeButton {
+  opacity: 1;
+}

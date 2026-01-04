@@ -1,0 +1,48 @@
+{
+  "name": "@gen-office/mdi",
+  "version": "0.0.0",
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    },
+    "./index.css": "./dist/index.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@gen-office/design-tokens": "workspace:*",
+    "@gen-office/theme": "workspace:*",
+    "@gen-office/primitives": "workspace:*",
+    "@gen-office/utils": "workspace:*",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.562.0",
+    "zustand": "^5.0.2"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.1",
+    "@types/react-dom": "18.3.1",
+    "@vitejs/plugin-react": "^5.1.1",
+    "vite": "^6.2.0",
+    "vite-plugin-dts": "^4.5.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "peerDependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "keywords": ["mdi", "tabs", "multiple-document-interface"],
+  "author": "",
+  "license": "MIT"
+}
