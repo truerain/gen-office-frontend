@@ -1,0 +1,153 @@
+/* Container */
+.container {
+  width: 100%;
+  border: 1px solid var(--color-border-default);
+  border-radius: 0.5rem; /* 8px */
+  background-color: var(--color-bg-primary);
+  overflow: hidden;
+}
+
+/* Table Container */
+.tableContainer {
+  width: 100%;
+  overflow: auto;
+  position: relative;
+}
+
+/* Table */
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: var(--font-family-primary);
+  font-size: 0.875rem; /* 14px */
+}
+
+/* Header */
+.thead {
+  background-color: var(--color-bg-secondary);
+}
+
+.stickyHeader {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.th {
+  background-color: var(--color-bg-secondary);
+}
+
+/* Body */
+.tbody {
+  background-color: var(--color-bg-primary);
+}
+
+.tr {
+  transition: background-color 0.1s ease;
+}
+
+/* Footer */
+.tfoot {
+  background-color: var(--color-bg-secondary);
+  border-top: 1px solid var(--color-border-default);
+}
+
+/* Variants */
+.compact .th,
+.compact .td {
+  padding: 0.5rem 0.75rem; /* 8px 12px */
+}
+
+.striped .tbody .tr:nth-child(even) {
+  background-color: var(--color-bg-secondary);
+}
+
+.hoverable .tbody .tr:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+/* Bordered */
+.bordered-horizontal .tr {
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.bordered-vertical .td,
+.bordered-vertical .th {
+  border-right: 1px solid var(--color-border-subtle);
+}
+
+.bordered-vertical .td:last-child,
+.bordered-vertical .th:last-child {
+  border-right: none;
+}
+
+.bordered-all .tr {
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.bordered-all .td,
+.bordered-all .th {
+  border-right: 1px solid var(--color-border-subtle);
+}
+
+.bordered-all .td:last-child,
+.bordered-all .th:last-child {
+  border-right: none;
+}
+
+/* Sticky Column */
+.stickyColumn {
+  position: sticky;
+  z-index: 5;
+  background-color: inherit;
+}
+
+.stickyHeader .stickyColumn {
+  z-index: 15;
+}
+
+/* Loading */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem; /* 16px */
+  padding: 3rem; /* 48px */
+  color: var(--color-fg-secondary);
+}
+
+.spinner {
+  width: 2rem; /* 32px */
+  height: 2rem; /* 32px */
+  border: 3px solid var(--color-border-default);
+  border-top-color: var(--color-brand-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Empty */
+.emptyContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem; /* 16px */
+  padding: 3rem; /* 48px */
+  color: var(--color-fg-tertiary);
+}
+
+.emptyContainer p {
+  font-size: 0.875rem; /* 14px */
+}

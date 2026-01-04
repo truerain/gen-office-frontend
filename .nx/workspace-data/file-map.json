@@ -1,0 +1,1927 @@
+{
+  "version": "6.0",
+  "nxVersion": "22.3.3",
+  "pathMappings": {},
+  "nxJsonPlugins": [],
+  "fileMap": {
+    "projectFileMap": {
+      "@gen-office/utils": [
+        {
+          "file": "packages/utils/dist/cn/index.d.ts",
+          "hash": "16192926330724033650"
+        },
+        {
+          "file": "packages/utils/dist/cn/index.d.ts.map",
+          "hash": "8821054975099102193"
+        },
+        {
+          "file": "packages/utils/dist/format/date.d.ts",
+          "hash": "72346067407911986"
+        },
+        {
+          "file": "packages/utils/dist/format/date.d.ts.map",
+          "hash": "16095091873379954203"
+        },
+        {
+          "file": "packages/utils/dist/format/index.d.ts",
+          "hash": "15152826630648714866"
+        },
+        {
+          "file": "packages/utils/dist/format/index.d.ts.map",
+          "hash": "10753565493996371207"
+        },
+        {
+          "file": "packages/utils/dist/format/number.d.ts",
+          "hash": "7771286645818887397"
+        },
+        {
+          "file": "packages/utils/dist/format/number.d.ts.map",
+          "hash": "2342729678496966616"
+        },
+        {
+          "file": "packages/utils/dist/index.d.ts",
+          "hash": "3885344369698148184"
+        },
+        {
+          "file": "packages/utils/dist/index.d.ts.map",
+          "hash": "8139511911418116508"
+        },
+        {
+          "file": "packages/utils/dist/index.mjs",
+          "hash": "17808595671453177579"
+        },
+        {
+          "file": "packages/utils/dist/validation/index.d.ts",
+          "hash": "16841248923443080021"
+        },
+        {
+          "file": "packages/utils/dist/validation/index.d.ts.map",
+          "hash": "2419826551907417937"
+        },
+        {
+          "file": "packages/utils/package.json",
+          "hash": "11083287023152942902",
+          "deps": [
+            "npm:react",
+            "npm:react-dom",
+            "npm:@types/react",
+            "npm:@types/react-dom",
+            "npm:@vitejs/plugin-react@5.1.2",
+            "npm:vite",
+            "npm:vite-plugin-dts",
+            "npm:clsx"
+          ]
+        },
+        {
+          "file": "packages/utils/src/cn/index.ts",
+          "hash": "2575200215915798801"
+        },
+        {
+          "file": "packages/utils/src/format/date.ts",
+          "hash": "17413322975071098737"
+        },
+        {
+          "file": "packages/utils/src/format/index.ts",
+          "hash": "11764419603772903233"
+        },
+        {
+          "file": "packages/utils/src/format/number.ts",
+          "hash": "11528376675180567052"
+        },
+        {
+          "file": "packages/utils/src/index.ts",
+          "hash": "5496187273128848722"
+        },
+        {
+          "file": "packages/utils/src/validation/index.ts",
+          "hash": "1762973966039908062"
+        },
+        {
+          "file": "packages/utils/tsconfig.json",
+          "hash": "1715313290333930176"
+        },
+        {
+          "file": "packages/utils/vite.config.ts",
+          "hash": "8025092372665211864"
+        }
+      ],
+      "@gen-office/theme": [
+        {
+          "file": "packages/theme/dist/fonts/LG Smart Bold Italic.woff2",
+          "hash": "14843064099406092771"
+        },
+        {
+          "file": "packages/theme/dist/fonts/LG Smart Regular Italic.woff2",
+          "hash": "16108394693067355872"
+        },
+        {
+          "file": "packages/theme/dist/fonts/LG Smart SemiBold.woff2",
+          "hash": "7287860028980953870"
+        },
+        {
+          "file": "packages/theme/dist/fonts/LG_Smart_Bold.woff2",
+          "hash": "14809737131549326133"
+        },
+        {
+          "file": "packages/theme/dist/fonts/LG_Smart_Light.woff2",
+          "hash": "1724942558834792030"
+        },
+        {
+          "file": "packages/theme/dist/fonts/LG_Smart_Regular.woff2",
+          "hash": "6809062699535864229"
+        },
+        {
+          "file": "packages/theme/dist/hooks/index.d.ts",
+          "hash": "6020255781609660280"
+        },
+        {
+          "file": "packages/theme/dist/hooks/index.d.ts.map",
+          "hash": "16079240068582453015"
+        },
+        {
+          "file": "packages/theme/dist/hooks/useTheme.d.ts",
+          "hash": "3869536015839477232"
+        },
+        {
+          "file": "packages/theme/dist/hooks/useTheme.d.ts.map",
+          "hash": "6255319094122336145"
+        },
+        {
+          "file": "packages/theme/dist/index.css",
+          "hash": "3150279474795780284"
+        },
+        {
+          "file": "packages/theme/dist/index.d.ts",
+          "hash": "1966860892234730750"
+        },
+        {
+          "file": "packages/theme/dist/index.d.ts.map",
+          "hash": "16176847054798376458"
+        },
+        {
+          "file": "packages/theme/dist/index.mjs",
+          "hash": "12660324945334852384"
+        },
+        {
+          "file": "packages/theme/dist/provider/ThemeProvider.d.ts",
+          "hash": "16229306699879075014"
+        },
+        {
+          "file": "packages/theme/dist/provider/ThemeProvider.d.ts.map",
+          "hash": "18119050911525648648"
+        },
+        {
+          "file": "packages/theme/dist/provider/index.d.ts",
+          "hash": "6912682968962368140"
+        },
+        {
+          "file": "packages/theme/dist/provider/index.d.ts.map",
+          "hash": "3377490790411603615"
+        },
+        {
+          "file": "packages/theme/dist/themes/dark.d.ts",
+          "hash": "3393188353383538822"
+        },
+        {
+          "file": "packages/theme/dist/themes/dark.d.ts.map",
+          "hash": "8227865710598780185"
+        },
+        {
+          "file": "packages/theme/dist/themes/index.d.ts",
+          "hash": "13385659866990312646"
+        },
+        {
+          "file": "packages/theme/dist/themes/index.d.ts.map",
+          "hash": "14736851534345913804"
+        },
+        {
+          "file": "packages/theme/dist/themes/light.d.ts",
+          "hash": "5786847285878940978"
+        },
+        {
+          "file": "packages/theme/dist/themes/light.d.ts.map",
+          "hash": "6042142968436073933"
+        },
+        {
+          "file": "packages/theme/dist/types/theme.types.d.ts",
+          "hash": "17600180112805651161"
+        },
+        {
+          "file": "packages/theme/dist/types/theme.types.d.ts.map",
+          "hash": "3034064020384728480"
+        },
+        {
+          "file": "packages/theme/package.json",
+          "hash": "5999236776555223551",
+          "deps": [
+            "npm:react",
+            "npm:react-dom",
+            "@gen-office/design-tokens",
+            "npm:@types/react",
+            "npm:@types/react-dom",
+            "npm:@vitejs/plugin-react@5.1.2",
+            "npm:vite",
+            "npm:vite-plugin-dts"
+          ]
+        },
+        {
+          "file": "packages/theme/public/fonts/LG Smart Bold Italic.woff2",
+          "hash": "14843064099406092771"
+        },
+        {
+          "file": "packages/theme/public/fonts/LG Smart Regular Italic.woff2",
+          "hash": "16108394693067355872"
+        },
+        {
+          "file": "packages/theme/public/fonts/LG Smart SemiBold.woff2",
+          "hash": "7287860028980953870"
+        },
+        {
+          "file": "packages/theme/public/fonts/LG_Smart_Bold.woff2",
+          "hash": "14809737131549326133"
+        },
+        {
+          "file": "packages/theme/public/fonts/LG_Smart_Light.woff2",
+          "hash": "1724942558834792030"
+        },
+        {
+          "file": "packages/theme/public/fonts/LG_Smart_Regular.woff2",
+          "hash": "6809062699535864229"
+        },
+        {
+          "file": "packages/theme/src/hooks/index.ts",
+          "hash": "13896056250676048643"
+        },
+        {
+          "file": "packages/theme/src/hooks/useTheme.ts",
+          "hash": "13873342505115068439"
+        },
+        {
+          "file": "packages/theme/src/index.css",
+          "hash": "8529979131805529084"
+        },
+        {
+          "file": "packages/theme/src/index.ts",
+          "hash": "17629698721710927100"
+        },
+        {
+          "file": "packages/theme/src/provider/ThemeProvider.tsx",
+          "hash": "14021273031266990845"
+        },
+        {
+          "file": "packages/theme/src/provider/index.ts",
+          "hash": "8289866577968876494"
+        },
+        {
+          "file": "packages/theme/src/styles/fonts/lg-smart.css",
+          "hash": "203654469625473048"
+        },
+        {
+          "file": "packages/theme/src/styles/global.css",
+          "hash": "9017531733684918329"
+        },
+        {
+          "file": "packages/theme/src/styles/reset.css",
+          "hash": "8718997427960879762"
+        },
+        {
+          "file": "packages/theme/src/styles/variables.css",
+          "hash": "7175911712118292879"
+        },
+        {
+          "file": "packages/theme/src/themes/dark.ts",
+          "hash": "3891328288406372864"
+        },
+        {
+          "file": "packages/theme/src/themes/index.ts",
+          "hash": "7840084426938774155"
+        },
+        {
+          "file": "packages/theme/src/themes/light.ts",
+          "hash": "14068233732275602200"
+        },
+        {
+          "file": "packages/theme/src/types/theme.types.ts",
+          "hash": "12833957656241529168"
+        },
+        {
+          "file": "packages/theme/tsconfig.json",
+          "hash": "1715313290333930176"
+        },
+        {
+          "file": "packages/theme/vite.config.ts",
+          "hash": "2402138814233211874"
+        }
+      ],
+      "@gen-office/datagrid": [
+        {
+          "file": "packages/datagrid/dist/DataGrid/DataGrid.d.ts",
+          "hash": "3937221460269827377"
+        },
+        {
+          "file": "packages/datagrid/dist/DataGrid/DataGrid.d.ts.map",
+          "hash": "15349235198721876456"
+        },
+        {
+          "file": "packages/datagrid/dist/DataGrid/DataGrid.stories.d.ts",
+          "hash": "14248522859456020739"
+        },
+        {
+          "file": "packages/datagrid/dist/DataGrid/DataGrid.stories.d.ts.map",
+          "hash": "15471511380613855228"
+        },
+        {
+          "file": "packages/datagrid/dist/DataGrid/DataGrid.types.d.ts",
+          "hash": "2394498582760519579"
+        },
+        {
+          "file": "packages/datagrid/dist/DataGrid/DataGrid.types.d.ts.map",
+          "hash": "6353859585798518665"
+        },
+        {
+          "file": "packages/datagrid/dist/DataGrid/index.d.ts",
+          "hash": "8369775714805164033"
+        },
+        {
+          "file": "packages/datagrid/dist/DataGrid/index.d.ts.map",
+          "hash": "3184956477275450803"
+        },
+        {
+          "file": "packages/datagrid/dist/columns/ColumnCell/ColumnCell.d.ts",
+          "hash": "11957282343074074449"
+        },
+        {
+          "file": "packages/datagrid/dist/columns/ColumnCell/ColumnCell.d.ts.map",
+          "hash": "5001783157019213497"
+        },
+        {
+          "file": "packages/datagrid/dist/columns/ColumnCell/index.d.ts",
+          "hash": "12178499680477973850"
+        },
+        {
+          "file": "packages/datagrid/dist/columns/ColumnCell/index.d.ts.map",
+          "hash": "2843019745101309875"
+        },
+        {
+          "file": "packages/datagrid/dist/columns/ColumnHeader/ColumnHeader.d.ts",
+          "hash": "5318684815634065865"
+        },
+        {
+          "file": "packages/datagrid/dist/columns/ColumnHeader/ColumnHeader.d.ts.map",
+          "hash": "5765178071936876931"
+        },
+        {
+          "file": "packages/datagrid/dist/columns/ColumnHeader/index.d.ts",
+          "hash": "2522365519411046026"
+        },
+        {
+          "file": "packages/datagrid/dist/columns/ColumnHeader/index.d.ts.map",
+          "hash": "10301840549026611547"
+        },
+        {
+          "file": "packages/datagrid/dist/columns/index.d.ts",
+          "hash": "8159391961804292795"
+        },
+        {
+          "file": "packages/datagrid/dist/columns/index.d.ts.map",
+          "hash": "18097648940244890357"
+        },
+        {
+          "file": "packages/datagrid/dist/hooks/index.d.ts",
+          "hash": "3229937790374694382"
+        },
+        {
+          "file": "packages/datagrid/dist/hooks/index.d.ts.map",
+          "hash": "13709865458479116706"
+        },
+        {
+          "file": "packages/datagrid/dist/hooks/useDataGrid.d.ts",
+          "hash": "13117210207889189338"
+        },
+        {
+          "file": "packages/datagrid/dist/hooks/useDataGrid.d.ts.map",
+          "hash": "3046465698109759866"
+        },
+        {
+          "file": "packages/datagrid/dist/hooks/useVirtualization.d.ts",
+          "hash": "13123899741479741409"
+        },
+        {
+          "file": "packages/datagrid/dist/hooks/useVirtualization.d.ts.map",
+          "hash": "306201865072443315"
+        },
+        {
+          "file": "packages/datagrid/dist/index.css",
+          "hash": "14920161896761459665"
+        },
+        {
+          "file": "packages/datagrid/dist/index.d.ts",
+          "hash": "13807171763990774748"
+        },
+        {
+          "file": "packages/datagrid/dist/index.d.ts.map",
+          "hash": "4663734063380707077"
+        },
+        {
+          "file": "packages/datagrid/dist/index.mjs",
+          "hash": "9722534641468002451"
+        },
+        {
+          "file": "packages/datagrid/dist/pagination/Pagination.d.ts",
+          "hash": "4085948283971035907"
+        },
+        {
+          "file": "packages/datagrid/dist/pagination/Pagination.d.ts.map",
+          "hash": "16268855808439294043"
+        },
+        {
+          "file": "packages/datagrid/dist/pagination/index.d.ts",
+          "hash": "911519814536295996"
+        },
+        {
+          "file": "packages/datagrid/dist/pagination/index.d.ts.map",
+          "hash": "5743908377173746187"
+        },
+        {
+          "file": "packages/datagrid/dist/types/column.types.d.ts",
+          "hash": "3391510126543560357"
+        },
+        {
+          "file": "packages/datagrid/dist/types/column.types.d.ts.map",
+          "hash": "15284235421823909588"
+        },
+        {
+          "file": "packages/datagrid/dist/types/common.types.d.ts",
+          "hash": "12367544119181274307"
+        },
+        {
+          "file": "packages/datagrid/dist/types/common.types.d.ts.map",
+          "hash": "588890863549423685"
+        },
+        {
+          "file": "packages/datagrid/dist/types/filter.types.d.ts",
+          "hash": "17537821252819825028"
+        },
+        {
+          "file": "packages/datagrid/dist/types/filter.types.d.ts.map",
+          "hash": "7324507942788500392"
+        },
+        {
+          "file": "packages/datagrid/dist/types/index.d.ts",
+          "hash": "15207130850071040980"
+        },
+        {
+          "file": "packages/datagrid/dist/types/index.d.ts.map",
+          "hash": "8909608269581699648"
+        },
+        {
+          "file": "packages/datagrid/dist/types/pagination.types.d.ts",
+          "hash": "903654526116507834"
+        },
+        {
+          "file": "packages/datagrid/dist/types/pagination.types.d.ts.map",
+          "hash": "13159595305008397650"
+        },
+        {
+          "file": "packages/datagrid/dist/utils/createSelectionColumn.d.ts",
+          "hash": "957119255497563488"
+        },
+        {
+          "file": "packages/datagrid/dist/utils/createSelectionColumn.d.ts.map",
+          "hash": "13189436868168382612"
+        },
+        {
+          "file": "packages/datagrid/package.json",
+          "hash": "16656417991732317167",
+          "deps": [
+            "npm:react",
+            "npm:react-dom",
+            "npm:@storybook/core",
+            "npm:@storybook/addon-essentials",
+            "npm:@storybook/addon-interactions",
+            "npm:@storybook/addon-links",
+            "npm:@storybook/react",
+            "npm:@storybook/react-vite",
+            "npm:@storybook/blocks",
+            "npm:@storybook/addon-a11y",
+            "npm:storybook",
+            "npm:@types/react",
+            "npm:@types/react-dom",
+            "npm:@vitejs/plugin-react@5.1.2",
+            "npm:vite",
+            "npm:vite-plugin-dts",
+            "@gen-office/design-tokens",
+            "@gen-office/theme",
+            "@gen-office/utils",
+            "@gen-office/primitives",
+            "npm:@tanstack/react-table",
+            "npm:@tanstack/react-virtual",
+            "npm:clsx",
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "packages/datagrid/src/DataGrid/DataGrid.module.css",
+          "hash": "8987507640593797262"
+        },
+        {
+          "file": "packages/datagrid/src/DataGrid/DataGrid.stories.tsx",
+          "hash": "15413151526213572884"
+        },
+        {
+          "file": "packages/datagrid/src/DataGrid/DataGrid.tsx",
+          "hash": "9524390085202490734"
+        },
+        {
+          "file": "packages/datagrid/src/DataGrid/DataGrid.types.ts",
+          "hash": "11392909933163573515"
+        },
+        {
+          "file": "packages/datagrid/src/DataGrid/index.ts",
+          "hash": "901370308781921676"
+        },
+        {
+          "file": "packages/datagrid/src/columns/ColumnCell/ColumnCell.module.css",
+          "hash": "7854558725036788355"
+        },
+        {
+          "file": "packages/datagrid/src/columns/ColumnCell/ColumnCell.tsx",
+          "hash": "3266333730777226756"
+        },
+        {
+          "file": "packages/datagrid/src/columns/ColumnCell/index.ts",
+          "hash": "8056135421872781294"
+        },
+        {
+          "file": "packages/datagrid/src/columns/ColumnHeader/ColumnHeader.module.css",
+          "hash": "11841676718895180624"
+        },
+        {
+          "file": "packages/datagrid/src/columns/ColumnHeader/ColumnHeader.tsx",
+          "hash": "8602651403805780908"
+        },
+        {
+          "file": "packages/datagrid/src/columns/ColumnHeader/index.ts",
+          "hash": "1211062547645449986"
+        },
+        {
+          "file": "packages/datagrid/src/columns/index.ts",
+          "hash": "3669070034683955942"
+        },
+        {
+          "file": "packages/datagrid/src/hooks/index.ts",
+          "hash": "16520424679745945857"
+        },
+        {
+          "file": "packages/datagrid/src/hooks/useDataGrid.ts",
+          "hash": "3933771374717823256"
+        },
+        {
+          "file": "packages/datagrid/src/hooks/useVirtualization.ts",
+          "hash": "13154676315524550870"
+        },
+        {
+          "file": "packages/datagrid/src/index.ts",
+          "hash": "16815523335415676948"
+        },
+        {
+          "file": "packages/datagrid/src/pagination/Pagination.module.css",
+          "hash": "18076570736529329121"
+        },
+        {
+          "file": "packages/datagrid/src/pagination/Pagination.tsx",
+          "hash": "9638615822028790148"
+        },
+        {
+          "file": "packages/datagrid/src/pagination/index.ts",
+          "hash": "14857650565633306438"
+        },
+        {
+          "file": "packages/datagrid/src/types/column.types.ts",
+          "hash": "12561512858558599004"
+        },
+        {
+          "file": "packages/datagrid/src/types/common.types.ts",
+          "hash": "16685158567839931154"
+        },
+        {
+          "file": "packages/datagrid/src/types/filter.types.ts",
+          "hash": "12667644034291323921"
+        },
+        {
+          "file": "packages/datagrid/src/types/index.ts",
+          "hash": "15057335098785688814"
+        },
+        {
+          "file": "packages/datagrid/src/types/pagination.types.ts",
+          "hash": "3597911064032206833"
+        },
+        {
+          "file": "packages/datagrid/src/utils/createSelectionColumn.tsx",
+          "hash": "10339035889839642487"
+        },
+        {
+          "file": "packages/datagrid/src/vite-env.d.ts",
+          "hash": "17384692600866213838"
+        },
+        {
+          "file": "packages/datagrid/tsconfig.json",
+          "hash": "15164299387468267395"
+        },
+        {
+          "file": "packages/datagrid/vite.config.ts",
+          "hash": "720425797239667892"
+        }
+      ],
+      "storybook-static": [
+        {
+          "file": "apps/storybook-all/storybook-static/assets/Button-pkZc67Cq.css",
+          "hash": "6703792624848175052"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/Button.stories-DU0VJO-k.js",
+          "hash": "9096175310681201168"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/Color-YHDXOIA2-zitPBn0W.js",
+          "hash": "17256481292604422704"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/DocsRenderer-CFRXHY34-CRsD0EKb.js",
+          "hash": "1333940826300975824"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/chunk-XP5HYGXS-BpfKkqn7.js",
+          "hash": "7155758531270765514"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/entry-preview-B1e9i1Uk.js",
+          "hash": "5257393974594681160"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/entry-preview-docs-5Y1QYB37.js",
+          "hash": "7335982412488491543"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/iframe-UTEu0GtO.js",
+          "hash": "17548547033714480478"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/index-BqIVwv1J.js",
+          "hash": "6350366881659634767"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/index-D4H_InIO.js",
+          "hash": "1547188399533732780"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/index-Dd8bRu6S.js",
+          "hash": "18163511356997842626"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/index-DgH-xKnr.js",
+          "hash": "13869641048737984570"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/index-DrFu-skq.js",
+          "hash": "18399691510462276285"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/index-DrdPSA1J.js",
+          "hash": "17330181554820243378"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/jsx-runtime-BO8uF4Og.js",
+          "hash": "14453941418297542526"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/preview-B8lJiyuQ.js",
+          "hash": "1387838342339339151"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/preview-BBWR9nbA.js",
+          "hash": "8980871519746448246"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/preview-BWzBA1C2.js",
+          "hash": "7263242102374825479"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/preview-CAfz_RcB.js",
+          "hash": "6381193974346314005"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/preview-CVPQCt34.js",
+          "hash": "2891793306159430179"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/preview-CvbIS5ZJ.js",
+          "hash": "155155360949195330"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/preview-DD_OYowb.js",
+          "hash": "5415099480923204864"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/preview-DGUiP6tS.js",
+          "hash": "16270525355155682599"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/preview-DHQbi4pV.js",
+          "hash": "14895121768142976034"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/preview-Dlzp6DG1.css",
+          "hash": "3150279474795780284"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/preview-DwI0w3cI.js",
+          "hash": "15199992103987262837"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/react-18-BKRyDKwQ.js",
+          "hash": "17369777809647638498"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/assets/test-utils-E-h_wP8r.js",
+          "hash": "581878270769200233"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/favicon.svg",
+          "hash": "293678475295978129"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/fonts/LG Smart Bold Italic.woff2",
+          "hash": "14843064099406092771"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/fonts/LG Smart Regular Italic.woff2",
+          "hash": "16108394693067355872"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/fonts/LG Smart SemiBold.woff2",
+          "hash": "7287860028980953870"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/fonts/LG_Smart_Bold.woff2",
+          "hash": "14809737131549326133"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/fonts/LG_Smart_Light.woff2",
+          "hash": "1724942558834792030"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/fonts/LG_Smart_Regular.woff2",
+          "hash": "6809062699535864229"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/iframe.html",
+          "hash": "8781488711123690323"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/index.d.ts",
+          "hash": "11104622809057260450"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/index.html",
+          "hash": "16207099296143164256"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/index.json",
+          "hash": "4893240014812427942"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/nunito-sans-bold-italic.woff2",
+          "hash": "16937166808963441226"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/nunito-sans-bold.woff2",
+          "hash": "14169727957364227"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/nunito-sans-italic.woff2",
+          "hash": "13111399484457157170"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/nunito-sans-regular.woff2",
+          "hash": "13367830169426244845"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/project.json",
+          "hash": "12948691348244098800"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/sb-addons/essentials-actions-3/manager-bundle.js",
+          "hash": "7758148575145180475"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/sb-addons/essentials-backgrounds-5/manager-bundle.js",
+          "hash": "13629111606738727404"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/sb-addons/essentials-controls-2/manager-bundle.js",
+          "hash": "16589657788882397107"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/sb-addons/essentials-docs-4/manager-bundle.js",
+          "hash": "11619065024074970397"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/sb-addons/essentials-measure-8/manager-bundle.js",
+          "hash": "7617962612021062401"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/sb-addons/essentials-outline-9/manager-bundle.js",
+          "hash": "9843031980570678784"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/sb-addons/essentials-toolbars-7/manager-bundle.js",
+          "hash": "12849340138185228087"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/sb-addons/essentials-viewport-6/manager-bundle.js",
+          "hash": "937278588288477918"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/sb-addons/interactions-10/manager-bundle.js",
+          "hash": "852860530999029589"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/sb-addons/links-1/manager-bundle.js",
+          "hash": "3432446043383316614"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/sb-addons/storybook-core-core-server-presets-0/common-manager-bundle.js",
+          "hash": "1391682497069574855"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/sb-common-assets/favicon.svg",
+          "hash": "293678475295978129"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/sb-common-assets/nunito-sans-bold-italic.woff2",
+          "hash": "16937166808963441226"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/sb-common-assets/nunito-sans-bold.woff2",
+          "hash": "14169727957364227"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/sb-common-assets/nunito-sans-italic.woff2",
+          "hash": "13111399484457157170"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/sb-common-assets/nunito-sans-regular.woff2",
+          "hash": "13367830169426244845"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/sb-manager/globals-module-info.js",
+          "hash": "156657853968762726"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/sb-manager/globals-runtime.js",
+          "hash": "3361835012066884192"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/sb-manager/globals.js",
+          "hash": "6046937989373610199"
+        },
+        {
+          "file": "apps/storybook-all/storybook-static/sb-manager/runtime.js",
+          "hash": "15663644136682685864"
+        }
+      ],
+      "@gen-office/primitives": [
+        {
+          "file": "packages/primitives/.storybook/main.ts",
+          "hash": "9544871213467971155"
+        },
+        {
+          "file": "packages/primitives/.storybook/preview.tsx",
+          "hash": "9777143856716761404"
+        },
+        {
+          "file": "packages/primitives/dist/Badge/Badge.d.ts",
+          "hash": "7690160016600440298"
+        },
+        {
+          "file": "packages/primitives/dist/Badge/Badge.d.ts.map",
+          "hash": "9563982897040866462"
+        },
+        {
+          "file": "packages/primitives/dist/Badge/Badge.stories.d.ts",
+          "hash": "5807209149874241278"
+        },
+        {
+          "file": "packages/primitives/dist/Badge/Badge.stories.d.ts.map",
+          "hash": "15591621383376741692"
+        },
+        {
+          "file": "packages/primitives/dist/Badge/Badge.types.d.ts",
+          "hash": "16326248129379407488"
+        },
+        {
+          "file": "packages/primitives/dist/Badge/Badge.types.d.ts.map",
+          "hash": "17815266801756297983"
+        },
+        {
+          "file": "packages/primitives/dist/Badge/index.d.ts",
+          "hash": "336097764084993735"
+        },
+        {
+          "file": "packages/primitives/dist/Badge/index.d.ts.map",
+          "hash": "13620505162921094352"
+        },
+        {
+          "file": "packages/primitives/dist/Button/Button.d.ts",
+          "hash": "5812578167300871043"
+        },
+        {
+          "file": "packages/primitives/dist/Button/Button.d.ts.map",
+          "hash": "5405164502503450177"
+        },
+        {
+          "file": "packages/primitives/dist/Button/Button.stories.d.ts",
+          "hash": "6686721129762103728"
+        },
+        {
+          "file": "packages/primitives/dist/Button/Button.stories.d.ts.map",
+          "hash": "6934511396921512140"
+        },
+        {
+          "file": "packages/primitives/dist/Button/Button.types.d.ts",
+          "hash": "6232816832155040066"
+        },
+        {
+          "file": "packages/primitives/dist/Button/Button.types.d.ts.map",
+          "hash": "12302605713199338571"
+        },
+        {
+          "file": "packages/primitives/dist/Button/index.d.ts",
+          "hash": "12922202976733013327"
+        },
+        {
+          "file": "packages/primitives/dist/Button/index.d.ts.map",
+          "hash": "16929855657056781673"
+        },
+        {
+          "file": "packages/primitives/dist/Checkbox/Checkbox.d.ts",
+          "hash": "10230990554016321753"
+        },
+        {
+          "file": "packages/primitives/dist/Checkbox/Checkbox.d.ts.map",
+          "hash": "15511932707783336753"
+        },
+        {
+          "file": "packages/primitives/dist/Checkbox/Checkbox.types.d.ts",
+          "hash": "13439556015135251528"
+        },
+        {
+          "file": "packages/primitives/dist/Checkbox/Checkbox.types.d.ts.map",
+          "hash": "5683780487654656539"
+        },
+        {
+          "file": "packages/primitives/dist/Checkbox/checkbox.stories.d.ts",
+          "hash": "9298220579547138237"
+        },
+        {
+          "file": "packages/primitives/dist/Checkbox/checkbox.stories.d.ts.map",
+          "hash": "12839943199096978404"
+        },
+        {
+          "file": "packages/primitives/dist/Checkbox/index.d.ts",
+          "hash": "8539598308667581679"
+        },
+        {
+          "file": "packages/primitives/dist/Checkbox/index.d.ts.map",
+          "hash": "16761685462367969975"
+        },
+        {
+          "file": "packages/primitives/dist/Dialog/Dialog.d.ts",
+          "hash": "3950402272381165501"
+        },
+        {
+          "file": "packages/primitives/dist/Dialog/Dialog.d.ts.map",
+          "hash": "3842028510565315602"
+        },
+        {
+          "file": "packages/primitives/dist/Dialog/Dialog.stories.d.ts",
+          "hash": "13368941533272070833"
+        },
+        {
+          "file": "packages/primitives/dist/Dialog/Dialog.stories.d.ts.map",
+          "hash": "10158385024953248013"
+        },
+        {
+          "file": "packages/primitives/dist/Dialog/Dialog.types.d.ts",
+          "hash": "11680554960142724820"
+        },
+        {
+          "file": "packages/primitives/dist/Dialog/Dialog.types.d.ts.map",
+          "hash": "6817728566415171396"
+        },
+        {
+          "file": "packages/primitives/dist/Dialog/SimpleDialog.d.ts",
+          "hash": "7308056169949364732"
+        },
+        {
+          "file": "packages/primitives/dist/Dialog/SimpleDialog.d.ts.map",
+          "hash": "1682238130635517791"
+        },
+        {
+          "file": "packages/primitives/dist/Dialog/index.d.ts",
+          "hash": "3053003676710278788"
+        },
+        {
+          "file": "packages/primitives/dist/Dialog/index.d.ts.map",
+          "hash": "10306660090875050514"
+        },
+        {
+          "file": "packages/primitives/dist/DropdownMenu/DropdownMenu.d.ts",
+          "hash": "7344541039674466712"
+        },
+        {
+          "file": "packages/primitives/dist/DropdownMenu/DropdownMenu.d.ts.map",
+          "hash": "17212262575595097731"
+        },
+        {
+          "file": "packages/primitives/dist/DropdownMenu/DropdownMenu.stories.d.ts",
+          "hash": "7234817733861220828"
+        },
+        {
+          "file": "packages/primitives/dist/DropdownMenu/DropdownMenu.stories.d.ts.map",
+          "hash": "15559000142091522299"
+        },
+        {
+          "file": "packages/primitives/dist/DropdownMenu/DropdownMenu.types.d.ts",
+          "hash": "18236668413462083275"
+        },
+        {
+          "file": "packages/primitives/dist/DropdownMenu/DropdownMenu.types.d.ts.map",
+          "hash": "11406276270606618211"
+        },
+        {
+          "file": "packages/primitives/dist/DropdownMenu/index.d.ts",
+          "hash": "783466067418687968"
+        },
+        {
+          "file": "packages/primitives/dist/DropdownMenu/index.d.ts.map",
+          "hash": "8768568502473269990"
+        },
+        {
+          "file": "packages/primitives/dist/Input/Input.d.ts",
+          "hash": "3006616971684571429"
+        },
+        {
+          "file": "packages/primitives/dist/Input/Input.d.ts.map",
+          "hash": "16354728037364466275"
+        },
+        {
+          "file": "packages/primitives/dist/Input/Input.types.d.ts",
+          "hash": "14638318185637929203"
+        },
+        {
+          "file": "packages/primitives/dist/Input/Input.types.d.ts.map",
+          "hash": "5344669116706979436"
+        },
+        {
+          "file": "packages/primitives/dist/Input/index.d.ts",
+          "hash": "11025874699062474240"
+        },
+        {
+          "file": "packages/primitives/dist/Input/index.d.ts.map",
+          "hash": "13892199802282446446"
+        },
+        {
+          "file": "packages/primitives/dist/Input/input.stories.d.ts",
+          "hash": "10607100897580483386"
+        },
+        {
+          "file": "packages/primitives/dist/Input/input.stories.d.ts.map",
+          "hash": "2645521401223293461"
+        },
+        {
+          "file": "packages/primitives/dist/Label/Label.d.ts",
+          "hash": "9726522097677573223"
+        },
+        {
+          "file": "packages/primitives/dist/Label/Label.d.ts.map",
+          "hash": "3809316118754878388"
+        },
+        {
+          "file": "packages/primitives/dist/Label/Label.stories.d.ts",
+          "hash": "3294687759496992337"
+        },
+        {
+          "file": "packages/primitives/dist/Label/Label.stories.d.ts.map",
+          "hash": "9488334222747349397"
+        },
+        {
+          "file": "packages/primitives/dist/Label/Label.types.d.ts",
+          "hash": "7151172036759864070"
+        },
+        {
+          "file": "packages/primitives/dist/Label/Label.types.d.ts.map",
+          "hash": "2379115321224348119"
+        },
+        {
+          "file": "packages/primitives/dist/Label/index.d.ts",
+          "hash": "2230734340495922760"
+        },
+        {
+          "file": "packages/primitives/dist/Label/index.d.ts.map",
+          "hash": "7665624552518734612"
+        },
+        {
+          "file": "packages/primitives/dist/Radio/Radio.d.ts",
+          "hash": "5023722805170417646"
+        },
+        {
+          "file": "packages/primitives/dist/Radio/Radio.d.ts.map",
+          "hash": "6190507014223712149"
+        },
+        {
+          "file": "packages/primitives/dist/Radio/Radio.stories.d.ts",
+          "hash": "6881326242579618110"
+        },
+        {
+          "file": "packages/primitives/dist/Radio/Radio.stories.d.ts.map",
+          "hash": "4204060823523692737"
+        },
+        {
+          "file": "packages/primitives/dist/Radio/Radio.types.d.ts",
+          "hash": "16901861906145053797"
+        },
+        {
+          "file": "packages/primitives/dist/Radio/Radio.types.d.ts.map",
+          "hash": "9235029436707865648"
+        },
+        {
+          "file": "packages/primitives/dist/Radio/SimpleRadioGroup.d.ts",
+          "hash": "8658592793252059798"
+        },
+        {
+          "file": "packages/primitives/dist/Radio/SimpleRadioGroup.d.ts.map",
+          "hash": "1085700010084244527"
+        },
+        {
+          "file": "packages/primitives/dist/Radio/SimpleRadioGroup.stories.d.ts",
+          "hash": "17810009424145751254"
+        },
+        {
+          "file": "packages/primitives/dist/Radio/SimpleRadioGroup.stories.d.ts.map",
+          "hash": "5924714585867174217"
+        },
+        {
+          "file": "packages/primitives/dist/Radio/index.d.ts",
+          "hash": "9593902109403702938"
+        },
+        {
+          "file": "packages/primitives/dist/Radio/index.d.ts.map",
+          "hash": "10386475977819573801"
+        },
+        {
+          "file": "packages/primitives/dist/Select/Select.d.ts",
+          "hash": "2673508505545215364"
+        },
+        {
+          "file": "packages/primitives/dist/Select/Select.d.ts.map",
+          "hash": "10953259301186104052"
+        },
+        {
+          "file": "packages/primitives/dist/Select/Select.stories.d.ts",
+          "hash": "14087029648070551278"
+        },
+        {
+          "file": "packages/primitives/dist/Select/Select.stories.d.ts.map",
+          "hash": "18179307645722635008"
+        },
+        {
+          "file": "packages/primitives/dist/Select/Select.types.d.ts",
+          "hash": "3193793678549408985"
+        },
+        {
+          "file": "packages/primitives/dist/Select/Select.types.d.ts.map",
+          "hash": "657505508558823021"
+        },
+        {
+          "file": "packages/primitives/dist/Select/SimpleSelect.d.ts",
+          "hash": "11005725156619780549"
+        },
+        {
+          "file": "packages/primitives/dist/Select/SimpleSelect.d.ts.map",
+          "hash": "11541353067938064866"
+        },
+        {
+          "file": "packages/primitives/dist/Select/SimpleSelect.stories.d.ts",
+          "hash": "318650188955147105"
+        },
+        {
+          "file": "packages/primitives/dist/Select/SimpleSelect.stories.d.ts.map",
+          "hash": "8201749000737970868"
+        },
+        {
+          "file": "packages/primitives/dist/Select/index.d.ts",
+          "hash": "567250364063518141"
+        },
+        {
+          "file": "packages/primitives/dist/Select/index.d.ts.map",
+          "hash": "14485704803941022907"
+        },
+        {
+          "file": "packages/primitives/dist/Switch/Switch.d.ts",
+          "hash": "2338885395991405920"
+        },
+        {
+          "file": "packages/primitives/dist/Switch/Switch.d.ts.map",
+          "hash": "3995656504792639528"
+        },
+        {
+          "file": "packages/primitives/dist/Switch/Switch.stories.d.ts",
+          "hash": "14911238936906349153"
+        },
+        {
+          "file": "packages/primitives/dist/Switch/Switch.stories.d.ts.map",
+          "hash": "6504913453640710315"
+        },
+        {
+          "file": "packages/primitives/dist/Switch/Switch.types.d.ts",
+          "hash": "12936563598206332841"
+        },
+        {
+          "file": "packages/primitives/dist/Switch/Switch.types.d.ts.map",
+          "hash": "11145696885683281111"
+        },
+        {
+          "file": "packages/primitives/dist/Switch/index.d.ts",
+          "hash": "5225380705376993074"
+        },
+        {
+          "file": "packages/primitives/dist/Switch/index.d.ts.map",
+          "hash": "16909495501057596997"
+        },
+        {
+          "file": "packages/primitives/dist/Textarea/Textarea.d.ts",
+          "hash": "186580596221576489"
+        },
+        {
+          "file": "packages/primitives/dist/Textarea/Textarea.d.ts.map",
+          "hash": "14255162779258602509"
+        },
+        {
+          "file": "packages/primitives/dist/Textarea/Textarea.types.d.ts",
+          "hash": "7536485642427499145"
+        },
+        {
+          "file": "packages/primitives/dist/Textarea/Textarea.types.d.ts.map",
+          "hash": "6225841080852835618"
+        },
+        {
+          "file": "packages/primitives/dist/Textarea/Texttarea.stories.d.ts",
+          "hash": "10226105998769927743"
+        },
+        {
+          "file": "packages/primitives/dist/Textarea/Texttarea.stories.d.ts.map",
+          "hash": "11009999349208559808"
+        },
+        {
+          "file": "packages/primitives/dist/Textarea/index.d.ts",
+          "hash": "1861329282893076598"
+        },
+        {
+          "file": "packages/primitives/dist/Textarea/index.d.ts.map",
+          "hash": "1874036340802244150"
+        },
+        {
+          "file": "packages/primitives/dist/index.css",
+          "hash": "16430131869506990517"
+        },
+        {
+          "file": "packages/primitives/dist/index.d.ts",
+          "hash": "18132881874783681112"
+        },
+        {
+          "file": "packages/primitives/dist/index.d.ts.map",
+          "hash": "4313493844224584348"
+        },
+        {
+          "file": "packages/primitives/dist/index.mjs",
+          "hash": "13710082992613444832"
+        },
+        {
+          "file": "packages/primitives/package.json",
+          "hash": "916412477001884795",
+          "deps": [
+            "npm:react",
+            "npm:react-dom",
+            "npm:@storybook/core",
+            "npm:@storybook/addon-essentials",
+            "npm:@storybook/addon-interactions",
+            "npm:@storybook/addon-links",
+            "npm:@storybook/react",
+            "npm:@storybook/react-vite",
+            "npm:@storybook/blocks",
+            "npm:@storybook/addon-a11y",
+            "npm:storybook",
+            "npm:@types/react",
+            "npm:@types/react-dom",
+            "npm:@vitejs/plugin-react@5.1.2",
+            "npm:vite",
+            "npm:vite-plugin-dts",
+            "@gen-office/design-tokens",
+            "@gen-office/theme",
+            "@gen-office/utils",
+            "npm:@radix-ui/react-checkbox",
+            "npm:@radix-ui/react-dialog",
+            "npm:@radix-ui/react-dropdown-menu",
+            "npm:@radix-ui/react-label",
+            "npm:@radix-ui/react-radio-group",
+            "npm:@radix-ui/react-select",
+            "npm:@radix-ui/react-slot@1.2.4",
+            "npm:@radix-ui/react-switch",
+            "npm:clsx",
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "packages/primitives/src/Badge/Badge.module.css",
+          "hash": "9680475262412673584"
+        },
+        {
+          "file": "packages/primitives/src/Badge/Badge.stories.tsx",
+          "hash": "14147119046305360643"
+        },
+        {
+          "file": "packages/primitives/src/Badge/Badge.tsx",
+          "hash": "9186982077447795605"
+        },
+        {
+          "file": "packages/primitives/src/Badge/Badge.types.ts",
+          "hash": "17254729297839636646"
+        },
+        {
+          "file": "packages/primitives/src/Badge/index.ts",
+          "hash": "8449159733245615587"
+        },
+        {
+          "file": "packages/primitives/src/Button/Button.module.css",
+          "hash": "14118410610754091540"
+        },
+        {
+          "file": "packages/primitives/src/Button/Button.stories.tsx",
+          "hash": "15387958210297236889"
+        },
+        {
+          "file": "packages/primitives/src/Button/Button.tsx",
+          "hash": "9603464201681527126"
+        },
+        {
+          "file": "packages/primitives/src/Button/Button.types.ts",
+          "hash": "6146386304201811042"
+        },
+        {
+          "file": "packages/primitives/src/Button/index.ts",
+          "hash": "4458272645307146246"
+        },
+        {
+          "file": "packages/primitives/src/Checkbox/Checkbox.module.css",
+          "hash": "6331474336607548244"
+        },
+        {
+          "file": "packages/primitives/src/Checkbox/Checkbox.tsx",
+          "hash": "3878520724392170585"
+        },
+        {
+          "file": "packages/primitives/src/Checkbox/Checkbox.types.ts",
+          "hash": "17075616177913983610"
+        },
+        {
+          "file": "packages/primitives/src/Checkbox/checkbox.stories.tsx",
+          "hash": "17141658824719023833"
+        },
+        {
+          "file": "packages/primitives/src/Checkbox/index.ts",
+          "hash": "12966765301628071074"
+        },
+        {
+          "file": "packages/primitives/src/Dialog/Dialog.module.css",
+          "hash": "11891159142411620661"
+        },
+        {
+          "file": "packages/primitives/src/Dialog/Dialog.stories.tsx",
+          "hash": "3698966012281685991"
+        },
+        {
+          "file": "packages/primitives/src/Dialog/Dialog.tsx",
+          "hash": "3635077907807275409"
+        },
+        {
+          "file": "packages/primitives/src/Dialog/Dialog.types.ts",
+          "hash": "11508820617060448794"
+        },
+        {
+          "file": "packages/primitives/src/Dialog/SimpleDialog.tsx",
+          "hash": "9955293190621869943"
+        },
+        {
+          "file": "packages/primitives/src/Dialog/index.ts",
+          "hash": "14083209639481967390"
+        },
+        {
+          "file": "packages/primitives/src/DropdownMenu/DropdownMenu.module.css",
+          "hash": "11925915656248595954"
+        },
+        {
+          "file": "packages/primitives/src/DropdownMenu/DropdownMenu.stories.tsx",
+          "hash": "15064990150196932023"
+        },
+        {
+          "file": "packages/primitives/src/DropdownMenu/DropdownMenu.tsx",
+          "hash": "13687299552770306136"
+        },
+        {
+          "file": "packages/primitives/src/DropdownMenu/DropdownMenu.types.ts",
+          "hash": "348556827448742742"
+        },
+        {
+          "file": "packages/primitives/src/DropdownMenu/index.ts",
+          "hash": "3727750800919518795"
+        },
+        {
+          "file": "packages/primitives/src/Input/Input.tsx",
+          "hash": "3331226683075971593"
+        },
+        {
+          "file": "packages/primitives/src/Input/Input.types.ts",
+          "hash": "6165614042482001249"
+        },
+        {
+          "file": "packages/primitives/src/Input/index.ts",
+          "hash": "4898745129425520809"
+        },
+        {
+          "file": "packages/primitives/src/Input/input.module.css",
+          "hash": "14980112893697016624"
+        },
+        {
+          "file": "packages/primitives/src/Input/input.stories.tsx",
+          "hash": "774827457067750920"
+        },
+        {
+          "file": "packages/primitives/src/Label/Label.module.css",
+          "hash": "155485861380074362"
+        },
+        {
+          "file": "packages/primitives/src/Label/Label.stories.tsx",
+          "hash": "18395707071179157877"
+        },
+        {
+          "file": "packages/primitives/src/Label/Label.tsx",
+          "hash": "16187226031470520423"
+        },
+        {
+          "file": "packages/primitives/src/Label/Label.types.ts",
+          "hash": "7396202850922736321"
+        },
+        {
+          "file": "packages/primitives/src/Label/index.ts",
+          "hash": "2198269013743210091"
+        },
+        {
+          "file": "packages/primitives/src/Radio/Radio.module.css",
+          "hash": "3947654865385347298"
+        },
+        {
+          "file": "packages/primitives/src/Radio/Radio.stories.tsx",
+          "hash": "7378213119815330523"
+        },
+        {
+          "file": "packages/primitives/src/Radio/Radio.tsx",
+          "hash": "1045366716851130004"
+        },
+        {
+          "file": "packages/primitives/src/Radio/Radio.types.ts",
+          "hash": "17662161033950625161"
+        },
+        {
+          "file": "packages/primitives/src/Radio/SimpleRadioGroup.stories.tsx",
+          "hash": "5672802834349908706"
+        },
+        {
+          "file": "packages/primitives/src/Radio/SimpleRadioGroup.tsx",
+          "hash": "6385098050541299474"
+        },
+        {
+          "file": "packages/primitives/src/Radio/index.ts",
+          "hash": "4377893604402864704"
+        },
+        {
+          "file": "packages/primitives/src/Select/Select.module.css",
+          "hash": "4601367024646264812"
+        },
+        {
+          "file": "packages/primitives/src/Select/Select.stories.tsx",
+          "hash": "16698023310086012565"
+        },
+        {
+          "file": "packages/primitives/src/Select/Select.tsx",
+          "hash": "8052783967177830739"
+        },
+        {
+          "file": "packages/primitives/src/Select/Select.types.ts",
+          "hash": "11296144330060226282"
+        },
+        {
+          "file": "packages/primitives/src/Select/SimpleSelect.stories.tsx",
+          "hash": "8968713301748742261"
+        },
+        {
+          "file": "packages/primitives/src/Select/SimpleSelect.tsx",
+          "hash": "2337072636499837586"
+        },
+        {
+          "file": "packages/primitives/src/Select/guide.md",
+          "hash": "5776656604603276227"
+        },
+        {
+          "file": "packages/primitives/src/Select/index.ts",
+          "hash": "3591635491205982594"
+        },
+        {
+          "file": "packages/primitives/src/Switch/Switch.module.css",
+          "hash": "7446209362549764394"
+        },
+        {
+          "file": "packages/primitives/src/Switch/Switch.stories.tsx",
+          "hash": "7079942252540575999"
+        },
+        {
+          "file": "packages/primitives/src/Switch/Switch.tsx",
+          "hash": "8565527480410062193"
+        },
+        {
+          "file": "packages/primitives/src/Switch/Switch.types.ts",
+          "hash": "240493176483868203"
+        },
+        {
+          "file": "packages/primitives/src/Switch/index.tsx",
+          "hash": "5648880087033478206"
+        },
+        {
+          "file": "packages/primitives/src/Textarea/Textarea.module.css",
+          "hash": "12085660087404461151"
+        },
+        {
+          "file": "packages/primitives/src/Textarea/Textarea.tsx",
+          "hash": "18289496144927562935"
+        },
+        {
+          "file": "packages/primitives/src/Textarea/Textarea.types.ts",
+          "hash": "9016966913412050452"
+        },
+        {
+          "file": "packages/primitives/src/Textarea/Texttarea.stories.tsx",
+          "hash": "8770857606983910299"
+        },
+        {
+          "file": "packages/primitives/src/Textarea/index.ts",
+          "hash": "3480099793334162686"
+        },
+        {
+          "file": "packages/primitives/src/env.d.ts",
+          "hash": "16066707690820867490"
+        },
+        {
+          "file": "packages/primitives/src/index.ts",
+          "hash": "7015462709237932697"
+        },
+        {
+          "file": "packages/primitives/tsconfig.json",
+          "hash": "42798857420116608"
+        },
+        {
+          "file": "packages/primitives/vite.config.ts",
+          "hash": "7546165551017365690"
+        }
+      ],
+      "@gen-office/design-tokens": [
+        {
+          "file": "packages/design-tokens/dist/breakpoints/index.d.ts",
+          "hash": "11595015037489107551"
+        },
+        {
+          "file": "packages/design-tokens/dist/breakpoints/index.d.ts.map",
+          "hash": "16005974992097508567"
+        },
+        {
+          "file": "packages/design-tokens/dist/colors/index.d.ts",
+          "hash": "5881192573688080410"
+        },
+        {
+          "file": "packages/design-tokens/dist/colors/index.d.ts.map",
+          "hash": "15895231089804337113"
+        },
+        {
+          "file": "packages/design-tokens/dist/colors/metallic.d.ts",
+          "hash": "9884130481112815951"
+        },
+        {
+          "file": "packages/design-tokens/dist/colors/metallic.d.ts.map",
+          "hash": "15782440012537094328"
+        },
+        {
+          "file": "packages/design-tokens/dist/colors/primary.d.ts",
+          "hash": "16578491763879128988"
+        },
+        {
+          "file": "packages/design-tokens/dist/colors/primary.d.ts.map",
+          "hash": "4453528641316815226"
+        },
+        {
+          "file": "packages/design-tokens/dist/colors/secondary.d.ts",
+          "hash": "5903940873448795995"
+        },
+        {
+          "file": "packages/design-tokens/dist/colors/secondary.d.ts.map",
+          "hash": "17417119604768983760"
+        },
+        {
+          "file": "packages/design-tokens/dist/index.d.ts",
+          "hash": "8550179875179459061"
+        },
+        {
+          "file": "packages/design-tokens/dist/index.d.ts.map",
+          "hash": "7642801924989452817"
+        },
+        {
+          "file": "packages/design-tokens/dist/index.mjs",
+          "hash": "5936419196236746005"
+        },
+        {
+          "file": "packages/design-tokens/dist/spacing/index.d.ts",
+          "hash": "10775266771302931083"
+        },
+        {
+          "file": "packages/design-tokens/dist/spacing/index.d.ts.map",
+          "hash": "15565233514774853453"
+        },
+        {
+          "file": "packages/design-tokens/dist/typography/fonts.d.ts",
+          "hash": "4504912872687348032"
+        },
+        {
+          "file": "packages/design-tokens/dist/typography/fonts.d.ts.map",
+          "hash": "2984429376373715827"
+        },
+        {
+          "file": "packages/design-tokens/dist/typography/index.d.ts",
+          "hash": "11426227398421460535"
+        },
+        {
+          "file": "packages/design-tokens/dist/typography/index.d.ts.map",
+          "hash": "9785535126349667492"
+        },
+        {
+          "file": "packages/design-tokens/dist/typography/sizes.d.ts",
+          "hash": "13220040099279790850"
+        },
+        {
+          "file": "packages/design-tokens/dist/typography/sizes.d.ts.map",
+          "hash": "18087141703238522923"
+        },
+        {
+          "file": "packages/design-tokens/package.json",
+          "hash": "14923931679416480488",
+          "deps": [
+            "npm:react",
+            "npm:react-dom",
+            "npm:@types/react",
+            "npm:@types/react-dom",
+            "npm:@vitejs/plugin-react@5.1.2",
+            "npm:vite",
+            "npm:vite-plugin-dts"
+          ]
+        },
+        {
+          "file": "packages/design-tokens/src/breakpoints/index.ts",
+          "hash": "10799977996437499555"
+        },
+        {
+          "file": "packages/design-tokens/src/colors/index.ts",
+          "hash": "4121916313961440881"
+        },
+        {
+          "file": "packages/design-tokens/src/colors/metallic.ts",
+          "hash": "12734699157107310637"
+        },
+        {
+          "file": "packages/design-tokens/src/colors/primary.ts",
+          "hash": "5018562159297522433"
+        },
+        {
+          "file": "packages/design-tokens/src/colors/secondary.ts",
+          "hash": "12389379393771760730"
+        },
+        {
+          "file": "packages/design-tokens/src/index.ts",
+          "hash": "10409430825096453349"
+        },
+        {
+          "file": "packages/design-tokens/src/spacing/index.ts",
+          "hash": "10591074849301946539"
+        },
+        {
+          "file": "packages/design-tokens/src/typography/fonts.ts",
+          "hash": "14119138312497304140"
+        },
+        {
+          "file": "packages/design-tokens/src/typography/index.ts",
+          "hash": "17433770056386336843"
+        },
+        {
+          "file": "packages/design-tokens/src/typography/sizes.ts",
+          "hash": "1092290235744179863"
+        },
+        {
+          "file": "packages/design-tokens/tsconfig.json",
+          "hash": "8169384104475405700"
+        },
+        {
+          "file": "packages/design-tokens/vite.config.ts",
+          "hash": "1180375367808424296"
+        }
+      ],
+      "@gen-office/demo": [
+        {
+          "file": "apps/demo/.gitignore",
+          "hash": "13046175384202504187"
+        },
+        {
+          "file": "apps/demo/eslint.config.js",
+          "hash": "16942999842498204"
+        },
+        {
+          "file": "apps/demo/index.html",
+          "hash": "7903754338514438132"
+        },
+        {
+          "file": "apps/demo/package.json",
+          "hash": "3276326966227797270",
+          "deps": [
+            "npm:@eslint/js",
+            "npm:@types/node",
+            "npm:@types/react@18.3.27",
+            "npm:@types/react-dom@18.3.7",
+            "npm:@vitejs/plugin-react@4.7.0",
+            "npm:eslint",
+            "npm:eslint-plugin-react-hooks",
+            "npm:eslint-plugin-react-refresh",
+            "npm:globals@16.5.0",
+            "npm:typescript",
+            "npm:vite",
+            "npm:typescript-eslint",
+            "npm:@tanstack/react-table",
+            "@gen-office/design-tokens",
+            "@gen-office/theme",
+            "@gen-office/utils",
+            "@gen-office/primitives",
+            "@gen-office/datagrid",
+            "npm:react",
+            "npm:react-dom",
+            "npm:react-router-dom"
+          ]
+        },
+        {
+          "file": "apps/demo/public/vite.svg",
+          "hash": "16046085400642193116"
+        },
+        {
+          "file": "apps/demo/src/App.tsx",
+          "hash": "6937081402496226708"
+        },
+        {
+          "file": "apps/demo/src/assets/react.svg",
+          "hash": "16069471864800376455"
+        },
+        {
+          "file": "apps/demo/src/main.tsx",
+          "hash": "10336510129865817075"
+        },
+        {
+          "file": "apps/demo/src/pages/DataGridPage.tsx",
+          "hash": "13925586437154708408"
+        },
+        {
+          "file": "apps/demo/src/pages/HomePage.tsx",
+          "hash": "8527016613013593046"
+        },
+        {
+          "file": "apps/demo/src/pages/PrimitivesPage.tsx",
+          "hash": "4349512881990721512"
+        },
+        {
+          "file": "apps/demo/src/styles/App.css",
+          "hash": "1170108763957408678"
+        },
+        {
+          "file": "apps/demo/src/styles/index.css",
+          "hash": "8336446055238187738"
+        },
+        {
+          "file": "apps/demo/tsconfig.app.json",
+          "hash": "15306834600471955444"
+        },
+        {
+          "file": "apps/demo/tsconfig.json",
+          "hash": "2365188958523842680"
+        },
+        {
+          "file": "apps/demo/tsconfig.node.json",
+          "hash": "18109026203165916403"
+        },
+        {
+          "file": "apps/demo/vite.config.ts",
+          "hash": "16225914092815047172"
+        }
+      ],
+      "@gen-office/storybook": [
+        {
+          "file": "apps/storybook-all/.storybook/main.ts",
+          "hash": "7396246521662332246"
+        },
+        {
+          "file": "apps/storybook-all/.storybook/preview.tsx",
+          "hash": "1452991829755841318"
+        },
+        {
+          "file": "apps/storybook-all/package.json",
+          "hash": "16670709146592208840",
+          "deps": [
+            "npm:@storybook/core",
+            "npm:@storybook/addon-essentials",
+            "npm:@storybook/addon-interactions",
+            "npm:@storybook/addon-links",
+            "npm:@storybook/react",
+            "npm:@storybook/react-vite",
+            "npm:@storybook/blocks",
+            "npm:@storybook/addon-a11y",
+            "npm:storybook",
+            "npm:vite",
+            "@gen-office/design-tokens",
+            "@gen-office/theme",
+            "@gen-office/utils",
+            "npm:react",
+            "npm:react-dom"
+          ]
+        },
+        {
+          "file": "apps/storybook-all/vite.config.ts",
+          "hash": "2402138814233211874"
+        }
+      ]
+    },
+    "nonProjectFiles": [
+      {
+        "file": ".turbo/cookies/1.cookie",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": ".turbo/daemon/51b8564e8f83bf2e-turbo.log.2026-01-02",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": ".turbo/daemon/51b8564e8f83bf2e-turbo.log.2026-01-03",
+        "hash": "8542370368880139983"
+      },
+      {
+        "file": "package.json",
+        "hash": "2414418482767553680"
+      },
+      {
+        "file": "packages/tsconfig/base.json",
+        "hash": "8610741049489285281"
+      },
+      {
+        "file": "packages/tsconfig/react-library.json",
+        "hash": "498001964814684370"
+      },
+      {
+        "file": "pnpm-lock.yaml",
+        "hash": "12954372066747164554"
+      },
+      {
+        "file": "pnpm-workspace.yaml",
+        "hash": "5037882014171965205"
+      },
+      {
+        "file": "turbo.json",
+        "hash": "11768063671997529949"
+      },
+      {
+        "file": "설정파일들.md",
+        "hash": "3889223634455455364"
+      }
+    ]
+  },
+  "externalNodesHash": "3645044808347755488"
+}

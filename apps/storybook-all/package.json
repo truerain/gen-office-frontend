@@ -1,0 +1,32 @@
+{
+ "name": "@gen-office/storybook",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+  "dev": "storybook dev -p 6006",
+  "build": "storybook build"
+  },
+  "dependencies": {
+    "@gen-office/design-tokens": "workspace:*",
+    "@gen-office/theme": "workspace:*",
+    "@gen-office/utils": "workspace:*",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },  
+  "devDependencies": {
+    "@storybook/core": "8.6.15",
+    "@storybook/addon-essentials": "8.6.15",
+    "@storybook/addon-interactions": "8.6.15",
+    "@storybook/addon-links": "8.6.15",
+    "@storybook/react": "8.6.15",
+    "@storybook/react-vite": "8.6.15",
+    "@storybook/blocks": "8.6.15",
+    "@storybook/addon-a11y": "^8.6.15",
+    "storybook": "8.6.15",
+    "vite": "^6.2.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

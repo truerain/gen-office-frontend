@@ -1,0 +1,56 @@
+.root {
+  all: unset;
+  width: 2.75rem; /* 44px */
+  height: 1.5rem; /* 24px */
+  background-color: var(--color-border-default);
+  border-radius: 9999px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.root:hover {
+  background-color: var(--color-border-strong);
+}
+
+.root:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 0.125rem rgba(165, 0, 52, 0.15);
+}
+
+.root[data-state='checked'] {
+  background-color: var(--color-brand-primary);
+}
+
+.root[data-state='checked']:hover {
+  background-color: #8D002C;
+}
+
+.root[data-disabled] {
+  cursor: not-allowed;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.root.error {
+  background-color: var(--color-status-error);
+}
+
+.root.error:hover {
+  background-color: #B91C1C;
+}
+
+.thumb {
+  display: block;
+  width: 1.25rem; /* 20px */
+  height: 1.25rem; /* 20px */
+  background-color: white;
+  border-radius: 9999px;
+  transition: transform 0.2s ease;
+  transform: translateX(0.125rem); /* 2px */
+  will-change: transform;
+}
+
+.root[data-state='checked'] .thumb {
+  transform: translateX(1.375rem); /* 22px */
+}

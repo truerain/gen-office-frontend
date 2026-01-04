@@ -1,0 +1,65 @@
+/**
+ * LG Smart Font
+ * 
+ * LG 공식 브랜드 폰트입니다.
+ * 웹폰트 파일은 별도로 제공되어야 합니다.
+ * 
+ * 현재는 fallback 폰트만 사용합니다.
+ * LG Smart 폰트 라이선스를 확보한 경우, 아래 주석을 해제하고 파일 경로를 설정하세요.
+ */
+
+
+@font-face {
+  font-family: 'LG Smart';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/LG_Smart_Light.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'LG Smart';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/LG_Smart_Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'LG Smart';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/LG_Smart_Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'LG Smart';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/LG_Smart_Bold.woff2') format('woff2');
+}
+
+
+/**
+ * 현재는 시스템 폰트 fallback만 사용
+ * 
+ * - Apple SD Gothic Neo: macOS/iOS 한글 폰트
+ * - Malgun Gothic: Windows 한글 폰트 (맑은 고딕)
+ * - Segoe UI: Windows 영문 폰트
+ */
+
+:root {
+  --font-family-primary:  -apple-system, BlinkMacSystemFont, 'Segoe UI', 
+                         'Apple SD Gothic Neo', 'Malgun Gothic', 
+                         'Noto Sans KR', sans-serif;
+  --font-family-mono: 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+/* LG Smart 폰트를 사용하는 경우 */
+:root[data-use-lg-font='true'] {
+  --font-family-primary: 'LG Smart', -apple-system, BlinkMacSystemFont, 
+                         'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic',
+                         'Noto Sans KR', sans-serif;
+}

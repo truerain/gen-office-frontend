@@ -1,0 +1,29 @@
+.root {
+  display: inline-block;
+  font-size: 0.875rem; /* 14px */
+  font-weight: 500;
+  color: var(--color-fg-primary);
+  line-height: 1.5;
+  cursor: pointer;
+  user-select: none;
+  font-family: var(--font-family-primary);
+}
+
+.required {
+  font-weight: 600;
+}
+
+.requiredMark {
+  color: var(--color-status-error);
+  margin-left: 0.125rem; /* 2px */
+  font-weight: 600;
+}
+
+.error {
+  color: var(--color-status-error);
+}
+
+.root:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
