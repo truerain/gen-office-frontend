@@ -12,6 +12,11 @@
   --color-secondary-light: #f5f5f5;
   --color-secondary-dark: #333333;
   
+  /* Header/TitleBar Colors */
+  --color-header-bg: #a50034;        /* 차분한 네이비 블루 */
+  --color-header-text: #ffffff;
+  --color-header-border: #1a252f;
+  
   /* Background Colors */
   --color-background: #ffffff;
   --color-surface: #f8f9fa;
@@ -119,4 +124,8 @@
   
   --color-border: #495057;
   --color-border-strong: #6c757d;
+  
+  /* Header/TitleBar Colors for Dark Mode */
+  --color-header-bg: #1e2936;
+  --color-header-border: #0d1419;
 }

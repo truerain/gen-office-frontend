@@ -1,0 +1,33 @@
+/* apps/demo/src/pages/customer/CustomerInfoPage/components/CustomerFilter.module.css */
+
+.filterPanel {
+  padding: var(--spacing-lg);
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.filterRow {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.filterItem {
+  flex: 1;
+  min-width: 200px;
+}
+
+.searchInput {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .filterRow {
+    flex-direction: column;
+  }
+
+  .filterItem {
+    width: 100%;
+  }
+}

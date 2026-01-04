@@ -1,0 +1,156 @@
+/* apps/demo/src/components/TitleBar.module.css */
+
+.titleBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  padding: 0 var(--spacing-lg);
+  background-color: var(--color-background);
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xl);
+  flex: 1;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: opacity var(--transition-base);
+}
+
+.logo:hover {
+  opacity: 0.8;
+}
+
+.logoImage {
+  height: 40px;
+  width: auto;
+  color: var(--color-text);
+  width: 50%;
+  height: auto;
+}
+
+/* Navigation */
+.navigation {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.navButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border: none;
+  background-color: transparent;
+  color: var(--color-text);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-base);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.navButton:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.navButton:active {
+  background-color: var(--color-surface);
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+/* User Menu */
+.userMenuButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: none;
+  background-color: transparent;
+  color: var(--color-text);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-base);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.userMenuButton:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.userAvatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: var(--color-surface);
+  border-radius: 50%;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .navigation {
+    gap: 0;
+  }
+
+  .navButton span {
+    display: none;
+  }
+
+  .navButton {
+    padding: var(--spacing-xs);
+    width: 40px;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .titleBar {
+    padding: 0 var(--spacing-md);
+  }
+
+  .logoImage {
+    height: 32px;
+  }
+
+  .userMenuButton span {
+    display: none;
+  }
+
+  .left {
+    gap: var(--spacing-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .logoImage {
+    height: 28px;
+  }
+
+  .navigation {
+    display: none;
+  }
+}
