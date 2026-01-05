@@ -1,5 +1,5 @@
 {
-  "name": "@gen-office/primitives",
+  "name": "@gen-office/ui",
   "version": "0.0.0",
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",

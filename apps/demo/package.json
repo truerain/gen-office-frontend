@@ -13,7 +13,7 @@
     "@gen-office/design-tokens": "workspace:*",
     "@gen-office/theme": "workspace:*",
     "@gen-office/utils": "workspace:*",
-    "@gen-office/primitives": "workspace:*",
+    "@gen-office/ui": "workspace:*",
     "@gen-office/datagrid": "workspace:*",
     "@gen-office/mdi": "workspace:*",
     "react": "18.3.1",

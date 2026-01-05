@@ -2,11 +2,11 @@
 import { useEffect, Suspense } from 'react';
 import { MDIContainer, useMDIStore } from '@gen-office/mdi';
 import { Home } from 'lucide-react';
-import TitleBar from './components/TitleBar';
-import HomePage from './pages/HomePage';
-import { findMenuItemById } from './features/system/mocks/menuData';
-import { getLazyComponent } from './config/componentRegistry.dynamic';
-import { useAppStore } from './store/appStore';
+import TitleBar from '@/components/TitleBar';
+import HomePage from '@/pages/Home/HomePage';
+import { findMenuItem } from '@/features/system/mocks/menuData';
+import { getLazyComponent } from '@/config/componentRegistry.dynamic';
+import { useAppStore } from '@/store/appStore';
 import '@gen-office/mdi/index.css';
 import styles from './App.module.css';
 
@@ -108,9 +108,9 @@ function App() {
   };
 
   // 메뉴 클릭 핸들러 - 완전한 동적 로딩! ✅
-  const handleOpenPage = (id: string, title: string, icon: React.ReactNode) => {
+  const handleOpenPage = (menuId: string, title: string, icon: React.ReactNode) => {
     // 1. 메뉴 데이터에서 아이템 찾기 (DB에서 가져온 데이터)
-    const menuItem = findMenuItemById(id);
+    const menuItem = findMenuItem(menuId);
     
     // 2. componentName으로 Lazy 컴포넌트 가져오기 (동적 import)
     const LazyComponent = getLazyComponent(menuItem?.componentName);
@@ -126,7 +126,7 @@ function App() {
 
     // 4. MDI 탭으로 열기
     addTab({
-      id,
+      id: menuId,
       title,
       content,
       icon,
@@ -145,7 +145,7 @@ function App() {
       {/* MDI Container */}
       <main className={styles.main}>
         <MDIContainer
-          tabPosition="bottom"
+          tabPosition="top"
           maxTabs={10}
           emptyContent={
             <div className={styles.emptyState}>

@@ -1,7 +1,7 @@
 // packages/mdi/src/components/Tab/Tab.tsx
 import { X } from 'lucide-react';
 import { TabProps } from '../../types';
-import { Button } from '@gen-office/primitives';
+import { Button } from '@gen-office/ui';
 import { cn } from '@gen-office/utils';
 import styles from './Tab.module.css';
 

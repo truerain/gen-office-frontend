@@ -1,9 +1,9 @@
 // apps/demo/src/pages/MDIPage.tsx
-import { Badge } from '@gen-office/primitives';
+import { Badge } from '@gen-office/ui';
 import { Layers, Check, Code } from 'lucide-react';
 import styles from './MDIPage.module.css';
 
-function MDIPage() {
+export default function MDIPage() {
   return (
     <div className={styles.page}>
       <div className={styles.pageHeader}>
@@ -289,4 +289,3 @@ const handleOpenTab = () => {
   );
 }
 
-export default MDIPage;

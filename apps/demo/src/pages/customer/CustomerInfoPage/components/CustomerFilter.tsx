@@ -1,5 +1,5 @@
 // apps/demo/src/pages/customer/CustomerInfoPage/components/CustomerFilter.tsx
-import { Input, SimpleSelect } from '@gen-office/primitives';
+import { Input, SimpleSelect } from '@gen-office/ui';
 import { Search } from 'lucide-react';
 import type { CustomerFilter as FilterType } from '../../../../features/customer/types/customer.types';
 import styles from './CustomerFilter.module.css';

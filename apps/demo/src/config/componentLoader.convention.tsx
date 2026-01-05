@@ -84,10 +84,10 @@ export const loadComponentByConvention = (componentName: string): ComponentType 
     'UserManagementPage': () => import('@/pages/system/UserManagementPage').catch((): ComponentModule => ({ default: () => null })) as Promise<ComponentModule>,
     */
     // Demo
-    'PrimitivesPage': () => import('@/pages/PrimitivesPage') as Promise<ComponentModule>,
-    'DataGridPage': () => import('@/pages/DataGridPage') as Promise<ComponentModule>,
-    'MDIPage': () => import('@/pages/MDIPage') as Promise<ComponentModule>,
-    'GlobalStateDemo': () => import('@/pages/GlobalStateDemo') as Promise<ComponentModule>,
+    'PrimitivesPage': () => import('@/pages/demo/Primitives/PrimitivesPage') as Promise<ComponentModule>,
+    'DataGridPage': () => import('@/pages/demo/DataGridPage/DataGridPage') as Promise<ComponentModule>,
+    'MDIPage': () => import('@/pages/demo/MDIPage/MDIPage') as Promise<ComponentModule>,
+    'GlobalStateDemo': () => import('@/pages/demo/GlobalStateDemo') as Promise<ComponentModule>,
   };
   
   const loader = componentLoaders[componentName];

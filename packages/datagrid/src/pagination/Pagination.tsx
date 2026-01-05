@@ -1,5 +1,5 @@
 
-import { Button } from '@gen-office/primitives'
+import { Button } from '@gen-office/ui'
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { cn } from '@gen-office/utils';
 import type { PaginationProps } from '../types';

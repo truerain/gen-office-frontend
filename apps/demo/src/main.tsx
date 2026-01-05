@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { ThemeProvider } from '@gen-office/theme';
 import App from './App';
 import '@gen-office/theme/index.css';
-import '@gen-office/primitives/index.css';
+import '@gen-office/ui/index.css';
 
 import './styles/index.css';
 

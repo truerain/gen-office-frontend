@@ -35,10 +35,10 @@ const componentPaths: Record<string, ComponentLoader> = {
   // 'UserManagementPage': () => import('../pages/system/UserManagementPage'),
 
   // Demo
-  'PrimitivesPage': () => import('@/pages/PrimitivesPage'),
-  'DataGridPage': () => import('../pages/DataGridPage'),
-  'MDIPage': () => import('../pages/MDIPage'),
-  'GlobalStateDemo': () => import('../pages/GlobalStateDemo'),
+  'PrimitivesPage': () => import('@/pages/demo/Primitives/PrimitivesPage'),
+  'DataGridPage': () => import('@/pages/demo/DataGridPage'),
+  'MDIPage': () => import('@/pages/demo/MDIPage'),
+  'GlobalStateDemo': () => import('@/pages/demo/GlobalStateDemo'),
 };
 
 /**

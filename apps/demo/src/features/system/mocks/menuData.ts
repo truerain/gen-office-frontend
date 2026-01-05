@@ -1,151 +1,240 @@
 // apps/demo/src/mocks/menuData.ts
-import type { MenuData, MenuItem } from '../../../types/menu.types';
+import type { MenuData, MenuItem } from '@/types/menu.types';
+import { buildMenuTree, findMenuItemById } from '@/utils/menuTree';
 
 /**
- * 메뉴 데이터
+ * 메뉴 데이터 (플랫 구조 - DB와 동일한 형태)
  * 
- * 이 데이터는 나중에 DB에서 가져올 수 있습니다.
- * componentName은 문자열이므로 JSON으로 직렬화 가능합니다.
+ * 이 데이터는 실제로는 DB에서 가져옵니다.
  * 
  * DB 스키마 예시:
- * - menus 테이블:
- *   - id: string (PK)
- *   - label: string
- *   - icon: string
- *   - component_name: string (nullable)
- *   - parent_id: string (nullable, FK)
- *   - order: number
- *   - is_active: boolean
+ * ```sql
+ * CREATE TABLE menus (
+ *   menu_id VARCHAR(50) PRIMARY KEY,
+ *   label VARCHAR(100) NOT NULL,
+ *   icon VARCHAR(50) NOT NULL,
+ *   component_name VARCHAR(100),
+ *   parent_menu_id VARCHAR(50),
+ *   `order` INT DEFAULT 0,
+ *   is_active BOOLEAN DEFAULT true,
+ *   FOREIGN KEY (parent_menu_id) REFERENCES menus(menu_id)
+ * );
+ * ```
  */
 export const menuData: MenuData = {
-  categories: [
+  items: [
+    // ========================================
+    // 레벨 0: 최상위 카테고리
+    // ========================================
     {
-      id: 'customer',
+      menuId: 'customer',
       label: '고객관리',
       icon: 'Users',
-      children: [
-        {
-          id: 'customer-info',
-          label: '고객정보',
-          icon: 'Users',
-          componentName: 'CustomerInfoPage',  // ✅ 문자열로 저장
-        },
-        {
-          id: 'customer-service',
-          label: '고객응대',
-          icon: 'UserCheck',
-          // componentName: 'CustomerServicePage',  // TODO: 구현 필요
-        },
-        {
-          id: 'customer-analysis',
-          label: '고객분석',
-          icon: 'BarChart3',
-          // componentName: 'CustomerAnalysisPage',  // TODO: 구현 필요
-        },
-      ],
+      parentMenuId: null,
+      order: 1,
     },
     {
-      id: 'finance',
+      menuId: 'finance',
       label: '금융 및 결제',
       icon: 'CreditCard',
-      children: [
-        {
-          id: 'payment-process',
-          label: '결제처리',
-          icon: 'CreditCard',
-          // componentName: 'PaymentProcessPage',  // TODO: 구현 필요
-        },
-        {
-          id: 'transfer',
-          label: '송금',
-          icon: 'Send',
-          // componentName: 'TransferPage',  // TODO: 구현 필요
-        },
-        {
-          id: 'subscription',
-          label: '구독관리',
-          icon: 'RefreshCw',
-          // componentName: 'SubscriptionPage',  // TODO: 구현 필요
-        },
-      ],
+      parentMenuId: null,
+      order: 2,
     },
     {
-      id: 'system',
+      menuId: 'system',
       label: '시스템관리',
       icon: 'Settings',
-      children: [
-        {
-          id: 'menu-management',
-          label: '메뉴관리',
-          icon: 'Menu',
-          // componentName: 'MenuManagementPage',  // TODO: 구현 필요
-        },
-        {
-          id: 'role-management',
-          label: '권한관리',
-          icon: 'Shield',
-          // componentName: 'RoleManagementPage',  // TODO: 구현 필요
-        },
-        {
-          id: 'role-menu',
-          label: '권한별 메뉴관리',
-          icon: 'FolderTree',
-          // componentName: 'RoleMenuPage',  // TODO: 구현 필요
-        },
-        {
-          id: 'user-management',
-          label: '사용자관리',
-          icon: 'UserCog',
-          // componentName: 'UserManagementPage',  // TODO: 구현 필요
-        },
-      ],
+      parentMenuId: null,
+      order: 3,
     },
     {
-      id: 'demo',
+      menuId: 'demo',
       label: 'Demo',
-      icon: 'Box',
-      children: [
-        {
-          id: 'primitives',
-          label: 'Primitives',
-          icon: 'Box',
-          componentName: 'PrimitivesPage',  // ✅ 문자열로 저장
-        },
-        {
-          id: 'datagrid',
-          label: 'DataGrid',
-          icon: 'Grid3x3',
-          componentName: 'DataGridPage',  // ✅ 문자열로 저장
-        },
-        {
-          id: 'mdi-demo',
-          label: 'MDI Demo',
-          icon: 'Layers',
-          componentName: 'MDIPage',  // ✅ 문자열로 저장
-        },
-        {
-          id: 'global-state-demo',
-          label: 'Global State',
-          icon: 'Database',
-          componentName: 'GlobalStateDemo',  // ✅ 전역 상태 테스트
-        },
-      ],
+      icon: 'Zap',
+      parentMenuId: null,
+      order: 4,
+    },
+
+    // ========================================
+    // 레벨 1: 고객관리 하위 메뉴
+    // ========================================
+    {
+      menuId: 'customer-info',
+      label: '고객정보',
+      icon: 'Users',
+      componentName: 'CustomerInfoPage',
+      parentMenuId: 'customer',
+      order: 1,
+    },
+    {
+      menuId: 'customer-service',
+      label: '고객응대',
+      icon: 'UserCheck',
+      parentMenuId: 'customer',
+      order: 2,
+    },
+    {
+      menuId: 'customer-analysis',
+      label: '고객분석',
+      icon: 'BarChart3',
+      parentMenuId: 'customer',
+      order: 3,
+    },
+
+    // ========================================
+    // 레벨 2: 고객응대 하위 메뉴 (3레벨 예시)
+    // ========================================
+    {
+      menuId: 'customer-service-chat',
+      label: '채팅 상담',
+      icon: 'MessageSquare',
+      parentMenuId: 'customer-service',
+      order: 1,
+    },
+    {
+      menuId: 'customer-service-call',
+      label: '전화 상담',
+      icon: 'Phone',
+      parentMenuId: 'customer-service',
+      order: 2,
+    },
+    {
+      menuId: 'customer-service-ticket',
+      label: '티켓 관리',
+      icon: 'Ticket',
+      parentMenuId: 'customer-service',
+      order: 3,
+    },
+
+    // ========================================
+    // 레벨 1: 금융 및 결제 하위 메뉴
+    // ========================================
+    {
+      menuId: 'payment',
+      label: '결제관리',
+      icon: 'CreditCard',
+      parentMenuId: 'finance',
+      order: 1,
+    },
+    {
+      menuId: 'transfer',
+      label: '송금',
+      icon: 'Send',
+      parentMenuId: 'finance',
+      order: 2,
+    },
+    {
+      menuId: 'subscription',
+      label: '구독관리',
+      icon: 'RefreshCw',
+      parentMenuId: 'finance',
+      order: 3,
+    },
+
+    // ========================================
+    // 레벨 2: 결제관리 하위 메뉴 (3레벨 예시)
+    // ========================================
+    {
+      menuId: 'payment-process',
+      label: '결제 처리',
+      icon: 'CreditCard',
+      parentMenuId: 'payment',
+      order: 1,
+    },
+    {
+      menuId: 'payment-history',
+      label: '결제 내역',
+      icon: 'History',
+      parentMenuId: 'payment',
+      order: 2,
+    },
+    {
+      menuId: 'payment-refund',
+      label: '환불 처리',
+      icon: 'RotateCcw',
+      parentMenuId: 'payment',
+      order: 3,
+    },
+
+    // ========================================
+    // 레벨 1: 시스템관리 하위 메뉴
+    // ========================================
+    {
+      menuId: 'menu-management',
+      label: '메뉴관리',
+      icon: 'Menu',
+      parentMenuId: 'system',
+      order: 1,
+    },
+    {
+      menuId: 'role-management',
+      label: '권한관리',
+      icon: 'Shield',
+      parentMenuId: 'system',
+      order: 2,
+    },
+    {
+      menuId: 'user-management',
+      label: '사용자관리',
+      icon: 'Users',
+      parentMenuId: 'system',
+      order: 3,
+    },
+
+    // ========================================
+    // 레벨 1: Demo 하위 메뉴
+    // ========================================
+    {
+      menuId: 'primitives',
+      label: 'Primitives',
+      icon: 'Package',
+      componentName: 'PrimitivesPage',
+      parentMenuId: 'demo',
+      order: 1,
+    },
+    {
+      menuId: 'datagrid',
+      label: 'DataGrid',
+      icon: 'Table',
+      componentName: 'DataGridPage',
+      parentMenuId: 'demo',
+      order: 2,
+    },
+    {
+      menuId: 'mdi',
+      label: 'MDI',
+      icon: 'Layout',
+      componentName: 'MDIPage',
+      parentMenuId: 'demo',
+      order: 3,
+    },
+    {
+      menuId: 'global-state',
+      label: 'Global State',
+      icon: 'Database',
+      componentName: 'GlobalStateDemo',
+      parentMenuId: 'demo',
+      order: 4,
     },
   ],
 };
 
 /**
- * 메뉴 아이템을 ID로 찾는 헬퍼 함수
+ * 트리 구조로 변환된 메뉴 데이터
+ * 
+ * UI 렌더링에 사용
  */
-export const findMenuItemById = (id: string): MenuItem | undefined => {
-  for (const category of menuData.categories) {
-    if (category.children) {
-      const found = category.children.find((item) => item.id === id);
-      if (found) return found;
-    }
-  }
-  return undefined;
-};
+export const menuTree = buildMenuTree(menuData.items);
+
+/**
+ * 메뉴 ID로 메뉴 아이템 찾기
+ * 
+ * @param menuId - 메뉴 ID
+ * @returns 메뉴 아이템 또는 undefined
+ */
+export function findMenuItem(menuId: string): MenuItem | undefined {
+  return findMenuItemById(menuData.items, menuId);
+}
 
 /**
  * DB에서 메뉴 데이터를 가져오는 함수 (미래 구현)

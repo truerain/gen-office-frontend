@@ -1,5 +1,5 @@
 // apps/demo/src/pages/customer/CustomerInfoPage/components/CustomerActionBar.tsx
-import { Button, Badge } from '@gen-office/primitives';
+import { Button, Badge } from '@gen-office/ui';
 import { Plus, RefreshCw, Download, Upload } from 'lucide-react';
 import styles from './CustomerActionBar.module.css';
 

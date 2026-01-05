@@ -5,7 +5,7 @@ import {
   createSelectionColumn,
   type DataGridColumnDef 
 } from '@gen-office/datagrid';
-import { Badge, Button } from '@gen-office/primitives';
+import { Badge, Button } from '@gen-office/ui';
 import type { SortingState, PaginationState, RowSelectionState } from '@tanstack/react-table';
 import "@gen-office/datagrid/index.css";
 
@@ -20,7 +20,7 @@ interface User {
 
 const columnHelper = createColumnHelper<User>();
 
-function DataGridPage() {
+export default function DataGridPage() {
   const [users] = useState<User[]>([
     { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin', status: 'active', joinDate: '2024-01-15' },
     { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'User', status: 'active', joinDate: '2024-02-20' },
@@ -261,5 +261,3 @@ function DataGridPage() {
     </div>
   );
 }
-
-export default DataGridPage;

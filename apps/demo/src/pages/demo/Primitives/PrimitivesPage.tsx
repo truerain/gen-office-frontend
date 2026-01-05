@@ -15,7 +15,7 @@ import {
   Badge,
   SimpleDialog,
   Label,
-} from '@gen-office/primitives';
+} from '@gen-office/ui';
 import { Box } from 'lucide-react';
 import type { CheckedState } from '@radix-ui/react-checkbox';
 import styles from './PrimitivesPage.module.css';

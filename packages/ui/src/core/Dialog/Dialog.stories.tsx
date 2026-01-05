@@ -10,7 +10,7 @@ import {
   DialogDescription,
   DialogClose,
 } from './Dialog';
-import { Button } from '../Button/Button';
+import { Button } from '../core/Button/Button';
 import { Input } from '../Input/Input';
 import { Label } from '../Label/Label';
 

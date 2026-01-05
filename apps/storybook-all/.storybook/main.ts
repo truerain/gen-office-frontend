@@ -20,7 +20,7 @@ const config: StorybookConfig = {
       ...config,
       // 모노레포에서 발생할 수 있는 의존성 최적화 이슈 방지
       optimizeDeps: {
-        include: ["@gen-office/design-tokens", "@gen-office/theme", "@gen-office/primitive"],
+        include: ["@gen-office/design-tokens", "@gen-office/theme", "@gen-office/ui"],
       },
     };
   },

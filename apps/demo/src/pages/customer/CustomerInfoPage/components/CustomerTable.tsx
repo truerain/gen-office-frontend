@@ -1,7 +1,7 @@
 // apps/demo/src/pages/customer/CustomerInfoPage/components/CustomerTable.tsx
 import { useMemo } from 'react';
 import { DataGrid } from '@gen-office/datagrid';
-import { Badge } from '@gen-office/primitives';
+import { Badge } from '@gen-office/ui';
 import type { ColumnDef } from '@gen-office/datagrid';
 import type { Customer } from '../../../../features/customer/types/customer.types';
 import styles from './CustomerTable.module.css';

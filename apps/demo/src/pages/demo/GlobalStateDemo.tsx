@@ -1,5 +1,5 @@
 // apps/demo/src/pages/GlobalStateDemo.tsx
-import { useAppStore } from '../store/appStore';
+import { useAppStore } from '@/store/appStore';
 
 function GlobalStateDemo() {
   const user = useAppStore((state) => state.user);

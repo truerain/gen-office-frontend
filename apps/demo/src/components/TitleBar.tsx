@@ -7,17 +7,20 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-} from '@gen-office/primitives';
-import { Settings, Moon, Sun, LogOut, ChevronDown } from 'lucide-react';
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+} from '@gen-office/ui';
+import { Settings, Moon, Sun, LogOut } from 'lucide-react';
 import { useTheme } from '@gen-office/theme';
-import { menuData } from '../features/system/mocks/menuData';
-import { getIconComponent } from '../utils/iconMapper';
-import type { MenuItem } from '../types/menu.types';
-import lgLogo from '../assets/lg_logo_213x56.avif';
+import { menuTree } from '@/features/system/mocks/menuData';
+import { getIconComponent } from '@/utils/iconMapper';
+import type { MenuTreeItem } from '@/types/menu.types';
+import lgLogo from '@/assets/lg_logo_213x56.avif';
 import styles from './TitleBar.module.css';
 
 interface TitleBarProps {
-  onOpenPage: (id: string, title: string, icon: React.ReactNode) => void;
+  onOpenPage: (menuId: string, title: string, icon: React.ReactNode) => void;
   onOpenHome?: () => void;
 }
 
@@ -31,9 +34,9 @@ function TitleBar({ onOpenPage, onOpenHome }: TitleBarProps) {
     setMode(mode === 'light' ? 'dark' : 'light');
   };
 
-  const handleMenuClick = (item: MenuItem) => {
+  const handleMenuClick = (item: MenuTreeItem) => {
     const icon = getIconComponent(item.icon, 16);
-    onOpenPage(item.id, item.label, icon);
+    onOpenPage(item.menuId, item.label, icon);
     setOpenMenuId(null);
     setIsAnyMenuOpen(false);
   };
@@ -49,114 +52,135 @@ function TitleBar({ onOpenPage, onOpenHome }: TitleBarProps) {
       setOpenMenuId(menuId);
       setIsAnyMenuOpen(true);
     } else {
-      // 메뉴를 닫을 때는 상태만 업데이트
       setOpenMenuId(null);
       setIsAnyMenuOpen(false);
     }
   };
 
-  const handleNavigationMouseMove = (e: React.MouseEvent<HTMLElement>) => {
-    // 메뉴가 하나라도 열려있을 때만 실행
+  const handleMouseMove = (e: React.MouseEvent) => {
     if (!isAnyMenuOpen) return;
-
-    // 마우스 위치에 있는 버튼 찾기
-    const target = e.target as HTMLElement;
-    const button = target.closest('button[data-menu-id]') as HTMLButtonElement;
     
-    if (button) {
-      const menuId = button.getAttribute('data-menu-id');
-      if (menuId && menuId !== openMenuId) {
-        setOpenMenuId(menuId);
+    const target = e.target as HTMLElement;
+    const isOverMenu = target.closest(`[data-menu-id]`);
+    
+    if (isOverMenu) {
+      const hoveredMenuId = (isOverMenu as HTMLElement).getAttribute('data-menu-id');
+      if (hoveredMenuId && hoveredMenuId !== openMenuId) {
+        setOpenMenuId(hoveredMenuId);
       }
     }
-    // 버튼이 아닌 곳에서는 아무것도 하지 않음 (메뉴를 닫지 않음)
+  };
+
+  // 재귀적으로 서브메뉴 렌더링
+  const renderSubMenu = (item: MenuTreeItem): React.ReactNode => {
+    const icon = getIconComponent(item.icon, 16);
+    
+    // 하위 메뉴가 없으면 일반 메뉴 아이템
+    if (!item.children || item.children.length === 0) {
+      return (
+        <DropdownMenuItem
+          key={item.menuId}
+          onClick={() => handleMenuClick(item)}
+        >
+          <span className={styles.menuItemIcon}>{icon}</span>
+          <span>{item.label}</span>
+        </DropdownMenuItem>
+      );
+    }
+
+    // 하위 메뉴가 있으면 Sub 메뉴
+    return (
+      <DropdownMenuSub key={item.menuId}>
+        <DropdownMenuSubTrigger>
+          <span className={styles.menuItemIcon}>{icon}</span>
+          <span>{item.label}</span>
+        </DropdownMenuSubTrigger>
+        <DropdownMenuSubContent>
+          {item.children.map(child => renderSubMenu(child))}
+        </DropdownMenuSubContent>
+      </DropdownMenuSub>
+    );
   };
 
   return (
     <header className={styles.titleBar}>
-      <div className={styles.left}>
-        <button className={styles.logo} onClick={handleLogoClick}>
-          <img src={lgLogo} alt="LG Logo" className={styles.logoImage} />
-        </button>
+      {/* Left Section: Logo + Navigation */}
+      <div className={styles.leftSection}>
+        {/* Logo */}
+        <div className={styles.logoSection} onClick={handleLogoClick}>
+          <img src={lgLogo} alt="LG Logo" className={styles.logo} />
+        </div>
 
-        {/* Navigation Menu - Data Driven with Hover Support */}
-        <nav 
-          ref={navigationRef}
-          className={styles.navigation}
-          onMouseMove={handleNavigationMouseMove}
-        >
-          {menuData.categories.map((category) => (
-            <DropdownMenu 
-              key={category.id}
-              open={openMenuId === category.id}
-              onOpenChange={(open) => handleMenuOpenChange(category.id, open)}
-              modal={false}
-            >
-              <DropdownMenuTrigger asChild>
-                <button 
+        {/* Navigation */}
+        <nav className={styles.navigation} ref={navigationRef}>
+          {menuTree.map((category) => {
+            const icon = getIconComponent(category.icon, 18);
+            
+            return (
+              <DropdownMenu
+                key={category.menuId}
+                modal={false}
+                open={openMenuId === category.menuId}
+                onOpenChange={(open) => handleMenuOpenChange(category.menuId, open)}
+              >
+                <DropdownMenuTrigger
                   className={styles.navButton}
-                  data-menu-id={category.id}
+                  data-menu-id={category.menuId}
+                  onMouseMove={(e) => handleMouseMove(e)}
                 >
-                  {getIconComponent(category.icon, 16)}
+                  <span className={styles.navIcon}>{icon}</span>
                   <span>{category.label}</span>
-                  <ChevronDown size={14} />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                {category.children?.map((item) => (
-                  <DropdownMenuItem
-                    key={item.id}
-                    icon={getIconComponent(item.icon, 16)}
-                    onClick={() => handleMenuClick(item)}
-                  >
-                    {item.label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ))}
+                </DropdownMenuTrigger>
+                
+                <DropdownMenuContent
+                  align="start"
+                  onMouseMove={(e) => handleMouseMove(e)}
+                >
+                  <DropdownMenuLabel>{category.label}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  
+                  {category.children?.map(item => renderSubMenu(item))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            );
+          })}
         </nav>
       </div>
 
-      <div className={styles.right}>
-        {/* User Menu */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className={styles.userMenuButton}>
-              <div className={styles.userAvatar}>
-                <Settings size={18} />
-              </div>
-              <span>Menu</span>
-            </button>
+      {/* User Menu */}
+      <div className={styles.userSection}>
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger className={styles.userButton}>
+            <Settings size={18} />
           </DropdownMenuTrigger>
-
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Settings</DropdownMenuLabel>
+            <DropdownMenuLabel>설정</DropdownMenuLabel>
             <DropdownMenuSeparator />
             
-            <DropdownMenuItem 
-              icon={mode === 'light' ? <Moon size={16} /> : <Sun size={16} />}
-              onClick={handleThemeToggle}
-            >
-              {mode === 'light' ? 'Dark Mode' : 'Light Mode'}
+            <DropdownMenuItem onClick={handleThemeToggle}>
+              {mode === 'light' ? (
+                <>
+                  <Moon size={16} />
+                  <span>다크 모드</span>
+                </>
+              ) : (
+                <>
+                  <Sun size={16} />
+                  <span>라이트 모드</span>
+                </>
+              )}
             </DropdownMenuItem>
-
+            
             <DropdownMenuSeparator />
             
-            <DropdownMenuItem 
-              icon={<Settings size={16} />}
-              onClick={() => handleMenuClick({ id: 'settings', label: 'Settings', icon: 'Settings' })}
-            >
-              Settings
+            <DropdownMenuItem>
+              <Settings size={16} />
+              <span>환경설정</span>
             </DropdownMenuItem>
-
-            <DropdownMenuSeparator />
-
-            <DropdownMenuItem 
-              icon={<LogOut size={16} />}
-              onClick={() => alert('Logout')}
-            >
-              Logout
+            
+            <DropdownMenuItem>
+              <LogOut size={16} />
+              <span>로그아웃</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

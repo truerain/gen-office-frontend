@@ -1,7 +1,9 @@
 {
   "extends": "../tsconfig/react-library.json",
   "compilerOptions": {
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "noUnusedLocals": false,      /* 사용하지 않는 지역 변수에 대한 에러 허용 */
+    "noUnusedParameters": false  /* 사용하지 않는 함수의 매개변수에 대한 에러 허용 */
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "**/*.stories.tsx"]

@@ -1,10 +1,11 @@
 /* apps/demo/src/pages/HomePage.module.css */
 
 .page {
-  padding: var(--spacing-xl);
+  /*padding: var(--spacing-xl);
   max-width: 1200px;
-  margin: 0 auto;
   overflow-y: auto;
+*/
+  margin: 0 auto;
   height: 100%;
 }
 

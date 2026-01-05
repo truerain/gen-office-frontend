@@ -54,12 +54,12 @@ importers:
       '@gen-office/mdi':
         specifier: workspace:*
         version: link:../../packages/mdi
-      '@gen-office/primitives':
-        specifier: workspace:*
-        version: link:../../packages/primitives
       '@gen-office/theme':
         specifier: workspace:*
         version: link:../../packages/theme
+      '@gen-office/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@gen-office/utils':
         specifier: workspace:*
         version: link:../../packages/utils
@@ -197,12 +197,12 @@ importers:
       '@gen-office/design-tokens':
         specifier: workspace:*
         version: link:../design-tokens
-      '@gen-office/primitives':
-        specifier: workspace:*
-        version: link:../primitives
       '@gen-office/theme':
         specifier: workspace:*
         version: link:../theme
+      '@gen-office/ui':
+        specifier: workspace:*
+        version: link:../ui
       '@gen-office/utils':
         specifier: workspace:*
         version: link:../utils
@@ -219,6 +219,9 @@ importers:
         specifier: ^0.562.0
         version: 0.562.0(react@18.3.1)
     devDependencies:
+      '@radix-ui/react-slot':
+        specifier: ^1.2.4
+        version: 1.2.4(@types/react@18.3.1)(react@18.3.1)
       '@storybook/addon-a11y':
         specifier: ^8.6.15
         version: 8.6.15(storybook@8.6.15(prettier@3.7.4))
@@ -297,12 +300,12 @@ importers:
       '@gen-office/design-tokens':
         specifier: workspace:*
         version: link:../design-tokens
-      '@gen-office/primitives':
-        specifier: workspace:*
-        version: link:../primitives
       '@gen-office/theme':
         specifier: workspace:*
         version: link:../theme
+      '@gen-office/ui':
+        specifier: workspace:*
+        version: link:../ui
       '@gen-office/utils':
         specifier: workspace:*
         version: link:../utils
@@ -338,7 +341,34 @@ importers:
         specifier: ^4.5.0
         version: 4.5.4(@types/node@24.10.4)(rollup@4.54.0)(typescript@5.7.2)(vite@6.4.1(@types/node@24.10.4)(yaml@2.8.2))
 
-  packages/primitives:
+  packages/theme:
+    devDependencies:
+      '@gen-office/design-tokens':
+        specifier: workspace:*
+        version: link:../design-tokens
+      '@types/react':
+        specifier: 18.3.1
+        version: 18.3.1
+      '@types/react-dom':
+        specifier: 18.3.1
+        version: 18.3.1
+      '@vitejs/plugin-react':
+        specifier: ^5.1.1
+        version: 5.1.2(vite@6.4.1(@types/node@24.10.4)(yaml@2.8.2))
+      react:
+        specifier: 18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: 18.3.1
+        version: 18.3.1(react@18.3.1)
+      vite:
+        specifier: ^6.2.0
+        version: 6.4.1(@types/node@24.10.4)(yaml@2.8.2)
+      vite-plugin-dts:
+        specifier: ^4.5.0
+        version: 4.5.4(@types/node@24.10.4)(rollup@4.54.0)(typescript@5.7.2)(vite@6.4.1(@types/node@24.10.4)(yaml@2.8.2))
+
+  packages/ui:
     dependencies:
       '@gen-office/design-tokens':
         specifier: workspace:*
@@ -422,33 +452,6 @@ importers:
       storybook:
         specifier: 8.6.15
         version: 8.6.15(prettier@3.7.4)
-      vite:
-        specifier: ^6.2.0
-        version: 6.4.1(@types/node@24.10.4)(yaml@2.8.2)
-      vite-plugin-dts:
-        specifier: ^4.5.0
-        version: 4.5.4(@types/node@24.10.4)(rollup@4.54.0)(typescript@5.7.2)(vite@6.4.1(@types/node@24.10.4)(yaml@2.8.2))
-
-  packages/theme:
-    devDependencies:
-      '@gen-office/design-tokens':
-        specifier: workspace:*
-        version: link:../design-tokens
-      '@types/react':
-        specifier: 18.3.1
-        version: 18.3.1
-      '@types/react-dom':
-        specifier: 18.3.1
-        version: 18.3.1
-      '@vitejs/plugin-react':
-        specifier: ^5.1.1
-        version: 5.1.2(vite@6.4.1(@types/node@24.10.4)(yaml@2.8.2))
-      react:
-        specifier: 18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: 18.3.1
-        version: 18.3.1(react@18.3.1)
       vite:
         specifier: ^6.2.0
         version: 6.4.1(@types/node@24.10.4)(yaml@2.8.2)

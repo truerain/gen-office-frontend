@@ -1,9 +1,9 @@
-import { Button } from '@gen-office/primitives';
+import { Button } from '@gen-office/ui';
 import { useMDIStore } from '@gen-office/mdi';
 import { Box, Grid3x3, Layers, Package } from 'lucide-react';
-import PrimitivesPage from './PrimitivesPage';
-import DataGridPage from './DataGridPage';
-import MDIPage from './MDIPage';
+import PrimitivesPage from '../demo/Primitives/PrimitivesPage';
+import DataGridPage from '../demo/DataGridPage/DataGridPage';
+import MDIPage from '../demo/MDIPage/MDIPage';
 import styles from './HomePage.module.css';
 
 function HomePage() {

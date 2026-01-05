@@ -1,5 +1,5 @@
 import { type ColumnDef } from '@tanstack/react-table';
-import { Checkbox } from '@gen-office/primitives';
+import { Checkbox } from '@gen-office/ui';
 
 /**
  * Creates a checkbox column for row selection
@@ -19,14 +19,14 @@ export function createSelectionColumn<TData>(): ColumnDef<TData> {
           table.getIsAllPageRowsSelected() ||
           (table.getIsSomePageRowsSelected() ? 'indeterminate' : false)
         }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        onCheckedChange={(value: boolean) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
       />
     ),
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        onCheckedChange={(value: boolean) => row.toggleSelected(!!value)}
         aria-label="Select row"
       />
     ),
