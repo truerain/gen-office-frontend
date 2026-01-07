@@ -16,7 +16,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuShortcut,
 } from './DropdownMenu';
-import { Button } from '../core/Button/Button';
+import { Button } from '../Button';
 import { 
   User, 
   Settings, 

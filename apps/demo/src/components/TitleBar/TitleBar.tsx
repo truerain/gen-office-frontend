@@ -24,7 +24,7 @@ interface TitleBarProps {
   onOpenHome?: () => void;
 }
 
-function TitleBar({ onOpenPage, onOpenHome }: TitleBarProps) {
+export function TitleBar({ onOpenPage, onOpenHome }: TitleBarProps) {
   const { mode, setMode } = useTheme();
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [isAnyMenuOpen, setIsAnyMenuOpen] = useState(false);
@@ -189,4 +189,3 @@ function TitleBar({ onOpenPage, onOpenHome }: TitleBarProps) {
   );
 }
 
-export default TitleBar;

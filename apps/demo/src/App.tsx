@@ -1,22 +1,17 @@
 // apps/demo/src/App.tsx
-import { useEffect, Suspense } from 'react';
+import { useEffect, Suspense, useState } from 'react';
 import { MDIContainer, useMDIStore } from '@gen-office/mdi';
-import { Home } from 'lucide-react';
-import TitleBar from '@/components/TitleBar';
+import { Drawer } from '@gen-office/ui';
+import { useTheme } from '@gen-office/theme';
+import { Home, AlertCircle, Code, FileQuestion } from 'lucide-react';
+import { TitleBar } from '@/components/TitleBar';
 import HomePage from '@/pages/Home/HomePage';
 import { findMenuItem } from '@/features/system/mocks/menuData';
 import { getLazyComponent } from '@/config/componentRegistry.dynamic';
 import { useAppStore } from '@/store/appStore';
+import { PageProvider } from '@/contexts';
 import '@gen-office/mdi/index.css';
 import styles from './App.module.css';
-
-// 플레이스홀더 컴포넌트
-const PlaceholderPage = ({ title }: { title: string }) => (
-  <div style={{ padding: '2rem' }}>
-    <h2>{title}</h2>
-    <p>이 페이지는 아직 구현되지 않았습니다.</p>
-  </div>
-);
 
 // 로딩 컴포넌트
 const LoadingPage = () => (
@@ -76,6 +71,22 @@ function App() {
   const addTab = useMDIStore((state) => state.addTab);
   const setActiveTab = useMDIStore((state) => state.setActiveTab);
   const tabs = useMDIStore((state) => state.tabs);
+  
+  // Theme 연동
+  const { setMode } = useTheme();
+  const appTheme = useAppStore((state) => state.theme);
+  
+  // appStore의 theme이 변경되면 실제 테마 적용
+  useEffect(() => {
+    setMode(appTheme);
+  }, [appTheme, setMode]);
+  
+  // Drawer 상태
+  const [notFoundDrawerOpen, setNotFoundDrawerOpen] = useState(false);
+  const [notFoundMenuInfo, setNotFoundMenuInfo] = useState<{
+    menuId: string;
+    title: string;
+  } | null>(null);
 
   // 초기 Home 탭 자동 열기
   useEffect(() => {
@@ -107,24 +118,36 @@ function App() {
     }
   };
 
-  // 메뉴 클릭 핸들러 - 완전한 동적 로딩! ✅
-  const handleOpenPage = (menuId: string, title: string, icon: React.ReactNode) => {
-    // 1. 메뉴 데이터에서 아이템 찾기 (DB에서 가져온 데이터)
+  // 메뉴 클릭 핸들러 - Drawer로 미구현 알림
+  const handleOpenPage = (
+    menuId: string, 
+    title: string, 
+    icon: React.ReactNode,
+    params?: Record<string, unknown>
+  ) => {
+    // 1. 메뉴 데이터에서 아이템 찾기
     const menuItem = findMenuItem(menuId);
     
-    // 2. componentName으로 Lazy 컴포넌트 가져오기 (동적 import)
+    // 2. componentName으로 Lazy 컴포넌트 가져오기
     const LazyComponent = getLazyComponent(menuItem?.componentName);
     
-    // 3. 컴포넌트 렌더링 (Suspense로 감싸기)
-    const content = LazyComponent 
-      ? (
-          <Suspense fallback={<LoadingPage />}>
-            <LazyComponent />
-          </Suspense>
-        )
-      : <PlaceholderPage title={title} />;
+    // 3. 컴포넌트가 없으면 Drawer 표시
+    if (!LazyComponent) {
+      setNotFoundMenuInfo({ menuId, title });
+      setNotFoundDrawerOpen(true);
+      return;
+    }
 
-    // 4. MDI 탭으로 열기
+    // 4. 컴포넌트가 있으면 탭으로 열기
+    // PageProvider로 감싸서 menuId를 Context로 제공
+    const content = (
+      <PageProvider menuId={menuId}>
+        <Suspense fallback={<LoadingPage />}>
+          <LazyComponent menuId={menuId} initialParams={params} />
+        </Suspense>
+      </PageProvider>
+    );
+
     addTab({
       id: menuId,
       title,
@@ -145,7 +168,7 @@ function App() {
       {/* MDI Container */}
       <main className={styles.main}>
         <MDIContainer
-          tabPosition="top"
+          tabPosition="bottom"
           maxTabs={10}
           emptyContent={
             <div className={styles.emptyState}>
@@ -159,6 +182,130 @@ function App() {
 
       {/* 알림 (전역) */}
       <Notifications />
+
+      {/* 미구현 메뉴 Drawer */}
+      <Drawer
+        open={notFoundDrawerOpen}
+        onOpenChange={setNotFoundDrawerOpen}
+        title="컴포넌트를 찾을 수 없습니다"
+        description="선택하신 메뉴는 아직 구현되지 않았습니다."
+        side="right"
+        size="md"
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {/* 아이콘 영역 */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            padding: '2rem',
+            backgroundColor: 'var(--color-background)',
+            borderRadius: 'var(--border-radius-lg)'
+          }}>
+            <FileQuestion size={64} strokeWidth={1.5} color="var(--color-text-secondary)" />
+          </div>
+
+          {/* 정보 영역 */}
+          <div style={{ 
+            padding: '1rem',
+            backgroundColor: 'var(--color-background)',
+            borderRadius: 'var(--border-radius-md)',
+            borderLeft: '4px solid var(--color-status-warning)'
+          }}>
+            <h3 style={{ 
+              margin: '0 0 0.5rem 0', 
+              fontSize: 'var(--font-size-md)',
+              fontWeight: 'var(--font-weight-semibold)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <AlertCircle size={20} color="var(--color-status-warning)" />
+              선택한 메뉴
+            </h3>
+            <p style={{ 
+              margin: 0,
+              fontSize: 'var(--font-size-lg)',
+              fontWeight: 'var(--font-weight-bold)',
+              color: 'var(--color-text)'
+            }}>
+              {notFoundMenuInfo?.title}
+            </p>
+            <p style={{ 
+              margin: '0.25rem 0 0 0',
+              fontSize: 'var(--font-size-sm)',
+              color: 'var(--color-text-secondary)',
+              fontFamily: 'monospace'
+            }}>
+              Menu ID: {notFoundMenuInfo?.menuId}
+            </p>
+          </div>
+
+          {/* 안내 메시지 */}
+          <div>
+            <h4 style={{ 
+              margin: '0 0 0.75rem 0',
+              fontSize: 'var(--font-size-md)',
+              fontWeight: 'var(--font-weight-semibold)'
+            }}>
+              이 메뉴를 구현하려면:
+            </h4>
+            <ol style={{ 
+              margin: 0,
+              paddingLeft: '1.5rem',
+              fontSize: 'var(--font-size-sm)',
+              lineHeight: '1.8',
+              color: 'var(--color-text-secondary)'
+            }}>
+              <li>페이지 컴포넌트를 생성합니다</li>
+              <li><code style={{ 
+                backgroundColor: 'var(--color-background)',
+                padding: '0.125rem 0.375rem',
+                borderRadius: 'var(--border-radius-sm)',
+                fontFamily: 'monospace',
+                fontSize: '0.875em'
+              }}>componentRegistry.dynamic.ts</code>에 등록합니다</li>
+              <li>메뉴 데이터의 <code style={{ 
+                backgroundColor: 'var(--color-background)',
+                padding: '0.125rem 0.375rem',
+                borderRadius: 'var(--border-radius-sm)',
+                fontFamily: 'monospace',
+                fontSize: '0.875em'
+              }}>componentName</code>을 설정합니다</li>
+            </ol>
+          </div>
+
+          {/* 코드 예시 */}
+          <div>
+            <h4 style={{ 
+              margin: '0 0 0.5rem 0',
+              fontSize: 'var(--font-size-md)',
+              fontWeight: 'var(--font-weight-semibold)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <Code size={18} />
+              예시 코드
+            </h4>
+            <pre style={{ 
+              margin: 0,
+              padding: '1rem',
+              backgroundColor: 'var(--color-background)',
+              borderRadius: 'var(--border-radius-md)',
+              overflow: 'auto',
+              fontSize: 'var(--font-size-sm)',
+              lineHeight: '1.6'
+            }}>
+              <code>{`// componentRegistry.dynamic.ts
+'${notFoundMenuInfo?.menuId?.split('-').map(word => 
+  word.charAt(0).toUpperCase() + word.slice(1)
+).join('')}Page': () => 
+  import('@/pages/...'),`}</code>
+            </pre>
+          </div>
+        </div>
+      </Drawer>
     </div>
   );
 }

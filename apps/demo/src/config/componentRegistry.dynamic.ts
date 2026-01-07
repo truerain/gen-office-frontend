@@ -9,7 +9,15 @@ import { lazy } from 'react';
  * 초기 번들 크기를 크게 줄일 수 있습니다.
  */
 
-type ComponentLoader = () => Promise<{ default: ComponentType<unknown> }>;
+/**
+ * 페이지 컴포넌트의 기본 Props
+ */
+export interface PageComponentProps {
+  menuId?: string;
+  [key: string]: unknown;
+}
+
+type ComponentLoader = () => Promise<{ default: ComponentType<PageComponentProps> }>;
 
 /**
  * 컴포넌트 경로 매핑
@@ -39,6 +47,7 @@ const componentPaths: Record<string, ComponentLoader> = {
   'DataGridPage': () => import('@/pages/demo/DataGridPage'),
   'MDIPage': () => import('@/pages/demo/MDIPage'),
   'GlobalStateDemo': () => import('@/pages/demo/GlobalStateDemo'),
+  'AlertDialogDemo': () => import('@/pages/demo/Composed/AlertDialogDemo'),
 };
 
 /**
@@ -50,10 +59,10 @@ const componentPaths: Record<string, ComponentLoader> = {
  * @example
  * const Component = getLazyComponent('CustomerInfoPage');
  * <Suspense fallback={<Loading />}>
- *   <Component />
+ *   <Component menuId="customer-info" />
  * </Suspense>
  */
-export const getLazyComponent = (componentName?: string): ComponentType | undefined => {
+export const getLazyComponent = (componentName?: string): ComponentType<PageComponentProps> | undefined => {
   if (!componentName) return undefined;
   
   const loader = componentPaths[componentName];

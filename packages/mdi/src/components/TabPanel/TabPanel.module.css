@@ -3,8 +3,9 @@
 .tabPanel {
   flex: 1;
   overflow: auto;
-  background-color: var(--color-background);
-  padding: var(--spacing-md);
+  /*background-color: var(--color-background);*/
+  background-color: var(--color-surface);
+  padding: 0 var(--spacing-md);
 }
 
 .tabPanel.hidden {

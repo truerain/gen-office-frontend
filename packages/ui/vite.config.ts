@@ -25,7 +25,7 @@ export default defineConfig({
         'react-dom', 
         'react/jsx-runtime', 
         '@radix-ui/react-slot',
-        '@gen-office/primitives',
+        '@gen-office/ui',
         '@gen-office/theme',
         '@gen-office/utils',
        'lucide-react'

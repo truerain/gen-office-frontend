@@ -1,4 +1,6 @@
 export * from './core/Button';
+export * from './core/Breadcrumb';
+export * from './core/Drawer';
 export * from './core/Input';
 export * from './core/Checkbox';
 export * from './core/Label';
@@ -9,3 +11,6 @@ export * from './core/Badge';
 export * from './core/Select';
 export * from './core/Dialog';
 export * from './core/DropdownMenu';
+
+// composed
+export * from './composed/AlertDialog';

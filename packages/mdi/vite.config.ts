@@ -24,7 +24,7 @@ export default defineConfig({
         'react', 
         'react-dom', 
         'react/jsx-runtime', 
-        '@gen-office/primitives',
+        '@gen-office/ui',
         '@gen-office/theme',
         '@gen-office/utils',
         '@gen-office/design-tokens',

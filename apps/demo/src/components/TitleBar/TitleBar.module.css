@@ -39,6 +39,8 @@
   height: 40px;
   width: auto;
   color: var(--color-text);
+  width: 50%;
+  height: auto;
 }
 
 .title {

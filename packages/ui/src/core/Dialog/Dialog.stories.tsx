@@ -10,9 +10,9 @@ import {
   DialogDescription,
   DialogClose,
 } from './Dialog';
-import { Button } from '../core/Button/Button';
-import { Input } from '../Input/Input';
-import { Label } from '../Label/Label';
+import { Button } from '../Button';
+import { Input } from '../Input';
+import { Label } from '../Label';
 
 const meta = {
   title: 'Primitives/Dialog',

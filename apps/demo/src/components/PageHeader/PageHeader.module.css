@@ -1,0 +1,123 @@
+/* apps/demo/src/components/PageHeader/PageHeader.module.css */
+
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-lg) 0;
+  /*padding: var(--spacing-lg) var(--spacing-xl);
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);*/
+}
+
+/* Sticky 활성화 */
+.stickyEnabled {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Stuck 상태 - 스크롤되어 고정된 상태 */
+.stuck {
+  padding: var(--spacing-sm) var(--spacing-xl);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+/* 다크모드 stuck 상태 */
+[data-theme="dark"] .stuck {
+  background-color: rgba(26, 26, 26, 0.95);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Header Row - Title + Description 왼쪽, Breadcrumb 오른쪽 */
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-lg);
+  transition: all 0.3s ease;
+}
+
+/* 왼쪽: Title + Description */
+.leftContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-xs);
+  
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  line-height: 1.3;
+  transition: font-size 0.3s ease;
+}
+
+/* Stuck 상태일 때 Title 크기 축소 */
+.stuck .title {
+  font-size: var(--font-size-lg);
+}
+
+.description {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  transition: opacity 0.3s ease;
+}
+
+/* 오른쪽: Breadcrumb */
+.rightContent {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pageHeader {
+    padding: var(--spacing-md) var(--spacing-lg);
+  }
+
+  .stuck {
+    padding: var(--spacing-xs) var(--spacing-lg);
+  }
+
+  .headerRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+  }
+
+  .title {
+    font-size: var(--font-size-xl);
+  }
+
+  .stuck .title {
+    font-size: var(--font-size-base);
+  }
+}
+
+@media (max-width: 480px) {
+  .pageHeader {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .stuck {
+    padding: var(--spacing-xs) var(--spacing-md);
+  }
+
+  .title {
+    font-size: var(--font-size-lg);
+  }
+
+  .stuck .title {
+    font-size: var(--font-size-sm);
+  }
+}

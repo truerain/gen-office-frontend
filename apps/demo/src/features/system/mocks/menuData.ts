@@ -216,6 +216,25 @@ export const menuData: MenuData = {
       parentMenuId: 'demo',
       order: 4,
     },
+    {
+      menuId: 'composed',
+      label: 'Composed',
+      icon: 'Boxes',
+      parentMenuId: 'demo',
+      order: 5,
+    },
+
+    // ========================================
+    // 레벨 2: Composed 하위 메뉴
+    // ========================================
+    {
+      menuId: 'composed-alert-dialog',
+      label: 'AlertDialog',
+      icon: 'MessageSquare',
+      componentName: 'AlertDialogDemo',
+      parentMenuId: 'composed',
+      order: 1,
+    },
   ],
 };
 

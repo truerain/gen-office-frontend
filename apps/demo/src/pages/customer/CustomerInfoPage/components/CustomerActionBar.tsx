@@ -16,7 +16,6 @@ function CustomerActionBar({
   onRefresh,
   onExport,
   onImport,
-  onCreate,
 }: CustomerActionBarProps) {
   return (
     <div className={styles.actionBar}>
@@ -55,14 +54,6 @@ function CustomerActionBar({
           가져오기
         </Button>
 
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={onCreate}
-          leftIcon={<Plus size={16} />}
-        >
-          고객 추가
-        </Button>
       </div>
     </div>
   );

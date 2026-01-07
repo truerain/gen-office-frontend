@@ -139,9 +139,11 @@ function CustomerTable({ data, loading }: CustomerTableProps) {
         enableFiltering
         enableRowSelection
         pageSize={10}
+        height="100%"
       />
     </div>
   );
 }
 
 export default CustomerTable;
+

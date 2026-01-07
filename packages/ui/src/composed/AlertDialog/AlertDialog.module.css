@@ -1,0 +1,49 @@
+/* packages/ui/src/composed/AlertDialog/AlertDialog.module.css */
+
+/* Variant Colors */
+.info {
+  /* 기본 Dialog 스타일 유지 */
+}
+
+.warning {
+  border-left: 4px solid var(--color-warning, #f59e0b);
+}
+
+.error {
+  border-left: 4px solid var(--color-error, #ef4444);
+}
+
+.success {
+  border-left: 4px solid var(--color-success, #10b981);
+}
+
+/* Icon 영역 추가 시 사용 */
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--border-radius-full, 50%);
+  margin-bottom: var(--spacing-md, 16px);
+}
+
+.info .iconWrapper {
+  background-color: var(--color-info-light, #dbeafe);
+  color: var(--color-info, #3b82f6);
+}
+
+.warning .iconWrapper {
+  background-color: var(--color-warning-light, #fef3c7);
+  color: var(--color-warning, #f59e0b);
+}
+
+.error .iconWrapper {
+  background-color: var(--color-error-light, #fee2e2);
+  color: var(--color-error, #ef4444);
+}
+
+.success .iconWrapper {
+  background-color: var(--color-success-light, #d1fae5);
+  color: var(--color-success, #10b981);
+}

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Label } from './Label';
-import { Input } from '../core/Input/Input';
-import { Checkbox } from '../core/Checkbox/Checkbox';
+import { Input } from '../Input';
+import { Checkbox } from '../Checkbox';
 
 const meta = {
   title: 'Primitives/Label',

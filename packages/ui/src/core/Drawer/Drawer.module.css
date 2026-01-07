@@ -1,0 +1,236 @@
+/* packages/ui/src/composed/Drawer/Drawer.module.css */
+
+.drawerRoot {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+}
+
+/* Overlay */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Drawer Container */
+.drawer {
+  position: absolute;
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-xl);
+  display: flex;
+  flex-direction: column;
+  animation-duration: 0.3s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-fill-mode: forwards;
+}
+
+/* Side Positions */
+.drawer.right {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  animation-name: slideInRight;
+}
+
+.drawer.left {
+  top: 0;
+  left: 0;
+  bottom: 0;
+  animation-name: slideInLeft;
+}
+
+.drawer.top {
+  top: 0;
+  left: 0;
+  right: 0;
+  animation-name: slideInTop;
+}
+
+.drawer.bottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  animation-name: slideInBottom;
+}
+
+/* Animations */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInTop {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInBottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Sizes for horizontal drawers (left, right) */
+.drawer.left.sm,
+.drawer.right.sm {
+  width: 320px;
+  max-width: 80vw;
+}
+
+.drawer.left.md,
+.drawer.right.md {
+  width: 480px;
+  max-width: 85vw;
+}
+
+.drawer.left.lg,
+.drawer.right.lg {
+  width: 640px;
+  max-width: 90vw;
+}
+
+.drawer.left.full,
+.drawer.right.full {
+  width: 100vw;
+}
+
+/* Sizes for vertical drawers (top, bottom) */
+.drawer.top.sm,
+.drawer.bottom.sm {
+  height: 240px;
+  max-height: 60vh;
+}
+
+.drawer.top.md,
+.drawer.bottom.md {
+  height: 360px;
+  max-height: 70vh;
+}
+
+.drawer.top.lg,
+.drawer.bottom.lg {
+  height: 480px;
+  max-height: 80vh;
+}
+
+.drawer.top.full,
+.drawer.bottom.full {
+  height: 100vh;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.headerContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.description {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: var(--spacing-xs) 0 0;
+  line-height: 1.5;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: var(--border-radius-md);
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all var(--transition-base);
+}
+
+.closeButton:hover {
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
+.closeButton:active {
+  transform: scale(0.95);
+}
+
+/* Body */
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+}
+
+/* Footer */
+.footer {
+  border-top: 1px solid var(--color-border);
+  padding: var(--spacing-lg);
+  flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .drawer.right,
+  .drawer.left {
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+  
+  .drawer.top,
+  .drawer.bottom {
+    height: 90vh !important;
+    max-height: 90vh !important;
+  }
+}

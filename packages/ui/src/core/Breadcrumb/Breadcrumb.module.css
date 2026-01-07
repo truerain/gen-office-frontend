@@ -1,0 +1,142 @@
+/* packages/ui/src/core/Breadcrumb/Breadcrumb.module.css */
+
+.breadcrumb {
+  display: inline-flex;
+  align-items: center;
+}
+
+.list {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: var(--spacing-xs);
+}
+
+.listItem {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Item Base */
+.item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-family: inherit;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--transition-base);
+}
+
+/* Link */
+.link {
+  cursor: pointer;
+}
+
+.link:hover {
+  color: var(--color-text);
+  text-decoration: underline;
+}
+
+.link:active {
+  color: var(--color-primary);
+}
+
+/* Button */
+.button {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.button:hover {
+  color: var(--color-text);
+  text-decoration: underline;
+}
+
+.button:active {
+  color: var(--color-primary);
+}
+
+/* Current (마지막 아이템) */
+.current {
+  color: var(--color-text);
+  font-weight: var(--font-weight-semibold);
+  cursor: default;
+}
+
+/* Disabled */
+.disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Icon */
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Separator */
+.separator {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-text-tertiary);
+  user-select: none;
+}
+
+/* Sizes */
+.sm {
+  font-size: var(--font-size-sm);
+}
+
+.sm .icon {
+  width: 14px;
+  height: 14px;
+}
+
+.sm .separator {
+  font-size: var(--font-size-xs);
+}
+
+.md {
+  font-size: var(--font-size-base);
+}
+
+.md .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.md .separator {
+  font-size: var(--font-size-sm);
+}
+
+.lg {
+  font-size: var(--font-size-lg);
+}
+
+.lg .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.lg .separator {
+  font-size: var(--font-size-base);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .item {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

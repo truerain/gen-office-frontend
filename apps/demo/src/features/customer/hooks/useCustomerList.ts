@@ -3,48 +3,42 @@ import { useState, useEffect, useMemo } from 'react';
 import type { Customer, CustomerFilter } from '../types/customer.types';
 import { mockCustomers, filterCustomers } from '../mocks/customerData';
 
-export const useCustomerList = () => {
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [filters, setFilters] = useState<CustomerFilter>({
-    status: 'all',
-    grade: 'all',
-  });
+export const useCustomerList = (initialFilters?: CustomerFilter) => {
+  const [customers, setCustomers] = useState<Customer[] | null>(null);
+  const [filters, setFilters] = useState<CustomerFilter>(
+    initialFilters ?? { status: 'all', grade: 'all' }
+  );
 
-  // 실제로는 API 호출
-  const fetchCustomers = async () => {
-    setLoading(true);
-    
-    // API 호출 시뮬레이션 (500ms 딜레이)
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    
-    setCustomers(mockCustomers);
-    setLoading(false);
-  };
-
-  // 초기 로드
   useEffect(() => {
-    fetchCustomers();
+    let cancelled = false;
+
+    async function load() {
+      await new Promise((r) => setTimeout(r, 500));
+      if (!cancelled) {
+        setCustomers(mockCustomers);
+      }
+    }
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // 필터링된 고객 목록
+  const loading = customers === null;
+
   const filteredCustomers = useMemo(() => {
-    return filterCustomers(customers, {
-      search: filters.search,
-      status: filters.status,
-      grade: filters.grade,
-    });
+    if (!customers) return [];
+    return filterCustomers(customers, filters);
   }, [customers, filters]);
 
-  // 통계
-  const statistics = useMemo(() => {
-    return {
-      total: filteredCustomers.length,
-      active: filteredCustomers.filter((c) => c.status === 'active').length,
-      inactive: filteredCustomers.filter((c) => c.status === 'inactive').length,
-      pending: filteredCustomers.filter((c) => c.status === 'pending').length,
-    };
-  }, [filteredCustomers]);
+  const statistics = useMemo(() => ({
+    total: filteredCustomers.length,
+    active: filteredCustomers.filter(c => c.status === 'active').length,
+    inactive: filteredCustomers.filter(c => c.status === 'inactive').length,
+    pending: filteredCustomers.filter(c => c.status === 'pending').length,
+  }), [filteredCustomers]);
 
   return {
     customers: filteredCustomers,
@@ -52,6 +46,5 @@ export const useCustomerList = () => {
     filters,
     setFilters,
     statistics,
-    refetch: fetchCustomers,
   };
 };

@@ -113,7 +113,7 @@ pnpm add @gen-office/mdi
 pnpm add @gen-office/datagrid
 
 # Import and use
-import { Button, Input } from '@gen-office/primitives';
+import { Button, Input } from '@gen-office/ui';
 import { MDIContainer, useMDIStore } from '@gen-office/mdi';
 import { DataGrid } from '@gen-office/datagrid';`}</code>
           </pre>
