@@ -54,8 +54,7 @@ function CustomerInfoPage({
     loading,
     filters,
     setFilters,
-    statistics,
-    refetch,
+    statistics
   } = useCustomerList(getInitialFilters());
 
   const handleExport = () => {
@@ -67,6 +66,10 @@ function CustomerInfoPage({
   };
 
   const handleCreate = () => {
+    alert('고객 추가 Dialog 열기 (미구현)');
+  };
+
+  const handleRefetch = () => {
     alert('고객 추가 Dialog 열기 (미구현)');
   };
 
@@ -121,7 +124,7 @@ function CustomerInfoPage({
         <CustomerFilterBar 
           filters={filters} 
           onFilterChange={setFilters}
-          onSearch={refetch}
+          onSearch={handleRefetch}
         />
 
         {/* 데이터 패널 (액션 바 + 테이블) */}
@@ -129,7 +132,7 @@ function CustomerInfoPage({
           actionBar={
             <CustomerActionBar
               total={statistics.total}
-              onRefresh={refetch}
+              onRefresh={handleRefetch}
               onExport={handleExport}
               onImport={handleImport}
               onCreate={handleCreate}
