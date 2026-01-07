@@ -1,3 +1,4 @@
+import { flexRender } from '@tanstack/react-table';
 import type { RowData } from '@tanstack/react-table';
 import { cn } from '@gen-office/utils';
 import { useDataGrid, useVirtualization } from '../hooks';
@@ -26,6 +27,7 @@ export function DataGrid<TData extends RowData>(props: DataGridProps<TData>) {
     getRowClassName,
     showFooter = false,
     showPagination,
+    onCellEdit,
     className,
     ...dataGridOptions
   } = props;
@@ -107,27 +109,24 @@ export function DataGrid<TData extends RowData>(props: DataGridProps<TData>) {
         className={styles.tableContainer}
         style={{ height }}
       >
-        <table
-          className={cn(
-            styles.table,
-            compact && styles.compact,
-            striped && styles.striped,
-            hoverable && styles.hoverable,
-            styles[`bordered-${bordered}`]
-          )}
-        >
+        <table className={cn(styles.table, compact && styles.compact, striped && styles.striped, hoverable && styles.hoverable)}>
           {/* Header */}
           <thead className={cn(styles.thead, stickyHeader && styles.stickyHeader)}>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id} className={styles.tr}>
-                {headerGroup.headers.map((header, index) => (
-                  <ColumnHeader
-                    key={header.id}
-                    header={header}
-                    sticky={index < stickyColumns}
-                    stickyLeft={getStickyLeft(index)}
-                  />
-                ))}
+                {headerGroup.headers.map((header, index) => {
+                  const isLastColumn = index === headerGroup.headers.length - 1;
+                  return (
+                    <ColumnHeader
+                      key={header.id}
+                      header={header}
+                      sticky={index < stickyColumns}
+                      stickyLeft={getStickyLeft(index)}
+                      bordered={bordered}
+                      isLastColumn={isLastColumn}
+                    />
+                  );
+                })}
               </tr>
             ))}
           </thead>
@@ -154,14 +153,20 @@ export function DataGrid<TData extends RowData>(props: DataGridProps<TData>) {
                   )}
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
                 >
-                  {visibleCells.map((cell, index) => (
-                    <ColumnCell
-                      key={cell.id}
-                      cell={cell}
-                      sticky={index < stickyColumns}
-                      stickyLeft={getStickyLeft(index)}
-                    />
-                  ))}
+                  {visibleCells.map((cell, index) => {
+                    const isLastColumn = index === visibleCells.length - 1;
+                    return (
+                      <ColumnCell
+                        key={cell.id}
+                        cell={cell}
+                        sticky={index < stickyColumns}
+                        stickyLeft={getStickyLeft(index)}
+                        bordered={bordered}
+                        isLastColumn={isLastColumn}
+                        onCellEdit={onCellEdit}
+                      />
+                    );
+                  })}
                 </tr>
               );
             })}
@@ -178,22 +183,11 @@ export function DataGrid<TData extends RowData>(props: DataGridProps<TData>) {
             <tfoot className={styles.tfoot}>
               {table.getFooterGroups().map((footerGroup) => (
                 <tr key={footerGroup.id} className={styles.tr}>
-                  {footerGroup.headers.map((footer, index) => (
-                    <th
-                      key={footer.id}
-                      className={cn(
-                        styles.th,
-                        index < stickyColumns && styles.stickyColumn
-                      )}
-                      style={{
-                        ...(index < stickyColumns && { left: `${getStickyLeft(index)}px` }),
-                      }}
-                    >
-                      {footer.isPlaceholder
+                  {footerGroup.headers.map((header) => (
+                    <th key={header.id} className={styles.th}>
+                      {header.isPlaceholder
                         ? null
-                        : typeof footer.column.columnDef.footer === 'function'
-                        ? footer.column.columnDef.footer(footer.getContext())
-                        : footer.column.columnDef.footer}
+                        : flexRender(header.column.columnDef.footer, header.getContext())}
                     </th>
                   ))}
                 </tr>

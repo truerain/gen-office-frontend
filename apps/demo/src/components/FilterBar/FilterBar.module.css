@@ -7,7 +7,6 @@
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-lg);
   padding: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
   
   /* Shadow로 튀어나오는 효과 강화 */
   box-shadow: 

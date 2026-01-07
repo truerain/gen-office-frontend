@@ -1,6 +1,6 @@
 import type { RowData, Row } from '@tanstack/react-table';
 import type { UseDataGridOptions } from '../hooks';
-import type { BorderStyle } from '../types';
+import type { BorderStyle, CellEditEvent } from '../types';
 
 export interface DataGridProps<TData extends RowData> extends UseDataGridOptions<TData> {
   /**
@@ -106,4 +106,9 @@ export interface DataGridProps<TData extends RowData> extends UseDataGridOptions
    * Custom class name
    */
   className?: string;
+
+  /**
+   * Cell edit handler
+   */
+  onCellEdit?: <TValue = any>(event: CellEditEvent<TData, TValue>) => void | Promise<void>;
 }

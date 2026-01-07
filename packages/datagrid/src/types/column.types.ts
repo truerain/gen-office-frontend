@@ -2,11 +2,29 @@ import type { ColumnDef, RowData } from '@tanstack/react-table';
 import type { Alignment, PinDirection } from './common.types';
 
 /**
+ * Cell edit validation result
+ */
+export interface CellEditValidationResult {
+  valid: boolean;
+  error?: string;
+}
+
+/**
+ * Cell edit event data
+ */
+export interface CellEditEvent<TData extends RowData, TValue = any> {
+  row: TData;
+  columnId: string;
+  oldValue: TValue;
+  newValue: TValue;
+}
+
+/**
  * Extended column meta information
  */
 export interface DataGridColumnMeta {
   /**
-   * Column header alignment
+   * Column alignment
    */
   align?: Alignment;
 
@@ -54,6 +72,32 @@ export interface DataGridColumnMeta {
    * Custom tooltip for header
    */
   headerTooltip?: string;
+
+  /**
+   * Enable cell editing
+   */
+  editable?: boolean;
+
+  /**
+   * Edit type (input, select, date, etc.)
+   * @default 'text'
+   */
+  editType?: 'text' | 'number' | 'select' | 'date' | 'checkbox';
+
+  /**
+   * Options for select type
+   */
+  editOptions?: Array<{ label: string; value: any }>;
+
+  /**
+   * Validator function for cell edit
+   */
+  editValidator?: (value: any) => CellEditValidationResult | boolean;
+
+  /**
+   * Placeholder for edit input
+   */
+  editPlaceholder?: string;
 }
 
 /**

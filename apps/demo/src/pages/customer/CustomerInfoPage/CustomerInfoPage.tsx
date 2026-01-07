@@ -104,22 +104,6 @@ function CustomerInfoPage({
 
       {/* 컨텐츠 영역 - 스크롤 가능 */}
       <div className={styles.content}>
-        {/* 통계 카드 */}
-        <div className={styles.statsSection}>
-          <div className={styles.stat}>
-            <span className={styles.statLabel}>활성</span>
-            <span className={styles.statValue}>{statistics.active}</span>
-          </div>
-          <div className={styles.stat}>
-            <span className={styles.statLabel}>비활성</span>
-            <span className={styles.statValue}>{statistics.inactive}</span>
-          </div>
-          <div className={styles.stat}>
-            <span className={styles.statLabel}>대기중</span>
-            <span className={styles.statValue}>{statistics.pending}</span>
-          </div>
-        </div>
-
         {/* 검색 필터 */}
         <CustomerFilterBar 
           filters={filters} 

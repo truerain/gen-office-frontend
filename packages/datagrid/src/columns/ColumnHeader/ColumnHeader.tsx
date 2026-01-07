@@ -1,18 +1,23 @@
 import { flexRender, type Header, type RowData } from '@tanstack/react-table';
 import { ArrowUp, ArrowDown, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@gen-office/utils';
+import type { BorderStyle } from '../../types';
 import styles from './ColumnHeader.module.css';
 
 export interface ColumnHeaderProps<TData extends RowData> {
   header: Header<TData, unknown>;
   sticky?: boolean;
   stickyLeft?: number;
+  bordered?: BorderStyle;
+  isLastColumn?: boolean;
 }
 
 export function ColumnHeader<TData extends RowData>({
   header,
   sticky = false,
   stickyLeft = 0,
+  bordered = 'horizontal',
+  isLastColumn = false,
 }: ColumnHeaderProps<TData>) {
   const canSort = header.column.getCanSort();
   const isSorted = header.column.getIsSorted();
@@ -24,6 +29,10 @@ export function ColumnHeader<TData extends RowData>({
         styles.th,
         sticky && styles.sticky,
         canSort && styles.sortable,
+        bordered === 'horizontal' && styles.borderedHorizontal,
+        bordered === 'vertical' && styles.borderedVertical,
+        bordered === 'all' && styles.borderedAll,
+        (bordered === 'vertical' || bordered === 'all') && isLastColumn && styles.lastColumn,
         meta?.headerClassName
       )}
       style={{

@@ -60,6 +60,5 @@
 /* LG Smart 폰트를 사용하는 경우 */
 :root[data-use-lg-font='true'] {
   --font-family-primary: 'LG Smart', -apple-system, BlinkMacSystemFont, 
-                         'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic',
-                         'Noto Sans KR', sans-serif;
+                         'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
 }

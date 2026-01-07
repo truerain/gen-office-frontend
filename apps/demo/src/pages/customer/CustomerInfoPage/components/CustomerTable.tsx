@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { DataGrid } from '@gen-office/datagrid';
 import { Badge } from '@gen-office/ui';
 import type { ColumnDef } from '@gen-office/datagrid';
+import type { CellEditEvent } from '@gen-office/datagrid';
 import type { Customer } from '../../../../features/customer/types/customer.types';
 import styles from './CustomerTable.module.css';
 
@@ -18,37 +19,76 @@ function CustomerTable({ data, loading }: CustomerTableProps) {
         id: 'id',
         header: '고객번호',
         accessorKey: 'id',
-        width: 120,
+        meta: {
+          width: 150,
+          align: 'center',
+        },
       },
       {
         id: 'name',
         header: '고객명',
         accessorKey: 'name',
-        width: 120,
+        meta: {
+          width: 120,
+          align: "center",
+          editable: true,
+          editType: 'text',
+          editPlaceholder: '이름 입력',
+        },
       },
       {
         id: 'email',
         header: '이메일',
         accessorKey: 'email',
-        width: 200,
+        meta: {
+          width: 200,
+          editable: true,
+          editType: 'text',
+          editValidator: (value: string) => {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(value)) {
+              return { valid: false, error: '올바른 이메일 형식이 아닙니다' };
+            }
+            return { valid: true };
+          },
+        },
       },
       {
         id: 'phone',
         header: '전화번호',
         accessorKey: 'phone',
-        width: 130,
+        meta: {
+          width: 130,
+          editable: true,
+          editType: 'text',
+        },
       },
       {
         id: 'company',
         header: '회사',
         accessorKey: 'company',
-        width: 150,
+        meta: {
+          width: 150,
+          editable: true,
+          editType: 'text',
+        },
       },
       {
         id: 'grade',
         header: '등급',
         accessorKey: 'grade',
-        width: 100,
+        meta: {
+          width: 100,
+          align: 'center',
+          editable: true,
+          editType: 'select',
+          editOptions: [
+            { label: 'Platinum', value: 'platinum' },
+            { label: 'Gold', value: 'gold' },
+            { label: 'Silver', value: 'silver' },
+            { label: 'Bronze', value: 'bronze' },
+          ],
+        },
         cell: ({ row }) => {
           const grade = row.original.grade;
           const gradeConfig = {
@@ -66,7 +106,17 @@ function CustomerTable({ data, loading }: CustomerTableProps) {
         id: 'status',
         header: '상태',
         accessorKey: 'status',
-        width: 100,
+        meta: {
+          width: 100,
+          align: 'center',
+          editable: true,
+          editType: 'select',
+          editOptions: [
+            { label: '활성', value: 'active' },
+            { label: '비활성', value: 'inactive' },
+            { label: '대기중', value: 'pending' },
+          ],
+        },
         cell: ({ row }) => {
           const status = row.original.status;
           const statusConfig = {
@@ -83,7 +133,10 @@ function CustomerTable({ data, loading }: CustomerTableProps) {
         id: 'totalOrders',
         header: '주문수',
         accessorKey: 'totalOrders',
-        width: 100,
+        meta: {
+          width: 100,
+          align: 'right',
+        },
         cell: ({ row }) => (
           <span>{row.original.totalOrders.toLocaleString()}건</span>
         ),
@@ -92,7 +145,10 @@ function CustomerTable({ data, loading }: CustomerTableProps) {
         id: 'totalSpent',
         header: '총 구매액',
         accessorKey: 'totalSpent',
-        width: 130,
+        meta: {
+          width: 130,
+          align: 'right',
+        },
         cell: ({ row }) => (
           <span>₩{(row.original.totalSpent / 10000).toLocaleString()}만</span>
         ),
@@ -101,17 +157,29 @@ function CustomerTable({ data, loading }: CustomerTableProps) {
         id: 'registeredAt',
         header: '가입일',
         accessorKey: 'registeredAt',
-        width: 110,
+        meta: {
+          width: 110,
+          align: 'center',
+        },
       },
       {
         id: 'lastContactAt',
         header: '최근 접촉일',
         accessorKey: 'lastContactAt',
-        width: 120,
+        meta: {
+          width: 120,
+          align: 'center',
+        },
       },
     ],
     []
   );
+
+  const handleCellEdit = (event: CellEditEvent<Customer>) => {
+    console.log('Cell edited:', event);
+    // TODO: API 호출하여 서버에 데이터 업데이트
+    // await updateCustomer(event.row.id, { [event.columnId]: event.newValue });
+  };
 
   if (loading) {
     return (
@@ -140,10 +208,11 @@ function CustomerTable({ data, loading }: CustomerTableProps) {
         enableRowSelection
         pageSize={10}
         height="100%"
+        bordered="all"
+        onCellEdit={handleCellEdit}
       />
     </div>
   );
 }
 
 export default CustomerTable;
-

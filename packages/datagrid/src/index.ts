@@ -27,6 +27,7 @@ export type {
   BorderStyle,
   PinDirection,
   SizeVariant,
+  CellEditEvent,
 } from './types';
 
 // Re-export TanStack Table utilities

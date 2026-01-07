@@ -9,7 +9,7 @@ import './styles/index.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ThemeProvider defaultMode="light">
+    <ThemeProvider defaultMode="light" useLGFont={true}>
       <App />
     </ThemeProvider>
   </React.StrictMode>,
