@@ -1,0 +1,53 @@
+/* apps/demo/src/pages/customer/CustomerInfoPage/components/CustomerActionBar.module.css */
+
+.root {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-border-default);
+  background: var(--color-bg-primary);
+}
+
+.left {
+  font-size: 14px;
+  color: var(--color-fg-secondary);
+}
+
+.total {
+  font-weight: 500;
+}
+
+.right {
+  display: flex;
+  gap: 8px;
+}
+
+.button {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-secondary);
+  color: var(--color-fg-primary);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--color-bg-tertiary);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.primary {
+  background: var(--color-brand-primary);
+  border-color: var(--color-brand-primary);
+  color: #fff;
+}
+
+.primary:hover:not(:disabled) {
+  opacity: 0.9;
+}

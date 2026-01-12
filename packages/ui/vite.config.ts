@@ -25,7 +25,6 @@ export default defineConfig({
         'react-dom', 
         'react/jsx-runtime', 
         '@radix-ui/react-slot',
-        '@gen-office/ui',
         '@gen-office/theme',
         '@gen-office/utils',
        'lucide-react'
@@ -35,7 +34,12 @@ export default defineConfig({
           react: 'React',
           'react-dom': 'ReactDOM',
           'react/jsx-runtime': 'jsxRuntime'
-        }
+        },
+        assetFileNames: (assetInfo) => {
+          // Vite lib build에서 CSS가 style.css로 떨어지는 경우 index.css로 고정
+          if (assetInfo.name === 'style.css') return 'index.css'
+          return assetInfo.name ?? '[name][extname]'
+        },
       }
     }
   },

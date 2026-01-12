@@ -1,3 +1,10 @@
+
+import './index.css';
+
+// packages/datagrid/src/index.ts
+export * from './gen-grid';
+
+
 // Main component
 export { DataGrid } from './DataGrid';
 export type { DataGridProps } from './DataGrid';
@@ -43,3 +50,6 @@ export type {
   VisibilityState,
   RowSelectionState,
 } from '@tanstack/react-table';
+
+
+

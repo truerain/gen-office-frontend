@@ -27,7 +27,7 @@ type ComponentLoader = () => Promise<{ default: ComponentType<PageComponentProps
  */
 const componentPaths: Record<string, ComponentLoader> = {
   // 고객 관리
-  'CustomerInfoPage': () => import('../pages/customer/CustomerInfoPage'),
+  'CustomerInfoPage': () => import('@/pages/customer/customer-info'),
   // 'CustomerServicePage': () => import('../pages/customer/CustomerServicePage'),
   // 'CustomerAnalysisPage': () => import('../pages/customer/CustomerAnalysisPage'),
 
@@ -43,11 +43,11 @@ const componentPaths: Record<string, ComponentLoader> = {
   // 'UserManagementPage': () => import('../pages/system/UserManagementPage'),
 
   // Demo
-  'PrimitivesPage': () => import('@/pages/demo/Primitives/PrimitivesPage'),
-  'DataGridPage': () => import('@/pages/demo/DataGridPage'),
-  'MDIPage': () => import('@/pages/demo/MDIPage'),
-  'GlobalStateDemo': () => import('@/pages/demo/GlobalStateDemo'),
-  'AlertDialogDemo': () => import('@/pages/demo/Composed/AlertDialogDemo'),
+  'PrimitivesPage': () => import('@/pages/demo/primitives/PrimitivesPage'),
+  'DataGridPage': () => import('@/pages/demo/datagrid'),
+  'MDIPage': () => import('@/pages/demo/mdi'),
+  'GlobalStateDemo': () => import('@/pages/demo/primitives/state/GlobalStateDemo'),
+  'AlertDialogDemo': () => import('@/pages/demo/composed/AlertDialogDemo'),
 };
 
 /**

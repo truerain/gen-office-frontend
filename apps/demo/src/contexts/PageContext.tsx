@@ -8,6 +8,8 @@ interface PageContextValue {
 
 const PageContext = createContext<PageContextValue | undefined>(undefined);
 
+
+
 interface PageProviderProps {
   menuId?: string;
   children: ReactNode;
@@ -20,6 +22,7 @@ export function PageProvider({ menuId, children }: PageProviderProps) {
     </PageContext.Provider>
   );
 }
+
 
 /**
  * 현재 페이지의 menuId를 가져오는 Hook

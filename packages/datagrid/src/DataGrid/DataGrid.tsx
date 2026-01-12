@@ -1,14 +1,18 @@
+// DataGrid.tsx (변경 부분만 포함해서 전체 보여줄게)
 import { flexRender } from '@tanstack/react-table';
 import type { RowData } from '@tanstack/react-table';
 import { cn } from '@gen-office/utils';
 import { useDataGrid, useVirtualization } from '../hooks';
+import type { UseDataGridOptions } from '../hooks';
 import { ColumnHeader, ColumnCell } from '../columns';
 import { Pagination } from '../pagination';
-import type { DataGridProps } from './DataGrid.types';
+import type { DataGridProps, BulkAction } from './DataGrid.types';
+
 import styles from './DataGrid.module.css';
 
 export function DataGrid<TData extends RowData>(props: DataGridProps<TData>) {
   const {
+    mode,
     enableVirtualization = true,
     rowHeight = 48,
     height = '600px',
@@ -29,32 +33,52 @@ export function DataGrid<TData extends RowData>(props: DataGridProps<TData>) {
     showPagination,
     onCellEdit,
     className,
-    ...dataGridOptions
+
+    bulkActions,
+    showBulkActionsBar = true,
+    showClearSelection = true,
   } = props;
 
-  const { enablePagination = false } = dataGridOptions;
+  const dataGridOptions = props as unknown as UseDataGridOptions<TData>;
 
-  // Use DataGrid hook
-  const table = useDataGrid(dataGridOptions);
+  const { enablePagination = false, enableRowSelection = false } = dataGridOptions;
 
-  // Get rows
+  const table = useDataGrid<TData>(dataGridOptions);
   const rows = table.getRowModel().rows;
 
-  // Virtual scrolling
+  const virtualizationEnabled =
+    enableVirtualization && (mode === 'client' ? true : !enablePagination);
+
   const { containerRef, virtualRows, totalSize } = useVirtualization({
     rows,
-    enabled: enableVirtualization && !enablePagination,
+    enabled: virtualizationEnabled,
     rowHeight,
   });
 
-  // Calculate sticky column positions
+  const visibleColCount = table.getVisibleLeafColumns().length;
+
+  const selectedRows = table.getSelectedRowModel().rows;
+  const selectedCount = selectedRows.length;
+
+  const showBulkBar =
+    showBulkActionsBar &&
+    enableRowSelection &&
+    selectedCount > 0 &&
+    Boolean(bulkActions?.length || showClearSelection);
+
   const getStickyLeft = (index: number) => {
-    if (index >= stickyColumns) return undefined;
-    // Simple calculation - assume 150px per column (should be dynamic)
-    return index * 150;
+    if (!stickyColumns || index >= stickyColumns) return undefined;
+
+    const cols = table.getVisibleLeafColumns();
+    let left = 0;
+    for (let i = 0; i < index; i++) {
+      const metaWidth = cols[i]?.columnDef?.meta?.width;
+      const w = typeof metaWidth === 'number' ? metaWidth : 150;
+      left += w;
+    }
+    return left;
   };
 
-  // Render loading state
   if (loading) {
     return (
       <div className={cn(styles.container, className)}>
@@ -70,7 +94,6 @@ export function DataGrid<TData extends RowData>(props: DataGridProps<TData>) {
     );
   }
 
-  // Render empty state
   if (rows.length === 0) {
     return (
       <div className={cn(styles.container, className)}>
@@ -81,36 +104,76 @@ export function DataGrid<TData extends RowData>(props: DataGridProps<TData>) {
     );
   }
 
-  // Pagination info
-  const paginationInfo = enablePagination && showPagination !== false ? {
-    pageIndex: table.getState().pagination.pageIndex,
-    pageSize: table.getState().pagination.pageSize,
-    pageCount: table.getPageCount(),
-    totalRows: table.getFilteredRowModel().rows.length,
-    canPreviousPage: table.getCanPreviousPage(),
-    canNextPage: table.getCanNextPage(),
-    onFirstPage: () => table.setPageIndex(0),
-    onPreviousPage: () => table.previousPage(),
-    onNextPage: () => table.nextPage(),
-    onLastPage: () => table.setPageIndex(table.getPageCount() - 1),
-    onPageChange: (pageIndex: number) => table.setPageIndex(pageIndex),
-  } : null;
+  const paginationInfo =
+    enablePagination && showPagination !== false
+      ? {
+          pageIndex: table.getState().pagination.pageIndex,
+          pageSize: table.getState().pagination.pageSize,
+          pageCount: table.getPageCount(),
+          totalRows: mode === 'client' ? table.getFilteredRowModel().rows.length : rows.length,
+          canPreviousPage: table.getCanPreviousPage(),
+          canNextPage: table.getCanNextPage(),
+          onFirstPage: () => table.setPageIndex(0),
+          onPreviousPage: () => table.previousPage(),
+          onNextPage: () => table.nextPage(),
+          onLastPage: () => table.setPageIndex(table.getPageCount() - 1),
+          onPageChange: (pageIndex: number) => table.setPageIndex(pageIndex),
+        }
+      : null;
 
-  // Render table
   const paddingTop = virtualRows && virtualRows.length > 0 ? virtualRows[0]?.start || 0 : 0;
-  const paddingBottom = virtualRows && virtualRows.length > 0
-    ? totalSize! - (virtualRows[virtualRows.length - 1]?.end || 0)
-    : 0;
+  const paddingBottom =
+    virtualRows && virtualRows.length > 0
+      ? totalSize! - (virtualRows[virtualRows.length - 1]?.end || 0)
+      : 0;
 
   return (
     <div className={cn(styles.container, className)}>
-      <div
-        ref={containerRef}
-        className={styles.tableContainer}
-        style={{ height }}
-      >
-        <table className={cn(styles.table, compact && styles.compact, striped && styles.striped, hoverable && styles.hoverable)}>
-          {/* Header */}
+      {/* ✅ Bulk Action Bar */}
+      {showBulkBar && (
+        <div className={styles.bulkBar}>
+          <div className={styles.bulkBarLeft}>
+            <strong>{selectedCount}</strong> selected
+          </div>
+
+          <div className={styles.bulkBarRight}>
+            {bulkActions?.map((action: BulkAction<TData>) => {
+              const disabled = action.disabled?.(selectedRows) ?? false;
+              return (
+                <button
+                  key={action.key}
+                  type="button"
+                  className={styles.bulkButton}
+                  disabled={disabled}
+                  onClick={() => action.onClick(selectedRows)}
+                >
+                  {action.label}
+                </button>
+              );
+            })}
+
+            {showClearSelection && (
+              <button
+                type="button"
+                className={styles.bulkButton}
+                onClick={() => table.resetRowSelection()}
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div ref={containerRef} className={styles.tableContainer} style={{ height }}>
+        <table
+          className={cn(
+            styles.table,
+            compact && styles.compact,
+            striped && styles.striped,
+            hoverable && styles.hoverable
+          )}
+        >
           <thead className={cn(styles.thead, stickyHeader && styles.stickyHeader)}>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id} className={styles.tr}>
@@ -131,11 +194,10 @@ export function DataGrid<TData extends RowData>(props: DataGridProps<TData>) {
             ))}
           </thead>
 
-          {/* Body */}
           <tbody className={styles.tbody}>
             {paddingTop > 0 && (
               <tr>
-                <td style={{ height: `${paddingTop}px` }} />
+                <td colSpan={visibleColCount} style={{ height: `${paddingTop}px` }} />
               </tr>
             )}
 
@@ -146,11 +208,7 @@ export function DataGrid<TData extends RowData>(props: DataGridProps<TData>) {
               return (
                 <tr
                   key={row.id}
-                  className={cn(
-                    styles.tr,
-                    onRowClick && styles.clickable,
-                    getRowClassName?.(row)
-                  )}
+                  className={cn(styles.tr, onRowClick && styles.clickable, getRowClassName?.(row))}
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
                 >
                   {visibleCells.map((cell, index) => {
@@ -173,12 +231,11 @@ export function DataGrid<TData extends RowData>(props: DataGridProps<TData>) {
 
             {paddingBottom > 0 && (
               <tr>
-                <td style={{ height: `${paddingBottom}px` }} />
+                <td colSpan={visibleColCount} style={{ height: `${paddingBottom}px` }} />
               </tr>
             )}
           </tbody>
 
-          {/* Footer */}
           {showFooter && (
             <tfoot className={styles.tfoot}>
               {table.getFooterGroups().map((footerGroup) => (
@@ -197,7 +254,6 @@ export function DataGrid<TData extends RowData>(props: DataGridProps<TData>) {
         </table>
       </div>
 
-      {/* Pagination */}
       {paginationInfo && <Pagination {...paginationInfo} />}
     </div>
   );

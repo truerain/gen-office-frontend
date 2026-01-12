@@ -262,7 +262,7 @@ export const WithRowClick: Story = {
   args: {
     data: sampleData,
     columns,
-    onRowClick: (row) => {
+    onRowClick: (row: any) => {
       alert(`Clicked on: ${row.original.name}`);
     },
     height: '400px',

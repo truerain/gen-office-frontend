@@ -16,12 +16,22 @@ export default defineConfig({
     },
     rollupOptions: {
       // 외부에서 제공될 라이브러리는 번들에 포함하지 않음
-      external: ['react', 'react-dom', 'react/jsx-runtime'], 
+      external: [
+        'react', 
+        'react-dom', 
+        'react/jsx-runtime', 
+        '@gen-office/design-tokens'
+      ],
       output: {
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM',
           'react/jsx-runtime': 'jsxRuntime'
+        },
+        assetFileNames: (assetInfo) => {
+          // Vite lib build에서 CSS가 style.css로 떨어지는 경우가 많아서 index.css로 고정
+          if(assetInfo.name === 'style.css') return 'index.css';
+          return assetInfo.name ?? '[name][extname]';
         }
       }
     }

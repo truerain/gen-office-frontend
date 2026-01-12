@@ -1,3 +1,5 @@
+import './index.css';
+
 export * from './core/Button';
 export * from './core/Breadcrumb';
 export * from './core/Drawer';

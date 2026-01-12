@@ -13,10 +13,10 @@ import {
 } from '@gen-office/ui';
 import { Settings, Moon, Sun, LogOut } from 'lucide-react';
 import { useTheme } from '@gen-office/theme';
-import { menuTree } from '@/features/system/mocks/menuData';
-import { getIconComponent } from '@/utils/iconMapper';
+import { menuTree } from '@/app/menu/menuData';
+import { getIconComponent } from '@/app/menu/model/iconMapper';
 import type { MenuTreeItem } from '@/types/menu.types';
-import lgLogo from '@/assets/lg_logo_213x56.avif';
+import lgLogo from '@/shared/assets/lg_logo_213x56.avif';
 import styles from './TitleBar.module.css';
 
 interface TitleBarProps {
@@ -123,15 +123,18 @@ export function TitleBar({ onOpenPage, onOpenHome }: TitleBarProps) {
                 open={openMenuId === category.menuId}
                 onOpenChange={(open) => handleMenuOpenChange(category.menuId, open)}
               >
-                <DropdownMenuTrigger
-                  className={styles.navButton}
-                  data-menu-id={category.menuId}
-                  onMouseMove={(e) => handleMouseMove(e)}
-                >
-                  <span className={styles.navIcon}>{icon}</span>
-                  <span>{category.label}</span>
-                </DropdownMenuTrigger>
-                
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className={styles.navButton}
+                    data-menu-id={category.menuId}
+                    onMouseMove={(e) => handleMouseMove(e)}
+                  >
+                    <span className={styles.navIcon}>{icon}</span>
+                    <span>{category.label}</span>
+                  </button>
+                </DropdownMenuTrigger>                
+
                 <DropdownMenuContent
                   align="start"
                   onMouseMove={(e) => handleMouseMove(e)}

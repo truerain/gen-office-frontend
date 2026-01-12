@@ -1,0 +1,44 @@
+/* packages/datagrid/src/gen-grid/GenGrid.module.css */
+.root {
+  width: 100%;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface, #fff);
+  color: var(--color-fg, #111);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.caption {
+  text-align: left;
+  padding: 12px 12px 0 12px;
+  font-weight: 600;
+}
+
+.thead {
+  background: var(--color-surface-2, #f7f7f8);
+}
+
+.tr {}
+
+.th,
+.td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+  text-align: left;
+  vertical-align: middle;
+  font-size: 14px;
+}
+
+.th {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tbody .tr:last-child .td {
+  border-bottom: none;
+}

@@ -15,15 +15,8 @@ export default defineConfig({
       fileName: 'index'
     },
     rollupOptions: {
-      // 외부에서 제공될 라이브러리는 번들에 포함하지 않음
-      external: ['react', 'react-dom', 'react/jsx-runtime'], 
-      output: {
-        globals: {
-          react: 'React',
-          'react-dom': 'ReactDOM',
-          'react/jsx-runtime': 'jsxRuntime'
-        }
-      }
+      // Keep runtime deps external (no React in this package)
+      external: ['clsx']
     }
   }
 });

@@ -1,3 +1,5 @@
+import './index.css'
+
 export * from './provider';
 export * from './hooks';
 export * from './themes';

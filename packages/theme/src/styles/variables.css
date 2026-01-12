@@ -110,7 +110,34 @@
   --breakpoint-lg: 1024px;
   --breakpoint-xl: 1280px;
   --breakpoint-2xl: 1536px;
-}
+  /* ===== UI Semantic Aliases (for @gen-office/ui) ===== */
+  /* Backgrounds */
+  --color-bg-primary: var(--color-background);
+  --color-bg-secondary: var(--color-secondary-light);
+  --color-bg-tertiary: var(--color-secondary-light);
+
+  /* Foregrounds */
+  --color-fg-primary: var(--color-text);
+  --color-fg-secondary: var(--color-text-secondary);
+  --color-fg-tertiary: var(--color-text-secondary);
+  --color-fg-inverse: #ffffff;
+
+  /* Borders */
+  --color-border-default: var(--color-border);
+  --color-border-subtle: var(--color-border);
+
+  /* Brand */
+  --color-brand-primary: var(--color-primary);
+
+  /* Status (ui expects these names) */
+  --color-status-success: var(--color-success);
+  --color-status-warning: var(--color-warning);
+  --color-status-error: var(--color-danger);
+  --color-status-info: var(--color-info);
+
+  /* Optional: if ui uses this */
+  --color-text-tertiary: var(--color-text-secondary);
+} 
 
 /* Dark Theme */
 [data-theme="dark"] {

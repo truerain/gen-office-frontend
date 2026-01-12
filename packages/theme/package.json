@@ -19,8 +19,10 @@
     "build": "vite build",
     "clean": "rm -rf dist"
   },
+  "dependencies": {
+    "@gen-office/design-tokens": "workspace:*"
+  },
   "devDependencies": {
-    "@gen-office/design-tokens": "workspace:*",
     "@types/react": "18.3.1",
     "@types/react-dom": "18.3.1",
     "@vitejs/plugin-react": "^5.1.1",
