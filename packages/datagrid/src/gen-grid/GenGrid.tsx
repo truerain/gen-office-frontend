@@ -9,6 +9,13 @@ import {
 
 import styles from './GenGrid.module.css';
 
+// Step2: column meta(표현 힌트) 타입
+export type GenGridColumnMeta = {
+  align?: 'left' | 'center' | 'right';
+  mono?: boolean; // 숫자/코드 컬럼용
+};
+
+
 export type GenGridProps<TData> = {
   data: TData[];
   columns: ColumnDef<TData, any>[];
@@ -19,6 +26,11 @@ export type GenGridProps<TData> = {
   caption?: string;
   className?: string;
 };
+
+function getMeta(columnDef: any): GenGridColumnMeta | undefined {
+  return columnDef?.meta as GenGridColumnMeta | undefined;
+}
+
 
 export function GenGrid<TData>(props: GenGridProps<TData>) {
   const { data, columns, caption, className } = props;
@@ -38,10 +50,20 @@ export function GenGrid<TData>(props: GenGridProps<TData>) {
         <thead className={styles.thead}>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id} className={styles.tr}>
-              {headerGroup.headers.map((header) => (
+              {headerGroup.headers.map((header) => {
+                const meta = getMeta(header.column.columnDef);
+                const alignClass =
+                  meta?.align === 'right'
+                    ? styles.alignRight
+                    : meta?.align === 'center'
+                      ? styles.alignCenter
+                      : styles.alignLeft;
+                return (
                 <th
                   key={header.id}
-                  className={styles.th}
+                   className={[styles.th, alignClass, meta?.mono ? styles.mono : '']
+                      .filter(Boolean)
+                      .join(' ')}
                   colSpan={header.colSpan}
                   scope="col"
                 >
@@ -49,7 +71,8 @@ export function GenGrid<TData>(props: GenGridProps<TData>) {
                     ? null
                     : flexRender(header.column.columnDef.header, header.getContext())}
                 </th>
-              ))}
+                );
+              })}
             </tr>
           ))}
         </thead>
@@ -57,11 +80,26 @@ export function GenGrid<TData>(props: GenGridProps<TData>) {
         <tbody className={styles.tbody}>
           {table.getRowModel().rows.map((row) => (
             <tr key={row.id} className={styles.tr}>
-              {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} className={styles.td}>
+              {row.getVisibleCells().map((cell) => {
+                const meta = getMeta(cell.column.columnDef);
+                const alignClass =
+                  meta?.align === 'right'
+                    ? styles.alignRight
+                    : meta?.align === 'center'
+                      ? styles.alignCenter
+                      : styles.alignLeft;
+
+                return (
+                <td 
+                  key={cell.id} 
+                  className={[styles.td, alignClass, meta?.mono ? styles.mono : '']
+                      .filter(Boolean)
+                      .join(' ')}
+                  >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
-              ))}
+                );
+              })}
             </tr>
           ))}
         </tbody>
