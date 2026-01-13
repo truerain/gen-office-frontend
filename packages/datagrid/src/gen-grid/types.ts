@@ -28,10 +28,15 @@ export type GenGridProps<TData> = {
   onPaginationChange?: (next: PaginationState) => void;
   pageSizeOptions?: number[];
 
-  // filtering (Step6) ✅
+  // column filtering (Step6) ✅
   enableFiltering?: boolean;
   columnFilters?: ColumnFiltersState;
   onColumnFiltersChange?: (next: ColumnFiltersState) => void;
   
+   // global filtering (Step6.5)
+  enableGlobalFilter?: boolean;
+  globalFilter?: string;
+  onGlobalFilterChange?: (next: string) => void;
+
   getRowId?: (originalRow: TData, index: number) => string;
 };

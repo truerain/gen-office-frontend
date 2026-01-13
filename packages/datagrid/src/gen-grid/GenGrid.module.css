@@ -158,3 +158,33 @@
   background: var(--color-surface, #fff);
   font-size: 13px;
 }
+
+/* Global filter input */
+.toolbar {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.globalSearch {
+  flex: 1;
+  min-width: 220px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  background: var(--color-surface, #fff);
+  font-size: 14px;
+}
+
+.toolbarBtn {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  background: var(--color-surface, #fff);
+}
+
+.toolbarBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

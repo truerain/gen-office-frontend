@@ -31,9 +31,13 @@ export function useGenGridTable<TData>(props: GenGridProps<TData>) {
     pagination,
     onPaginationChange,
 
-    enableFiltering,      // Step6: Filtering ✅
+    enableFiltering,      // Step6: Column Filtering 
     columnFilters,
     onColumnFiltersChange,
+    
+    enableGlobalFilter,   // Step6.5: Global Filtering
+    globalFilter,
+    onGlobalFilterChange,
 
     getRowId
   } = props;
@@ -45,11 +49,13 @@ export function useGenGridTable<TData>(props: GenGridProps<TData>) {
     pageSize: 10
   });
   const [innerColumnFilters, setInnerColumnFilters] = React.useState<ColumnFiltersState>([]); // Step6: 내부 필터링 상태 
-  
+  const [innerGlobalFilter, setInnerGlobalFilter] = React.useState<string>('');               // Step6.5: 내부 글로벌 필터 상태
+
   const resolvedSorting = sorting ?? innerSorting;                            // Step3: 정렬 상태 해결    
   const resolvedRowSelection = rowSelection ?? innerRowSelection;             // Step4: 선택 상태 해결
-  const resolvedPagination = pagination ?? innerPagination;
-   const resolvedColumnFilters = columnFilters ?? innerColumnFilters;
+  const resolvedPagination = pagination ?? innerPagination;                   // Step5: 페이지네이션 상태 해결
+  const resolvedColumnFilters = columnFilters ?? innerColumnFilters;          // Step6: 컬럼 필터링 상태 해결
+  const resolvedGlobalFilter = globalFilter ?? innerGlobalFilter;             // Step6.5: 글로벌 필터 상태 해결
 
   // Step4: 선택 컬럼을 columns 앞에 붙임
   const selectionColumn = useSelectionColumn<TData>();
@@ -57,7 +63,7 @@ export function useGenGridTable<TData>(props: GenGridProps<TData>) {
     return enableRowSelection ? withSelectionColumn(columns, selectionColumn) : columns;
   }, [enableRowSelection, columns, selectionColumn]);
 
-
+  const enableAnyFiltering = !!enableFiltering || !!enableGlobalFilter;     // ✅ column/global 중 하나라도 켜져있으면 filtered row model ON
 
   return useReactTable({
     data,
@@ -65,8 +71,9 @@ export function useGenGridTable<TData>(props: GenGridProps<TData>) {
     state: {
       sorting: resolvedSorting,
       rowSelection: resolvedRowSelection,
-      pagination: enablePagination ? resolvedPagination : undefined,
-      columnFilters: enableFiltering ? resolvedColumnFilters : undefined
+      pagination: enablePagination ? resolvedPagination : undefined,          // Step5: pagination은 켰을 때만 상태 전달
+      columnFilters: enableFiltering ? resolvedColumnFilters : undefined,     // Step6: filtering state 주입
+      globalFilter: enableGlobalFilter ? resolvedGlobalFilter : undefined    // Step6.5: global filtering은 켰을 때만 상태 전달
     },
     
     onSortingChange: (updater) => {
@@ -106,12 +113,23 @@ export function useGenGridTable<TData>(props: GenGridProps<TData>) {
       }
     },
 
+    // ✅ Step6.5
+    onGlobalFilterChange: (updater) => {
+      if (!enableGlobalFilter) return;
+      if (onGlobalFilterChange)  {
+        onGlobalFilterChange(typeof updater === 'function' ? updater(resolvedGlobalFilter) : updater);
+      } else {
+        console.log(updater);
+       setInnerGlobalFilter(updater);
+      }
+    },
+
     enableRowSelection: enableRowSelection ?? false,
     getRowId,
 
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: enableFiltering ? getFilteredRowModel() : undefined,       // ✅ Step6: filtering row model은 켰을 때만
+    getFilteredRowModel: enableAnyFiltering ? getFilteredRowModel() : undefined,       // ✅ Step6: filtering row model은 켰을 때만
     getPaginationRowModel: enablePagination ? getPaginationRowModel() : undefined   // ✅ Step5: pagination row model은 켰을 때만
   });
 }

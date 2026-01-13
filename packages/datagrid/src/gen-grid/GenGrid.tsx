@@ -38,6 +38,26 @@ export function GenGrid<TData>(props: GenGridProps<TData>) {
 
   return (
     <div className={[styles.root, className].filter(Boolean).join(' ')}>
+      {/* 6.5 Global Filter */}
+      {props.enableGlobalFilter ? (
+        <div className={styles.toolbar}>
+          <input
+            className={styles.globalSearch}
+            value={(table.getState().globalFilter ?? '') as string}
+            onChange={(e) => table.setGlobalFilter(e.target.value)}
+            placeholder="Search..."
+          />
+          <button
+            type="button"
+            className={styles.toolbarBtn}
+            onClick={() => table.setGlobalFilter('')}
+            disabled={!table.getState().globalFilter}
+          >
+            Clear
+          </button>
+        </div>
+      ) : null}
+
       <table className={styles.table}>
         {caption ? <caption className={styles.caption}>{caption}</caption> : null}
 
