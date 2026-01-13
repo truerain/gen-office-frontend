@@ -68,3 +68,93 @@
   background: var(--color-surface, #fff);
   font-size: 12px;
 }
+
+.thInner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sortable:hover {
+  background: var(--color-surface-3, rgba(0,0,0,0.03));
+}
+
+.sorted {
+  /* 정렬중 컬럼 헤더 강조(원하는 스타일로 조정) */
+  background: var(--color-surface-3, rgba(0,0,0,0.04));
+}
+
+.sortIcon {
+  opacity: 0.7;
+  font-size: 12px;
+}
+
+/* Step4: selection column(체크박스 열) 폭/정렬 */
+.selectCol {
+  width: 44px;
+  text-align: center;
+}
+
+.footerInfo {
+  margin-top: 10px;
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+/* Step5: pagination 컴포넌트 스타일링 */
+.pager {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pagerLeft,
+.pagerRight,
+.pagerMid {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagerBtn {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  background: var(--color-surface, #fff);
+}
+
+.pagerBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagerLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.pagerSelect {
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  background: var(--color-surface, #fff);
+}
+
+.filterInput {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  background: var(--color-surface, #fff);
+  font-size: 13px;
+}

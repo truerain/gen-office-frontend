@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from '@storybook/react';
 import * as React from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 
-import { GenGrid, type GenGridColumnMeta } from './GenGrid';
-import styles from './GenGrid.module.css';
+import { GenGrid, type GenGridColumnMeta } from '../GenGrid';
+import styles from '../GenGrid.module.css';
 
 type Person = {
   firstName: string;

@@ -1,0 +1,37 @@
+// packages/datagrid/src/gen-grid/types.ts
+import type {
+  ColumnDef,
+  RowSelectionState,
+  SortingState,
+  PaginationState,
+  ColumnFiltersState
+} from '@tanstack/react-table';
+
+export type GenGridProps<TData> = {
+  data: TData[];
+  columns: ColumnDef<TData, any>[];
+  caption?: string;
+  className?: string;
+
+  // sorting (Step3)
+  sorting?: SortingState;
+  onSortingChange?: (next: SortingState) => void;
+
+  // selection (Step4)
+  enableRowSelection?: boolean;
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: (next: RowSelectionState) => void;
+
+  // pagination (Step5)
+  enablePagination?: boolean;
+  pagination?: PaginationState;
+  onPaginationChange?: (next: PaginationState) => void;
+  pageSizeOptions?: number[];
+
+  // filtering (Step6) ✅
+  enableFiltering?: boolean;
+  columnFilters?: ColumnFiltersState;
+  onColumnFiltersChange?: (next: ColumnFiltersState) => void;
+  
+  getRowId?: (originalRow: TData, index: number) => string;
+};
