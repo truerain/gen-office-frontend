@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import * as React from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 
-import { GenGrid, type GenGridColumnMeta } from '../GenGrid';
+import { GenGrid } from '../GenGrid';
 
 type Person = {
   id: string;
@@ -36,12 +36,7 @@ const columns: ColumnDef<Person>[] = [
     header: 'Info',
     columns: [
       { accessorKey: 'age', header: 'Age' },
-      {
-        accessorKey: 'visits',
-        header: 'Visits',
-        meta: { align: 'right', mono: true } satisfies GenGridColumnMeta,
-        cell: (info) => info.getValue<number>().toLocaleString()
-      },
+      { accessorKey: 'visits', header: 'Visits' },
       { accessorKey: 'status', header: 'Status' },
       { accessorKey: 'progress', header: 'Progress' }
     ]
@@ -49,28 +44,31 @@ const columns: ColumnDef<Person>[] = [
 ];
 
 const meta: Meta<typeof GenGrid<Person>> = {
-  title: 'gen-grid/Step6.Filtering',
+  title: 'gen-grid/Step7.ColumnPinning',
   component: GenGrid<Person>
 };
 
 export default meta;
 type Story = StoryObj<typeof GenGrid<Person>>;
 
-export const Filtering: Story = {
+export const ColumnPinning: Story = {
   render: () => (
     <div style={{ padding: 16 }}>
       <GenGrid<Person>
-        caption="GenGrid Step6 - Column Filtering"
+        caption="GenGrid Step7 - Column Pinning"
         data={data}
         columns={columns}
         enablePinning
         enableGlobalFilter
         enableFiltering
         enablePagination
-        pageSizeOptions={[5, 10, 20]}
+        pageSizeOptions={[10, 20]}
         enableRowSelection
         getRowId={(row) => row.id}
       />
+      <p style={{ marginTop: 12, opacity: 0.7 }}>
+        각 컬럼 헤더의 ⟸ ✕ ⟹ 버튼으로 왼쪽/해제/오른쪽 고정
+      </p>
     </div>
   )
 };

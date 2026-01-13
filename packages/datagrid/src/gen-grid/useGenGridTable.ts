@@ -9,7 +9,8 @@ import {
   type ColumnFiltersState,
   type PaginationState,
   type RowSelectionState,
-  type SortingState
+  type SortingState,
+  type ColumnPinningState
 } from '@tanstack/react-table';
 
 import type { GenGridProps } from './types';
@@ -39,6 +40,10 @@ export function useGenGridTable<TData>(props: GenGridProps<TData>) {
     globalFilter,
     onGlobalFilterChange,
 
+    enablePinning,        // Step7: Pinning
+    columnPinning,
+    onColumnPinningChange,
+
     getRowId
   } = props;
 
@@ -50,12 +55,16 @@ export function useGenGridTable<TData>(props: GenGridProps<TData>) {
   });
   const [innerColumnFilters, setInnerColumnFilters] = React.useState<ColumnFiltersState>([]); // Step6: 내부 필터링 상태 
   const [innerGlobalFilter, setInnerGlobalFilter] = React.useState<string>('');               // Step6.5: 내부 글로벌 필터 상태
-
+  const [innerColumnPinning, setInnerColumnPinning] = React.useState<ColumnPinningState>({    // Step7: 내부 컬럼 고정 상태
+    left: enableRowSelection ? ['__select__'] : [],
+    right: []
+  });
   const resolvedSorting = sorting ?? innerSorting;                            // Step3: 정렬 상태 해결    
   const resolvedRowSelection = rowSelection ?? innerRowSelection;             // Step4: 선택 상태 해결
   const resolvedPagination = pagination ?? innerPagination;                   // Step5: 페이지네이션 상태 해결
   const resolvedColumnFilters = columnFilters ?? innerColumnFilters;          // Step6: 컬럼 필터링 상태 해결
   const resolvedGlobalFilter = globalFilter ?? innerGlobalFilter;             // Step6.5: 글로벌 필터 상태 해결
+  const resolvedColumnPinning = columnPinning ?? innerColumnPinning;          // Step7: 컬럼 고정 상태 해결
 
   // Step4: 선택 컬럼을 columns 앞에 붙임
   const selectionColumn = useSelectionColumn<TData>();
@@ -73,7 +82,8 @@ export function useGenGridTable<TData>(props: GenGridProps<TData>) {
       rowSelection: resolvedRowSelection,
       pagination: enablePagination ? resolvedPagination : undefined,          // Step5: pagination은 켰을 때만 상태 전달
       columnFilters: enableFiltering ? resolvedColumnFilters : undefined,     // Step6: filtering state 주입
-      globalFilter: enableGlobalFilter ? resolvedGlobalFilter : undefined    // Step6.5: global filtering은 켰을 때만 상태 전달
+      globalFilter: enableGlobalFilter ? resolvedGlobalFilter : undefined,    // Step6.5: global filtering은 켰을 때만 상태 전달
+      columnPinning: resolvedColumnPinning,       // Step7: column pinning 설정 (켜져있든 아니든 상태 전달)
     },
     
     onSortingChange: (updater) => {
@@ -113,7 +123,7 @@ export function useGenGridTable<TData>(props: GenGridProps<TData>) {
       }
     },
 
-    // ✅ Step6.5
+    // Step6.5
     onGlobalFilterChange: (updater) => {
       if (!enableGlobalFilter) return;
       if (onGlobalFilterChange)  {
@@ -121,6 +131,16 @@ export function useGenGridTable<TData>(props: GenGridProps<TData>) {
       } else {
         console.log(updater);
        setInnerGlobalFilter(updater);
+      }
+    },
+    
+    // Step7 Column Pinning
+    onColumnPinningChange: (updater) => {
+      if (!enablePinning) return;
+      if (onColumnPinningChange) {
+        onColumnPinningChange( typeof updater === 'function' ? updater(resolvedColumnPinning) : updater );
+      } else {
+        setInnerColumnPinning(updater);
       }
     },
 

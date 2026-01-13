@@ -4,7 +4,8 @@ import type {
   RowSelectionState,
   SortingState,
   PaginationState,
-  ColumnFiltersState
+  ColumnFiltersState,
+  ColumnPinningState
 } from '@tanstack/react-table';
 
 export type GenGridProps<TData> = {
@@ -28,7 +29,7 @@ export type GenGridProps<TData> = {
   onPaginationChange?: (next: PaginationState) => void;
   pageSizeOptions?: number[];
 
-  // column filtering (Step6) ✅
+  // column filtering (Step6)
   enableFiltering?: boolean;
   columnFilters?: ColumnFiltersState;
   onColumnFiltersChange?: (next: ColumnFiltersState) => void;
@@ -38,5 +39,10 @@ export type GenGridProps<TData> = {
   globalFilter?: string;
   onGlobalFilterChange?: (next: string) => void;
 
+  // Step7: pinning
+  enablePinning?: boolean;
+  columnPinning?: ColumnPinningState;
+  onColumnPinningChange?: (next: ColumnPinningState) => void;
+  
   getRowId?: (originalRow: TData, index: number) => string;
 };

@@ -1,16 +1,31 @@
 /* packages/datagrid/src/gen-grid/GenGrid.module.css */
 .root {
   width: 100%;
+  overflow: hidden;
+}
+
+/* 수평 스크롤 컨테이너 */
+.tableScroll {
+  width: 100%;
+  overflow-x: auto;
+  position: relative;
+
+  /* 테이블 border-radius는 여기서 처리하는 게 sticky에 더 안전 */
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 12px;
+  background: var(--color-surface, #fff);
 }
 
 .table {
-  width: 100%;
-  border-collapse: collapse;
+  width: max-content;
+  min-width: 100%;    /* 최소는 컨테이너만큼 */
+  //border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   background: var(--color-surface, #fff);
   color: var(--color-fg, #111);
   border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 12px;
-  overflow: hidden;
 }
 
 .caption {
@@ -185,6 +200,40 @@
 }
 
 .toolbarBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Step7: column pinning styles */
+.pinned {
+  z-index: 3; /* 일반 셀보다 위 */
+}
+
+.pinnedLeft {
+  box-shadow: 6px 0 6px -6px rgba(0, 0, 0, 0.2);
+}
+
+.pinnedRight {
+  box-shadow: -6px 0 6px -6px rgba(0, 0, 0, 0.2);
+}
+
+/* pin 버튼 영역 */
+.pinControls {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 4px;
+}
+
+.pinBtn {
+  padding: 2px 6px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  background: var(--color-surface, #fff);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.pinBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
