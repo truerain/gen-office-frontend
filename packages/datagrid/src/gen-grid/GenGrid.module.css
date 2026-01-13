@@ -237,3 +237,58 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.tableScroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  position: relative;
+
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 12px;
+  background: var(--color-surface, #fff);
+}
+
+/* ✅ sizing 안정화의 핵심 */
+.table {
+  width: max-content;
+  min-width: 100%;
+  table-layout: fixed;     /* 폭 계산을 고정 레이아웃으로 */
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* 헤더 inner는 resizer 자리 확보 */
+.thInner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ✅ resizer 핸들 */
+.resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 100%;
+  cursor: col-resize;
+  touch-action: none;
+  user-select: none;
+}
+
+/* 드래그하기 쉽게 hover 영역 */
+.resizer:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* ✅ 드래그 중 강조 */
+.resizerActive {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+/* ✅ 드래그 중에는 커서/선명도 강화 (선택) */
+.tableScroll[data-resizing] {
+  cursor: col-resize;
+}
