@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import * as React from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
-
 import { GenGrid } from '../GenGrid';
 
 type Person = {
@@ -28,47 +27,46 @@ const columns: ColumnDef<Person>[] = [
   {
     header: 'Name',
     columns: [
-      { accessorKey: 'firstName', header: 'First Name' },
+      { accessorKey: 'firstName', header: 'First Name', size: 180 },
       { accessorKey: 'lastName', header: 'Last Name' }
     ]
   },
   {
     header: 'Info',
     columns: [
-      { accessorKey: 'age', header: 'Age' },
-      { accessorKey: 'visits', header: 'Visits' },
-      { accessorKey: 'status', header: 'Status' },
-      { accessorKey: 'progress', header: 'Progress' }
+      { accessorKey: 'age', header: 'Age', size: 100 },
+      { accessorKey: 'visits', header: 'Visits', size: 120 },
+      { accessorKey: 'status', header: 'Status', size: 160 },
+      { accessorKey: 'progress', header: 'Progress', size: 140 }
     ]
   }
 ];
 
 const meta: Meta<typeof GenGrid<Person>> = {
-  title: 'gen-grid/Step7.ColumnPinning',
+  title: 'gen-grid/Step8.ColumnSizing',
   component: GenGrid<Person>
 };
 
 export default meta;
 type Story = StoryObj<typeof GenGrid<Person>>;
 
-export const ColumnPinning: Story = {
+export const ColumnSizing: Story = {
   render: () => (
     <div style={{ padding: 16 }}>
       <GenGrid<Person>
-        caption="GenGrid Step7 - Column Pinning"
+        caption="GenGrid Step8 - Column Sizing"
         data={data}
         columns={columns}
-        enablePinning
         enableColumnSizing
-        enableGlobalFilter
-        enableFiltering
+        enablePinning
         enablePagination
-        pageSizeOptions={[10, 20]}
+        enableGlobalFilter
+        //enableFiltering
         enableRowSelection
         getRowId={(row) => row.id}
       />
       <p style={{ marginTop: 12, opacity: 0.7 }}>
-        각 컬럼 헤더의 ⟸ ✕ ⟹ 버튼으로 왼쪽/해제/오른쪽 고정
+        헤더 오른쪽 경계(리사이저)를 드래그해서 컬럼 폭을 조절해봐.
       </p>
     </div>
   )

@@ -30,6 +30,7 @@ import type { ColumnDef } from '@tanstack/react-table';
       ),
       enableSorting: false,
       enableColumnFilter: false,
+      size: 50,
       meta: { align: 'center' },
       enablePinning: false
     }),

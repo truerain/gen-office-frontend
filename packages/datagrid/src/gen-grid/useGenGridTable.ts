@@ -10,7 +10,8 @@ import {
   type PaginationState,
   type RowSelectionState,
   type SortingState,
-  type ColumnPinningState
+  type ColumnPinningState,
+  type ColumnSizingState 
 } from '@tanstack/react-table';
 
 import type { GenGridProps } from './types';
@@ -44,6 +45,10 @@ export function useGenGridTable<TData>(props: GenGridProps<TData>) {
     columnPinning,
     onColumnPinningChange,
 
+    enableColumnSizing,         // Step8: Column Sizing
+    columnSizing,
+    onColumnSizingChange,
+
     getRowId
   } = props;
 
@@ -59,12 +64,15 @@ export function useGenGridTable<TData>(props: GenGridProps<TData>) {
     left: enableRowSelection ? ['__select__'] : [],
     right: []
   });
+  const [innerColumnSizing, setInnerColumnSizing] = React.useState<ColumnSizingState>({});    // Step8: 내부 컬럼 사이징 상태
+
   const resolvedSorting = sorting ?? innerSorting;                            // Step3: 정렬 상태 해결    
   const resolvedRowSelection = rowSelection ?? innerRowSelection;             // Step4: 선택 상태 해결
   const resolvedPagination = pagination ?? innerPagination;                   // Step5: 페이지네이션 상태 해결
   const resolvedColumnFilters = columnFilters ?? innerColumnFilters;          // Step6: 컬럼 필터링 상태 해결
   const resolvedGlobalFilter = globalFilter ?? innerGlobalFilter;             // Step6.5: 글로벌 필터 상태 해결
   const resolvedColumnPinning = columnPinning ?? innerColumnPinning;          // Step7: 컬럼 고정 상태 해결
+  const resolvedColumnSizing = columnSizing ?? innerColumnSizing;             // Step8: 컬럼 사이징 상태 해결
 
   // Step4: 선택 컬럼을 columns 앞에 붙임
   const selectionColumn = useSelectionColumn<TData>();
@@ -84,6 +92,7 @@ export function useGenGridTable<TData>(props: GenGridProps<TData>) {
       columnFilters: enableFiltering ? resolvedColumnFilters : undefined,     // Step6: filtering state 주입
       globalFilter: enableGlobalFilter ? resolvedGlobalFilter : undefined,    // Step6.5: global filtering은 켰을 때만 상태 전달
       columnPinning: resolvedColumnPinning,       // Step7: column pinning 설정 (켜져있든 아니든 상태 전달)
+      columnSizing: resolvedColumnSizing          // Step8: column sizing 설정 (켜져있든 아니든 상태 전달)
     },
     
     onSortingChange: (updater) => {
@@ -144,7 +153,19 @@ export function useGenGridTable<TData>(props: GenGridProps<TData>) {
       }
     },
 
+    onColumnSizingChange: (updater) => {
+      if (!enableColumnSizing) return;
+
+      if (onColumnSizingChange) {
+        onColumnSizingChange(typeof updater === 'function' ? updater(resolvedColumnSizing) : updater)
+      } else {
+        setInnerColumnSizing(updater);    // ⭐ 핵심: updater 그대로 React에 위임 (stale 방지)
+      }
+    },
+  
     enableRowSelection: enableRowSelection ?? false,
+    enableColumnResizing: props.enableColumnSizing ?? false,
+    columnResizeMode: 'onChange', // 드래그 중 즉시 반영 (onEnd로도 가능)
     getRowId,
 
     getCoreRowModel: getCoreRowModel(),

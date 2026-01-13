@@ -5,7 +5,8 @@ import type {
   SortingState,
   PaginationState,
   ColumnFiltersState,
-  ColumnPinningState
+  ColumnPinningState,
+  ColumnSizingState
 } from '@tanstack/react-table';
 
 export type GenGridProps<TData> = {
@@ -44,5 +45,10 @@ export type GenGridProps<TData> = {
   columnPinning?: ColumnPinningState;
   onColumnPinningChange?: (next: ColumnPinningState) => void;
   
+  // Step8:  sizing (Step8)
+  enableColumnSizing?: boolean;
+  columnSizing?: ColumnSizingState;
+  onColumnSizingChange?: (next: ColumnSizingState) => void;
+
   getRowId?: (originalRow: TData, index: number) => string;
 };
