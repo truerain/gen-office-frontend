@@ -3,7 +3,11 @@ import { flexRender, type Table } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import styles from '../GenGrid.module.css';
 import { getCellStyle, getColumnSizeStyle, getPinnedStyles } from './cellStyles';
+import type { ActiveCell } from '../types';
+import { useActiveCellNavigation } from '../features/active-cell/useActiveCellNavigation';
 import { getMeta } from './utils';
+import { SELECTION_COLUMN_ID } from '../features/selection';
+import { ROW_NUMBER_COLUMN_ID } from '../features/useRowNumberColumn';
 
 type GenGridVirtualBodyProps<TData> = {
   table: Table<TData>;
@@ -13,6 +17,10 @@ type GenGridVirtualBodyProps<TData> = {
 
   enablePinning?: boolean;
   enableColumnSizing?: boolean;
+  
+  activeCell: ActiveCell;
+  onCellClick?: (rowId: string, columnId: string) => void;
+  onActiveCellChange: (next: { rowId: string; columnId: string }) => void;
 };
 
 export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>) {
@@ -22,7 +30,9 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
     rowHeight,
     overscan,
     enablePinning,
-    enableColumnSizing
+    enableColumnSizing,
+    activeCell,
+    onActiveCellChange
   } = props;
 
   const rows = table.getRowModel().rows;
@@ -51,6 +61,18 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
     requestAnimationFrame(() => rowVirtualizer.measure());
   }, [rowVirtualizer, rows.length, rowHeight]);
 
+  const isSystemCol = (colId: string) =>
+    colId === SELECTION_COLUMN_ID || colId === ROW_NUMBER_COLUMN_ID;
+
+  const nav = useActiveCellNavigation({
+    table,
+    activeCell,
+    onActiveCellChange: onActiveCellChange,
+    isCellNavigable: (_, colId) => !isSystemCol(colId),
+    focusOptions: { 
+        stickyHeaderHeight: 40 * table.getHeaderGroups().length },
+  });
+
   return (
     <tbody className={styles.tbody}>
       {/* top spacer */}
@@ -66,6 +88,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
         return (
           <tr key={row.id} className={styles.tr}>
           {row.getVisibleCells().map((cell) => {
+                  const isActive = !!activeCell && activeCell.rowId === row.id && activeCell.columnId === cell.column.id;
                   const isSelectCol = cell.column.id === '__select__';
                   const meta = getMeta(cell.column.columnDef);
                   const alignClass =
@@ -97,6 +120,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
                           enableColumnSizing,
                           isHeader: false
                         })}
+                        {...nav.getCellProps(row.id, cell.column.id, isActive)}
                       >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </td>

@@ -112,7 +112,7 @@ export function useGenGridTable<TData>(props: GenGridProps<TData>) {
 
   const enableAnyFiltering = !!enableFiltering || !!enableGlobalFilter;     // ✅ column/global 중 하나라도 켜져있으면 filtered row model ON
 
-  return useReactTable({
+  return useReactTable<TData>({
     data,
     columns: resolvedColumns,
     state: {

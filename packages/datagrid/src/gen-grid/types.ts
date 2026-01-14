@@ -70,3 +70,5 @@ export type GenGridProps<TData> = {
 
   getRowId?: (originalRow: TData, index: number) => string;
 };
+
+export type ActiveCell = { rowId: string; columnId: string } | null;

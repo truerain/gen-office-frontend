@@ -167,6 +167,19 @@
 }
 */
 
+/* td 기본 focus outline 제거하고 active 스타일로 대체 (원하면) */
+.table td[data-active-cell="true"] {
+  outline: 2px solid var(--color-focus, #3b82f6);
+  outline-offset: -2px;
+  background: color-mix(in srgb, var(--color-focus, #3b82f6) 10%, transparent);
+}
+
+/* 키보드 접근도 지원하려면 */
+.table td:focus-visible {
+  outline: 2px solid var(--color-focus, #3b82f6);
+  outline-offset: -2px;
+}
+
 /* Step2 additions */
 .alignLeft { text-align: left; }
 .alignCenter { text-align: center; }

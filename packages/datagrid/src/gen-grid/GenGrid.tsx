@@ -5,11 +5,11 @@ import { useGenGridTable } from './useGenGridTable';
 import { GenGridHeader } from './renderers/GenGridHeader';
 import { GenGridBody } from './renderers/GenGridBody';
 import { GenGridVirtualBody } from './renderers/GenGridVirtualBody';
-import { type GenGridProps } from './types';
+import type { GenGridProps, ActiveCell } from './types';
 import { GenGridPagination } from './GenGridPagination';
 
 export function GenGrid<TData>(props: GenGridProps<TData>) {
-  const table = useGenGridTable(props);
+  const table = useGenGridTable<TData>(props);
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
 
   const {
@@ -28,7 +28,6 @@ export function GenGrid<TData>(props: GenGridProps<TData>) {
   } = props;
 
   const stickyHeaderEnabled = enableStickyHeader ?? Boolean(maxHeight);
-
   // ✅ 다중 헤더 + 필터까지 포함한 줄 수 (Step9.1)
   const headerRowCount = table.getHeaderGroups().length + (enableFiltering ? 1 : 0);
 
@@ -37,6 +36,14 @@ export function GenGrid<TData>(props: GenGridProps<TData>) {
     // 너희가 이미 만든 구현을 그대로 여기에 둬도 되고,
     // header에서 table을 직접 써서 구현해도 됨(둘 중 하나 선택)
   }, []);
+  // active cell 상태
+  const [activeCell, setActiveCell] = React.useState<{ rowId: string; columnId: string } | null>(null);
+  const handleActiveCellChange = React.useCallback(
+    (next: { rowId: string; columnId: string }) => {
+      setActiveCell(next);
+    },
+    []
+  );
 
   return (
     <div
@@ -71,19 +78,23 @@ export function GenGrid<TData>(props: GenGridProps<TData>) {
           />
 
           {enableVirtualization ? (
-            <GenGridVirtualBody
+            <GenGridVirtualBody<TData>
               table={table}
               scrollRef={scrollRef}
               rowHeight={rowHeight}
               overscan={overscan}
               enablePinning={enablePinning}
               enableColumnSizing={enableColumnSizing}
+              activeCell={activeCell}
+              onActiveCellChange={handleActiveCellChange}
             />
           ) : (
-            <GenGridBody
+            <GenGridBody<TData>
               table={table}
               enablePinning={enablePinning}
               enableColumnSizing={enableColumnSizing}
+              activeCell={activeCell}
+              onActiveCellChange={handleActiveCellChange}
             />
           )}
         </table>
