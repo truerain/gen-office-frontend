@@ -254,7 +254,7 @@ importers:
         version: 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-essentials':
         specifier: 8.6.15
-        version: 8.6.15(@types/react@19.2.8)(storybook@8.6.15(prettier@3.7.4))
+        version: 8.6.15(@types/react@18.3.1)(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-interactions':
         specifier: 8.6.15
         version: 8.6.15(storybook@8.6.15(prettier@3.7.4))
@@ -298,7 +298,7 @@ importers:
         specifier: ^8.20.5
         version: 8.21.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tanstack/react-virtual':
-        specifier: ^3.10.8
+        specifier: ^3.13.16
         version: 3.13.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       clsx:
         specifier: ^2.1.1
@@ -1867,9 +1867,6 @@ packages:
 
   '@types/react@18.3.27':
     resolution: {integrity: sha512-cisd7gxkzjBKU2GgdYrTdtQx1SORymWyaAFhaxQPK9bYO9ot3Y5OikQRvY0VYQtvwjeQnizCINJAenh/V7MK2w==}
-
-  '@types/react@19.2.8':
-    resolution: {integrity: sha512-3MbSL37jEchWZz2p2mjntRZtPt837ij10ApxKfgmXCTuHWagYg7iA5bqPw6C8BMPfwidlvfPI/fxOc42HLhcyg==}
 
   '@types/resolve@1.20.6':
     resolution: {integrity: sha512-A4STmOXPhMUtHH+S6ymgE2GiBSMqf4oTvcQZMcHzokuTLVYzXTB8ttjcgxOVaAp2lGwEdzZ0J+cRbbeevQj1UQ==}
@@ -4008,12 +4005,6 @@ snapshots:
       '@types/react': 18.3.1
       react: 18.3.1
 
-  '@mdx-js/react@3.1.1(@types/react@19.2.8)(react@18.3.1)':
-    dependencies:
-      '@types/mdx': 2.0.13
-      '@types/react': 19.2.8
-      react: 18.3.1
-
   '@microsoft/api-extractor-model@7.32.2(@types/node@24.10.4)':
     dependencies:
       '@microsoft/tsdoc': 0.16.0
@@ -5030,41 +5021,12 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  '@storybook/addon-docs@8.6.15(@types/react@19.2.8)(storybook@8.6.15(prettier@3.7.4))':
-    dependencies:
-      '@mdx-js/react': 3.1.1(@types/react@19.2.8)(react@18.3.1)
-      '@storybook/blocks': 8.6.15(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/csf-plugin': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/react-dom-shim': 8.6.15(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.6.15(prettier@3.7.4))
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-      storybook: 8.6.15(prettier@3.7.4)
-      ts-dedent: 2.2.0
-    transitivePeerDependencies:
-      - '@types/react'
-
   '@storybook/addon-essentials@8.6.15(@types/react@18.3.1)(storybook@8.6.15(prettier@3.7.4))':
     dependencies:
       '@storybook/addon-actions': 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-backgrounds': 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-controls': 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-docs': 8.6.15(@types/react@18.3.1)(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-highlight': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-measure': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-outline': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-toolbars': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-viewport': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      storybook: 8.6.15(prettier@3.7.4)
-      ts-dedent: 2.2.0
-    transitivePeerDependencies:
-      - '@types/react'
-
-  '@storybook/addon-essentials@8.6.15(@types/react@19.2.8)(storybook@8.6.15(prettier@3.7.4))':
-    dependencies:
-      '@storybook/addon-actions': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-backgrounds': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-controls': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-docs': 8.6.15(@types/react@19.2.8)(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-highlight': 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-measure': 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-outline': 8.6.15(storybook@8.6.15(prettier@3.7.4))
@@ -5351,10 +5313,6 @@ snapshots:
   '@types/react@18.3.27':
     dependencies:
       '@types/prop-types': 15.7.15
-      csstype: 3.2.3
-
-  '@types/react@19.2.8':
-    dependencies:
       csstype: 3.2.3
 
   '@types/resolve@1.20.6': {}

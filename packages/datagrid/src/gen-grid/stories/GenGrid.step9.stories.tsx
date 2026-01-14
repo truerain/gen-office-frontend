@@ -58,6 +58,7 @@ export const VerticalScroll: Story = {
         data={data}
         columns={columns}
         maxHeight={350}
+        min
         enableStickyHeader
         enableColumnSizing
         enablePinning

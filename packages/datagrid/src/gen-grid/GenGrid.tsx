@@ -143,9 +143,18 @@ export function GenGrid<TData>(props: GenGridProps<TData>) {
         <table className={styles.table}>
           <thead className={styles.thead}>
             {/* 1) 일반 헤더 렌더 (그룹 헤더 포함) */}
-            
-            {headerGroups.map((hg) => (
-              <tr key={hg.id} className={styles.tr}>
+            {headerGroups.map((hg, idx) => {
+              //console.log('headerGroups.map', idx, hg, hg.depth);
+              return (
+              <tr 
+                key={hg.id} 
+                className={[
+                          styles.tr,
+                          styles.headerRow,
+                          styles[`headerRow${hg.depth}` as keyof typeof styles]
+                        ].filter(Boolean).join(' ')}
+                data-header-row={hg.depth}
+                >
                 {hg.headers.map((header) => {
                   const canSort = header.column.getCanSort();
                   const sortState = header.column.getIsSorted(); // false | 'asc' | 'desc'
@@ -260,15 +269,23 @@ export function GenGrid<TData>(props: GenGridProps<TData>) {
                   );
                 })}
               </tr>
-            ))}
+            )})}
 
             {/* 2) Step6: 필터 Row (leaf columns만 대상으로) */}
             {enableFiltering ? (
-              <tr className={[styles.tr, styles.filterRow].filter(Boolean).join(' ')}>
+              <tr 
+                className={[
+                  styles.tr, 
+                  styles.headerRow,
+                  styles.filterRow,
+                  styles[`headerRow${headerGroups.length}` as keyof typeof styles]
+                ].filter(Boolean).join(' ')}
+                data-header-row={headerGroups.length}
+                >
                 {leafHeaderGroup.headers.map((header) => {
                   const column = header.column;
                   const isSelectCol = column.id === '__select__';
-
+console.log('filterRow.headers.map', column);
                   // 아주 단순한 기준:
                   // - selection column은 필터 없음
                   // - accessorKey가 있는 컬럼만 필터 input 노출
@@ -276,9 +293,8 @@ export function GenGrid<TData>(props: GenGridProps<TData>) {
                   const hasAccessorKey = !!colDef.accessorKey;
                   const canFilter = column.getCanFilter() && hasAccessorKey && !isSelectCol;
 
-                  const pinnedStyle = props.enablePinning ? getPinnedStyles(header.column, { isHeader: false }) : undefined; // Step7: pinned 스타일 적용
+                  const pinnedStyle = props.enablePinning ? getPinnedStyles(header.column, { isHeader: true }) : undefined; // Step7: pinned 스타일 적용
                   const pinned = header.column.getIsPinned(); // false|'left'|'right'
-                  const isLeafHeader = header.depth === headerGroups.length - 1; // leaf인지
                   const sizeStyle = props.enableColumnSizing ? getColumnSizeStyle(header.column) : undefined; // Step8: column sizing 스타일 적용
 
                   return (
