@@ -2,11 +2,13 @@
 import * as React from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 
+export const SELECTION_COLUMN_ID = '__select__';
+
   // Step4: 선택 컬럼을 columns 앞에 자동으로 붙임
- export function useSelectionColumn<TData>() {
+export function useSelectionColumn<TData>() {
   return React.useMemo<ColumnDef<TData>>(
     () => ({
-      id: '__select__',
+      id: SELECTION_COLUMN_ID,
       header: ({ table }) => (
         <input
           type="checkbox"

@@ -27,6 +27,11 @@ export type GenGridProps<TData> = {
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: (next: RowSelectionState) => void;
 
+  // RowNumber column
+  enableRowNumber?: boolean;
+  rowNumberHeader?: string;   // default 'No.'
+  rowNumberWidth?: number;  // default 56
+
   // pagination (Step5)
   enablePagination?: boolean;
   pagination?: PaginationState;
@@ -52,10 +57,16 @@ export type GenGridProps<TData> = {
   enableColumnSizing?: boolean;
   columnSizing?: ColumnSizingState;
   onColumnSizingChange?: (next: ColumnSizingState) => void;
-
+  
+  height?: number | string;       // ex) 560, '60vh'
+  minHeight?: number | string; // ex) 560, '60vh'
   // Step9: vertical scroll + sticky header
   maxHeight?: number | string;        // ex) 420, '60vh'
   enableStickyHeader?: boolean;       // default true when maxHeight is set
+
+  // Step10 virtualization
+  enableVirtualization?: boolean; // default false
+  overscan?: number;              // default 10
 
   getRowId?: (originalRow: TData, index: number) => string;
 };

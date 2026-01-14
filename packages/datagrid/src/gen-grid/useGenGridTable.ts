@@ -16,6 +16,7 @@ import {
 
 import type { GenGridProps } from './types';
 import { useSelectionColumn, withSelectionColumn } from './features/selection';
+import { ROW_NUMBER_COLUMN_ID, useRowNumberColumn, withRowNumberColumn } from './features/useRowNumberColumn';
 
 export function useGenGridTable<TData>(props: GenGridProps<TData>) {
   const {
@@ -28,6 +29,10 @@ export function useGenGridTable<TData>(props: GenGridProps<TData>) {
     enableRowSelection,   // Step4: Selection
     rowSelection,
     onRowSelectionChange,
+    
+    enableRowNumber,       // RowNumber column
+    rowNumberHeader,       // default 'No.'
+    rowNumberWidth,
     
     enablePagination,     // Step5: Pagination
     pagination,
@@ -61,7 +66,10 @@ export function useGenGridTable<TData>(props: GenGridProps<TData>) {
   const [innerColumnFilters, setInnerColumnFilters] = React.useState<ColumnFiltersState>([]); // Step6: 내부 필터링 상태 
   const [innerGlobalFilter, setInnerGlobalFilter] = React.useState<string>('');               // Step6.5: 내부 글로벌 필터 상태
   const [innerColumnPinning, setInnerColumnPinning] = React.useState<ColumnPinningState>({    // Step7: 내부 컬럼 고정 상태
-    left: enableRowSelection ? ['__select__'] : [],
+    left: [
+      ...(enableRowSelection ? ['__select__'] : []),
+      ...(enableRowNumber ? [ROW_NUMBER_COLUMN_ID] : []),
+      ],
     right: []
   });
   const [innerColumnSizing, setInnerColumnSizing] = React.useState<ColumnSizingState>({});    // Step8: 내부 컬럼 사이징 상태
@@ -76,9 +84,31 @@ export function useGenGridTable<TData>(props: GenGridProps<TData>) {
 
   // Step4: 선택 컬럼을 columns 앞에 붙임
   const selectionColumn = useSelectionColumn<TData>();
+  const rowNumberColumn = useRowNumberColumn<TData>({
+        header: rowNumberHeader ?? 'No.',
+        width: rowNumberWidth ?? 56,
+      });
+  
+  // Columns에 RowNumber + Selection 컬럼 적용    
   const resolvedColumns = React.useMemo(() => {
-    return enableRowSelection ? withSelectionColumn(columns, selectionColumn) : columns;
-  }, [enableRowSelection, columns, selectionColumn]);
+      let next = columns;
+
+      if (enableRowSelection) {
+        next = withSelectionColumn(next, selectionColumn);
+      }
+
+      if (enableRowNumber) {
+        next = withRowNumberColumn(next, rowNumberColumn); // ✅ selection 다음에 삽입
+      }
+
+      return next;
+  }, [
+      columns,
+      enableRowSelection,
+      selectionColumn,
+      enableRowNumber,
+      rowNumberColumn,
+    ]);
 
   const enableAnyFiltering = !!enableFiltering || !!enableGlobalFilter;     // ✅ column/global 중 하나라도 켜져있으면 filtered row model ON
 

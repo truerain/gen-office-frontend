@@ -137,6 +137,91 @@
 
   /* Optional: if ui uses this */
   --color-text-tertiary: var(--color-text-secondary);
+
+  /* LG Grid Theme Specific Variables */
+  /* Grid Container */
+  --grid-bg: #ffffff;
+  --grid-border: #e5e7eb;          /* light gray */
+  --grid-border-radius: 6px;
+  --grid-shadow: 0 1px 2px rgba(0,0,0,0.04);
+
+  /* Grid Header */
+  --grid-header-bg: #f9fafb;
+  --grid-header-text: #111827;     /* near-black */
+  --grid-header-border: #e5e7eb;
+  --grid-header-font-weight: 600;
+  --grid-header-height: 44px;
+
+  --grid-header-bg-hover: #f3f4f6;
+  --grid-header-bg-active: #eef2ff;
+  --grid-header-sort-icon: #a50034; /* LG Red */
+
+  /* Grid Rows */
+  --grid-row-bg: transparent;
+  --grid-row-bg-hover: #f9fafb;
+  --grid-row-bg-selected: #fff1f4;
+  --grid-row-bg-disabled: #f3f4f6;
+  --grid-row-text: #374151;        /* dark gray */
+  --grid-row-border: #e5e7eb;
+  --grid-row-font-weight: 400;
+
+  /* Grid Cells */
+  --grid-cell-bg: #ffffff;
+  --grid-cell-text: #1f2937;
+  --grid-cell-border: #e5e7eb;
+  --grid-cell-padding-x: 12px;
+  --grid-cell-padding-y: 8px;
+  --grid-cell-font-size: 14px;
+
+  --grid-cell-bg-hover: #f9fafb;
+  --grid-cell-bg-selected: #fff1f4; /* LG red tint */
+  --grid-cell-bg-focus: #ffe4ea;
+
+  /* Pinned / Sticky Columns */
+  --grid-cell-bg-pinned: #ffffff;
+  --grid-cell-border-pinned: #e5e7eb;
+  --grid-cell-shadow-pinned: 2px 0 4px rgba(0,0,0,0.06);
+
+  --grid-header-bg-pinned: #f9fafb;
+  --grid-header-border-pinned: #e5e7eb;
+  --grid-header-shadow-pinned: 2px 0 4px rgba(0,0,0,0.08);
+
+  /* Selection / Checkbox Column */
+  --grid-selection-bg: #ffffff;
+  --grid-selection-bg-hover: #fff1f4;
+  --grid-selection-check: #a50034;   /* LG Red */
+  --grid-selection-border: #d1d5db;
+
+  /* Empty / Loading / Skeleton States */
+  --grid-empty-text: #6b7280;
+  --grid-empty-bg: #ffffff;
+
+  --grid-loading-bg: #ffffff;
+  --grid-skeleton-bg: #f3f4f6;
+  --grid-skeleton-shimmer: linear-gradient(
+    90deg,
+    #f3f4f6 25%,
+    #e5e7eb 37%,
+    #f3f4f6 63%
+  );
+
+  /* Scroll / Divider / Resize Handle */
+  --grid-scrollbar-thumb: #d1d5db;
+  --grid-scrollbar-track: #f9fafb;
+
+  --grid-column-resizer: #d1d5db;
+  --grid-column-resizer-hover: #a50034;
+
+  /* Typography (Optional) */
+  --grid-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    'Noto Sans KR', sans-serif;
+  --grid-font-size: 14px;
+  --grid-line-height: 1.4;
+
+  /* Z-index Layering */
+  --grid-z-header: 20;
+  --grid-z-pinned: 15;
+  --grid-z-cell-overlay: 30;
 } 
 
 /* Dark Theme */
@@ -155,4 +240,87 @@
   /* Header/TitleBar Colors for Dark Mode */
   --color-header-bg: #1e2936;
   --color-header-border: #0d1419;
+
+  /* LG Grid Theme – Dark Mode Tokens */
+  /* Grid Container */
+  --grid-bg: #0b0d10;              /* 거의 black */
+  --grid-border: #1f2933;
+  --grid-border-radius: 6px;
+  --grid-shadow: none;
+
+  /* Grid Header */
+  --grid-header-bg: #111318;
+  --grid-header-text: #e5e7eb;
+  --grid-header-border: #1f2933;
+  --grid-header-font-weight: 600;
+  --grid-header-height: 44px;
+
+  --grid-header-bg-hover: #1a1d23;
+  --grid-header-bg-active: #2a0f18; /* LG red dark tint */
+  --grid-header-sort-icon: #ff4d7d; /* LG red (dark friendly) */
+
+  /* Grid Rows */
+  --grid-row-bg: transparent;
+  --grid-row-bg-hover: #141821;
+  --grid-row-bg-selected: #2a0f18;
+  --grid-row-bg-disabled: #111318;
+
+  /* Grid Cells */
+  --grid-cell-bg: #0b0d10;
+  --grid-cell-text: #d1d5db;
+  --grid-cell-border: #1f2933;
+  --grid-cell-padding-x: 12px;
+  --grid-cell-padding-y: 8px;
+  --grid-cell-font-size: 14px;
+
+  --grid-cell-bg-hover: #141821;
+  --grid-cell-bg-selected: #2a0f18; /* dark red tint */
+  --grid-cell-bg-focus: #3a1322;
+  
+  /* Pinned / Sticky Columns */
+  --grid-cell-bg-pinned: #0e1117;
+  --grid-cell-border-pinned: #1f2933;
+  --grid-cell-shadow-pinned: 2px 0 6px rgba(0,0,0,0.6);
+
+  --grid-header-bg-pinned: #111318;
+  --grid-header-border-pinned: #1f2933;
+  --grid-header-shadow-pinned: 2px 0 6px rgba(0,0,0,0.7);
+
+
+  /* Selection / Checkbox Column */
+  --grid-selection-bg: #0b0d10;
+  --grid-selection-bg-hover: #2a0f18;
+  --grid-selection-check: #ff4d7d;   /* LG red for dark */
+  --grid-selection-border: #374151;
+
+  /* Empty / Loading / Skeleton States */
+  --grid-empty-text: #9ca3af;
+  --grid-empty-bg: #0b0d10;
+
+  --grid-loading-bg: #0b0d10;
+  --grid-skeleton-bg: #1a1d23;
+  --grid-skeleton-shimmer: linear-gradient(
+    90deg,
+    #1a1d23 25%,
+    #2a2f3a 37%,
+    #1a1d23 63%
+  );
+
+  /* Scroll / Divider / Resize Handle */
+    --grid-scrollbar-thumb: #374151;
+  --grid-scrollbar-track: #111318;
+
+  --grid-column-resizer: #374151;
+  --grid-column-resizer-hover: #ff4d7d;
+
+  /* Typography (Optional) */
+  --grid-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    'Noto Sans KR', sans-serif;
+  --grid-font-size: 14px;
+  --grid-line-height: 1.4;
+
+  /* Z-index Layering */
+  --grid-z-header: 20;
+  --grid-z-pinned: 15;
+  --grid-z-cell-overlay: 30;
 }
