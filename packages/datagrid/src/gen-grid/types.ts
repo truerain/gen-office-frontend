@@ -15,6 +15,9 @@ export type GenGridProps<TData> = {
   caption?: string;
   className?: string;
 
+  headerHeight?: number;      // Header row height (px) default: 40
+  rowHeight?: number;         // Body row height (px) default: 36
+  
   // sorting (Step3)
   sorting?: SortingState;
   onSortingChange?: (next: SortingState) => void;
@@ -49,6 +52,10 @@ export type GenGridProps<TData> = {
   enableColumnSizing?: boolean;
   columnSizing?: ColumnSizingState;
   onColumnSizingChange?: (next: ColumnSizingState) => void;
+
+  // Step9: vertical scroll + sticky header
+  maxHeight?: number | string;        // ex) 420, '60vh'
+  enableStickyHeader?: boolean;       // default true when maxHeight is set
 
   getRowId?: (originalRow: TData, index: number) => string;
 };

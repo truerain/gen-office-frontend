@@ -2,12 +2,18 @@
 .root {
   width: 100%;
   overflow: hidden;
+
+  /* defaults */
+  --gen-grid-header-height: 40px;
+  --gen-grid-row-height: 36px;
+
 }
 
 /* 수평 스크롤 컨테이너 */
 .tableScroll {
   width: 100%;
   overflow-x: auto;
+  overflow-y: auto;
   position: relative;
 
   /* 테이블 border-radius는 여기서 처리하는 게 sticky에 더 안전 */
@@ -15,10 +21,26 @@
   border-radius: 12px;
   background: var(--color-surface, #fff);
 }
+/* 드래그 중에는 커서/선명도 강화 (선택) */
+.tableScroll[data-resizing] {
+  cursor: col-resize;
+}
+
+/*  헤더 sticky (세로 스크롤 시 위에 붙음) */
+.tableScroll[data-sticky-header] .thead th {
+  position: sticky;
+  top: 0;
+  z-index: 4; /* 기본 헤더 레벨 */
+  background: var(--color-surface, #fff);
+}
+.tableScroll[data-sticky-header] .filterRow th {
+  position: static;
+}
 
 .table {
   width: max-content;
   min-width: 100%;    /* 최소는 컨테이너만큼 */
+  table-layout: fixed;
   //border-collapse: collapse;
   border-collapse: separate;
   border-spacing: 0;
@@ -27,6 +49,8 @@
   border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 12px;
 }
+
+
 
 .caption {
   text-align: left;
@@ -40,24 +64,44 @@
 
 .tr {}
 
-.th,
-.td {
+.th {
   padding: 10px 12px;
+  height: var(--gen-grid-header-height);
+  padding: 0 12px;
+  vertical-align: middle;
   border-bottom: 1px solid var(--color-border, #e5e7eb);
   border-right: 1px solid var(--color-border, #e5e7eb);
   text-align: left;
   vertical-align: middle;
   font-size: 14px;
-}
-
-.th {
   font-weight: 600;
   white-space: nowrap;
+}
+
+.td {
+  padding: 0 12px;
+  height: var(--gen-grid-row-height);
+  vertical-align: middle;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+  border-right: 1px solid var(--color-border, #e5e7eb);
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .th:last-child,
 .td:last-child {
   border-right: none;
+}
+
+/* 헤더 inner는 resizer 자리 확보 */
+.thInner {
+  height: var(--gen-grid-header-height);
+  display: flex;
+  position: relative;
+  align-items: center;
+  gap: 8px;
 }
 
 .tbody .tr:last-child .td {
@@ -74,6 +118,12 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
+.cellContent {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 /* (선택) cell 예시용 */
 .badge {
   display: inline-block;
@@ -84,12 +134,9 @@
   font-size: 12px;
 }
 
-.thInner {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
 
+
+/* Step3: 정렬 가능한 컬럼 헤더 스타일링 */
 .sortable {
   cursor: pointer;
   user-select: none;
@@ -238,33 +285,6 @@
   cursor: not-allowed;
 }
 
-.tableScroll {
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  position: relative;
-
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 12px;
-  background: var(--color-surface, #fff);
-}
-
-/* ✅ sizing 안정화의 핵심 */
-.table {
-  width: max-content;
-  min-width: 100%;
-  table-layout: fixed;     /* 폭 계산을 고정 레이아웃으로 */
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-/* 헤더 inner는 resizer 자리 확보 */
-.thInner {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
 
 /* ✅ resizer 핸들 */
 .resizer {
@@ -288,7 +308,3 @@
   background: rgba(0, 0, 0, 0.12);
 }
 
-/* ✅ 드래그 중에는 커서/선명도 강화 (선택) */
-.tableScroll[data-resizing] {
-  cursor: col-resize;
-}

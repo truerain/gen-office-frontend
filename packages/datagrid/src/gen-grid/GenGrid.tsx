@@ -18,7 +18,10 @@ function getMeta(columnDef: any): GenGridColumnMeta | undefined {
   return columnDef?.meta as GenGridColumnMeta | undefined;
 }
 
-function getPinnedStyles<TData>(column: Column<TData, unknown>) {
+function getPinnedStyles<TData>(
+  column: Column<TData, unknown>,
+  opts?: { isHeader?: boolean }
+) {
   const pinned = column.getIsPinned(); // false | 'left' | 'right'
   if (!pinned) return undefined;
 
@@ -26,8 +29,8 @@ function getPinnedStyles<TData>(column: Column<TData, unknown>) {
   // right pinned: right offset = getAfter('right')
   const style: React.CSSProperties = {
     position: 'sticky',
-    zIndex: 2,
-    background: 'var(--color-surface, red)'
+    background: 'var(--color-surface, #fff)', // pinned 시 배경 보장
+    zIndex: opts?.isHeader ? 6 : 3
   };
 
   if (pinned === 'left') style.left = column.getStart('left');
@@ -49,10 +52,14 @@ export function GenGrid<TData>(props: GenGridProps<TData>) {
   const {
     caption,
     className,
+    headerHeight = 40,
+    rowHeight = 32,
     enableRowSelection,
     enablePagination,
     pageSizeOptions,
-    enableFiltering
+    enableFiltering,
+    maxHeight, 
+    enableStickyHeader
   } = props;
 
   function autoSizeColumn(columnId: string) {
@@ -87,6 +94,9 @@ export function GenGrid<TData>(props: GenGridProps<TData>) {
 
   }
 
+  // Step9: sticky header 기본값 설정
+  const stickyHeaderEnabled = enableStickyHeader ?? Boolean(maxHeight);
+
   // 헤더 그룹(그룹 헤더 포함)
   const headerGroups = table.getHeaderGroups();
   // leaf columns만 있는 마지막 헤더 그룹
@@ -96,7 +106,13 @@ export function GenGrid<TData>(props: GenGridProps<TData>) {
   const isResizing = columnSizingInfo.isResizingColumn;
   
   return (
-    <div className={[styles.root, className].filter(Boolean).join(' ')}>
+    <div 
+      className={[styles.root, className].filter(Boolean).join(' ')}
+      style={{
+        '--gengrid-header-height': `${headerHeight}px`,
+        '--gengrid-row-height': `${rowHeight}px`
+      } as React.CSSProperties}
+    >
       {/* caption은 스크롤 밖 */}
       {caption ? <div className={styles.caption}>{caption}</div> : null}
       {/* 6.5 Global Filter */}
@@ -118,7 +134,12 @@ export function GenGrid<TData>(props: GenGridProps<TData>) {
           </button>
         </div>
       ) : null}
-      <div className={styles.tableScroll} data-resizing={Boolean(isResizing) || undefined}>
+      <div 
+        className={styles.tableScroll} 
+        style={maxHeight ? { maxHeight } : undefined}
+        data-sticky-header={stickyHeaderEnabled || undefined}
+        data-resizing={Boolean(isResizing) || undefined}
+        >
         <table className={styles.table}>
           <thead className={styles.thead}>
             {/* 1) 일반 헤더 렌더 (그룹 헤더 포함) */}
@@ -130,7 +151,7 @@ export function GenGrid<TData>(props: GenGridProps<TData>) {
                   const sortState = header.column.getIsSorted(); // false | 'asc' | 'desc'
                   const isSelectCol = header.column.id === '__select__';
                   
-                  const pinnedStyle = props.enablePinning ? getPinnedStyles(header.column) : undefined; // Step7: pinned 스타일 적용
+                  const pinnedStyle = props.enablePinning ? getPinnedStyles(header.column, { isHeader: true }) : undefined; // Step7: pinned 스타일 적용
                   const pinned = header.column.getIsPinned(); // false|'left'|'right'
                   const isLeafHeader = header.depth === headerGroups.length - 1; // leaf인지
 
@@ -243,7 +264,7 @@ export function GenGrid<TData>(props: GenGridProps<TData>) {
 
             {/* 2) Step6: 필터 Row (leaf columns만 대상으로) */}
             {enableFiltering ? (
-              <tr className={styles.tr}>
+              <tr className={[styles.tr, styles.filterRow].filter(Boolean).join(' ')}>
                 {leafHeaderGroup.headers.map((header) => {
                   const column = header.column;
                   const isSelectCol = column.id === '__select__';
@@ -255,7 +276,7 @@ export function GenGrid<TData>(props: GenGridProps<TData>) {
                   const hasAccessorKey = !!colDef.accessorKey;
                   const canFilter = column.getCanFilter() && hasAccessorKey && !isSelectCol;
 
-                  const pinnedStyle = props.enablePinning ? getPinnedStyles(header.column) : undefined; // Step7: pinned 스타일 적용
+                  const pinnedStyle = props.enablePinning ? getPinnedStyles(header.column, { isHeader: false }) : undefined; // Step7: pinned 스타일 적용
                   const pinned = header.column.getIsPinned(); // false|'left'|'right'
                   const isLeafHeader = header.depth === headerGroups.length - 1; // leaf인지
                   const sizeStyle = props.enableColumnSizing ? getColumnSizeStyle(header.column) : undefined; // Step8: column sizing 스타일 적용
@@ -305,9 +326,9 @@ export function GenGrid<TData>(props: GenGridProps<TData>) {
                       : meta?.align === 'center'
                         ? styles.alignCenter
                         : styles.alignLeft;
-                  const pinnedStyle = props.enablePinning ? getPinnedStyles(cell.column) : undefined;
                   const pinned = cell.column.getIsPinned();
                   const sizeStyle = props.enableColumnSizing ? getColumnSizeStyle(cell.column) : undefined; // Step8: column sizing 스타일 적용
+                  const pinnedStyle = props.enablePinning ? getPinnedStyles(cell.column, { isHeader: false }) : undefined;
 
                   return (
                     <td
@@ -328,7 +349,9 @@ export function GenGrid<TData>(props: GenGridProps<TData>) {
                         .filter(Boolean)
                         .join(' ')}
                     >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      <div className={styles.cellContent}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </div>
                     </td>
                   );
                 })}
