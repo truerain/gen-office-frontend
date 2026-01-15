@@ -34,8 +34,8 @@ const columns: ColumnDef<Person>[] = [
   {
     header: 'Name',
     columns: [
-      { accessorKey: 'firstName', header: 'First Name', size: 180 },
-      { accessorKey: 'lastName', header: 'Last Name', size: 180 }
+      { accessorKey: 'firstName', header: 'First Name', size: 180, meta: { editable: true } },
+      { accessorKey: 'lastName', header: 'Last Name', size: 180, meta: { editable: true }  }
     ]
   },
   {
@@ -43,7 +43,7 @@ const columns: ColumnDef<Person>[] = [
     columns: [
       { accessorKey: 'age', header: 'Age', size: 90 },
       { accessorKey: 'visits', header: 'Visits', size: 120 },
-      { accessorKey: 'status', header: 'Status', size: 160 },
+      { accessorKey: 'status', header: 'Status', size: 160, meta: { editable: true }  },
       { accessorKey: 'progress', header: 'Progress', size: 140 }
     ]
   }

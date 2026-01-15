@@ -1,28 +1,56 @@
 import * as React from 'react';
 import type { Table } from '@tanstack/react-table';
 import { useActiveCellNavigation } from '../features/active-cell/useActiveCellNavigation';
+import { useCellEditing } from '../features/editing/useCellEditing';
+
 import type { ActiveCell } from '../types';
 import { SELECTION_COLUMN_ID } from '../features/selection';
 import { ROW_NUMBER_COLUMN_ID } from '../features/useRowNumberColumn';
 import { GenGridCell } from './GenGridCell';
+import type { CellCoord } from './types';
 
-import styles from './GenGridBody.module.css';
+import bodyStyles from './GenGridBody.module.css';
+
+function mergeHandlers<T extends (...args: any[]) => void>(...fns: Array<T | undefined>) {
+  return (...args: Parameters<T>) => {
+    for (const fn of fns) fn?.(...args);
+  };
+}
 
 type GenGridBodyProps<TData> = {
   table: Table<TData>;
+  pageMode?: 'readonly' | 'editable';
   enablePinning?: boolean;
   enableColumnSizing?: boolean;
+
+  tableClassName?: string; // (선택) bodyStyles.table 같은 걸 전달해서 cell에서 focus selector에 활용 가능
+
   activeCell: ActiveCell;
   onCellClick?: (rowId: string, columnId: string) => void;
   onActiveCellChange: (next: { rowId: string; columnId: string }) => void;
+  
+  /** (선택) 실제 데이터 업데이트는 상위에서 처리 */
+  onCellValueChange?: (coord: CellCoord, nextValue: unknown) => void;
 };
 
 export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
-  const { table, enablePinning, enableColumnSizing, activeCell, onActiveCellChange } = props;
+  const {
+    table,
+    pageMode,
+    enablePinning,
+    enableColumnSizing,
+    tableClassName,
+    activeCell,
+    onActiveCellChange,
+    onCellValueChange,
+  } = props;
+
   const rows = table.getRowModel().rows;
 
-  const isSystemCol = (colId: string) =>
-    colId === SELECTION_COLUMN_ID || colId === ROW_NUMBER_COLUMN_ID;
+  const isSystemCol = React.useCallback(
+    (colId: string) => colId === SELECTION_COLUMN_ID || colId === ROW_NUMBER_COLUMN_ID,
+    []
+  );
 
   const nav = useActiveCellNavigation({
     table,
@@ -31,15 +59,57 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
     isCellNavigable: (_, colId) => !isSystemCol(colId),
   });
 
+  const editing = useCellEditing({
+    table,
+    activeCell: activeCell ?? null,
+    onActiveCellChange,
+    isCellEditable: (rowId, columnId) => {
+      // system column 제외
+      if (isSystemCol(columnId)) return false;
+
+      // 페이지별 정책
+      if (pageMode === 'readonly') return false;
+
+      return true;
+    },
+    updateValue: onCellValueChange
+      ? (coord, v) => onCellValueChange(coord, v)
+      : undefined,
+  });
+
+
   return (
-    <tbody className={styles.tbody}>
+    <tbody className={bodyStyles.tbody}>
       {rows.map((row) => (
-        <tr key={row.id} className={styles.tr}>
+        <tr key={row.id} className={bodyStyles.tr}>
           {row.getVisibleCells().map((cell) => {
+            const colId = cell.column.id;
+
             const isActive =
-              !!activeCell &&
-              activeCell.rowId === row.id &&
-              activeCell.columnId === cell.column.id;
+              !!activeCell && activeCell.rowId === row.id && activeCell.columnId === colId;
+
+            const isEditing =
+              !!editing.editCell &&
+              editing.editCell.rowId === row.id &&
+              editing.editCell.columnId === colId;
+
+            const navProps = nav.getCellProps(row.id, colId, isActive);
+            const editProps = editing.getCellEditProps(row.id, colId);
+
+            // 같은 이벤트 키가 겹칠 수 있어서 merge
+            const mergedProps: React.HTMLAttributes<HTMLTableCellElement> = {
+              ...(navProps as any),
+              ...(editProps as any),
+              onKeyDown: mergeHandlers(
+                (navProps as any).onKeyDown,
+                (editProps as any).onKeyDown
+              ) as any,
+              onDoubleClick: mergeHandlers(
+                (navProps as any).onDoubleClick,
+                (editProps as any).onDoubleClick
+              ) as any,
+              onClick: mergeHandlers((navProps as any).onClick, (editProps as any).onClick) as any,
+            };
 
             return (
               <GenGridCell
@@ -47,9 +117,14 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
                 cell={cell as any}
                 rowId={row.id}
                 isActive={isActive}
+                isEditing={isEditing}
                 enablePinning={enablePinning}
                 enableColumnSizing={enableColumnSizing}
-                navCellProps={nav.getCellProps(row.id, cell.column.id, isActive)}
+                cellProps={mergedProps}
+                tableClassName={tableClassName}
+                onCommitValue={(nextValue) => editing.commitValue({ rowId: row.id, columnId: colId }, nextValue)}
+                onCancelEdit={editing.cancelEditing}
+                onTab={(dir) => editing.moveEditByTab(dir)}
               />
             );
           })}

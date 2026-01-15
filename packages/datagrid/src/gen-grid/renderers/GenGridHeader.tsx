@@ -63,26 +63,24 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
                   {header.isPlaceholder
                     ? null
                     : flexRender(col.columnDef.header, header.getContext())}
-
-                  {/* ✅ (예시) 리사이저 핸들: leaf header에서만 */}
-                  {enableColumnSizing && header.colSpan === 1 && header.getResizeHandler ? (
-                    <div
-                      className={[
-                        pinning.resizer,
-                        resizing ? pinning.resizerActive : ''
-                      ].filter(Boolean).join(' ')}
-                      onMouseDown={header.getResizeHandler()}
-                      onTouchStart={header.getResizeHandler()}
-                      onDoubleClick={(e) => {
-                        e.stopPropagation();
-                        onAutoSizeColumn?.(col.id);
-                      }}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  ) : null}
-
-                  {/* ✅ (예시) pin/sort UI도 기존 코드 여기로 이동 */}
                 </div>
+
+                {/* leaf header에서만 */}
+                {enableColumnSizing && header.colSpan === 1 && header.getResizeHandler ? (
+                  <div
+                    className={[
+                      pinning.resizer,
+                      resizing ? pinning.resizerActive : ''
+                    ].filter(Boolean).join(' ')}
+                    onMouseDown={header.getResizeHandler()}
+                    onTouchStart={header.getResizeHandler()}
+                    onDoubleClick={(e) => {
+                      e.stopPropagation();
+                      onAutoSizeColumn?.(col.id);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : null}
               </th>
             );
           })}
@@ -100,7 +98,7 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
         >
           {/* filter row는 leaf header 기준이 안전 */}
           {leafHeaderGroup.headers.map((header) => {
-              const isSelectCol = header.column.id === '__select__';
+            const isSelectCol = header.column.id === '__select__';
             const colDef: any = header.column.columnDef;
             const hasAccessorKey = !!colDef.accessorKey;
             const col = header.column;

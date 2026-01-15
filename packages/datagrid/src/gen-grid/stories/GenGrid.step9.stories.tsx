@@ -27,7 +27,7 @@ const columns: ColumnDef<Person>[] = [
   {
     header: 'Name',
     columns: [
-      { accessorKey: 'firstName', header: 'First Name', size: 180 },
+      { accessorKey: 'firstName', header: 'First Name', size: 180, meta: { editable: true } },
       { accessorKey: 'lastName', header: 'Last Name', size: 180 }
     ]
   },
@@ -58,7 +58,6 @@ export const VerticalScroll: Story = {
         data={data}
         columns={columns}
         maxHeight={350}
-        min
         enableStickyHeader
         enableColumnSizing
         enablePinning
