@@ -1,6 +1,8 @@
 import * as React from 'react';
 import type { Table } from '@tanstack/react-table';
+
 import styles from './GenGrid.module.css';
+import controls from './GenGridControls.module.css';
 
 type Props<TData> = {
   table: Table<TData>;
@@ -12,11 +14,11 @@ export function GenGridPagination<TData>({ table, pageSizeOptions }: Props<TData
   const { pageIndex, pageSize } = table.getState().pagination;
 
  return (
-    <div className={styles.pager}>
-      <div className={styles.pagerLeft}>
+    <div className={controls.pager}>
+      <div className={controls.pagerLeft}>
         <button
           type="button"
-          className={styles.pagerBtn}
+          className={controls.pagerBtn}
           onClick={() => table.setPageIndex(0)}
           disabled={!table.getCanPreviousPage()}
         >
@@ -24,7 +26,7 @@ export function GenGridPagination<TData>({ table, pageSizeOptions }: Props<TData
         </button>
         <button
           type="button"
-          className={styles.pagerBtn}
+          className={controls.pagerBtn}
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
@@ -32,7 +34,7 @@ export function GenGridPagination<TData>({ table, pageSizeOptions }: Props<TData
         </button>
         <button
           type="button"
-          className={styles.pagerBtn}
+          className={controls.pagerBtn}
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
@@ -40,7 +42,7 @@ export function GenGridPagination<TData>({ table, pageSizeOptions }: Props<TData
         </button>
         <button
           type="button"
-          className={styles.pagerBtn}
+          className={controls.pagerBtn}
           onClick={() => table.setPageIndex(table.getPageCount() - 1)}
           disabled={!table.getCanNextPage()}
         >
@@ -48,15 +50,15 @@ export function GenGridPagination<TData>({ table, pageSizeOptions }: Props<TData
         </button>
       </div>
 
-      <div className={styles.pagerMid}>
+      <div className={controls.pagerMid}>
         Page <strong>{pageIndex + 1}</strong> of <strong>{table.getPageCount()}</strong>
       </div>
 
-      <div className={styles.pagerRight}>
-        <label className={styles.pagerLabel}>
+      <div className={controls.pagerRight}>
+        <label className={controls.pagerLabel}>
           Page size
           <select
-            className={styles.pagerSelect}
+            className={controls.pagerSelect}
             value={pageSize}
             onChange={(e) => table.setPageSize(Number(e.target.value))}
           >

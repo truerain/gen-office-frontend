@@ -1,12 +1,14 @@
 import * as React from 'react';
 
-import styles from './GenGrid.module.css';
 import { useGenGridTable } from './useGenGridTable';
 import { GenGridHeader } from './renderers/GenGridHeader';
 import { GenGridBody } from './renderers/GenGridBody';
 import { GenGridVirtualBody } from './renderers/GenGridVirtualBody';
 import type { GenGridProps, ActiveCell } from './types';
 import { GenGridPagination } from './GenGridPagination';
+
+import styles from './GenGrid.module.css';
+import controls from './GenGridControls.module.css';
 
 export function GenGrid<TData>(props: GenGridProps<TData>) {
   const table = useGenGridTable<TData>(props);
@@ -101,7 +103,7 @@ export function GenGrid<TData>(props: GenGridProps<TData>) {
       </div>
       {/* Step4: 선택 상태 표시(학습용) */}
       {enableRowSelection ? (
-        <div className={styles.footerInfo}>
+        <div className={controls.footerInfo}>
           Selected rows: {table.getSelectedRowModel().rows.length}
         </div>
       ) : null}

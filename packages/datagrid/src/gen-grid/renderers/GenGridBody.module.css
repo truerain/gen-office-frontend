@@ -1,0 +1,72 @@
+/* packages/datagrid/src/gen-grid/GenGridBody.module.css */
+
+.tbody .tr:last-child .td {
+  border-bottom: none;
+}
+
+/* td 기본 */
+.td {
+  height: var(--gen-grid-row-height);
+  padding: 0 var(--grid-cell-padding-x);
+  vertical-align: middle;
+
+  border-bottom: 1px solid var(--grid-cell-border);
+  border-right: 1px solid var(--grid-cell-border);
+
+  font-size: var(--grid-cell-font-size);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  background: var(--grid-cell-bg);
+  color: var(--grid-cell-text);
+}
+
+.td:last-child {
+  border-right: none;
+}
+
+/* Row state precedence */
+.tbody .tr:hover .td {
+  background: var(--grid-cell-bg-hover);
+}
+
+.tbody .tr.is-selected .td {
+  background: var(--grid-cell-bg-selected);
+}
+
+/* Active cell */
+.tbody td[data-active-cell="true"] {
+  outline: 2px solid var(--color-focus, #3b82f6);
+  outline-offset: -2px;
+  background: color-mix(in srgb, var(--color-focus, #3b82f6) 10%, transparent);
+}
+
+/* 키보드 접근 */
+.tbody td:focus-visible {
+  outline: 2px solid var(--color-focus, #3b82f6);
+  outline-offset: -2px;
+}
+
+/* align/mono */
+.alignLeft { text-align: left; }
+.alignCenter { text-align: center; }
+.alignRight { text-align: right; }
+
+.mono {
+  font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+}
+
+.cellContent {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* selection column */
+.selectCol {
+  width: 44px;
+  text-align: center;
+}

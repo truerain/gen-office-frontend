@@ -1,13 +1,14 @@
 import * as React from 'react';
 import { flexRender, type Table } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import styles from '../GenGrid.module.css';
-import { getCellStyle, getColumnSizeStyle, getPinnedStyles } from './cellStyles';
 import type { ActiveCell } from '../types';
 import { useActiveCellNavigation } from '../features/active-cell/useActiveCellNavigation';
-import { getMeta } from './utils';
 import { SELECTION_COLUMN_ID } from '../features/selection';
 import { ROW_NUMBER_COLUMN_ID } from '../features/useRowNumberColumn';
+import { GenGridCell } from './GenGridCell';
+
+import styles from './GenGridBody.module.css';
+import pinning from './GenGridPinning.module.css';
 
 type GenGridVirtualBodyProps<TData> = {
   table: Table<TData>;
@@ -88,43 +89,23 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
         return (
           <tr key={row.id} className={styles.tr}>
           {row.getVisibleCells().map((cell) => {
-                  const isActive = !!activeCell && activeCell.rowId === row.id && activeCell.columnId === cell.column.id;
-                  const isSelectCol = cell.column.id === '__select__';
-                  const meta = getMeta(cell.column.columnDef);
-                  const alignClass =
-                    meta?.align === 'right'
-                      ? styles.alignRight
-                      : meta?.align === 'center'
-                        ? styles.alignCenter
-                        : styles.alignLeft;
-                  const pinned = cell.column.getIsPinned();
-                  const sizeStyle = props.enableColumnSizing ? getColumnSizeStyle(cell.column) : undefined; // Step8: column sizing 스타일 적용
-                  const pinnedStyle = props.enablePinning ? getPinnedStyles(cell.column, { isHeader: false }) : undefined;
+            const isActive =
+              !!activeCell &&
+              activeCell.rowId === row.id &&
+              activeCell.columnId === cell.column.id;
 
-                  return (
-                      <td
-                        key={cell.id}
-                        className={[
-                          styles.td,
-                          alignClass, 
-                          isSelectCol ? styles.selectCol : '',
-                          meta?.mono ? styles.mono : '',
-                          pinned ? styles.pinned : '',
-                          pinned === 'left' ? styles.pinnedLeft : '',
-                          pinned === 'right' ? styles.pinnedRight : ''
-                        ]
-                          .filter(Boolean)
-                          .join(' ')}
-                        style={getCellStyle(cell.column, {
-                          enablePinning,
-                          enableColumnSizing,
-                          isHeader: false
-                        })}
-                        {...nav.getCellProps(row.id, cell.column.id, isActive)}
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
-          )})}
+            return (
+              <GenGridCell
+                key={cell.id}
+                cell={cell as any}
+                rowId={row.id}
+                isActive={isActive}
+                enablePinning={enablePinning}
+                enableColumnSizing={enableColumnSizing}
+                navCellProps={nav.getCellProps(row.id, cell.column.id, isActive)}
+              />
+            );
+          })}
           </tr>
         );
       })}

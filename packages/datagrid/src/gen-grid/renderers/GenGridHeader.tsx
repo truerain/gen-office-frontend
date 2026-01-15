@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { flexRender, type Table } from '@tanstack/react-table';
-import styles from '../GenGrid.module.css';
 import { getCellStyle } from './cellStyles';
+
+import styles from './GenGridHeader.module.css';
+import pinning from './GenGridPinning.module.css';
 
 type GenGridHeaderProps<TData> = {
   table: Table<TData>;
@@ -66,8 +68,8 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
                   {enableColumnSizing && header.colSpan === 1 && header.getResizeHandler ? (
                     <div
                       className={[
-                        styles.resizer,
-                        resizing ? styles.resizerActive : ''
+                        pinning.resizer,
+                        resizing ? pinning.resizerActive : ''
                       ].filter(Boolean).join(' ')}
                       onMouseDown={header.getResizeHandler()}
                       onTouchStart={header.getResizeHandler()}
