@@ -1,13 +1,13 @@
-// packages/datagrid/src/gen-grid/renderers/GenGridBody.tsx
+// packages/gen-grid/src/renderers/GenGridBody.tsx
 
 import * as React from 'react';
 import type { Table } from '@tanstack/react-table';
 import { useActiveCellNavigation } from '../features/active-cell/useActiveCellNavigation';
 import { useCellEditing } from '../features/editing/useCellEditing';
 
-import type { ActiveCell } from '../types';
-import { SELECTION_COLUMN_ID } from '../features/selection';
-import { ROW_NUMBER_COLUMN_ID } from '../features/useRowNumberColumn';
+import type { ActiveCell } from '../features/active-cell/useActiveCellNavigation';
+import { SELECTION_COLUMN_ID } from '../features/selection/selection';
+import { ROW_NUMBER_COLUMN_ID } from '../features/row-number/useRowNumberColumn';
 import { GenGridCell } from './GenGridCell';
 import type { CellCoord } from './types';
 
@@ -127,7 +127,6 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
                 enablePinning={enablePinning}
                 enableColumnSizing={enableColumnSizing}
                 cellProps={mergedProps}
-                tableClassName={tableClassName}
                 onCommitValue={(nextValue) => editing.commitValue({ rowId: row.id, columnId: colId }, nextValue)}
                 onCancelEdit={editing.cancelEditing}
                 onTab={(dir) => editing.moveEditByTab(dir)}

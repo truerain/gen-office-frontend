@@ -4,6 +4,7 @@ import { ThemeProvider } from '@gen-office/theme';
 import App from './app/App';
 import '@gen-office/theme/index.css';
 import '@gen-office/ui/index.css';
+import '@gen-office/gen-grid/index.css';
 
 import './styles/index.css';
 import { AppProviders } from './app/providers/AppProvider';

@@ -1,6 +1,8 @@
 // apps/demo/src/pages/customer/CustomerInfoPage/components/CustomerTable.tsx
 import { useMemo } from 'react';
-import { DataGrid } from '@gen-office/datagrid';
+//import { DataGrid } from '@gen-office/datagrid';
+import { GenGrid } from '@gen-office/gen-grid';
+
 import { Badge } from '@gen-office/ui';
 import type { ColumnDef } from '@gen-office/datagrid';
 import type { CellEditEvent } from '@gen-office/datagrid';
@@ -200,17 +202,25 @@ function CustomerTable({ data, loading }: CustomerTableProps) {
 
   return (
     <div className={styles.tableContainer}>
-      <DataGrid
-        data={data}
-        columns={columns}
-        enableSorting
-        enableFiltering
-        enableRowSelection
-        pageSize={10}
-        height="100%"
-        bordered="all"
-        onCellEdit={handleCellEdit}
-      />
+        <GenGrid<Customer>
+          caption="GenGrid Step10 - Virtualization (50,000 rows)"
+          data={data}
+          columns={columns}
+          getRowId={(row) => row.id}
+          maxHeight={560}
+          height={560}
+          enableStickyHeader
+          headerHeight={40}
+          rowHeight={45}
+          onDataChange={() => {}}
+          enableColumnSizing
+          enablePinning
+          enableFiltering
+          enableRowSelection
+          enableRowNumber
+          enableVirtualization
+          overscan={12}
+        />
     </div>
   );
 }

@@ -1,17 +1,20 @@
-// packages/datagrid/src/gen-grid/renderers/GenGridBody.tsx
+// src/renderers/GenGridVirtualBody.tsx
 
 import * as React from 'react';
-import type { Table } from '@tanstack/react-table';
-import { useActiveCellNavigation } from '../features/active-cell/useActiveCellNavigation';
-import { useCellEditing } from '../features/editing/useCellEditing';
-
-import type { ActiveCell } from '../types';
-import { SELECTION_COLUMN_ID } from '../features/selection';
-import { ROW_NUMBER_COLUMN_ID } from '../features/useRowNumberColumn';
-import { GenGridCell } from './GenGridCell';
+import { type Table } from '@tanstack/react-table';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import type { ActiveCell } from '../features/active-cell/useActiveCellNavigation';
 import type { CellCoord } from './types';
 
+import { useActiveCellNavigation } from '../features/active-cell/useActiveCellNavigation';
+import { useCellEditing } from '../features/editing/useCellEditing';
+import { GenGridCell } from './GenGridCell';
+
+import { SELECTION_COLUMN_ID } from '../features/selection/selection';
+import { ROW_NUMBER_COLUMN_ID } from '../features/row-number/useRowNumberColumn';
+
 import bodyStyles from './GenGridBody.module.css';
+
 
 function mergeHandlers<T extends (...args: any[]) => void>(...fns: Array<T | undefined>) {
   return (...args: Parameters<T>) => {
@@ -19,13 +22,17 @@ function mergeHandlers<T extends (...args: any[]) => void>(...fns: Array<T | und
   };
 }
 
-type GenGridBodyProps<TData> = {
+type GenGridVirtualBodyProps<TData> = {
   table: Table<TData>;
   pageMode?: 'readonly' | 'editable';
   enablePinning?: boolean;
   enableColumnSizing?: boolean;
 
-  tableClassName?: string; // (선택) bodyStyles.table 같은 걸 전달해서 cell에서 focus selector에 활용 가능
+  scrollRef: React.RefObject<HTMLDivElement | null>;
+  rowHeight: number;
+  overscan: number;
+  
+ tableClassName?: string; // (선택) bodyStyles.table 같은 걸 전달해서 cell에서 focus selector에 활용 가능
 
   activeCell: ActiveCell;
   onCellClick?: (rowId: string, columnId: string) => void;
@@ -34,33 +41,63 @@ type GenGridBodyProps<TData> = {
   /** (선택) 실제 데이터 업데이트는 상위에서 처리 */
   onCellValueChange?: (coord: CellCoord, nextValue: unknown) => void;
   isCellDirty?: (rowId: string, columnId: string) => boolean;
+
 };
 
-export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
+export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>) {
   const {
     table,
     pageMode,
+    scrollRef,
+    rowHeight,
+    overscan,
     enablePinning,
     enableColumnSizing,
     tableClassName,
     activeCell,
     onActiveCellChange,
     onCellValueChange,
-    isCellDirty
   } = props;
 
   const rows = table.getRowModel().rows;
+
+  const rowVirtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => rowHeight,
+    overscan
+  });
 
   const isSystemCol = React.useCallback(
     (colId: string) => colId === SELECTION_COLUMN_ID || colId === ROW_NUMBER_COLUMN_ID,
     []
   );
+  
+  const virtualItems = rowVirtualizer.getVirtualItems();
+  const totalSize = rowVirtualizer.getTotalSize();
+
+  const paddingTop = virtualItems.length ? virtualItems[0]!.start : 0;
+  const paddingBottom = virtualItems.length
+    ? totalSize - virtualItems[virtualItems.length - 1]!.end
+    : 0;
+
+  const colSpan = table.getVisibleLeafColumns().length;
+
+  React.useLayoutEffect(() => {
+    // scrollRef가 잡힌 뒤 한 번 측정
+    rowVirtualizer.measure();
+    // 레이아웃이 한 프레임 늦게 잡히는 경우까지 커버
+    requestAnimationFrame(() => rowVirtualizer.measure());
+  }, [rowVirtualizer, rows.length, rowHeight]);
+
 
   const nav = useActiveCellNavigation({
     table,
     activeCell,
-    onActiveCellChange,
+    onActiveCellChange: onActiveCellChange,
     isCellNavigable: (_, colId) => !isSystemCol(colId),
+    focusOptions: { 
+        stickyHeaderHeight: 40 * table.getHeaderGroups().length },
   });
 
   const editing = useCellEditing({
@@ -84,8 +121,18 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
 
   return (
     <tbody className={bodyStyles.tbody}>
-      {rows.map((row) => (
-        <tr key={row.id} className={bodyStyles.tr}>
+      {/* top spacer */}
+      {paddingTop > 0 ? (
+        <tr>
+          <td colSpan={colSpan} style={{ height: paddingTop, padding: 0, border: 0 }} />
+        </tr>
+      ) : null}
+
+      {/* visible rows */}
+      {virtualItems.map((v) => {
+        const row = rows[v.index]!;
+        return (
+          <tr key={row.id} className={bodyStyles.tr}>
           {row.getVisibleCells().map((cell) => {
             const colId = cell.column.id;
 
@@ -114,8 +161,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
               ) as any,
               onClick: mergeHandlers((navProps as any).onClick, (editProps as any).onClick) as any,
             };
-            
-            const dirty = isCellDirty?.(row.id, colId) ?? false;
+
             return (
               <GenGridCell
                 key={cell.id}
@@ -123,19 +169,25 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
                 rowId={row.id}
                 isActive={isActive}
                 isEditing={isEditing}
-                isDirty={dirty}
                 enablePinning={enablePinning}
                 enableColumnSizing={enableColumnSizing}
                 cellProps={mergedProps}
-                tableClassName={tableClassName}
                 onCommitValue={(nextValue) => editing.commitValue({ rowId: row.id, columnId: colId }, nextValue)}
                 onCancelEdit={editing.cancelEditing}
                 onTab={(dir) => editing.moveEditByTab(dir)}
               />
             );
           })}
+          </tr>
+        );
+      })}
+
+      {/* bottom spacer */}
+      {paddingBottom > 0 ? (
+        <tr>
+          <td colSpan={colSpan} style={{ height: paddingBottom, padding: 0, border: 0 }} />
         </tr>
-      ))}
+      ) : null}
     </tbody>
   );
 }

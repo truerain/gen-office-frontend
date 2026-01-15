@@ -1,0 +1,75 @@
+/* packages/gen-grid/src/renderers/GenGridPinning.module.css */
+
+/* pinned */
+.pinned {
+  z-index: var(--grid-z-pinned);
+  background: var(--grid-cell-bg-pinned);
+}
+
+.tbody .tr:hover .td.pinned {
+  background: var(--grid-cell-bg-hover);
+}
+.tbody .tr.is-selected .td.pinned {
+  background: var(--grid-cell-bg-selected);
+}
+
+.pinnedLeft {
+  box-shadow: var(--grid-cell-shadow-pinned-left);
+}
+.pinnedRight {
+  box-shadow: var(--grid-cell-shadow-pinned-right);
+}
+
+/* header pinned */
+[data-sticky-header] .thead th.pinned {
+  background: var(--grid-header-bg-pinned);
+}
+[data-sticky-header] .thead th.pinnedLeft {
+  box-shadow: var(--grid-header-shadow-pinned-left);
+}
+[data-sticky-header] .thead th.pinnedRight {
+  box-shadow: var(--grid-header-shadow-pinned-right);
+}
+
+/* pin controls */
+.pinControls {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 4px;
+}
+
+.pinBtn {
+  padding: 2px 6px;
+  border-radius: 8px;
+  border: 1px solid var(--grid-border);
+  background: var(--grid-bg);
+  color: var(--grid-cell-text);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.pinBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* resizer */
+.resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 100%;
+  cursor: col-resize;
+  touch-action: none;
+  user-select: none;
+  z-index: var(--grid-z-cell-overlay);
+}
+
+.resizer:hover {
+  background: var(--grid-column-resizer-hover);
+}
+
+.resizerActive {
+  background: var(--grid-column-resizer);
+}

@@ -1,8 +1,9 @@
+// packages/datagrid/src/gen-grid/GenGrid.stories.tsx
 import type { Meta, StoryObj } from '@storybook/react';
 import * as React from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 
-import { GenGrid, type GenGridColumnMeta } from '../GenGrid';
+import { GenGrid } from '../GenGrid';
 
 type Person = {
   id: string;
@@ -10,7 +11,7 @@ type Person = {
   lastName: string;
   age: number;
   visits: number;
-  status: 'single' | 'relationship' | 'complicated';
+  status: string;
   progress: number;
 };
 
@@ -36,41 +37,44 @@ const columns: ColumnDef<Person>[] = [
     header: 'Info',
     columns: [
       { accessorKey: 'age', header: 'Age' },
-      {
-        accessorKey: 'visits',
-        header: 'Visits',
-        meta: { align: 'right', mono: true } satisfies GenGridColumnMeta,
-        cell: (info) => info.getValue<number>().toLocaleString()
-      },
+      { accessorKey: 'visits', header: 'Visits' },
       { accessorKey: 'status', header: 'Status' },
-      { accessorKey: 'progress', header: 'Progress' }
+      { accessorKey: 'progress', header: 'Profile Progress' }
     ]
   }
 ];
 
 const meta: Meta<typeof GenGrid<Person>> = {
-  title: 'gen-grid/Step6.Filtering',
+  title: 'gen-grid/Step1.Basic',
   component: GenGrid<Person>
 };
 
 export default meta;
+
 type Story = StoryObj<typeof GenGrid<Person>>;
 
-export const Filtering: Story = {
+export const Basic: Story = {
   render: () => (
     <div style={{ padding: 16 }}>
-      <GenGrid<Person>
-        caption="GenGrid Step6 - Column Filtering"
-        data={data}
-        columns={columns}
-        enablePinning
-        enableGlobalFilter
-        enableFiltering
-        enablePagination
-        pageSizeOptions={[5, 10, 20]}
-        enableRowSelection
-        getRowId={(row) => row.id}
-      />
+        <GenGrid<Person>
+          caption="GenGrid Step10 - Virtualization (50,000 rows)"
+          data={data}
+          columns={columns}
+          getRowId={(row) => row.id}
+          maxHeight={560}
+          height={560}
+          enableStickyHeader
+          headerHeight={40}
+          rowHeight={36}
+          onDataChange={() => {}}
+          enableColumnSizing
+          enablePinning
+          enableFiltering
+          enableRowSelection
+          enableRowNumber
+          enableVirtualization
+          overscan={12}
+        />
     </div>
   )
 };

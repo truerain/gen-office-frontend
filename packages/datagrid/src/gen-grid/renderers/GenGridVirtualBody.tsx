@@ -38,6 +38,7 @@ type GenGridVirtualBodyProps<TData> = {
   
   /** (선택) 실제 데이터 업데이트는 상위에서 처리 */
   onCellValueChange?: (coord: CellCoord, nextValue: unknown) => void;
+  isCellDirty?: (rowId: string, columnId: string) => boolean;
 
 };
 

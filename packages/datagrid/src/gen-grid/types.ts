@@ -68,6 +68,9 @@ export type GenGridProps<TData> = {
   enableVirtualization?: boolean; // default false
   overscan?: number;              // default 10
 
+  isCellDirty?: (rowId: string, columnId: string) => boolean;
+  onCellValueChange?: (coord: { rowId: string; columnId: string }, value: unknown) => void;
+
   getRowId?: (originalRow: TData, index: number) => string;
 };
 

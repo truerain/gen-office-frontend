@@ -1,0 +1,96 @@
+/* packages/gen-grid/src/GenGridControls.module.css */
+
+.footerInfo {
+  margin-top: 10px;
+  font-size: 13px;
+  opacity: 0.75;
+  color: var(--grid-empty-text);
+}
+
+.pager {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pagerLeft,
+.pagerRight,
+.pagerMid {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagerBtn {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--grid-border);
+  background: var(--grid-bg);
+  color: var(--grid-cell-text);
+}
+
+.pagerBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagerLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  opacity: 0.9;
+  color: var(--grid-cell-text);
+}
+
+.pagerSelect {
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--grid-border);
+  background: var(--grid-bg);
+  color: var(--grid-cell-text);
+}
+
+.filterInput {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 8px;
+  height: calc(var(--gen-grid-header-height) - 10px);
+  border: 1px solid var(--grid-border);
+  background: var(--grid-bg);
+  color: var(--grid-cell-text);
+  font-size: 13px;
+}
+
+.toolbar {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.globalSearch {
+  flex: 1;
+  min-width: 220px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--grid-border);
+  background: var(--grid-bg);
+  color: var(--grid-cell-text);
+  font-size: 14px;
+}
+
+.toolbarBtn {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--grid-border);
+  background: var(--grid-bg);
+  color: var(--grid-cell-text);
+}
+
+.toolbarBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -1,0 +1,49 @@
+/* packages/datagrid/src/gen-grid/GenGridLayout.module.css */
+
+.root {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  /* component sizing (theme 아님) */
+  --gen-grid-header-height: 40px;
+  --gen-grid-row-height: 36px;
+}
+
+/* 스크롤 컨테이너가 border/radius를 "유일하게" 책임지게 한다. */
+.tableScroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow: auto;
+  position: relative;
+
+  border: 1px solid var(--grid-border);
+  border-radius: var(--grid-border-radius);
+  background: var(--grid-bg);
+  box-shadow: var(--grid-shadow);
+}
+
+.tableScroll[data-resizing] {
+  cursor: col-resize;
+}
+
+/* table은 레이아웃만 담당 */
+.table {
+  width: max-content;
+  min-width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  color: var(--grid-cell-text);
+  background: var(--grid-bg);
+}
+
+.caption {
+  text-align: left;
+  padding: 12px 12px 0 12px;
+  font-weight: 600;
+  color: var(--grid-header-text);
+}
