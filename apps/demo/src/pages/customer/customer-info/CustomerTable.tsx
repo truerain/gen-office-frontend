@@ -208,8 +208,6 @@ function CustomerTable({ data/*, loading*/ }: CustomerTableProps) {
           data={data}
           columns={columns}
           getRowId={(row) => row.id}
-          maxHeight={560}
-          height={560}
           enableStickyHeader
           headerHeight={40}
           rowHeight={45}
