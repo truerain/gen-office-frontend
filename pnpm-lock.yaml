@@ -45,9 +45,6 @@ importers:
 
   apps/demo:
     dependencies:
-      '@gen-office/datagrid':
-        specifier: workspace:*
-        version: link:../../packages/datagrid
       '@gen-office/design-tokens':
         specifier: workspace:*
         version: link:../../packages/design-tokens
@@ -257,7 +254,7 @@ importers:
         version: 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-essentials':
         specifier: 8.6.15
-        version: 8.6.15(@types/react@18.3.27)(storybook@8.6.15(prettier@3.7.4))
+        version: 8.6.15(@types/react@18.3.1)(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-interactions':
         specifier: 8.6.15
         version: 8.6.15(storybook@8.6.15(prettier@3.7.4))
@@ -4087,12 +4084,6 @@ snapshots:
       '@types/react': 18.3.1
       react: 18.3.1
 
-  '@mdx-js/react@3.1.1(@types/react@18.3.27)(react@18.3.1)':
-    dependencies:
-      '@types/mdx': 2.0.13
-      '@types/react': 18.3.27
-      react: 18.3.1
-
   '@microsoft/api-extractor-model@7.32.2(@types/node@24.10.4)':
     dependencies:
       '@microsoft/tsdoc': 0.16.0
@@ -5109,41 +5100,12 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  '@storybook/addon-docs@8.6.15(@types/react@18.3.27)(storybook@8.6.15(prettier@3.7.4))':
-    dependencies:
-      '@mdx-js/react': 3.1.1(@types/react@18.3.27)(react@18.3.1)
-      '@storybook/blocks': 8.6.15(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/csf-plugin': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/react-dom-shim': 8.6.15(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.6.15(prettier@3.7.4))
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-      storybook: 8.6.15(prettier@3.7.4)
-      ts-dedent: 2.2.0
-    transitivePeerDependencies:
-      - '@types/react'
-
   '@storybook/addon-essentials@8.6.15(@types/react@18.3.1)(storybook@8.6.15(prettier@3.7.4))':
     dependencies:
       '@storybook/addon-actions': 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-backgrounds': 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-controls': 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-docs': 8.6.15(@types/react@18.3.1)(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-highlight': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-measure': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-outline': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-toolbars': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-viewport': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      storybook: 8.6.15(prettier@3.7.4)
-      ts-dedent: 2.2.0
-    transitivePeerDependencies:
-      - '@types/react'
-
-  '@storybook/addon-essentials@8.6.15(@types/react@18.3.27)(storybook@8.6.15(prettier@3.7.4))':
-    dependencies:
-      '@storybook/addon-actions': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-backgrounds': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-controls': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-docs': 8.6.15(@types/react@18.3.27)(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-highlight': 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-measure': 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-outline': 8.6.15(storybook@8.6.15(prettier@3.7.4))

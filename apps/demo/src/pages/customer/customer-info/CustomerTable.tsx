@@ -1,12 +1,13 @@
 // apps/demo/src/pages/customer/CustomerInfoPage/components/CustomerTable.tsx
+
 import { useMemo } from 'react';
-//import { DataGrid } from '@gen-office/datagrid';
+
+import type { ColumnDef } from '@tanstack/react-table';
 import { GenGrid } from '@gen-office/gen-grid';
 
 import { Badge } from '@gen-office/ui';
-import type { ColumnDef } from '@gen-office/datagrid';
-import type { CellEditEvent } from '@gen-office/datagrid';
 import type { Customer } from '../../../entities/customer/model/types';
+
 import styles from './CustomerTable.module.css';
 
 interface CustomerTableProps {
@@ -14,7 +15,7 @@ interface CustomerTableProps {
   loading?: boolean;
 }
 
-function CustomerTable({ data, loading }: CustomerTableProps) {
+function CustomerTable({ data/*, loading*/ }: CustomerTableProps) {
   const columns = useMemo<ColumnDef<Customer>[]>(
     () => [
       {
@@ -176,7 +177,7 @@ function CustomerTable({ data, loading }: CustomerTableProps) {
     ],
     []
   );
-
+/*
   const handleCellEdit = (event: CellEditEvent<Customer>) => {
     console.log('Cell edited:', event);
     // TODO: API 호출하여 서버에 데이터 업데이트
@@ -199,7 +200,7 @@ function CustomerTable({ data, loading }: CustomerTableProps) {
       </div>
     );
   }
-
+*/
   return (
     <div className={styles.tableContainer}>
         <GenGrid<Customer>
