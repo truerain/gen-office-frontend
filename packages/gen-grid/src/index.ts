@@ -1,4 +1,5 @@
 // gen-grid/src/index.ts
 export * from './GenGrid';
-export * from './types';
-export * from './GenGridProvider';
+export * from './GenGrid.types';
+export * from './types/GenGridHandle';
+export * from './context/GenGridProvider';

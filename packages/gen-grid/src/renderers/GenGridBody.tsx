@@ -33,6 +33,7 @@ type GenGridBodyProps<TData> = {
   
   /** (선택) 실제 데이터 업데이트는 상위에서 처리 */
   onCellValueChange?: (coord: CellCoord, nextValue: unknown) => void;
+  isRowDirty?: (rowId: string) => boolean;
   isCellDirty?: (rowId: string, columnId: string) => boolean;
 };
 
@@ -85,7 +86,13 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
   return (
     <tbody className={bodyStyles.tbody}>
       {rows.map((row) => (
-        <tr key={row.id} className={bodyStyles.tr}>
+        <tr 
+          key={row.id} 
+          className={[
+            bodyStyles.tr,
+            props.isRowDirty?.(row.id) ? bodyStyles.rowDirty : '',
+          ].filter(Boolean).join(' ')}
+          >
           {row.getVisibleCells().map((cell) => {
             const colId = cell.column.id;
 

@@ -2,14 +2,18 @@
 import * as React from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 
-import { GenGridProvider } from './GenGridProvider';
-import type { GenGridHandle, GenGridProps } from './types';
-import { GenGridBase } from './GenGridBase';
+import { GenGridProvider } from './context/GenGridProvider';
+import type { GenGridProps } from './GenGrid.types';
+import type { GenGridHandle } from './types/GenGridHandle';
+
+import { GenGridBase } from './components/base/GenGridBase';
 import { useGridData } from './features/data/useGridData';
 import { useDirtyState } from './features/dirty/useDirtyState';
+import { useRowDirtyState } from './features/dirty/useRowDirtyState';
+import { collectEditableAccessorKeys } from './features/editing/columnMeta';
 
-// ✅ 추가
-import { useGenGridTable } from './useGenGridTable';
+
+import { useGenGridTable } from './table/useGenGridTable';
 
 function getAccessorKeyFromColumnId<TData>(
   columns: ColumnDef<TData, any>[],
@@ -24,34 +28,40 @@ export const GenGrid = React.forwardRef(function GenGridInner<TData>(
 ) {
   const { data, setData, isControlled } = useGridData(props);
 
-  // ✅ data가 undefined일 수 있으니 baseline과 table에 동일하게 보장
-  const resolvedData = data ?? [];
+  const resolvedData = data ?? [];                        // data가 undefined일 수 있으니 baseline과 table에 동일하게 보장
+  const enableColumnSizingResolved = props.enableColumnSizing ?? true;
 
-  // hardReset용: mount 시점 defaultData 저장 (uncontrolled에서만 의미 있음)
-  const initialDefaultRef = React.useRef<TData[]>(
+  const initialDefaultRef = React.useRef<TData[]>(        // hardReset용: mount 시점 defaultData 저장 (uncontrolled에서만 의미 있음)
     'defaultData' in props ? props.defaultData ?? [] : []
   );
 
-  // ✅ baseline 초기값은 항상 배열이어야 함
-  const dirty = useDirtyState<TData>({
+  const dirtyKeys = React.useMemo(
+    () => props.dirtyKeys ?? collectEditableAccessorKeys(props.columns),
+    [props.dirtyKeys, props.columns]
+  );
+
+  const dirty = useDirtyState<TData>({                    // ✅ baseline 초기값은 항상 배열이어야 함
     initialBaseline: resolvedData,
     getRowId: props.getRowId,
   });
 
+
   // ✅ controlled에서 부모가 data를 새로 갈아끼우는 경우 baseline 리셋
   React.useEffect(() => {
-    if (!isControlled) return;
+    console.log('GenGrid: dataVersion changed, resetting dirty baseline');
     dirty.setBaselineFromData(resolvedData);
     dirty.clearAllDirty();
     props.onDirtyChange?.(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isControlled, resolvedData]);
+  }, [props.dataVersion]);
+
 
   // ✅ useReactTable 대신 useGenGridTable 사용
   //    (중요) props.data 대신 resolvedData를 주입해서 undefined 방지
   const table = useGenGridTable<TData>({
     ...props,
     data: resolvedData,
+    enableColumnSizing: enableColumnSizingResolved,
   });
 
   const notifyDirty = React.useCallback(() => {
@@ -85,6 +95,7 @@ export const GenGrid = React.forwardRef(function GenGridInner<TData>(
     (): GenGridHandle<TData> => ({
       getData: () => resolvedData,
       isDirty: () => dirty.isDirty(),
+      getDirtyRowIds: () => dirty.getDirtyRowIds(),
 
       revertAll: () => {
         setData(dirty.baseline);
@@ -131,11 +142,12 @@ export const GenGrid = React.forwardRef(function GenGridInner<TData>(
         overscan={props.overscan}
         enableFiltering={props.enableFiltering}
         enablePinning={props.enablePinning}
-        enableColumnSizing={props.enableColumnSizing}
+        enableColumnSizing={enableColumnSizingResolved}
         enableRowSelection={props.enableRowSelection}
         enablePagination={props.enablePagination}
         pageSizeOptions={props.pageSizeOptions}
         onCellValueChange={updateCell}
+        isRowDirty={(rowId) => dirty.isRowDirty(rowId)}
         isCellDirty={(rowId, columnId) => dirty.isCellDirty(rowId, columnId)}
       />
     </GenGridProvider>

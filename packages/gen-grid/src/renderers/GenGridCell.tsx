@@ -149,7 +149,17 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
       data-dirty={isDirty ? 'true' : undefined}
       {...cellProps}
     >
-      {isEditing ? editor : flexRender(cell.column.columnDef.cell, cell.getContext())}
+
+      {isEditing 
+        ? (<div 
+            onMouseDownCapture={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+            onDoubleClick={(e) => e.stopPropagation()}
+            style={{ width: '100%', height: '100%' }}
+          >
+            {editor}
+          </div>) 
+        : flexRender(cell.column.columnDef.cell, cell.getContext())}
     </td>
   );
 }

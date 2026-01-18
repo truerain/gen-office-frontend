@@ -1,0 +1,47 @@
+/* packages/gen-grid/src/components/pagination/GenGridPagination.module.css */
+
+.pager {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pagerLeft,
+.pagerRight,
+.pagerMid {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagerBtn {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--grid-border);
+  background: var(--grid-bg);
+  color: var(--grid-cell-text);
+}
+
+.pagerBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagerLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  opacity: 0.9;
+  color: var(--grid-cell-text);
+}
+
+.pagerSelect {
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--grid-border);
+  background: var(--grid-bg);
+  color: var(--grid-cell-text);
+}

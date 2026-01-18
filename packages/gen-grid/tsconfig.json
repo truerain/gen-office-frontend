@@ -13,6 +13,11 @@
     "jsx": "react-jsx", // 이 설정이 React 18+ 문법을 인지하게 합니다.
     "noUnusedLocals": false,      /* 사용하지 않는 지역 변수에 대한 에러 허용 */
     "noUnusedParameters": false,  /* 사용하지 않는 함수의 매개변수에 대한 에러 허용 */
+    /* Path Mapping - 절대 경로 설정 */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
   "include": ["src"],
   "exclude": [

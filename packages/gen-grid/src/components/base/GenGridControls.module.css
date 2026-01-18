@@ -1,0 +1,50 @@
+/* packages/gen-grid/src/components/base/GenGridControls.module.css */
+
+.footerInfo {
+  margin-top: 10px;
+  font-size: 13px;
+  opacity: 0.75;
+  color: var(--grid-empty-text);
+}
+
+.filterInput {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 8px;
+  height: calc(var(--gen-grid-header-height) - 10px);
+  border: 1px solid var(--grid-border);
+  background: var(--grid-bg);
+  color: var(--grid-cell-text);
+  font-size: 13px;
+}
+
+.toolbar {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.globalSearch {
+  flex: 1;
+  min-width: 220px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--grid-border);
+  background: var(--grid-bg);
+  color: var(--grid-cell-text);
+  font-size: 14px;
+}
+
+.toolbarBtn {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--grid-border);
+  background: var(--grid-bg);
+  color: var(--grid-cell-text);
+}
+
+.toolbarBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

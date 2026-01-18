@@ -1,9 +1,9 @@
 // apps/demo/src/pages/customer/CustomerInfoPage/components/CustomerTable.tsx
 
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { GenGrid } from '@gen-office/gen-grid';
+import { GenGrid, type GenGridHandle } from '@gen-office/gen-grid';
 
 import { Badge } from '@gen-office/ui';
 import type { Customer } from '../../../entities/customer/model/types';
@@ -12,10 +12,14 @@ import styles from './CustomerTable.module.css';
 
 interface CustomerTableProps {
   data: Customer[];
+  dataVersion: number | string;
+  onDataChange: (next: Customer[]) => void;
   loading?: boolean;
 }
 
-function CustomerTable({ data/*, loading*/ }: CustomerTableProps) {
+function CustomerTable({ data, onDataChange, dataVersion /*, loading*/ }: CustomerTableProps) {
+  const gridRef = useRef<GenGridHandle<Customer>>(null);
+
   const columns = useMemo<ColumnDef<Customer>[]>(
     () => [
       {
@@ -25,6 +29,7 @@ function CustomerTable({ data/*, loading*/ }: CustomerTableProps) {
         meta: {
           width: 150,
           align: 'center',
+          pinned: 'left',
         },
       },
       {
@@ -204,17 +209,20 @@ function CustomerTable({ data/*, loading*/ }: CustomerTableProps) {
   return (
     <div className={styles.tableContainer}>
         <GenGrid<Customer>
-          caption="GenGrid Step10 - Virtualization (50,000 rows)"
+          ref={gridRef}
+          caption="고객정보관리"
           data={data}
+          //defaultData={data}
+          dataVersion={dataVersion}
           columns={columns}
           getRowId={(row) => row.id}
-          enableStickyHeader
-          headerHeight={40}
-          rowHeight={45}
-          onDataChange={() => {}}
-          enableColumnSizing
+          onDataChange={(nextData) => { onDataChange(nextData); console.log(gridRef.current?.getDirtyRowIds()); }}
+          onDirtyChange={(dirty) => {console.log('isDirty:', dirty) }}
+          //onDataChange={(nextData) => console.log(nextData)}
+          //onDirtyChange={setIsDirty}
+          // enableColumnSizing        // (기본값: true)
           enablePinning
-          enableFiltering
+          //enableFiltering
           enableRowSelection
           enableRowNumber
           enableVirtualization

@@ -1,10 +1,10 @@
 // apps/demo/src/pages/customer/CustomerInfoPage/CustomerInfoPage.tsx
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, startTransition } from 'react';
 import { Home, Users } from 'lucide-react';
 
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import { DataPanel } from '@/components/DataPanel';
-import { usePageContext } from '@/contexts';
+//import { usePageContext } from '@/contexts';
 import type { PageComponentProps } from '@/config/componentRegistry.dynamic';
 
 import CustomerFilterBar from './CustomerFilterBar';
@@ -33,12 +33,12 @@ interface CustomerInfoPageProps extends PageComponentProps {
 }
 
 function CustomerInfoPage({
-  menuId: menuIdFromProps,
+  //menuId: menuIdFromProps,
   initialParams,
 }: CustomerInfoPageProps) {
   // Context에서 menuId 가져오기 (fallback으로 props 사용)
-  const { menuId: menuIdFromContext } = usePageContext();
-  const menuId = menuIdFromContext || menuIdFromProps;
+  //const { menuId: menuIdFromContext } = usePageContext();
+  //const menuId = menuIdFromContext || menuIdFromProps;
 
   // initialParams에서 초기 필터 생성
   const getInitialFilters = (): CustomerFilter => {
@@ -78,8 +78,15 @@ function CustomerInfoPage({
   //const updateMut = useUpdateCustomerMutation();
   //const deleteMut = useDeleteCustomerMutation();
 
-  const items = listQuery.data?.items ?? [];
   const total = listQuery.data?.total ?? 0;
+
+  const [rows, setRows] = useState(() => listQuery.data?.items ?? []);
+  useEffect(() => {
+    startTransition(() => {
+      setRows(listQuery.data?.items ?? []);
+    });
+  }, [listQuery.data, listQuery.dataUpdatedAt]);
+
 
   const initialLoading = listQuery.isLoading;
   const refreshing = listQuery.isFetching && !listQuery.isLoading;
@@ -128,16 +135,6 @@ function CustomerInfoPage({
   };
   
   
-  // menuId와 initialParams를 Console에 출력 (디버깅용)
-  console.log('CustomerInfoPage:', {
-    menuId,
-    initialParams,
-    currentFilters: filters,
-    queryParams,
-    items,
-    total,
-  });
-
   return (
     <div className={styles.page}>
       {/* 페이지 헤더 with Breadcrumb */}
@@ -198,7 +195,12 @@ function CustomerInfoPage({
             />
           }
         >
-          <CustomerTable data={items} loading={initialLoading} />
+          <CustomerTable 
+            data={rows}
+            dataVersion={listQuery.dataUpdatedAt}
+            onDataChange={setRows}
+            loading={initialLoading} 
+          />
         </DataPanel>
       </div>
     </div>

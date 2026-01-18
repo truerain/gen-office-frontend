@@ -16,4 +16,7 @@ export type GenGridHandle<TData> = {
 
   /** dirty 상태 */
   isDirty: () => boolean;
+  
+  /** dirty한 rowId 목록 */
+  getDirtyRowIds: () => string[];
 };

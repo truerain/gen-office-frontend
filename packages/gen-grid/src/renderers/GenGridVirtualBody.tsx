@@ -32,7 +32,7 @@ type GenGridVirtualBodyProps<TData> = {
   rowHeight: number;
   overscan: number;
   
- tableClassName?: string; // (선택) bodyStyles.table 같은 걸 전달해서 cell에서 focus selector에 활용 가능
+  tableClassName?: string; // (선택) bodyStyles.table 같은 걸 전달해서 cell에서 focus selector에 활용 가능
 
   activeCell: ActiveCell;
   onCellClick?: (rowId: string, columnId: string) => void;
@@ -40,6 +40,7 @@ type GenGridVirtualBodyProps<TData> = {
   
   /** (선택) 실제 데이터 업데이트는 상위에서 처리 */
   onCellValueChange?: (coord: CellCoord, nextValue: unknown) => void;
+  isRowDirty?: (rowId: string) => boolean;
   isCellDirty?: (rowId: string, columnId: string) => boolean;
 
 };
@@ -132,7 +133,13 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
       {virtualItems.map((v) => {
         const row = rows[v.index]!;
         return (
-          <tr key={row.id} className={bodyStyles.tr}>
+        <tr 
+          key={row.id} 
+          className={[
+            bodyStyles.tr,
+            props.isRowDirty?.(row.id) ? bodyStyles.rowDirty : '',
+          ].filter(Boolean).join(' ')}
+          >
           {row.getVisibleCells().map((cell) => {
             const colId = cell.column.id;
 

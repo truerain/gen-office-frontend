@@ -1,7 +1,7 @@
 // packages/gen-grid/src/features/data/useGridData.ts
 
 import * as React from 'react';
-import type { GenGridProps } from '../../types';
+import type { GenGridProps } from '@/GenGrid.types';
 
 export function useGridData<TData>(props: GenGridProps<TData>) {
   const isControlled = 'data' in props;
