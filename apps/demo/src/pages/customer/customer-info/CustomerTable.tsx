@@ -222,9 +222,10 @@ function CustomerTable({ data, onDataChange, dataVersion /*, loading*/ }: Custom
           //onDirtyChange={setIsDirty}
           // enableColumnSizing        // (기본값: true)
           enablePinning
-          //enableFiltering
+          enableRowStatus
           enableRowSelection
           enableRowNumber
+          //enableFiltering
           enableVirtualization
           overscan={12}
         />

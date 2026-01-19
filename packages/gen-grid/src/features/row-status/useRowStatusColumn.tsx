@@ -48,3 +48,10 @@ export function useRowStatusColumn<TData>(args: {
     return col;
   }, [enabled, isRowDirty, width]);
 }
+
+export const withRowStatusColumn = <TData,>(
+  columns: ColumnDef<TData, any>[],
+  rowStatusColumn:ColumnDef<TData, any>
+) => {
+  return [rowStatusColumn, ...columns];
+}

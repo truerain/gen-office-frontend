@@ -74,3 +74,8 @@
 .rowDirty td {
   background: color-mix(in srgb, var(--grid-cell-bg-selected) 35%, var(--grid-cell-bg));
 }
+
+.statusCol {
+  width: 44px;
+  text-align: center;
+}

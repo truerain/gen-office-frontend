@@ -62,6 +62,7 @@ export const GenGrid = React.forwardRef(function GenGridInner<TData>(
     ...props,
     data: resolvedData,
     enableColumnSizing: enableColumnSizingResolved,
+    isRowDirty: dirty.isRowDirty
   });
 
   const notifyDirty = React.useCallback(() => {

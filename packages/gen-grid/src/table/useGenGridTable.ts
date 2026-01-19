@@ -6,13 +6,13 @@ import {
   getSortedRowModel,
   getFilteredRowModel,
   useReactTable,
-  ColumnDef,
+  type ColumnDef,
   type ColumnFiltersState,
   type PaginationState,
   type RowSelectionState,
   type SortingState,
   type ColumnPinningState,
-  type ColumnSizingState 
+  type ColumnSizingState,
 } from '@tanstack/react-table';
 
 import {
@@ -22,22 +22,26 @@ import {
 } from '@/features/pinning/pinningState';
 import { useColumnPinningState } from '@/features/pinning/useColumnPinningState';
 
-import type { GenGridProps } from '@/GenGrid.types';
 import { SELECTION_COLUMN_ID, useSelectionColumn, withSelectionColumn } from '@/features/selection/selection';
 import { ROW_NUMBER_COLUMN_ID, useRowNumberColumn, withRowNumberColumn } from '@/features/row-number/useRowNumberColumn';
+
 import { ROW_STATUS_COLUMN_ID } from '@/features/row-status/rowStatus';
-import { useRowStatusColumn } from '@/features/row-status/useRowStatusColumn';
-
-
+import { useRowStatusColumn, withRowStatusColumn } from '@/features/row-status/useRowStatusColumn';
 
 export type GenGridTableProps<TData> = {
-  data: TData[];                       // ✅ 여기선 반드시 배열
+  data: TData[];
   columns: ColumnDef<TData, any>[];
   getRowId: (row: TData) => string;
 
   // sorting
   sorting?: SortingState;
   onSortingChange?: (next: SortingState) => void;
+
+  // ✅ row status
+  enableRowStatus?: boolean;
+  rowStatusHeader?: string; // (지금 컬럼 header는 ''로 고정이라, 나중에 쓰고 싶으면 useRowStatusColumn에서 반영)
+  rowStatusWidth?: number;
+  isRowDirty?: (rowId: string) => boolean;
 
   // selection
   enableRowSelection?: boolean;
@@ -75,112 +79,129 @@ export type GenGridTableProps<TData> = {
   onColumnSizingChange?: (next: ColumnSizingState) => void;
 };
 
-
 export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
   const {
     data,
     columns,
-    
-    sorting,              // Step3: Sorting
+
+    sorting,
     onSortingChange,
-    
-    enableRowSelection,   // Step4: Selection
+
+    enableRowStatus,
+    rowStatusWidth,
+    isRowDirty,
+
+    enableRowSelection,
     rowSelection,
     onRowSelectionChange,
-    
-    enableRowNumber,       // RowNumber column
-    rowNumberHeader,       // default 'No.'
+
+    enableRowNumber,
+    rowNumberHeader,
     rowNumberWidth,
-    
-    enablePagination,     // Step5: Pagination
+
+    enablePagination,
     pagination,
     onPaginationChange,
 
-    enableFiltering,      // Step6: Column Filtering 
+    enableFiltering,
     columnFilters,
     onColumnFiltersChange,
-    
-    enableGlobalFilter,   // Step6.5: Global Filtering
+
+    enableGlobalFilter,
     globalFilter,
     onGlobalFilterChange,
 
-    enablePinning,        // Step7: Pinning
+    enablePinning,
     columnPinning,
     onColumnPinningChange,
 
-    enableColumnSizing,         // Step8: Column Sizing
+    enableColumnSizing,
     columnSizing,
     onColumnSizingChange,
 
-    getRowId
+    getRowId,
   } = props;
 
-  const [innerSorting, setInnerSorting] = React.useState<SortingState>([]);                   // Step3: 내부 정렬 상태
-  const [innerRowSelection, setInnerRowSelection] = React.useState<RowSelectionState>({});    // Step4: 내부 선택 상태
-  const [innerPagination, setInnerPagination] = React.useState<PaginationState>({             // Step5: 내부 페이지네이션 상태
-    pageIndex: 0,
-    pageSize: 10
-  });
-  const [innerColumnFilters, setInnerColumnFilters] = React.useState<ColumnFiltersState>([]); // Step6: 내부 필터링 상태 
-  const [innerGlobalFilter, setInnerGlobalFilter] = React.useState<string>('');               // Step6.5: 내부 글로벌 필터 상태
+  // ---------- internal states ----------
+  const [innerSorting, setInnerSorting] = React.useState<SortingState>([]);
+  const [innerRowSelection, setInnerRowSelection] = React.useState<RowSelectionState>({});
+  const [innerPagination, setInnerPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
+  const [innerColumnFilters, setInnerColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [innerGlobalFilter, setInnerGlobalFilter] = React.useState<string>('');
+  const [innerColumnSizing, setInnerColumnSizing] = React.useState<ColumnSizingState>({});
 
+  // ---------- user pinned from meta ----------
   const leafDefs = React.useMemo(() => getLeafColumnDefs(columns), [columns]);
   const userPinned = React.useMemo(() => getPinnedIdsFromMeta(leafDefs), [leafDefs]);
 
+  // ✅ initial pinning includes system columns (rowStatus -> selection -> rowNumber)
   const initialPinning = React.useMemo(
     () =>
       buildInitialPinningState({
         systemLeft: [
+          ...(enableRowStatus ? [ROW_STATUS_COLUMN_ID] : []),
           ...(enableRowSelection ? [SELECTION_COLUMN_ID] : []),
           ...(enableRowNumber ? [ROW_NUMBER_COLUMN_ID] : []),
         ],
         userLeft: userPinned.left,
         userRight: userPinned.right,
       }),
-    [enableRowSelection, enableRowNumber, userPinned.left, userPinned.right]
+    [enableRowStatus, enableRowSelection, enableRowNumber, userPinned.left, userPinned.right]
   );
-  const { columnPinning: innerColumnPinning, setColumnPinning: setInnerColumnPinning } = useColumnPinningState(initialPinning);
 
+  const { columnPinning: innerColumnPinning, setColumnPinning: setInnerColumnPinning } =
+    useColumnPinningState(initialPinning);
 
-  const [innerColumnSizing, setInnerColumnSizing] = React.useState<ColumnSizingState>({});    // Step8: 내부 컬럼 사이징 상태
+  // ---------- resolved states ----------
+  const resolvedSorting = sorting ?? innerSorting;
+  const resolvedRowSelection = rowSelection ?? innerRowSelection;
+  const resolvedPagination = pagination ?? innerPagination;
+  const resolvedColumnFilters = columnFilters ?? innerColumnFilters;
+  const resolvedGlobalFilter = globalFilter ?? innerGlobalFilter;
+  const resolvedColumnPinning = columnPinning ?? innerColumnPinning;
+  const resolvedColumnSizing = columnSizing ?? innerColumnSizing;
 
-  const resolvedSorting = sorting ?? innerSorting;                            // Step3: 정렬 상태 해결    
-  const resolvedRowSelection = rowSelection ?? innerRowSelection;             // Step4: 선택 상태 해결
-  const resolvedPagination = pagination ?? innerPagination;                   // Step5: 페이지네이션 상태 해결
-  const resolvedColumnFilters = columnFilters ?? innerColumnFilters;          // Step6: 컬럼 필터링 상태 해결
-  const resolvedGlobalFilter = globalFilter ?? innerGlobalFilter;             // Step6.5: 글로벌 필터 상태 해결
-  const resolvedColumnPinning = columnPinning ?? innerColumnPinning;          // Step7: 컬럼 고정 상태 해결
-  const resolvedColumnSizing = columnSizing ?? innerColumnSizing;             // Step8: 컬럼 사이징 상태 해결
+  // ✅ create system columns
+  const rowStatusColumn = useRowStatusColumn<TData>({
+    enabled: !!enableRowStatus,
+    width: rowStatusWidth ?? 44,
+    isRowDirty,
+  });
 
-  // Step4: 선택 컬럼을 columns 앞에 붙임
   const selectionColumn = useSelectionColumn<TData>();
+
   const rowNumberColumn = useRowNumberColumn<TData>({
-        header: rowNumberHeader ?? 'No.',
-        width: rowNumberWidth ?? 56,
-      });
-  
-  // Columns에 RowNumber + Selection 컬럼 적용    
+    header: rowNumberHeader ?? 'No.',
+    width: rowNumberWidth ?? 56,
+  });
+
+  // ✅ compose columns: rowStatus -> selection -> rowNumber -> user columns
   const resolvedColumns = React.useMemo(() => {
-      let next = columns;
+    let next = columns;
 
-      if (enableRowSelection) {
-        next = withSelectionColumn(next, selectionColumn);
-      }
+    if (rowStatusColumn) {
+      next = withRowStatusColumn(next, rowStatusColumn);
+    }
 
-      if (enableRowNumber) {
-        next = withRowNumberColumn(next, rowNumberColumn); // ✅ selection 다음에 삽입
-      }
+    if (enableRowSelection) {
+      next = withSelectionColumn(next, selectionColumn);
+    }
 
-      return next;
+    if (enableRowNumber) {
+      next = withRowNumberColumn(next, rowNumberColumn);
+    }
+
+    return next;
   }, [
-      columns,
-      enableRowSelection,
-      selectionColumn,
-      enableRowNumber,
-      rowNumberColumn,
-    ]);
+    columns,
+    rowStatusColumn,
+    enableRowSelection,
+    selectionColumn,
+    enableRowNumber,
+    rowNumberColumn,
+  ]);
 
-  const enableAnyFiltering = !!enableFiltering || !!enableGlobalFilter;     // ✅ column/global 중 하나라도 켜져있으면 filtered row model ON
+  const enableAnyFiltering = !!enableFiltering || !!enableGlobalFilter;
 
   return useReactTable<TData>({
     data,
@@ -188,66 +209,54 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     state: {
       sorting: resolvedSorting,
       rowSelection: resolvedRowSelection,
-      pagination: enablePagination ? resolvedPagination : undefined,          // Step5: pagination은 켰을 때만 상태 전달
-      columnFilters: enableFiltering ? resolvedColumnFilters : undefined,     // Step6: filtering state 주입
-      globalFilter: enableGlobalFilter ? resolvedGlobalFilter : undefined,    // Step6.5: global filtering은 켰을 때만 상태 전달
-      columnPinning: resolvedColumnPinning,       // Step7: column pinning 설정 (켜져있든 아니든 상태 전달)
-      columnSizing: resolvedColumnSizing          // Step8: column sizing 설정 (켜져있든 아니든 상태 전달)
+      pagination: enablePagination ? resolvedPagination : undefined,
+      columnFilters: enableFiltering ? resolvedColumnFilters : undefined,
+      globalFilter: enableGlobalFilter ? resolvedGlobalFilter : undefined,
+      columnPinning: resolvedColumnPinning,
+      columnSizing: resolvedColumnSizing,
     },
-    
+
     onSortingChange: (updater) => {
       const next = typeof updater === 'function' ? updater(resolvedSorting) : updater;
-      if (onSortingChange) onSortingChange(next);
-      else setInnerSorting(next);
+      onSortingChange ? onSortingChange(next) : setInnerSorting(next);
     },
-    
+
     onRowSelectionChange: (updater) => {
       const next = typeof updater === 'function' ? updater(resolvedRowSelection) : updater;
-      if (onRowSelectionChange) onRowSelectionChange(next);
-      else setInnerRowSelection(next);
+      onRowSelectionChange ? onRowSelectionChange(next) : setInnerRowSelection(next);
     },
 
     onPaginationChange: (updater) => {
       if (!enablePagination) return;
-
       if (onPaginationChange) {
-        onPaginationChange(
-          typeof updater === 'function'
-            ? updater(resolvedPagination)
-            : updater
-        );
+        onPaginationChange(typeof updater === 'function' ? updater(resolvedPagination) : updater);
       } else {
-        setInnerPagination(updater); // ✅ 핵심
+        setInnerPagination(updater);
       }
     },
 
     onColumnFiltersChange: (updater) => {
       if (!enableFiltering) return;
       if (onColumnFiltersChange) {
-        onColumnFiltersChange(
-          typeof updater === 'function' ? updater(resolvedColumnFilters) : updater
-        );
+        onColumnFiltersChange(typeof updater === 'function' ? updater(resolvedColumnFilters) : updater);
       } else {
         setInnerColumnFilters(updater);
       }
     },
 
-    // Step6.5
     onGlobalFilterChange: (updater) => {
       if (!enableGlobalFilter) return;
-      if (onGlobalFilterChange)  {
+      if (onGlobalFilterChange) {
         onGlobalFilterChange(typeof updater === 'function' ? updater(resolvedGlobalFilter) : updater);
       } else {
-        //console.log(updater);
-       setInnerGlobalFilter(updater);
+        setInnerGlobalFilter(updater);
       }
     },
-    
-    // Step7 Column Pinning
+
     onColumnPinningChange: (updater) => {
       if (!enablePinning) return;
       if (onColumnPinningChange) {
-        onColumnPinningChange( typeof updater === 'function' ? updater(resolvedColumnPinning) : updater );
+        onColumnPinningChange(typeof updater === 'function' ? updater(resolvedColumnPinning) : updater);
       } else {
         setInnerColumnPinning(updater);
       }
@@ -255,22 +264,21 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
 
     onColumnSizingChange: (updater) => {
       if (!enableColumnSizing) return;
-
       if (onColumnSizingChange) {
-        onColumnSizingChange(typeof updater === 'function' ? updater(resolvedColumnSizing) : updater)
+        onColumnSizingChange(typeof updater === 'function' ? updater(resolvedColumnSizing) : updater);
       } else {
-        setInnerColumnSizing(updater);    // ⭐ 핵심: updater 그대로 React에 위임 (stale 방지)
+        setInnerColumnSizing(updater);
       }
     },
-  
+
     enableRowSelection: enableRowSelection ?? false,
-    enableColumnResizing: props.enableColumnSizing ?? false,
-    columnResizeMode: 'onChange', // 드래그 중 즉시 반영 (onEnd로도 가능)
+    enableColumnResizing: enableColumnSizing ?? false,
+    columnResizeMode: 'onChange',
     getRowId,
 
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: enableAnyFiltering ? getFilteredRowModel() : undefined,       // ✅ Step6: filtering row model은 켰을 때만
-    getPaginationRowModel: enablePagination ? getPaginationRowModel() : undefined   // ✅ Step5: pagination row model은 켰을 때만
+    getFilteredRowModel: enableAnyFiltering ? getFilteredRowModel() : undefined,
+    getPaginationRowModel: enablePagination ? getPaginationRowModel() : undefined,
   });
 }
