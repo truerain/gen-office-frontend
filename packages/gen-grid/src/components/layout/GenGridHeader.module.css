@@ -1,4 +1,4 @@
-/* packages/gen-grid/src/renderers/GenGridHeader.module.css */
+/* packages/gen-grid/src/components/layout/GenGridHeader.module.css */
 
 .thead {
   background: var(--grid-header-bg);

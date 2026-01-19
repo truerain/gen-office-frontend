@@ -1,4 +1,4 @@
-// packages/gen-grid/src/renderers/GenGridHeader.tsx
+// packages/gen-grid/src/components/layout/GenGridHeader.tsx
 
 import * as React from 'react';
 import { flexRender, type Table } from '@tanstack/react-table';

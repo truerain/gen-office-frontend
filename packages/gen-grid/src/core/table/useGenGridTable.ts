@@ -1,4 +1,4 @@
-// packages/gen-grid/src/useGenGridTable.ts
+// packages/gen-grid/src/core/table/useGenGridTable.ts
 import * as React from 'react';
 import {
   getCoreRowModel,
@@ -19,14 +19,14 @@ import {
   getLeafColumnDefs,
   getPinnedIdsFromMeta,
   buildInitialPinningState,
-} from '@/features/pinning/pinningState';
-import { useColumnPinningState } from '@/features/pinning/useColumnPinningState';
+} from '../../features/pinning/pinningState';
+import { useColumnPinningState } from '../../features/pinning/useColumnPinningState';
 
-import { SELECTION_COLUMN_ID, useSelectionColumn, withSelectionColumn } from '@/features/selection/selection';
-import { ROW_NUMBER_COLUMN_ID, useRowNumberColumn, withRowNumberColumn } from '@/features/row-number/useRowNumberColumn';
+import { SELECTION_COLUMN_ID, useSelectionColumn, withSelectionColumn } from '../../features/selection/selection';
+import { ROW_NUMBER_COLUMN_ID, useRowNumberColumn, withRowNumberColumn } from '../../features/row-number/useRowNumberColumn';
 
-import { ROW_STATUS_COLUMN_ID } from '@/features/row-status/rowStatus';
-import { useRowStatusColumn, withRowStatusColumn } from '@/features/row-status/useRowStatusColumn';
+import { ROW_STATUS_COLUMN_ID } from '../../features/row-status/rowStatus';
+import { useRowStatusColumn, withRowStatusColumn } from '../../features/row-status/useRowStatusColumn';
 
 export type GenGridTableProps<TData> = {
   data: TData[];

@@ -1,4 +1,4 @@
-// packages/gen-grid/src/renderers/cellStyles.ts
+// packages/gen-grid/src/components/layout/cellStyles.ts
 
 import type * as React from 'react';
 import type { Column } from '@tanstack/react-table';

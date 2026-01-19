@@ -4,66 +4,69 @@ import * as React from 'react';
 
 export type DirtyCells = Map<string, Set<string>>; // rowId -> columnKey set
 
-export function useDirtyState<TData>(args: {
+interface UseDirtyStateArgs<TData> {
   initialBaseline: TData[];
   getRowId: (row: TData) => string;
-}) {
-  const { initialBaseline, getRowId } = args;
+}
 
-  const [baseline, setBaseline] = React.useState<TData[]>(initialBaseline);
-  const [dirtyKeys, setDirtyKeys] = React.useState<string[]>(() => []);
-  const [dirtyCells, setDirtyCells] = React.useState<DirtyCells>(() => new Map());
-
+export function useDirtyState<TData>(props: UseDirtyStateArgs<TData>) {
+  const { initialBaseline, getRowId } = props;
   
+  const [baseline, setBaseline] = React.useState<TData[]>(initialBaseline);           // 1. 원본 데이터 스냅샷 관리
+  const [dirtyCells, setDirtyCells] = React.useState<DirtyCells>(() => new Map());    // 2. 변경된 셀 추적 (Map과 Set을 활용한 고성능 인덱싱)
+  //const [dirtyKeys, setDirtyKeys] = React.useState<string[]>(() => []);
+
+  // 3. 빠른 조회를 위한 Baseline 인덱싱
   const baselineIndex = React.useMemo(() => {
-    const m = new Map<string, TData>();
-    for (const r of baseline) m.set(getRowId(r), r);
-    return m;
+    const map = new Map<string, TData>();
+    for (const row of baseline) {
+      map.set(getRowId(row), row);
+    }
+    return map;
   }, [baseline, getRowId]);
+
+  // --- Actions ---
+  const setBaselineFromData = React.useCallback((nextBaseline: TData[]) => {
+    setBaseline(nextBaseline);
+  }, []);
 
   const clearAllDirty = React.useCallback(() => {
     setDirtyCells(new Map());
   }, []);
+ 
+  
+  const markCellDirty = React.useCallback((rowId: string, columnKey: string, isDirty: boolean) => {
+    setDirtyCells((prev) => {
+      const next = new Map(prev);
+      const rowDirtyCols = new Set(next.get(rowId) ?? []);
 
+      if (isDirty) {
+        rowDirtyCols.add(columnKey);
+      } else {
+        rowDirtyCols.delete(columnKey);
+      }
+
+      if (rowDirtyCols.size === 0) {
+        next.delete(rowId);
+      } else {
+        next.set(rowId, rowDirtyCols);
+      }
+      return next;
+    });
+  }, []);
+
+  // --- Selectors (Derived State) ---
   const isDirty = React.useCallback(() => dirtyCells.size > 0, [dirtyCells]);
-
-// ✅ Row dirty: 해당 row에 dirty cell이 하나라도 있으면 dirty
   const isRowDirty = React.useCallback(
     (rowId: string) => (dirtyCells.get(rowId)?.size ?? 0) > 0,
     [dirtyCells]
   );
-
-  const getDirtyRowIds = React.useCallback(() => Array.from(dirtyCells.keys()), [dirtyCells]);
-
   const isCellDirty = React.useCallback(
     (rowId: string, columnKey: string) => dirtyCells.get(rowId)?.has(columnKey) ?? false,
     [dirtyCells]
   );
-  
 
-
-  const markCellDirty = React.useCallback(
-    (rowId: string, columnKey: string, dirty: boolean) => {
-      setDirtyCells((prev) => {
-        const next = new Map(prev);
-        const cols = new Set(next.get(rowId) ?? []);
-
-        if (dirty) cols.add(columnKey);
-        else cols.delete(columnKey);
-
-        if (cols.size === 0) next.delete(rowId);
-        else next.set(rowId, cols);
-
-        return next;
-      });
-    },
-    []
-  );
-
-  const setBaselineFromData = React.useCallback((nextBaseline: TData[]) => {
-    console.log('setBaselineFromData called');
-    setBaseline(nextBaseline);
-  }, []);
+  const getDirtyRowIds = React.useCallback(() => Array.from(dirtyCells.keys()), [dirtyCells]);
 
   const getBaselineRow = React.useCallback(
     (rowId: string) => baselineIndex.get(rowId),
@@ -72,19 +75,21 @@ export function useDirtyState<TData>(args: {
 
   return {
     baseline,
-    setBaselineFromData,
     baselineIndex,
-
-    dirtyKeys,
     dirtyCells,
-    clearAllDirty,
 
+    // Setters
+    setBaselineFromData,
+    clearAllDirty,
+    markCellDirty,
+    
+    // Getters
     isDirty,
     isRowDirty,
-    getDirtyRowIds,
     isCellDirty,
-
-    markCellDirty,
+    getDirtyRowIds,
     getBaselineRow,
+
+    //dirtyKeys,
   };
 }

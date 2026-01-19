@@ -2,6 +2,6 @@
 @import "./components/base/GenGridLayout.module.css";
 @import "./components/base/GenGridControls.module.css";
 @import "./components/pagination/GenGridPagination.module.css";
-@import "./renderers/GenGridHeader.module.css";
-@import "./renderers/GenGridBody.module.css";
+@import "./components/layout/GenGridHeader.module.css";
+@import "./components/layout/GenGridBody.module.css";
 @import "./renderers/GenGridPinning.module.css";

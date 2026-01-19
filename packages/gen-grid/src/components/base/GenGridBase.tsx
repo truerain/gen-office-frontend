@@ -3,12 +3,12 @@
 import * as React from 'react';
 import type { Table } from '@tanstack/react-table';
 
-import { useGenGridContext } from '@/context/GenGridProvider';
+import { useGenGridContext } from '../../core/context/GenGridProvider';
 
-import { GenGridHeader } from '@/renderers/GenGridHeader';
-import { GenGridBody } from '@/renderers/GenGridBody';
-import { GenGridVirtualBody } from '@/renderers/GenGridVirtualBody';
-import { GenGridPagination } from '@/components/pagination/GenGridPagination';
+import { GenGridHeader } from '../layout/GenGridHeader';
+import { GenGridBody } from '../layout/GenGridBody';
+import { GenGridVirtualBody } from '../layout/GenGridVirtualBody';
+import { GenGridPagination } from '../../components/pagination/GenGridPagination';
 
 import layout from './GenGridLayout.module.css';
 import controls from './GenGridControls.module.css';

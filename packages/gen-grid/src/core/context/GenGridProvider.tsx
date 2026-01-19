@@ -1,10 +1,10 @@
-// packages/gen-grid/src/context/GenGridProvider.tsx
+// packages/gen-grid/src/core/context/GenGridProvider.tsx
 
 import * as React from 'react';
 import type { Table } from '@tanstack/react-table';
 
-import { focusGridCell } from '@/features/active-cell/cellDom';
-import { ActiveCell } from '@/features/active-cell/types';
+import { focusGridCell } from '../../features/active-cell/cellDom';
+import { ActiveCell } from '../../features/active-cell/types';
 
 export type GenGridOptions = {
   isCellNavigable?: (rowId: string, columnId: string) => boolean;

@@ -1,4 +1,4 @@
-/* packages/gen-grid/src/renderers/GenGridBody.module.css */
+/* packages/gen-grid/src/components/layout/GenGridBody.module.css */
 
 .tbody .tr:last-child .td {
   border-bottom: none;

@@ -1,4 +1,4 @@
-// packages/gen-grid/src/renderers/GenGridCell.tsx
+// packages/gen-grid/src/components/layout/GenGridCell.tsx
 
 import * as React from 'react';
 import { flexRender, type Cell } from '@tanstack/react-table';
@@ -8,8 +8,8 @@ import pinningStyles from './GenGridPinning.module.css';
 
 import { getCellStyle } from './cellStyles';
 import { getMeta } from './utils';
-import { SELECTION_COLUMN_ID } from '../features/selection/selection';
-import { ROW_NUMBER_COLUMN_ID } from '../features/row-number/useRowNumberColumn';
+import { SELECTION_COLUMN_ID } from '../../features/selection/selection';
+import { ROW_NUMBER_COLUMN_ID } from '../../features/row-number/useRowNumberColumn';
 
 export type GenGridCellProps<TData> = {
   cell: Cell<TData, unknown>;
