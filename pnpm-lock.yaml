@@ -215,6 +215,82 @@ importers:
       '@gen-office/design-tokens':
         specifier: workspace:*
         version: link:../design-tokens
+      '@gen-office/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@tanstack/react-table':
+        specifier: ^8.20.5
+        version: 8.21.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@tanstack/react-virtual':
+        specifier: ^3.13.16
+        version: 3.13.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      lucide-react:
+        specifier: ^0.562.0
+        version: 0.562.0(react@18.3.1)
+    devDependencies:
+      '@radix-ui/react-slot':
+        specifier: ^1.2.4
+        version: 1.2.4(@types/react@18.3.1)(react@18.3.1)
+      '@storybook/addon-a11y':
+        specifier: ^8.6.15
+        version: 8.6.15(storybook@8.6.15(prettier@3.7.4))
+      '@storybook/addon-essentials':
+        specifier: 8.6.15
+        version: 8.6.15(@types/react@18.3.1)(storybook@8.6.15(prettier@3.7.4))
+      '@storybook/addon-interactions':
+        specifier: 8.6.15
+        version: 8.6.15(storybook@8.6.15(prettier@3.7.4))
+      '@storybook/addon-links':
+        specifier: 8.6.15
+        version: 8.6.15(react@18.3.1)(storybook@8.6.15(prettier@3.7.4))
+      '@storybook/blocks':
+        specifier: 8.6.15
+        version: 8.6.15(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.6.15(prettier@3.7.4))
+      '@storybook/core':
+        specifier: 8.6.15
+        version: 8.6.15(prettier@3.7.4)(storybook@8.6.15(prettier@3.7.4))
+      '@storybook/react':
+        specifier: 8.6.15
+        version: 8.6.15(@storybook/test@8.6.15(storybook@8.6.15(prettier@3.7.4)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.6.15(prettier@3.7.4))(typescript@5.7.2)
+      '@storybook/react-vite':
+        specifier: 8.6.15
+        version: 8.6.15(@storybook/test@8.6.15(storybook@8.6.15(prettier@3.7.4)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.54.0)(storybook@8.6.15(prettier@3.7.4))(typescript@5.7.2)(vite@6.4.1(@types/node@24.10.4)(yaml@2.8.2))
+      '@types/react':
+        specifier: 18.3.1
+        version: 18.3.1
+      '@types/react-dom':
+        specifier: 18.3.1
+        version: 18.3.1
+      '@vitejs/plugin-react':
+        specifier: ^5.1.1
+        version: 5.1.2(vite@6.4.1(@types/node@24.10.4)(yaml@2.8.2))
+      react:
+        specifier: 18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: 18.3.1
+        version: 18.3.1(react@18.3.1)
+      storybook:
+        specifier: 8.6.15
+        version: 8.6.15(prettier@3.7.4)
+      vite:
+        specifier: ^6.2.0
+        version: 6.4.1(@types/node@24.10.4)(yaml@2.8.2)
+      vite-plugin-dts:
+        specifier: ^4.5.0
+        version: 4.5.4(@types/node@24.10.4)(rollup@4.54.0)(typescript@5.7.2)(vite@6.4.1(@types/node@24.10.4)(yaml@2.8.2))
+
+  packages/gen-grid-crud:
+    dependencies:
+      '@gen-office/design-tokens':
+        specifier: workspace:*
+        version: link:../design-tokens
+      '@gen-office/gen-grid':
+        specifier: workspace:*
+        version: link:../gen-grid
       '@gen-office/theme':
         specifier: workspace:*
         version: link:../theme

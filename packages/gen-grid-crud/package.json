@@ -1,5 +1,5 @@
 {
-  "name": "@gen-office/gen-grid",
+  "name": "@gen-office/gen-grid-crud",
   "version": "0.0.0",
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
@@ -25,6 +25,9 @@
   "dependencies": {
     "@gen-office/design-tokens": "workspace:*",
     "@gen-office/utils": "workspace:*",
+    "@gen-office/gen-grid": "workspace:*",
+    "@gen-office/ui": "workspace:*",
+    "@gen-office/theme": "workspace:*",
     "@tanstack/react-table": "^8.20.5",
     "@tanstack/react-virtual": "^3.13.16",
     "clsx": "^2.1.1",
