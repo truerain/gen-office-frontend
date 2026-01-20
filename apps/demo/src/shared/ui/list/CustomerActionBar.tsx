@@ -8,7 +8,7 @@ type Props = {
   onRefresh: () => void;
   onExport?: () => void;
   onImport?: () => void;
-
+  onSave?:  () => void;
   disabled?: boolean;
 };
 
@@ -18,6 +18,7 @@ export default function CustomerActionBar({
   onRefresh,
   onExport,
   onImport,
+  onSave,
   disabled,
 }: Props) {
   return (
@@ -63,10 +64,10 @@ export default function CustomerActionBar({
         <button
           type="button"
           className={`${styles.button} ${styles.primary}`}
-          onClick={onCreate}
+          onClick={onSave}
           disabled={disabled}
         >
-          + 추가
+          저장
         </button>
       </div>
     </div>

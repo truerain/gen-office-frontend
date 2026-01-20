@@ -1,11 +1,14 @@
 /* packages/gen-grid/src/components/base/GenGridLayout.module.css */
 
 .root {
+  height: 100%;
   width: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0;
 
+  
   /* component sizing (theme 아님) */
   --gen-grid-header-height: 40px;
   --gen-grid-row-height: 36px;
@@ -16,7 +19,9 @@
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: auto;
+
   position: relative;
 
   border: 1px solid var(--grid-border);
@@ -47,3 +52,4 @@
   font-weight: 600;
   color: var(--grid-header-text);
 }
+

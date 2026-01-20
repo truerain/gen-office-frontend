@@ -7,13 +7,16 @@ import { DataPanel } from '@/components/DataPanel';
 //import { usePageContext } from '@/contexts';
 import type { PageComponentProps } from '@/config/componentRegistry.dynamic';
 
+import type { Customer } from '../../../entities/customer/model/types';
 import CustomerFilterBar from './CustomerFilterBar';
 import CustomerActionBar from '@/shared/ui/list/CustomerActionBar';
 import CustomerTable from './CustomerTable';
+
+import { type PendingDiff, isDiffDirty } from '@/shared/models/pendingDiff';
+
 import styles from './CustomerInfoPage.module.css';
 
 import type { CustomerFilter, CustomerStatus } from '@/entities/customer/model/types';
-
 import {
   useCustomerListQuery,
   useCreateCustomerMutation,
@@ -39,6 +42,17 @@ function CustomerInfoPage({
   // Context에서 menuId 가져오기 (fallback으로 props 사용)
   //const { menuId: menuIdFromContext } = usePageContext();
   //const menuId = menuIdFromContext || menuIdFromProps;
+
+
+  const [pendingDiff, setPendingDiff] = useState<PendingDiff<Customer, string>>({
+    added: [],
+    modified: [],
+    deleted: [],
+  });
+  
+  const saveDisabled = !isDiffDirty(pendingDiff);
+
+
 
   // initialParams에서 초기 필터 생성
   const getInitialFilters = (): CustomerFilter => {
@@ -80,12 +94,8 @@ function CustomerInfoPage({
 
   const total = listQuery.data?.total ?? 0;
 
-  const [rows, setRows] = useState(() => listQuery.data?.items ?? []);
-  useEffect(() => {
-    startTransition(() => {
-      setRows(listQuery.data?.items ?? []);
-    });
-  }, [listQuery.data, listQuery.dataUpdatedAt]);
+  const rows = listQuery.data?.items ?? [];
+  const dataVersion = listQuery.dataUpdatedAt;
 
 
   const initialLoading = listQuery.isLoading;
@@ -93,6 +103,10 @@ function CustomerInfoPage({
 
   const handleExport = () => alert('CSV 내보내기 기능 (미구현)');
   const handleImport = () => alert('CSV 가져오기 기능 (미구현)');
+
+  const handleSave = async() => {
+    console.log(pendingDiff)
+  }
 
   const handleCreate = async () => {
     const name = window.prompt('고객 이름을 입력하세요');
@@ -192,13 +206,14 @@ function CustomerInfoPage({
               onExport={handleExport}
               onImport={handleImport}
               onCreate={handleCreate}
+              onSave={handleSave}
             />
           }
         >
           <CustomerTable 
-            data={rows}
-            dataVersion={listQuery.dataUpdatedAt}
-            onDataChange={setRows}
+            rows={rows}
+            dataVersion={dataVersion}
+            onDiffChange={setPendingDiff}
             loading={initialLoading} 
           />
         </DataPanel>

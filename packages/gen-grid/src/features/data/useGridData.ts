@@ -14,6 +14,13 @@ export function useGridData<TData>(props: GenGridProps<TData>) {
 
   const data = isControlled ? (props.data ?? []) : inner;
 
+  React.useEffect(() => {
+    if (!isControlled) {
+      setInner(props.defaultData ?? []);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.dataVersion]);
+
   // 최신 data를 ref로 유지 (setData가 data deps를 안 가져도 되게)
   const dataRef = React.useRef<TData[]>(data);
   React.useEffect(() => {

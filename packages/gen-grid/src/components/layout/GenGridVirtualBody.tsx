@@ -66,7 +66,8 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
     count: rows.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => rowHeight,
-    overscan
+    overscan,
+    useFlushSync: false
   });
 
   const isSystemCol = React.useCallback(
@@ -85,10 +86,21 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
   const colSpan = table.getVisibleLeafColumns().length;
 
   React.useLayoutEffect(() => {
-    // scrollRef가 잡힌 뒤 한 번 측정
-    rowVirtualizer.measure();
-    // 레이아웃이 한 프레임 늦게 잡히는 경우까지 커버
-    requestAnimationFrame(() => rowVirtualizer.measure());
+    let raf1 = 0;
+    let raf2 = 0;
+
+    // ✅ 커밋 직후 프레임에 measure
+    raf1 = requestAnimationFrame(() => {
+      rowVirtualizer.measure();
+
+      // ✅ 폰트/레이아웃이 한 프레임 늦게 잡히는 케이스까지 커버
+      raf2 = requestAnimationFrame(() => rowVirtualizer.measure());
+    });
+
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
   }, [rowVirtualizer, rows.length, rowHeight]);
 
 

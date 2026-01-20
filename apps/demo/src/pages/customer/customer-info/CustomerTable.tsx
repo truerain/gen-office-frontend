@@ -1,187 +1,25 @@
 // apps/demo/src/pages/customer/CustomerInfoPage/components/CustomerTable.tsx
 
-import { useMemo, useRef } from 'react';
-
-import type { ColumnDef } from '@tanstack/react-table';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { GenGrid, type GenGridHandle } from '@gen-office/gen-grid';
-
-import { Badge } from '@gen-office/ui';
 import type { Customer } from '../../../entities/customer/model/types';
+import { createCustomerColumns } from './CustomerInfoColumns';
+import { usePendingDiffTracker } from '@/shared/hooks/usePendingDiffTracker';
+import type { PendingDiff } from '@/shared/models/pendingDiff';
+
 
 import styles from './CustomerTable.module.css';
 
 interface CustomerTableProps {
-  data: Customer[];
+  rows: Customer[];
   dataVersion: number | string;
-  onDataChange: (next: Customer[]) => void;
+  onDiffChange: (diff: PendingDiff<Customer, string>) => void;
   loading?: boolean;
 }
 
-function CustomerTable({ data, onDataChange, dataVersion /*, loading*/ }: CustomerTableProps) {
+function CustomerTable(props: CustomerTableProps) {
   const gridRef = useRef<GenGridHandle<Customer>>(null);
-
-  const columns = useMemo<ColumnDef<Customer>[]>(
-    () => [
-      {
-        id: 'id',
-        header: '고객번호',
-        accessorKey: 'id',
-        meta: {
-          width: 150,
-          align: 'center',
-          pinned: 'left',
-        },
-      },
-      {
-        id: 'name',
-        header: '고객명',
-        accessorKey: 'name',
-        meta: {
-          width: 120,
-          align: "center",
-          editable: true,
-          editType: 'text',
-          editPlaceholder: '이름 입력',
-        },
-      },
-      {
-        id: 'email',
-        header: '이메일',
-        accessorKey: 'email',
-        meta: {
-          width: 200,
-          editable: true,
-          editType: 'text',
-          editValidator: (value: string) => {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(value)) {
-              return { valid: false, error: '올바른 이메일 형식이 아닙니다' };
-            }
-            return { valid: true };
-          },
-        },
-      },
-      {
-        id: 'phone',
-        header: '전화번호',
-        accessorKey: 'phone',
-        meta: {
-          width: 130,
-          editable: true,
-          editType: 'text',
-        },
-      },
-      {
-        id: 'company',
-        header: '회사',
-        accessorKey: 'company',
-        meta: {
-          width: 150,
-          editable: true,
-          editType: 'text',
-        },
-      },
-      {
-        id: 'grade',
-        header: '등급',
-        accessorKey: 'grade',
-        meta: {
-          width: 100,
-          align: 'center',
-          editable: true,
-          editType: 'select',
-          editOptions: [
-            { label: 'Platinum', value: 'platinum' },
-            { label: 'Gold', value: 'gold' },
-            { label: 'Silver', value: 'silver' },
-            { label: 'Bronze', value: 'bronze' },
-          ],
-        },
-        cell: ({ row }) => {
-          const grade = row.original.grade;
-          const gradeConfig = {
-            platinum: { label: 'Platinum', variant: 'info' as const },
-            gold: { label: 'Gold', variant: 'warning' as const },
-            silver: { label: 'Silver', variant: 'secondary' as const },
-            bronze: { label: 'Bronze', variant: 'secondary' as const },
-          };
-          
-          const config = gradeConfig[grade];
-          return <Badge variant={config.variant}>{config.label}</Badge>;
-        },
-      },
-      {
-        id: 'status',
-        header: '상태',
-        accessorKey: 'status',
-        meta: {
-          width: 100,
-          align: 'center',
-          editable: true,
-          editType: 'select',
-          editOptions: [
-            { label: '활성', value: 'active' },
-            { label: '비활성', value: 'inactive' },
-            { label: '대기중', value: 'pending' },
-          ],
-        },
-        cell: ({ row }) => {
-          const status = row.original.status;
-          const statusConfig = {
-            ACTIVE: { label: '활성', variant: 'success' as const },
-            INACTIVE: { label: '비활성', variant: 'secondary' as const },
-            PENDING: { label: '대기중', variant: 'warning' as const },
-          };
-          
-          const config = statusConfig[status];
-          return <Badge variant={config.variant}>{config.label}</Badge>;
-        },
-      },
-      {
-        id: 'totalOrders',
-        header: '주문수',
-        accessorKey: 'totalOrders',
-        meta: {
-          width: 100,
-          align: 'right',
-        },
-        cell: ({ row }) => (
-          <span>{row.original.totalOrders.toLocaleString()}건</span>
-        ),
-      },
-      {
-        id: 'totalSpent',
-        header: '총 구매액',
-        accessorKey: 'totalSpent',
-        meta: {
-          width: 130,
-          align: 'right',
-        },
-        cell: ({ row }) => (
-          <span>₩{(row.original.totalSpent / 10000).toLocaleString()}만</span>
-        ),
-      },
-      {
-        id: 'registeredAt',
-        header: '가입일',
-        accessorKey: 'registeredAt',
-        meta: {
-          width: 110,
-          align: 'center',
-        },
-      },
-      {
-        id: 'lastContactAt',
-        header: '최근 접촉일',
-        accessorKey: 'lastContactAt',
-        meta: {
-          width: 120,
-          align: 'center',
-        },
-      },
-    ],
-    []
-  );
+  const columns = useMemo(() => createCustomerColumns(), []);
 /*
   const handleCellEdit = (event: CellEditEvent<Customer>) => {
     console.log('Cell edited:', event);
@@ -206,17 +44,55 @@ function CustomerTable({ data, onDataChange, dataVersion /*, loading*/ }: Custom
     );
   }
 */
+  const [gridState, setGridState] = useState(() => ({
+    rows: props.rows,
+    version: props.dataVersion,
+  }));
+
+  useEffect(() => {
+    setGridState({ rows: props.rows, version: props.dataVersion });
+  }, [props.rows, props.dataVersion]);
+
+  const { diff, recompute } = usePendingDiffTracker<Customer, string>(
+    props.rows,
+    props.dataVersion,
+    gridState.rows,
+    {
+      getRowId: (r) => r.id,
+      // ✅ 서버 저장 대상 필드만 비교 (UI-only 필드 제외)
+      isRowModified: (cur, base) =>
+        cur.name !== base.name ||
+        cur.email !== base.email ||
+        cur.phone !== base.phone ||
+        cur.company !== base.company ||
+        cur.grade !== base.grade ||
+        cur.status !== base.status,
+
+      // (선택) tempId 규칙이 있으면 new row 판정 강화 가능
+      // isNewRow: (row, baselineById) => !baselineById.has(row.id) || row.id.startsWith('temp-'),
+    }
+  );
+  
+  // diff가 바뀌면 메인에 푸시
+  useEffect(() => {
+    props.onDiffChange(diff);
+  }, [diff, props]);
+
+
   return (
     <div className={styles.tableContainer}>
         <GenGrid<Customer>
           ref={gridRef}
           caption="고객정보관리"
-          data={data}
-          //defaultData={data}
-          dataVersion={dataVersion}
+          //data={data}
+          defaultData={gridState.rows}
+          dataVersion={gridState.version}
           columns={columns}
           getRowId={(row) => row.id}
-          onDataChange={(nextData) => { onDataChange(nextData); console.log(gridRef.current?.getDirtyRowIds()); }}
+          onDataChange={(nextData) => {
+            setGridState((s) => ({ ...s, rows: nextData }));
+            recompute(nextData); // ✅ 여기 한 줄이 포인트
+          }}
           onDirtyChange={(dirty) => {console.log('isDirty:', dirty) }}
           //onDataChange={(nextData) => console.log(nextData)}
           //onDirtyChange={setIsDirty}
@@ -231,6 +107,7 @@ function CustomerTable({ data, onDataChange, dataVersion /*, loading*/ }: Custom
         />
     </div>
   );
+  
 }
 
 export default CustomerTable;

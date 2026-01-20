@@ -107,10 +107,6 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
       <div
         ref={scrollRef}
         className={layout.tableScroll}
-        style={{
-          ...(height ? { height } : {}),
-          ...(maxHeight ? { maxHeight } : {}),
-        }}
         data-sticky-header={stickyHeaderEnabled || undefined}
         data-header-rows={headerRowCount}
       >

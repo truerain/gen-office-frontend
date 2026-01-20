@@ -28,6 +28,8 @@ import { ROW_NUMBER_COLUMN_ID, useRowNumberColumn, withRowNumberColumn } from '.
 import { ROW_STATUS_COLUMN_ID } from '../../features/row-status/rowStatus';
 import { useRowStatusColumn, withRowStatusColumn } from '../../features/row-status/useRowStatusColumn';
 
+import { GenGridTableActions } from './tanstack-table';
+
 export type GenGridTableProps<TData> = {
   data: TData[];
   columns: ColumnDef<TData, any>[];
@@ -77,6 +79,10 @@ export type GenGridTableProps<TData> = {
   enableColumnSizing?: boolean;
   columnSizing?: ColumnSizingState;
   onColumnSizingChange?: (next: ColumnSizingState) => void;
+
+  // 액션 주입
+  actions?: GenGridTableActions<TData>;
+
 };
 
 export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
@@ -118,6 +124,8 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     enableColumnSizing,
     columnSizing,
     onColumnSizingChange,
+
+    actions,
 
     getRowId,
   } = props;
@@ -175,7 +183,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     width: rowNumberWidth ?? 56,
   });
 
-  // ✅ compose columns: rowStatus -> selection -> rowNumber -> user columns
+  // compose columns: rowStatus -> selection -> rowNumber -> user columns
   const resolvedColumns = React.useMemo(() => {
     let next = columns;
 
@@ -202,6 +210,14 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
   ]);
 
   const enableAnyFiltering = !!enableFiltering || !!enableGlobalFilter;
+
+  // meta 객체를 안정적으로 유지 (table instance 불필요 리렌더 방지)
+  const meta = React.useMemo(() => {
+    return {
+      genGrid: actions,
+    };
+  }, [actions]);
+
 
   return useReactTable<TData>({
     data,
@@ -274,6 +290,9 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     enableRowSelection: enableRowSelection ?? false,
     enableColumnResizing: enableColumnSizing ?? false,
     columnResizeMode: 'onChange',
+
+    meta,
+    
     getRowId,
 
     getCoreRowModel: getCoreRowModel(),
