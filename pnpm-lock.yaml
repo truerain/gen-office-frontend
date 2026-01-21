@@ -51,6 +51,9 @@ importers:
       '@gen-office/gen-grid':
         specifier: workspace:*
         version: link:../../packages/gen-grid
+      '@gen-office/gen-grid-crud':
+        specifier: workspace:*
+        version: link:../../packages/gen-grid-crud
       '@gen-office/mdi':
         specifier: workspace:*
         version: link:../../packages/mdi

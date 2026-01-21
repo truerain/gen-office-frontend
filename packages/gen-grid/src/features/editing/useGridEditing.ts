@@ -17,7 +17,7 @@ export function useGridEditing<TData>({
   dirty,
 }: UseGridEditingArgs<TData>) {
   const { setData } = gridData;
-  const { getRowId, onDirtyChange } = props;
+  const { getRowId, onDirtyChange, onCellValueChange } = props;
 
   /**
    * 상태 변경 알림 로직
@@ -37,7 +37,9 @@ export function useGridEditing<TData>({
     (coord: { rowId: string; columnId: string }, nextValue: unknown) => {
       const { rowId, columnId } = coord;
 
-      // 1. 원본(Baseline) 값과 비교하여 변경 여부 확인
+      onCellValueChange?.({ rowId, columnId, value: nextValue });
+
+     // 1. 원본(Baseline) 값과 비교하여 변경 여부 확인
       const baseRow = dirty.getBaselineRow(rowId) as any;
       const baseValue = baseRow ? baseRow[columnId] : undefined;
       const isNowDirty = !Object.is(baseValue, nextValue);
@@ -57,7 +59,7 @@ export function useGridEditing<TData>({
       // 4. 변경 알림 통지
       notifyDirty();
     },
-    [dirty, getRowId, setData, notifyDirty]
+    [dirty, getRowId, setData, notifyDirty, onCellValueChange]
   );
 
   return {

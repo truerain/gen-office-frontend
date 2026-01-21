@@ -49,6 +49,13 @@ export type GenGridProps<TData> = CommonGridOptions &
   (ControlledDataProps<TData> | UncontrolledDataProps<TData>) & {
     columns: ColumnDef<TData, any>[];
     getRowId: (row: TData) => string;
+
+    /** 셀 편집 커밋 시점에 “정확히 한 셀” 변경 이벤트 */
+     onCellValueChange?: (args: {
+      rowId: string;
+      columnId: string;
+      value: unknown;
+    }) => void;
   };
 
 
