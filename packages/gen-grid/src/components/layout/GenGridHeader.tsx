@@ -49,11 +49,18 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
             const col = header.column;
             const resizing = col.getIsResizing?.() ?? false;
             const isSelectCol = header.column.id === '__select__';
+            const canSort = col.getCanSort();
+            const sortState = col.getIsSorted();
             
             return (
               <th
                 key={header.id}
-                className={[styles.th, isSelectCol ? styles.selectCol : ''].filter(Boolean).join(' ')}
+                className={[
+                  styles.th,
+                  isSelectCol ? styles.selectCol : '',
+                  canSort ? styles.sortable : '',
+                  sortState ? styles.sorted : '',
+                ].filter(Boolean).join(' ')}
                 style={getCellStyle(col, {
                   enablePinning,
                   enableColumnSizing,
@@ -61,10 +68,18 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
                 })}
                 colSpan={header.colSpan}
               >
-                <div className={styles.thInner}>
+                <div
+                  className={styles.thInner}
+                  onClick={canSort ? col.getToggleSortingHandler() : undefined}
+                >
                   {header.isPlaceholder
                     ? null
                     : flexRender(col.columnDef.header, header.getContext())}
+                  {sortState ? (
+                    <span className={styles.sortIcon}>
+                      {sortState === 'asc' ? '▲' : '▼'}
+                    </span>
+                  ) : null}
                 </div>
 
                 {/* leaf header에서만 */}

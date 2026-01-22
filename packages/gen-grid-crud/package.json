@@ -23,7 +23,6 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@gen-office/design-tokens": "workspace:*",
     "@gen-office/utils": "workspace:*",
     "@gen-office/gen-grid": "workspace:*",
     "@gen-office/ui": "workspace:*",

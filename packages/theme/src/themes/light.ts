@@ -1,34 +1,33 @@
-import { colors } from '@gen-office/design-tokens';
-import type { Theme } from '../types/theme.types';
+﻿import type { Theme } from '../types/theme.types';
 
 export const lightTheme: Theme = {
   mode: 'light',
   colors: {
     background: {
-      primary: colors.primary.white,
-      secondary: colors.secondary.lightGray,
+      primary: '#FFFFFF',
+      secondary: '#D9DADB',
       tertiary: '#F5F5F5',
     },
     foreground: {
-      primary: colors.secondary.black,
-      secondary: colors.primary.gray,
+      primary: '#1D1D1B',
+      secondary: '#6B6B6B',
       tertiary: '#999999',
-      inverse: colors.primary.white,
+      inverse: '#FFFFFF',
     },
     brand: {
-      primary: colors.primary.red,
-      secondary: colors.primary.gray,
+      primary: '#C6004D',
+      secondary: '#6B6B6B',
     },
     status: {
-      success: colors.secondary.teal,
-      warning: colors.secondary.orange,
-      error: colors.primary.red,
-      info: colors.secondary.purple,
+      success: '#0096AA',
+      warning: '#E97300',
+      error: '#C6004D',
+      info: '#61279E',
     },
     border: {
       default: '#E0E0E0',
       subtle: '#F0F0F0',
-      strong: colors.primary.gray,
+      strong: '#6B6B6B',
     },
   },
 };

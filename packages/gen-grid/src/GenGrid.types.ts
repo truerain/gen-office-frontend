@@ -21,7 +21,6 @@ type CommonGridOptions = {
   enableColumnSizing?: boolean;
 
   enableRowStatus?: boolean;
-  /** row status ?�시 기�????��??�서 ?�공 (CRUD pending ?? */
   rowStatusResolver?: (rowId: string) => 'clean' | 'created' | 'updated' | 'deleted';
   enableRowSelection?: boolean;
   enableRowNumber?: boolean;
@@ -29,9 +28,9 @@ type CommonGridOptions = {
   enablePagination?: boolean;
   pageSizeOptions?: number[];
 
-  onDirtyChange?: (dirty: boolean) => void;               // dirty ?�태가 바�????�림
-  onDirtyRowsChange?: (rowIds: string[]) => void;         // dirty ??목록??바�????�림  
-  dirtyKeys?: string[];                                   // dirty 계산?�서 비교??key ?�한 (?�으�?editable 컬럼 accessorKey 기반?�로 ?�동 추출)
+  onDirtyChange?: (dirty: boolean) => void;               // dirty ?�태가 바�????�림
+  onDirtyRowsChange?: (rowIds: string[]) => void;         // dirty ??목록??바�????�림  
+  dirtyKeys?: string[];                                   // dirty 계산?�서 비교??key ?�한 (?�으�?editable 컬럼 accessorKey 기반?�로 ?�동 추출)
 
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: (next: RowSelectionState) => void;
@@ -59,7 +58,7 @@ export type GenGridProps<TData> = CommonGridOptions &
     columns: ColumnDef<TData, any>[];
     getRowId: (row: TData) => string;
 
-    /** ?� ?�집 커밋 ?�점???�정?�히 ???�??변�??�벤??*/
+    /** ?� ?�집 커밋 ?�점???�정?�히 ???�??변�??�벤??*/
      onCellValueChange?: (args: {
       rowId: string;
       columnId: string;

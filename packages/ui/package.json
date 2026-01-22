@@ -23,7 +23,6 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@gen-office/design-tokens": "workspace:*",
     "@gen-office/theme": "workspace:*",
     "@gen-office/utils": "workspace:*",
     "@radix-ui/react-checkbox": "^1.3.3",

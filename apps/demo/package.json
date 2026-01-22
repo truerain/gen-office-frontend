@@ -10,7 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@gen-office/design-tokens": "workspace:*",
     "@gen-office/mdi": "workspace:*",
     "@gen-office/theme": "workspace:*",
     "@gen-office/ui": "workspace:*",

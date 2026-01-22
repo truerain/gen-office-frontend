@@ -19,8 +19,7 @@ export default defineConfig({
       external: [
         'react', 
         'react-dom', 
-        'react/jsx-runtime', 
-        '@gen-office/design-tokens'
+        'react/jsx-runtime'
       ],
       output: {
         globals: {

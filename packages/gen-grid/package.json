@@ -23,7 +23,6 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@gen-office/design-tokens": "workspace:*",
     "@gen-office/utils": "workspace:*",
     "@tanstack/react-table": "^8.20.5",
     "@tanstack/react-virtual": "^3.13.16",

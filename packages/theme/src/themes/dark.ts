@@ -1,5 +1,4 @@
-import { colors } from '@gen-office/design-tokens';
-import type { Theme } from '../types/theme.types';
+﻿import type { Theme } from '../types/theme.types';
 
 export const darkTheme: Theme = {
   mode: 'dark',
@@ -10,25 +9,25 @@ export const darkTheme: Theme = {
       tertiary: '#3A3A3A',
     },
     foreground: {
-      primary: colors.primary.white,
-      secondary: colors.secondary.lightGray,
+      primary: '#FFFFFF',
+      secondary: '#D9DADB',
       tertiary: '#999999',
-      inverse: colors.secondary.black,
+      inverse: '#1D1D1B',
     },
     brand: {
-      primary: colors.primary.red,
-      secondary: colors.primary.gray,
+      primary: '#C6004D',
+      secondary: '#6B6B6B',
     },
     status: {
-      success: colors.secondary.lightTeal,
-      warning: colors.secondary.yellow,
-      error: colors.secondary.pink,
-      info: colors.secondary.lightPurple,
+      success: '#3CD5AF',
+      warning: '#FFDA27',
+      error: '#EC008B',
+      info: '#B150C5',
     },
     border: {
       default: '#404040',
       subtle: '#303030',
-      strong: colors.primary.gray,
+      strong: '#6B6B6B',
     },
   },
 };

@@ -45,9 +45,6 @@ importers:
 
   apps/demo:
     dependencies:
-      '@gen-office/design-tokens':
-        specifier: workspace:*
-        version: link:../../packages/design-tokens
       '@gen-office/gen-grid':
         specifier: workspace:*
         version: link:../../packages/gen-grid
@@ -157,9 +154,6 @@ importers:
 
   apps/storybook-all:
     dependencies:
-      '@gen-office/design-tokens':
-        specifier: workspace:*
-        version: link:../../packages/design-tokens
       '@gen-office/theme':
         specifier: workspace:*
         version: link:../../packages/theme
@@ -178,7 +172,7 @@ importers:
         version: 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-essentials':
         specifier: 8.6.15
-        version: 8.6.15(@types/react@18.3.27)(storybook@8.6.15(prettier@3.7.4))
+        version: 8.6.15(@types/react@18.3.1)(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-interactions':
         specifier: 8.6.15
         version: 8.6.15(storybook@8.6.15(prettier@3.7.4))
@@ -204,20 +198,8 @@ importers:
         specifier: ^6.2.0
         version: 6.4.1(@types/node@24.10.4)(yaml@2.8.2)
 
-  packages/design-tokens:
-    devDependencies:
-      vite:
-        specifier: ^6.2.0
-        version: 6.4.1(@types/node@24.10.4)(yaml@2.8.2)
-      vite-plugin-dts:
-        specifier: ^4.5.0
-        version: 4.5.4(@types/node@24.10.4)(rollup@4.54.0)(typescript@5.7.2)(vite@6.4.1(@types/node@24.10.4)(yaml@2.8.2))
-
   packages/gen-grid:
     dependencies:
-      '@gen-office/design-tokens':
-        specifier: workspace:*
-        version: link:../design-tokens
       '@gen-office/utils':
         specifier: workspace:*
         version: link:../utils
@@ -288,9 +270,6 @@ importers:
 
   packages/gen-grid-crud:
     dependencies:
-      '@gen-office/design-tokens':
-        specifier: workspace:*
-        version: link:../design-tokens
       '@gen-office/gen-grid':
         specifier: workspace:*
         version: link:../gen-grid
@@ -370,9 +349,6 @@ importers:
 
   packages/mdi:
     dependencies:
-      '@gen-office/design-tokens':
-        specifier: workspace:*
-        version: link:../design-tokens
       '@gen-office/theme':
         specifier: workspace:*
         version: link:../theme
@@ -415,10 +391,6 @@ importers:
         version: 4.5.4(@types/node@24.10.4)(rollup@4.54.0)(typescript@5.7.2)(vite@6.4.1(@types/node@24.10.4)(yaml@2.8.2))
 
   packages/theme:
-    dependencies:
-      '@gen-office/design-tokens':
-        specifier: workspace:*
-        version: link:../design-tokens
     devDependencies:
       '@types/react':
         specifier: 18.3.1
@@ -444,9 +416,6 @@ importers:
 
   packages/ui:
     dependencies:
-      '@gen-office/design-tokens':
-        specifier: workspace:*
-        version: link:../design-tokens
       '@gen-office/theme':
         specifier: workspace:*
         version: link:../theme
@@ -3967,12 +3936,6 @@ snapshots:
       '@types/react': 18.3.1
       react: 18.3.1
 
-  '@mdx-js/react@3.1.1(@types/react@18.3.27)(react@18.3.1)':
-    dependencies:
-      '@types/mdx': 2.0.13
-      '@types/react': 18.3.27
-      react: 18.3.1
-
   '@microsoft/api-extractor-model@7.32.2(@types/node@24.10.4)':
     dependencies:
       '@microsoft/tsdoc': 0.16.0
@@ -4989,41 +4952,12 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  '@storybook/addon-docs@8.6.15(@types/react@18.3.27)(storybook@8.6.15(prettier@3.7.4))':
-    dependencies:
-      '@mdx-js/react': 3.1.1(@types/react@18.3.27)(react@18.3.1)
-      '@storybook/blocks': 8.6.15(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/csf-plugin': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/react-dom-shim': 8.6.15(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.6.15(prettier@3.7.4))
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-      storybook: 8.6.15(prettier@3.7.4)
-      ts-dedent: 2.2.0
-    transitivePeerDependencies:
-      - '@types/react'
-
   '@storybook/addon-essentials@8.6.15(@types/react@18.3.1)(storybook@8.6.15(prettier@3.7.4))':
     dependencies:
       '@storybook/addon-actions': 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-backgrounds': 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-controls': 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-docs': 8.6.15(@types/react@18.3.1)(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-highlight': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-measure': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-outline': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-toolbars': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-viewport': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      storybook: 8.6.15(prettier@3.7.4)
-      ts-dedent: 2.2.0
-    transitivePeerDependencies:
-      - '@types/react'
-
-  '@storybook/addon-essentials@8.6.15(@types/react@18.3.27)(storybook@8.6.15(prettier@3.7.4))':
-    dependencies:
-      '@storybook/addon-actions': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-backgrounds': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-controls': 8.6.15(storybook@8.6.15(prettier@3.7.4))
-      '@storybook/addon-docs': 8.6.15(@types/react@18.3.27)(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-highlight': 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-measure': 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-outline': 8.6.15(storybook@8.6.15(prettier@3.7.4))

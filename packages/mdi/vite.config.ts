@@ -27,7 +27,6 @@ export default defineConfig({
         '@gen-office/ui',
         '@gen-office/theme',
         '@gen-office/utils',
-        '@gen-office/design-tokens',
         'lucide-react',
         'zustand'
       ],

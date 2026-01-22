@@ -1,15 +1,14 @@
-## @gen-office/utils 도메인 정의(확정)
+﻿## @gen-office/utils ?꾨찓???뺤쓽(?뺤젙)
 
-### 책임(OK)
-- className 조합(cn)
+### 梨낆엫(OK)
+- className 議고빀(cn)
 - date/number formatting
-- validation (email/phone/range 등)
-- (추가 예정) tiny pure functions: object/path/safe-parse 정도까지
+- validation (email/phone/range ??
+- (異붽? ?덉젙) tiny pure functions: object/path/safe-parse ?뺣룄源뚯?
 
-#### 금지(NOT OK)
+#### 湲덉?(NOT OK)
 - React import / JSX / hooks
-- UI 컴포넌트 의존
-- theme/design-tokens 의존
-- API client / fetch / query 같은 “데이터 레이어”
-- 브라우저 전용(예: window/localStorage 직접 접근) 유틸
+- UI 而댄룷?뚰듃 ?섏〈
+- API client / fetch / query 媛숈? ?쒕뜲?댄꽣 ?덉씠?닳?
+- 釉뚮씪?곗? ?꾩슜(?? window/localStorage 吏곸젒 ?묎렐) ?좏떥
 
