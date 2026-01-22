@@ -6,7 +6,6 @@ import type { CrudChange } from '@gen-office/gen-grid-crud';
 
 import type { Customer } from '../../../entities/customer/model/types';
 import { createCustomerColumns } from './CustomerInfoColumns';
-import { usePendingDiffTracker } from '@/shared/hooks/usePendingDiffTracker';
 import type { PendingDiff } from '@/shared/models/pendingDiff';
 
 import styles from './CustomerTable.module.css';
@@ -31,31 +30,6 @@ function CustomerTable(props: CustomerTableProps) {
   useEffect(() => {
     setGridState({ rows: props.rows, version: props.dataVersion });
   }, [props.rows, props.dataVersion]);
-
-  const { diff } = usePendingDiffTracker<Customer, string>(
-    props.rows,
-    props.dataVersion,
-    gridState.rows,
-    {
-      getRowId: (r) => r.id,
-      // 서버 스키마에 포함되는 필드만 비교 (UI 전용 필드는 제외)
-      isRowModified: (cur, base) =>
-        cur.name !== base.name ||
-        cur.email !== base.email ||
-        cur.phone !== base.phone ||
-        cur.company !== base.company ||
-        cur.grade !== base.grade ||
-        cur.status !== base.status,
-
-      // (옵션) tempId 규칙이 있으면 new row 판정 강화 가능
-      // isNewRow: (row, baselineById) => !baselineById.has(row.id) || row.id.startsWith('temp-'),
-    }
-  );
-
-  // diff가 바뀌면 상위로 전달
-  useEffect(() => {
-    props.onDiffChange(diff);
-  }, [diff, props]);
 
   return (
     <div className={styles.tableContainer}>
@@ -110,9 +84,18 @@ function CustomerTable(props: CustomerTableProps) {
           enableRowStatus: true,
           enableRowSelection: true,
         }}
-        onStateChange={(_) => {
-          // 디버그용
-          // console.log('crud state', s);
+        onStateChange={(s) => {
+          const added = s.changes
+            .filter((c) => c.type === 'create')
+            .map((c: any) => c.row);
+          const modified = s.changes
+            .filter((c) => c.type === 'update')
+            .map((c: any) => ({ id: c.rowId, patch: c.patch }));
+          const deleted = s.changes
+            .filter((c) => c.type === 'delete')
+            .map((c: any) => ({ id: c.rowId }));
+
+          props.onDiffChange({ added, modified, deleted } as any);
         }}
       />
     </div>

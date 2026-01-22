@@ -31,7 +31,7 @@ function generateTempId(): CrudRowId {
 }
 
 
-/* RowStatus/patch 관련 유틸 */
+/* RowStatus/patch 愿???좏떥 */
 function shallowDiffPatch<TData extends Record<string, any>>(
   prev: TData,
   next: TData,
@@ -53,9 +53,9 @@ function shallowDiffPatch<TData extends Record<string, any>>(
 /**
  */
 /*
- * columns에서 patch 비교에 사용할 key 추출:
- * - accessorKey(string) 우선 사용
- * - 없으면 빈 배열
+ * columns?먯꽌 patch 鍮꾧탳???ъ슜??key 異붿텧:
+ * - accessorKey(string) ?곗꽑 ?ъ슜
+ * - ?놁쑝硫?鍮?諛곗뿴
  */
 function getEditableKeysFromColumns<TData>(columns: readonly ColumnDef<TData, any>[]): string[] {
   const keys: string[] = [];
@@ -81,8 +81,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     getRowId,
 
     createRow,
-    // columnId/value -> patch 매핑 함수 (accessorKey가 있으면 기본 동작으로도 충분)
-    makePatch, // columnId/value를 patch로 변환하는 함수 (accessorKey가 있으면 기본 동작으로 충분)
+    // columnId/value -> patch 留ㅽ븨 ?⑥닔 (accessorKey媛 ?덉쑝硫?湲곕낯 ?숈옉?쇰줈??異⑸텇)
+    makePatch, // columnId/value瑜?patch濡?蹂?섑븯???⑥닔 (accessorKey媛 ?덉쑝硫?湲곕낯 ?숈옉?쇰줈 異⑸텇)
     deleteMode = 'selected',
 
     onCommit,
@@ -97,7 +97,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     selectedRowIds: selectedRowIdsControlled,
     onSelectedRowIdsChange,
 
-    // active cell (옵션)
+    // active cell (?듭뀡)
     activeCell: activeCellControlled,
     onActiveCellChange,
 
@@ -145,17 +145,52 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     [setSelectedRowIds]
   );
 
-  // --- pending changes
+    // --- committing state
+  const [isCommittingLocal, setIsCommittingLocal] = React.useState(false);
+  const isCommitting = isCommittingControlled ?? isCommittingLocal;
+
+  
   // --- pending changes
   const pendingApi = usePendingChanges<TData>();
-  // 鍮꾧탳 湲곤옙?: accessorKey 湲곕컲 (湲곕낯)
+
+  // diffKeys: accessorKey 기반으로 patch 비교 키 추출
   const diffKeys = React.useMemo(() => getEditableKeysFromColumns(columns), [columns]);
   const firstEditableColumnId = React.useMemo(() => getFirstEditableColumnId(columns), [columns]);
+
   const activeCellForGrid = React.useMemo(
     () => (activeCell ? { rowId: String(activeCell.rowId), columnId: activeCell.columnId } : null),
     [activeCell]
   );
+  const publishStateRef = React.useRef<string>("__init__");
 
+  const publishStateKey = React.useMemo(() => {
+    const selectedKey = selectedRowIds.join(",");
+    const activeRowKey = activeCell?.rowId ?? "";
+    const activeColKey = activeCell?.columnId ?? "";
+    const changesKey = pendingApi.changes.map((c) => {
+      if (c.type === "create") return `c:${String(c.tempId)}`;
+      if (c.type === "update") return `u:${String(c.rowId)}:${Object.keys(c.patch ?? {}).join("|")}`;
+      if (c.type === "delete") return `d:${String(c.rowId)}`;
+      if (c.type === "undelete") return `ud:${String(c.rowId)}`;
+      return "";
+    }).join(",");
+    return [
+      String(gridProps?.dataVersion ?? ""),
+      String(pendingApi.dirty),
+      selectedKey,
+      `${activeRowKey}:${activeColKey}`,
+      String(isCommitting),
+      changesKey,
+    ].join("||");
+  }, [
+    selectedRowIds,
+    activeCell?.rowId,
+    activeCell?.columnId,
+    pendingApi.changes,
+    pendingApi.dirty,
+    gridProps?.dataVersion,
+    isCommitting,
+  ]);
 
   const diff = React.useMemo(
     () =>
@@ -169,14 +204,14 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     [data, getRowId, pendingApi.pending]
   );
 
-  // GenGrid에 전달할 mutable array
+  // GenGrid???꾨떖??mutable array
   const gridData = React.useMemo<TData[]>(
     () => Array.from(diff.viewData),
     [diff.viewData]
   );
 
   // ??GenGrid getRowId??(row) => string
-  // GenGrid는 rowId를 string으로 사용
+  // GenGrid??rowId瑜?string?쇰줈 ?ъ슜
   const genGridGetRowId = React.useCallback(
     (row: TData) => {
       const id = getCrudRowId(row, (r) => getRowId(r, -1));
@@ -185,9 +220,6 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     [getRowId]
   );
 
-  // --- committing state
-  const [isCommittingLocal, setIsCommittingLocal] = React.useState(false);
-  const isCommitting = isCommittingControlled ?? isCommittingLocal;
 
   // --- Action handlers
   const handleAdd = React.useCallback(() => {
@@ -200,7 +232,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     }
   }, [createRow, pendingApi, firstEditableColumnId, onActiveCellChange]);
 
-  // 선택/활성 행 기준으로 pending delete 처리
+  // ?좏깮/?쒖꽦 ??湲곗??쇰줈 pending delete 泥섎━
   const handleDelete = React.useCallback(() => {
     let targets: readonly CrudRowId[] = [];
 
@@ -264,7 +296,6 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     onCommitError,
     beforeCommit,
     data,
-    diff.viewData,
     selectedRowIds,
     activeCell, activeCellControlled,
     isCommitting,
@@ -272,7 +303,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   ]);
 
 
-  // GenGrid에서 전달된 viewData 변경을 pending patch로 변환
+  // GenGrid?먯꽌 ?꾨떖??viewData 蹂寃쎌쓣 pending patch濡?蹂??
   const handleGridDataChange = React.useCallback(
     (nextViewData: TData[]) => {
 
@@ -303,6 +334,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
 
   // --- state publish
   React.useEffect(() => {
+    if (publishStateRef.current === publishStateKey) return;
+    publishStateRef.current = publishStateKey;
     onStateChange?.({
       baseData: data,
       viewData: diff.viewData,
@@ -316,7 +349,6 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   }, [
     onStateChange,
     data,
-    diff.viewData,
     pendingApi.changes,
     pendingApi.dirty,
     selectedRowIds,

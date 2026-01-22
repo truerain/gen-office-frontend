@@ -45,12 +45,13 @@ function CustomerInfoPage({
   //const menuId = menuIdFromContext || menuIdFromProps;
 
 
-  const [_pendingDiff, setPendingDiff] = useState<PendingDiff<Customer, string>>({
+  const [pendingDiff, setPendingDiff] = useState<PendingDiff<Customer, string>>({
     added: [],
     modified: [],
     deleted: [],
   });
   
+  console.log(pendingDiff);
   //const saveDisabled = !isDiffDirty(pendingDiff);
 
 

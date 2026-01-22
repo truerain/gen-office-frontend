@@ -1,4 +1,5 @@
-// shared/hooks/usePendingDiffTracker.ts
+// apps/demo/src/shared/hooks/usePendingDiffTracker.ts
+
 import * as React from 'react';
 import type { PendingDiff } from '../models/pendingDiff';
 
@@ -45,7 +46,7 @@ export function usePendingDiffTracker<T, TId extends Id>(
     modified: [],
     deleted: [],
   });
-  console.log(currentRows);
+  //console.log(currentRows);
   // baseline 갱신(서버 refetch / filters 변경 / 저장 성공 등)
   React.useEffect(() => {
     baselineByIdRef.current = new Map(baselineRows.map((r) => [getRowId(r), r]));
