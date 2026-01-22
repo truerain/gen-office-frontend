@@ -6,7 +6,7 @@ export function MswProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     let active = true;
-    if (!import.meta.env.DEV) return undefined;
+    //if (!import.meta.env.DEV) return undefined;
 
     import('@/mocks/browser')
       .then(({ worker }) => worker.start({ onUnhandledRequest: 'bypass' }))
