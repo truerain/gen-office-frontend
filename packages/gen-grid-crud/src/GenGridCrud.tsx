@@ -1,6 +1,6 @@
-// packages/gen-grid-crud/src/GenGridCrud.tsx
+﻿// packages/gen-grid-crud/src/GenGridCrud.tsx
 import * as React from 'react';
-import type { ColumnDef } from '@tanstack/react-table';
+import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
 
 import { applyDiff } from './crud/applyDiff';
 import { usePendingChanges } from './crud/usePendingChanges';
@@ -8,36 +8,30 @@ import type { CrudRowId } from './crud/types';
 import type { GenGridCrudProps, CrudUiState } from './GenGridCrud.types';
 import { CrudActionBar } from './components/CrudActionBar';
 
-// ✅ 실제 GenGrid import로 교체
 import { GenGrid } from '@gen-office/gen-grid';
 
-/** RowStatus 시스템 컬럼 예시 */
-function useCrudRowStatusColumn<TData>(args: {
-  getStatus: (rowId: CrudRowId) => 'clean' | 'created' | 'updated' | 'deleted';
-}): ColumnDef<TData> {
-  const { getStatus } = args;
-  return React.useMemo(() => {
-    return {
-      id: '__crud_status__',
-      header: '',
-      size: 44,
-      enableSorting: false,
-      enableColumnFilter: false,
-      meta: { align: 'center', mono: true },
-      cell: ({ row }: any) => {
-        const rowId = row.id as CrudRowId;
-        const s = getStatus(rowId);
-        const label = s === 'clean' ? '' : s === 'created' ? '+' : s === 'updated' ? '•' : '×';
-        return (
-          <span aria-label={s} title={s} style={{ fontWeight: 700 }}>
-            {label}
-          </span>
-        );
-      },
-    } as ColumnDef<TData>;
-  }, [getStatus]);
+const CRUD_TEMP_ID_KEY = '__crud_temp_id__';
+
+function withTempId<TData>(row: TData, tempId: CrudRowId): TData {
+  const next = { ...(row as any) } as any;
+  Object.defineProperty(next, CRUD_TEMP_ID_KEY, {
+    value: tempId,
+    enumerable: false,
+  });
+  return next as TData;
 }
 
+function getCrudRowId<TData>(row: TData, fallback: (row: TData) => CrudRowId): CrudRowId {
+  const tempId = (row as any)[CRUD_TEMP_ID_KEY] as CrudRowId | undefined;
+  return tempId ?? fallback(row);
+}
+
+function generateTempId(): CrudRowId {
+  return `tmp_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
+}
+
+
+/* RowStatus/patch 관련 유틸 */
 function shallowDiffPatch<TData extends Record<string, any>>(
   prev: TData,
   next: TData,
@@ -57,9 +51,11 @@ function shallowDiffPatch<TData extends Record<string, any>>(
 }
 
 /**
- * columns에서 patch 비교용 key 추출:
+ */
+/*
+ * columns에서 patch 비교에 사용할 key 추출:
  * - accessorKey(string) 우선 사용
- * - 없으면 빈 배열 (이 경우 makePatch 기반으로 처리하기 어렵기 때문에, 기본 diff는 못 함)
+ * - 없으면 빈 배열
  */
 function getEditableKeysFromColumns<TData>(columns: readonly ColumnDef<TData, any>[]): string[] {
   const keys: string[] = [];
@@ -70,6 +66,14 @@ function getEditableKeysFromColumns<TData>(columns: readonly ColumnDef<TData, an
   return keys;
 }
 
+function getFirstEditableColumnId<TData>(columns: readonly ColumnDef<TData, any>[]): string | null {
+  for (const c of columns as any[]) {
+    const k = c.accessorKey ?? c.id;
+    if (typeof k === 'string') return k;
+  }
+  return null;
+}
+
 export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   const {
     data,
@@ -77,7 +81,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     getRowId,
 
     createRow,
-    makePatch, // (현재 GenGrid 타입으로는 columnId/value가 안 넘어오므로 "보조" 용도)
+    // columnId/value -> patch 매핑 함수 (accessorKey가 있으면 기본 동작으로도 충분)
+    makePatch, // columnId/value를 patch로 변환하는 함수 (accessorKey가 있으면 기본 동작으로 충분)
     deleteMode = 'selected',
 
     onCommit,
@@ -92,8 +97,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     selectedRowIds: selectedRowIdsControlled,
     onSelectedRowIdsChange,
 
-    // ✅ GenGrid에는 없음: Crud 내부에서만 상태로 유지할 수 있음
-    activeCell,
+    // active cell (옵션)
+    activeCell: activeCellControlled,
     onActiveCellChange,
 
     onStateChange,
@@ -101,10 +106,17 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     gridProps,
   } = props;
 
-  // --- selection: (GenGrid에 props가 없으니) 지금은 Crud 내부 상태로만 유지
-  // 나중에 GenGrid가 selection API를 제공하면 여기 매핑
   const [selectedRowIdsUncontrolled, setSelectedRowIdsUncontrolled] = React.useState<readonly CrudRowId[]>([]);
   const selectedRowIds = selectedRowIdsControlled ?? selectedRowIdsUncontrolled;
+
+  const rowSelection = React.useMemo<RowSelectionState>(() => {
+    const next: RowSelectionState = {};
+    for (const id of selectedRowIds) {
+      next[String(id)] = true;
+    }
+    return next;
+  }, [selectedRowIds]);
+
 
   const setSelectedRowIds = React.useCallback(
     (next: readonly CrudRowId[]) => {
@@ -114,20 +126,37 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     [onSelectedRowIdsChange, selectedRowIdsControlled]
   );
 
-  // --- pending changes
-  const pendingApi = usePendingChanges<TData>();
+  const [activeCellUncontrolled, setActiveCellUncontrolled] = React.useState<{ rowId: CrudRowId; columnId: string } | null>(null);
+  const activeCell = activeCellControlled ?? activeCellUncontrolled;
 
-  // --- row status column prepend
-  const statusCol = useCrudRowStatusColumn<TData>({
-    getStatus: (rowId) => pendingApi.getRowStatus(rowId),
-  });
-
-  const mergedColumns = React.useMemo(
-    () => [statusCol, ...(columns as ColumnDef<TData, any>[])],
-    [statusCol, columns]
+  const setActiveCell = React.useCallback(
+    (next: { rowId: CrudRowId; columnId: string } | null) => {
+      onActiveCellChange?.(next);
+      if (activeCellControlled == null) setActiveCellUncontrolled(next);
+    },
+    [onActiveCellChange, activeCellControlled]
   );
 
-  // --- diff 적용
+  const handleRowSelectionChange = React.useCallback(
+    (next: RowSelectionState) => {
+      const nextIds = Object.keys(next).filter((k) => next[k]);
+      setSelectedRowIds(nextIds);
+    },
+    [setSelectedRowIds]
+  );
+
+  // --- pending changes
+  // --- pending changes
+  const pendingApi = usePendingChanges<TData>();
+  // 鍮꾧탳 湲곤옙?: accessorKey 湲곕컲 (湲곕낯)
+  const diffKeys = React.useMemo(() => getEditableKeysFromColumns(columns), [columns]);
+  const firstEditableColumnId = React.useMemo(() => getFirstEditableColumnId(columns), [columns]);
+  const activeCellForGrid = React.useMemo(
+    () => (activeCell ? { rowId: String(activeCell.rowId), columnId: activeCell.columnId } : null),
+    [activeCell]
+  );
+
+
   const diff = React.useMemo(
     () =>
       applyDiff({
@@ -140,15 +169,19 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     [data, getRowId, pendingApi.pending]
   );
 
-  // ✅ GenGrid는 mutable array를 요구
+  // GenGrid에 전달할 mutable array
   const gridData = React.useMemo<TData[]>(
     () => Array.from(diff.viewData),
     [diff.viewData]
   );
 
-  // ✅ GenGrid getRowId는 (row) => string
+  // ??GenGrid getRowId??(row) => string
+  // GenGrid는 rowId를 string으로 사용
   const genGridGetRowId = React.useCallback(
-    (row: TData) => String(getRowId(row, -1)),
+    (row: TData) => {
+      const id = getCrudRowId(row, (r) => getRowId(r, -1));
+      return String(id);
+    },
     [getRowId]
   );
 
@@ -159,14 +192,16 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   // --- Action handlers
   const handleAdd = React.useCallback(() => {
     if (!createRow) return;
-    const row = createRow();
-    pendingApi.addRow(row);
-  }, [createRow, pendingApi]);
+    const tempId = generateTempId();
+    const row = withTempId(createRow(), tempId);
+    pendingApi.addRow(row, { tempId });
+    if (firstEditableColumnId) {
+      setActiveCell({ rowId: tempId, columnId: firstEditableColumnId });
+    }
+  }, [createRow, pendingApi, firstEditableColumnId, onActiveCellChange]);
 
+  // 선택/활성 행 기준으로 pending delete 처리
   const handleDelete = React.useCallback(() => {
-    // ⚠️ 현재 GenGridProps엔 selection 연동이 없으므로,
-    // selectedRowIds는 외부/내부에서 따로 관리해야 함.
-    // 테스트용으로만 유지.
     let targets: readonly CrudRowId[] = [];
 
     if (deleteMode === 'selected') {
@@ -179,7 +214,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     if (!targets.length) return;
     pendingApi.deleteRowIds(targets);
     setSelectedRowIds([]);
-  }, [deleteMode, selectedRowIds, activeCell, pendingApi, setSelectedRowIds]);
+  }, [deleteMode, selectedRowIds, activeCell, activeCellControlled, pendingApi, setSelectedRowIds]);
 
   const handleReset = React.useCallback(() => {
     pendingApi.reset();
@@ -231,23 +266,16 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     data,
     diff.viewData,
     selectedRowIds,
-    activeCell,
+    activeCell, activeCellControlled,
     isCommitting,
     isCommittingControlled,
   ]);
 
-  // --- GenGrid에서 넘어온 nextData를 pending diff로 변환
-  // 비교 기준: accessorKey 기반 (기본)
-  const diffKeys = React.useMemo(() => getEditableKeysFromColumns(columns), [columns]);
 
-  // GenGrid가 onDataChange로 주는 배열은 "viewData"의 최신 상태라고 가정
+  // GenGrid에서 전달된 viewData 변경을 pending patch로 변환
   const handleGridDataChange = React.useCallback(
     (nextViewData: TData[]) => {
-      // 1) created row / deleted row 같은 구조 변화를 GenGrid가 직접 만들 수는 없다고 가정
-      //    (row 추가/삭제는 CrudActionBar에서만)
-      // 2) 따라서 여기서는 "기존 viewData의 row들에 대한 값 변경"만 patch로 환산
 
-      // 빠른 lookup: 현재 viewData id -> row
       const prevById = new Map<string, TData>();
       for (let i = 0; i < gridData.length; i++) {
         const r = gridData[i]!;
@@ -260,23 +288,15 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
         const prevRow = prevById.get(idStr);
         if (!prevRow) continue;
 
-        // patch 생성
         if (diffKeys.length > 0 && typeof prevRow === 'object' && typeof nextRow === 'object') {
           const patch = shallowDiffPatch(prevRow as any, nextRow as any, diffKeys);
           if (Object.keys(patch).length) {
-            // CrudRowId는 string|number인데, GenGrid는 string id니까 여기선 string 사용
             pendingApi.updateRow(idStr, patch as any);
           }
         } else {
-          // accessorKey가 없는 컬럼이면 기본 diff로는 patch를 못 만듦.
-          // 이 경우 GenGrid 쪽에서 "어떤 셀이 바뀌었는지" 이벤트를 노출해야 함(onCellValueChange 등).
-          // 최소한의 fallback: row 전체 교체(비추천) — 여기선 하지 않음.
         }
       }
 
-      // ⚠️ GenGrid는 controlled에서 onDataChange를 요구하므로 호출 자체는 해야 함.
-      // 하지만 Crud는 baseData를 소유하지 않으므로, 여기서 baseData를 바꾸지 않는다.
-      // 대신 "즉시 화면 반영"은 pendingApi.updateRow → applyDiff → gridData 재계산으로 해결.
     },
     [gridData, genGridGetRowId, pendingApi, diffKeys]
   );
@@ -300,7 +320,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     pendingApi.changes,
     pendingApi.dirty,
     selectedRowIds,
-    activeCell,
+    activeCell, activeCellControlled,
     isCommitting,
   ]);
 
@@ -332,8 +352,13 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
         data={gridData}
         onDataChange={handleGridDataChange}
         dataVersion={gridProps?.dataVersion}
-        columns={mergedColumns as ColumnDef<TData, any>[]}
+        columns={columns as ColumnDef<TData, any>[]}
         getRowId={genGridGetRowId}
+        activeCell={activeCellForGrid}
+        onActiveCellChange={(next) => setActiveCell(next)}
+        rowStatusResolver={(rowId) => pendingApi.getRowStatus(rowId)}
+        rowSelection={rowSelection}
+        onRowSelectionChange={handleRowSelectionChange}
         {...gridProps}
       />
 
@@ -341,3 +366,4 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     </div>
   );
 }
+

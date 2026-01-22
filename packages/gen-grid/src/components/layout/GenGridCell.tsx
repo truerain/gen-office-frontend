@@ -69,8 +69,13 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
   }, [isEditing, rowId, colId]);
 
   const commit = React.useCallback(() => {
+    const currentValue = cell.getValue();
+    if (Object.is(currentValue, draft)) {
+      onCancelEdit();
+      return;
+    }
     onCommitValue(draft);
-  }, [draft, onCommitValue]);
+  }, [cell, draft, onCancelEdit, onCommitValue]);
 
   const cancel = React.useCallback(() => {
     onCancelEdit();

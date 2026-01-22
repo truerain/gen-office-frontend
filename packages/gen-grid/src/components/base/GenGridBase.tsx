@@ -96,6 +96,76 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     [onCellValueChange]
   );
 
+  const escapeAttrValue = React.useCallback((value: string) => {
+    if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
+      return CSS.escape(value);
+    }
+    return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  }, []);
+
+  React.useEffect(() => {
+    const container = scrollRef.current;
+    if (!container || !activeCell) return;
+
+    const column = table.getColumn(activeCell.columnId);
+    const pinned = column?.getIsPinned();
+    const isPinned = pinned === 'left' || pinned === 'right';
+
+    const raf = requestAnimationFrame(() => {
+      const rowId = String(activeCell.rowId);
+      const colId = String(activeCell.columnId);
+      const selector = `td[data-rowid="${escapeAttrValue(rowId)}"][data-colid="${escapeAttrValue(colId)}"]`;
+      const cell = container.querySelector(selector) as HTMLElement | null;
+      if (!cell) {
+        if (!enableVirtualization) return;
+
+        const rows = table.getRowModel().rows;
+        const idx = rows.findIndex((r) => r.id === rowId);
+        if (idx < 0) return;
+
+        const headerOffset = (headerHeight ?? 40) * headerRowCount;
+        const targetTop = Math.max(0, idx * (rowHeight ?? 36) - headerOffset);
+        container.scrollTop = targetTop;
+        return;
+      }
+
+      const containerRect = container.getBoundingClientRect();
+      const cellRect = cell.getBoundingClientRect();
+
+      let pinnedLeftWidth = 0;
+      let pinnedRightWidth = 0;
+      for (const col of table.getVisibleLeafColumns()) {
+        const side = col.getIsPinned();
+        if (side === 'left') pinnedLeftWidth += col.getSize();
+        if (side === 'right') pinnedRightWidth += col.getSize();
+      }
+
+      const padding = 8;
+      const leftLimit = containerRect.left + pinnedLeftWidth + padding;
+      const rightLimit = containerRect.right - pinnedRightWidth - padding;
+
+      if (!isPinned) {
+        if (cellRect.left < leftLimit) {
+          container.scrollLeft -= leftLimit - cellRect.left;
+        } else if (cellRect.right > rightLimit) {
+          container.scrollLeft += cellRect.right - rightLimit;
+        }
+      }
+
+      const headerOffset = (headerHeight ?? 40) * headerRowCount;
+      const topLimit = containerRect.top + headerOffset + padding;
+      const bottomLimit = containerRect.bottom - padding;
+
+      if (cellRect.top < topLimit) {
+        container.scrollTop -= topLimit - cellRect.top;
+      } else if (cellRect.bottom > bottomLimit) {
+        container.scrollTop += cellRect.bottom - bottomLimit;
+      }
+    });
+
+    return () => cancelAnimationFrame(raf);
+  }, [activeCell, enableVirtualization, escapeAttrValue, headerHeight, headerRowCount, rowHeight, table]);
+
   return (
     <div
       className={layout.root}

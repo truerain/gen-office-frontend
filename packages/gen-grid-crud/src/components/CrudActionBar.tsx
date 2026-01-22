@@ -1,6 +1,7 @@
-// packages/gen-grid-crud/src/components/CrudActionBar.tsx
+﻿// packages/gen-grid-crud/src/components/CrudActionBar.tsx
 
 import * as React from 'react';
+import { Button } from '@gen-office/ui';
 import type { CrudRowId } from '../crud/types';
 import type { CrudUiState } from '../GenGridCrud.types';
 
@@ -16,27 +17,49 @@ export function CrudActionBar<TData>(props: {
 
   return (
     <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: 8 }}>
-      <button type="button" onClick={onAdd} disabled={!onAdd || isCommitting}>
-        Add
-      </button>
+      <div>Rows: {state.viewData.length}</div>
+      <div style={{ flex: 1 }} />
 
-      <button
+      <Button
         type="button"
+        variant="secondary"
+        size="sm"
+        onClick={onAdd}
+        disabled={!onAdd || isCommitting}
+      >
+        Add
+      </Button>
+
+      <Button
+        type="button"
+        variant="danger"
+        size="sm"
         onClick={() => onDelete?.(selectedRowIds)}
         disabled={!onDelete || isCommitting || selectedRowIds.length === 0}
       >
         Delete
-      </button>
+      </Button>
 
-      <div style={{ flex: 1 }} />
-
-      <button type="button" onClick={onReset} disabled={!onReset || isCommitting || !dirty}>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={onReset}
+        disabled={!onReset || isCommitting || !dirty}
+      >
         Reset
-      </button>
+      </Button>
 
-      <button type="button" onClick={onSave} disabled={!onSave || isCommitting || !dirty}>
+      <Button
+        type="button"
+        variant="primary"
+        size="sm"
+        onClick={onSave}
+        disabled={!onSave || isCommitting || !dirty}
+      >
         {isCommitting ? 'Saving...' : 'Save'}
-      </button>
+      </Button>
     </div>
   );
 }
+

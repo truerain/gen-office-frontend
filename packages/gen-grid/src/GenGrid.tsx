@@ -26,20 +26,20 @@ export const GenGrid = React.forwardRef(function GenGridInner<TData>(
   props: GenGridProps<TData>,
   ref: React.ForwardedRef<GenGridHandle<TData>>
 ) {
-  // 1. 기초 데이터 및 초기값 보관
+  // 1. 기초 ?�이??�?초기�?보�?
   const gridData = useGridData(props);
-  const initialDefaultRef = React.useRef<TData[]>(        // hardReset용: mount 시점 defaultData 저장 (uncontrolled에서만 의미 있음)
+  const initialDefaultRef = React.useRef<TData[]>(        // hardReset?? mount ?�점 defaultData ?�??(uncontrolled?�서�??��? ?�음)
     'defaultData' in props ? props.defaultData ?? [] : []
   );
 
-  // 2. 기능별 비즈니스 로직 훅
-  const dirty = useDirtyState<TData>({                    // baseline 초기값은 항상 배열이어야 함
+  // 2. 기능�?비즈?�스 로직 ??
+  const dirty = useDirtyState<TData>({                    // baseline 초기값�? ??�� 배열?�어????
     initialBaseline: gridData.data ?? [],
     getRowId: props.getRowId,
   });
   const { updateCell } = useGridEditing({ props, gridData, dirty });
 
-  // 3. 외부 API 노출 (Imperative Handle)
+  // 3. ?��? API ?�출 (Imperative Handle)
   useGridInstance({
     ref,
     props,
@@ -52,25 +52,25 @@ export const GenGrid = React.forwardRef(function GenGridInner<TData>(
     return {
       setData: gridData.setData,
       deleteRow: (rowId: string) => {
-        // ✅ 여기서 "단일 진입점"으로 삭제 로직 수행
+        // ???�기??"?�일 진입???�로 ??�� 로직 ?�행
         gridData.setData(prev => prev.filter((_, idx) => {
-          // rowId 기반으로 지우려면 getRowId 필요.
-          // 가장 안전한 방식은 table rowId 기준으로 지우는 것.
-          // 일단 기본은 props.getRowId 있으면 그걸로 매칭:
+          // rowId 기반?�로 지?�려�?getRowId ?�요.
+          // 가???�전??방식?� table rowId 기�??�로 지?�는 �?
+          // ?�단 기본?� props.getRowId ?�으�?그걸�?매칭:
           if (!props.getRowId) {
-            // getRowId가 없다면 row.id(=tanstack rowId)로는 prev에서 찾기 어려움
-            // => 이 경우는 "getRowId 필수"로 정책을 두는 걸 강력 추천
+            // getRowId가 ?�다�?row.id(=tanstack rowId)로는 prev?�서 찾기 ?�려?�
+            // => ??경우??"getRowId ?�수"�??�책???�는 �?강력 추천
             return true;
           }
           return props.getRowId(prev[idx] as any) !== rowId;
         }));
 
-        // 삭제 후 dirty/selection/activeCell 정리는 다음 단계에서 actions에 같이 넣으면 됨
+        // ??�� ??dirty/selection/activeCell ?�리???�음 ?�계?�서 actions??같이 ?�으�???
       },
     };
   }, [gridData.setData, props.getRowId]);
 
-  // 4. TanStack Table 엔진 셋업
+  // 4. TanStack Table ?�진 ?�업
   const table = useGenGridTable<TData>({
     ...props,
     data: gridData.data ?? [],
@@ -78,7 +78,7 @@ export const GenGrid = React.forwardRef(function GenGridInner<TData>(
     actions,
   });
 
-// 5. 데이터 버전 변경 시 Dirty 리셋 (Effect)
+// 5. ?�이??버전 변�???Dirty 리셋 (Effect)
   React.useEffect(() => {
     dirty.setBaselineFromData(gridData.data ?? []);
     dirty.clearAllDirty();
@@ -91,9 +91,9 @@ export const GenGrid = React.forwardRef(function GenGridInner<TData>(
 
  
   return (
-    <GenGridProvider table={table}>
+    <GenGridProvider table={table} activeCell={props.activeCell} onActiveCellChange={props.onActiveCellChange}>
       <GenGridBase<TData>
-        {...props} // 혹은 필요한 것만 선별 전달
+        {...props} // ?��? ?�요??것만 ?�별 ?�달
         table={table}
         onCellValueChange={updateCell}
         isRowDirty={dirty.isRowDirty}

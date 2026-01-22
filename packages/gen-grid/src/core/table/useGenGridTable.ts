@@ -44,6 +44,7 @@ export type GenGridTableProps<TData> = {
   rowStatusHeader?: string; // (지금 컬럼 header는 ''로 고정이라, 나중에 쓰고 싶으면 useRowStatusColumn에서 반영)
   rowStatusWidth?: number;
   isRowDirty?: (rowId: string) => boolean;
+  rowStatusResolver?: (rowId: string) => 'clean' | 'created' | 'updated' | 'deleted';
 
   // selection
   enableRowSelection?: boolean;
@@ -96,6 +97,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     enableRowStatus,
     rowStatusWidth,
     isRowDirty,
+    rowStatusResolver,
 
     enableRowSelection,
     rowSelection,
@@ -174,6 +176,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     enabled: !!enableRowStatus,
     width: rowStatusWidth ?? 44,
     isRowDirty,
+    rowStatusResolver,
   });
 
   const selectionColumn = useSelectionColumn<TData>();

@@ -14,7 +14,7 @@ type Props = {
 
 export default function CustomerActionBar({
   total,
-  onCreate,
+  //onCreate,
   onRefresh,
   onExport,
   onImport,

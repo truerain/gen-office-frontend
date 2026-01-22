@@ -1,6 +1,7 @@
 // packages/gen-grid/src/GenGrid.types.ts
 
-import type { ColumnDef } from '@tanstack/react-table';
+import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
+import type { ActiveCell } from './features/active-cell/types';
 
 type CommonGridOptions = {
   caption?: string;
@@ -20,15 +21,23 @@ type CommonGridOptions = {
   enableColumnSizing?: boolean;
 
   enableRowStatus?: boolean;
+  /** row status ?�시 기�????��??�서 ?�공 (CRUD pending ?? */
+  rowStatusResolver?: (rowId: string) => 'clean' | 'created' | 'updated' | 'deleted';
   enableRowSelection?: boolean;
   enableRowNumber?: boolean;
 
   enablePagination?: boolean;
   pageSizeOptions?: number[];
 
-  onDirtyChange?: (dirty: boolean) => void;               // dirty 상태가 바뀔 때 알림
-  onDirtyRowsChange?: (rowIds: string[]) => void;         // dirty 행 목록이 바뀔 때 알림  
-  dirtyKeys?: string[];                                   // dirty 계산에서 비교할 key 제한 (없으면 editable 컬럼 accessorKey 기반으로 자동 추출)
+  onDirtyChange?: (dirty: boolean) => void;               // dirty ?�태가 바�????�림
+  onDirtyRowsChange?: (rowIds: string[]) => void;         // dirty ??목록??바�????�림  
+  dirtyKeys?: string[];                                   // dirty 계산?�서 비교??key ?�한 (?�으�?editable 컬럼 accessorKey 기반?�로 ?�동 추출)
+
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: (next: RowSelectionState) => void;
+
+  activeCell?: ActiveCell;
+  onActiveCellChange?: (next: ActiveCell) => void;
 };
 
 type ControlledDataProps<TData> = {
@@ -50,7 +59,7 @@ export type GenGridProps<TData> = CommonGridOptions &
     columns: ColumnDef<TData, any>[];
     getRowId: (row: TData) => string;
 
-    /** 셀 편집 커밋 시점에 “정확히 한 셀” 변경 이벤트 */
+    /** ?� ?�집 커밋 ?�점???�정?�히 ???�??변�??�벤??*/
      onCellValueChange?: (args: {
       rowId: string;
       columnId: string;

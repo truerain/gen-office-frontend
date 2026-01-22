@@ -52,17 +52,17 @@ export type GenGridCrudProps<TData> = {
   showActionBar?: boolean;
   actionBarPosition?: 'top' | 'bottom' | 'both';
 
-  /** selection (GenGrid API가 다르면 여기만 바꾸면 됨) */
+  /** selection (GenGrid API가 ?�르�??�기�?바꾸�??? */
   selectedRowIds?: readonly CrudRowId[];
   onSelectedRowIdsChange?: (rowIds: readonly CrudRowId[]) => void;
 
-  /** active cell (선택) */
+  /** active cell (?�택) */
   activeCell?: { rowId: CrudRowId; columnId: string } | null;
-  onActiveCellChange?: (next: { rowId: CrudRowId; columnId: string }) => void;
+  onActiveCellChange?: (next: { rowId: CrudRowId; columnId: string } | null) => void;
 
   /** UI hooks */
   onStateChange?: (state: CrudUiState<TData>) => void;
 
-  /** pass-through (GenGrid props는 프로젝트에 맞게 타입 치환) */
+  /** pass-through (GenGrid props???�로?�트??맞게 ?�??치환) */
   gridProps?: Record<string, any>;
 };

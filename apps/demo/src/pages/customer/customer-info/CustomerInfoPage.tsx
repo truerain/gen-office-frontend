@@ -1,5 +1,5 @@
 // apps/demo/src/pages/customer/CustomerInfoPage/CustomerInfoPage.tsx
-import { useMemo, useState, useEffect, startTransition } from 'react';
+import { useMemo, useState} from 'react';
 import { Home, Users } from 'lucide-react';
 
 import { PageHeader } from '@/components/PageHeader/PageHeader';
@@ -8,18 +8,19 @@ import { DataPanel } from '@/components/DataPanel';
 import type { PageComponentProps } from '@/config/componentRegistry.dynamic';
 
 import type { Customer } from '../../../entities/customer/model/types';
+import type { CrudChange } from '@gen-office/gen-grid-crud';
 import CustomerFilterBar from './CustomerFilterBar';
-import CustomerActionBar from '@/shared/ui/list/CustomerActionBar';
+//import CustomerActionBar from '@/shared/ui/list/CustomerActionBar';
 import CustomerTable from './CustomerTable';
 
-import { type PendingDiff, isDiffDirty } from '@/shared/models/pendingDiff';
+import { type PendingDiff } from '@/shared/models/pendingDiff';
 
 import styles from './CustomerInfoPage.module.css';
 
 import type { CustomerFilter, CustomerStatus } from '@/entities/customer/model/types';
 import {
   useCustomerListQuery,
-  useCreateCustomerMutation,
+  //useCreateCustomerMutation,
   //useUpdateCustomerMutation,
   //useDeleteCustomerMutation,
 } from '@/entities/customer/api/customer';
@@ -44,13 +45,13 @@ function CustomerInfoPage({
   //const menuId = menuIdFromContext || menuIdFromProps;
 
 
-  const [pendingDiff, setPendingDiff] = useState<PendingDiff<Customer, string>>({
+  const [_pendingDiff, setPendingDiff] = useState<PendingDiff<Customer, string>>({
     added: [],
     modified: [],
     deleted: [],
   });
   
-  const saveDisabled = !isDiffDirty(pendingDiff);
+  //const saveDisabled = !isDiffDirty(pendingDiff);
 
 
 
@@ -88,11 +89,11 @@ function CustomerInfoPage({
   }, [filters]);
 
   const listQuery = useCustomerListQuery(queryParams);
-  const createMut = useCreateCustomerMutation();
+  //const createMut = useCreateCustomerMutation();
   //const updateMut = useUpdateCustomerMutation();
   //const deleteMut = useDeleteCustomerMutation();
 
-  const total = listQuery.data?.total ?? 0;
+  //const _total = listQuery.data?.total ?? 0;
 
   const rows = listQuery.data?.items ?? [];
   const dataVersion = listQuery.dataUpdatedAt;
@@ -101,6 +102,7 @@ function CustomerInfoPage({
   const initialLoading = listQuery.isLoading;
   const refreshing = listQuery.isFetching && !listQuery.isLoading;
 
+  /*
   const handleExport = () => alert('CSV 내보내기 기능 (미구현)');
   const handleImport = () => alert('CSV 가져오기 기능 (미구현)');
 
@@ -118,7 +120,7 @@ function CustomerInfoPage({
       alert((e as Error).message);
     }
   };
-
+  */
   /*
 
   const handleEdit = async (id: string, currentName: string) => {
@@ -146,6 +148,11 @@ function CustomerInfoPage({
 
   const handleRefetch = () => {
     listQuery.refetch();
+  };
+
+  const handleCommit = async (changes: readonly CrudChange<Customer>[]) => {
+    // TODO: 서버 저장(create/update/delete) 호출로 교체
+    console.log('commit changes', changes);
   };
   
   
@@ -198,22 +205,13 @@ function CustomerInfoPage({
         )}
 
         {/* 데이터 패널 (액션 바 + 테이블) */}
-        <DataPanel
-          actionBar={
-            <CustomerActionBar
-              total={total}
-              onRefresh={handleRefetch}
-              onExport={handleExport}
-              onImport={handleImport}
-              onCreate={handleCreate}
-              onSave={handleSave}
-            />
-          }
-        >
+        <DataPanel>
           <CustomerTable 
             rows={rows}
             dataVersion={dataVersion}
             onDiffChange={setPendingDiff}
+            onCommit={handleCommit}
+            onRefetch={handleRefetch}
             loading={initialLoading} 
           />
         </DataPanel>

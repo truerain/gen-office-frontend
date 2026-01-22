@@ -20,18 +20,38 @@ export function useGridEditing<TData>({
   const { getRowId, onDirtyChange, onCellValueChange } = props;
 
   /**
-   * 상태 변경 알림 로직
-   * - dirty 상태가 변경될 때 외부 콜백(onDirtyChange)을 호출합니다.
+   * ?�태 변�??�림 로직
+   * - dirty ?�태가 변경될 ???��? 콜백(onDirtyChange)???�출?�니??
    */
   const notifyDirty = React.useCallback(() => {
-    // markCellDirty가 state를 바꾼 직후이므로, 
-    // 실제 isDirty() 값은 다음 렌더링에 반영되지만 
-    // 여기서는 현재의 dirtyCells 맵을 기준으로 즉시 판단할 수도 있습니다.
+    // markCellDirty가 state�?바꾼 직후?��?�? 
+    // ?�제 isDirty() 값�? ?�음 ?�더링에 반영?��?�?
+    // ?�기?�는 ?�재??dirtyCells 맵을 기�??�로 즉시 ?�단???�도 ?�습?�다.
     onDirtyChange?.(dirty.isDirty());
   }, [dirty, onDirtyChange]);
 
+  const isCoercibleNumber = React.useCallback((value: unknown) => {
+    if (typeof value === 'number') return Number.isFinite(value);
+    if (typeof value !== 'string') return false;
+    const trimmed = value.trim();
+    if (trimmed === '') return false;
+    const num = Number(trimmed);
+    return Number.isFinite(num);
+  }, []);
+
+  const isEqualForDirty = React.useCallback(
+    (a: unknown, b: unknown) => {
+      if (a == null && b == null) return true;
+      if (isCoercibleNumber(a) && isCoercibleNumber(b)) {
+        return Number(a) === Number(b);
+      }
+      return Object.is(a, b);
+    },
+    [isCoercibleNumber]
+  );
+
   /**
-   * 셀 업데이트 핵심 로직
+   * ?� ?�데?�트 ?�심 로직
    */
   const updateCell = React.useCallback(
     (coord: { rowId: string; columnId: string }, nextValue: unknown) => {
@@ -39,12 +59,12 @@ export function useGridEditing<TData>({
 
       onCellValueChange?.({ rowId, columnId, value: nextValue });
 
-     // 1. 원본(Baseline) 값과 비교하여 변경 여부 확인
+     // 1. ?�본(Baseline) 값과 비교?�여 변�??��? ?�인
       const baseRow = dirty.getBaselineRow(rowId) as any;
       const baseValue = baseRow ? baseRow[columnId] : undefined;
-      const isNowDirty = !Object.is(baseValue, nextValue);
+      const isNowDirty = !isEqualForDirty(baseValue, nextValue);
 
-      // 2. 실제 데이터 업데이트 (Immutability 유지)
+      // 2. ?�제 ?�이???�데?�트 (Immutability ?��?)
       setData((prev) => {
         const rows = prev ?? [];
         return rows.map((row) => {
@@ -53,13 +73,13 @@ export function useGridEditing<TData>({
         });
       });
 
-      // 3. Dirty 상태 마킹 (Map 업데이트)
+      // 3. Dirty ?�태 마킹 (Map ?�데?�트)
       dirty.markCellDirty(rowId, columnId, isNowDirty);
 
-      // 4. 변경 알림 통지
+      // 4. 변�??�림 ?��?
       notifyDirty();
     },
-    [dirty, getRowId, setData, notifyDirty, onCellValueChange]
+    [dirty, getRowId, setData, notifyDirty, onCellValueChange, isEqualForDirty]
   );
 
   return {
