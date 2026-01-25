@@ -37,6 +37,9 @@ type CommonGridOptions = {
 
   activeCell?: ActiveCell;
   onActiveCellChange?: (next: ActiveCell) => void;
+
+  /** tanstack table meta */
+  tableMeta?: Record<string, any>;
 };
 
 type ControlledDataProps<TData> = {

@@ -27,7 +27,7 @@ type ComponentLoader = () => Promise<{ default: ComponentType<PageComponentProps
  */
 const componentPaths: Record<string, ComponentLoader> = {
   // 고객 관리
-  'CustomerInfoPage': () => import('../../pages/customer/customer-info'),
+  'CustomerInfoPage': () => import('@/pages/customer/customer-info/CustomerInfoPage'),
   // 'CustomerServicePage': () => import('../pages/customer/CustomerServicePage'),
   // 'CustomerAnalysisPage': () => import('../pages/customer/CustomerAnalysisPage'),
 
@@ -37,7 +37,7 @@ const componentPaths: Record<string, ComponentLoader> = {
   // 'SubscriptionPage': () => import('../pages/finance/SubscriptionPage'),
 
   // 시스템 관리
-  // 'MenuManagementPage': () => import('../pages/system/MenuManagementPage'),
+  'MenuManagementPage': () => import('@/pages/system/menu/MenuManagementPage'),
   // 'RoleManagementPage': () => import('../pages/system/RoleManagementPage'),
   // 'RoleMenuPage': () => import('../pages/system/RoleMenuPage'),
   // 'UserManagementPage': () => import('../pages/system/UserManagementPage'),

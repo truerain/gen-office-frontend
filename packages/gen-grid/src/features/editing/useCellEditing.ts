@@ -26,7 +26,7 @@ export function useCellEditing<TData>(args: {
 
       const col = table.getColumn(columnId);
       const meta = col?.columnDef.meta as any;
-      if (!meta?.editable && !meta?.renderEditor) return false;
+      if (!meta?.editable && !meta?.renderEditor && !meta?.editType) return false;
 
       return true;
     },

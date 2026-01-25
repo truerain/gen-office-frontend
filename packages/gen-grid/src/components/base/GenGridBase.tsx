@@ -9,6 +9,9 @@ import { GenGridHeader } from '../layout/GenGridHeader';
 import { GenGridBody } from '../layout/GenGridBody';
 import { GenGridVirtualBody } from '../layout/GenGridVirtualBody';
 import { GenGridPagination } from '../../components/pagination/GenGridPagination';
+import { useActiveCellNavigation } from '../../features/active-cell/useActiveCellNavigation';
+import { SELECTION_COLUMN_ID } from '../../features/selection/selection';
+import { ROW_NUMBER_COLUMN_ID } from '../../features/row-number/useRowNumberColumn';
 
 import layout from './GenGridLayout.module.css';
 import controls from './GenGridControls.module.css';
@@ -96,6 +99,19 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     [onCellValueChange]
   );
 
+  const isSystemCol = React.useCallback(
+    (colId: string) => colId === SELECTION_COLUMN_ID || colId === ROW_NUMBER_COLUMN_ID,
+    []
+  );
+
+  const nav = useActiveCellNavigation({
+    table,
+    activeCell,
+    onActiveCellChange: handleActiveCellChange,
+    isCellNavigable: (_, colId) => !isSystemCol(colId),
+    focusOptions: { stickyHeaderHeight: (headerHeight ?? 40) * headerRowCount },
+  });
+
   const escapeAttrValue = React.useCallback((value: string) => {
     if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
       return CSS.escape(value);
@@ -166,6 +182,29 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     return () => cancelAnimationFrame(raf);
   }, [activeCell, enableVirtualization, escapeAttrValue, headerHeight, headerRowCount, rowHeight, table]);
 
+  React.useEffect(() => {
+    const container = scrollRef.current;
+    if (!container || !enableVirtualization) return;
+
+    let raf = 0;
+    const onScroll = () => {
+      if (!activeCell) return;
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        if (!container.contains(document.activeElement)) {
+          container.focus({ preventScroll: true });
+        }
+      });
+    };
+
+    container.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      container.removeEventListener('scroll', onScroll);
+    };
+  }, [activeCell, enableVirtualization]);
+
   return (
     <div
       className={layout.root}
@@ -179,8 +218,20 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
         className={layout.tableScroll}
         data-sticky-header={stickyHeaderEnabled || undefined}
         data-header-rows={headerRowCount}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.defaultPrevented) return;
+          nav.handleKeyDown(e);
+        }}
       >
-        <table className={layout.table}>
+        <table
+          className={layout.table}
+          style={
+            columnSizingEnabled
+              ? { width: table.getTotalSize(), minWidth: table.getTotalSize() }
+              : undefined
+          }
+        >
           <GenGridHeader
             table={table}
             enablePinning={enablePinning}

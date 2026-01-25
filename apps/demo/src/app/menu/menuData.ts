@@ -164,6 +164,7 @@ export const menuData: MenuData = {
       label: '메뉴관리',
       icon: 'Menu',
       parentMenuId: 'system',
+      componentName: 'MenuManagementPage',
       order: 1,
     },
     {

@@ -127,7 +127,7 @@ function App() {
   ) => {
     // 1. 메뉴 데이터에서 아이템 찾기
     const menuItem = findMenuItem(menuId);
-    
+    console.log('Opening page for menu item:', menuItem);
     // 2. componentName으로 Lazy 컴포넌트 가져오기
     const LazyComponent = getLazyComponent(menuItem?.componentName);
     

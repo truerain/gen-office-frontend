@@ -83,6 +83,7 @@ export type GenGridTableProps<TData> = {
 
   // 액션 주입
   actions?: GenGridTableActions<TData>;
+  tableMeta?: Record<string, any>;
 
 };
 
@@ -128,6 +129,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     onColumnSizingChange,
 
     actions,
+    tableMeta,
 
     getRowId,
   } = props;
@@ -218,8 +220,9 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
   const meta = React.useMemo(() => {
     return {
       genGrid: actions,
+      ...(tableMeta ?? {}),
     };
-  }, [actions]);
+  }, [actions, tableMeta]);
 
 
   return useReactTable<TData>({

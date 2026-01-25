@@ -8,6 +8,7 @@ import pinningStyles from './GenGridPinning.module.css';
 
 import { getCellStyle } from './cellStyles';
 import { getMeta } from './utils';
+import { formatCellValue } from './cellFormat';
 import { SELECTION_COLUMN_ID } from '../../features/selection/selection';
 import { ROW_NUMBER_COLUMN_ID } from '../../features/row-number/useRowNumberColumn';
 
@@ -68,37 +69,45 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditing, rowId, colId]);
 
-  const commit = React.useCallback(() => {
-    const currentValue = cell.getValue();
-    if (Object.is(currentValue, draft)) {
-      onCancelEdit();
-      return;
-    }
-    onCommitValue(draft);
-  }, [cell, draft, onCancelEdit, onCommitValue]);
-
   const cancel = React.useCallback(() => {
     onCancelEdit();
   }, [onCancelEdit]);
 
-  const renderDefaultEditor = () => (
-    <input
-      autoFocus
-      value={(draft ?? '') as any}
-      onChange={(e) => setDraft(e.target.value)}
-      onBlur={() => commit()}
-      onKeyDown={(e) => {
+  const commitDraft = React.useCallback(() => {
+    const currentValue = cell.getValue();
+
+    let nextValue: unknown = draft;
+    if (meta?.editType === 'number') {
+      const n = typeof draft === 'number' ? draft : Number(draft);
+      if (!Number.isNaN(n) && draft !== '') nextValue = n;
+    } else if (meta?.editType === 'checkbox') {
+      nextValue = Boolean(draft);
+    }
+
+    if (Object.is(currentValue, nextValue)) {
+      onCancelEdit();
+      return;
+    }
+
+    onCommitValue(nextValue);
+  }, [cell, draft, meta?.editType, onCancelEdit, onCommitValue]);
+
+  const renderDefaultEditor = () => {
+    const commonInputProps = {
+      autoFocus: true,
+      onBlur: () => commitDraft(),
+      onKeyDown: (e: React.KeyboardEvent) => {
         if (e.key === 'Tab') {
           e.preventDefault();
           e.stopPropagation();
-          commit();
+          commitDraft();
           onTab?.(e.shiftKey ? -1 : 1);
           return;
         }
         if (e.key === 'Enter') {
           e.preventDefault();
           e.stopPropagation();
-          commit();
+          commitDraft();
           return;
         }
         if (e.key === 'Escape') {
@@ -107,8 +116,8 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
           cancel();
           return;
         }
-      }}
-      style={{
+      },
+      style: {
         width: '100%',
         height: '100%',
         border: 'none',
@@ -116,15 +125,81 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
         background: 'transparent',
         font: 'inherit',
         color: 'inherit',
-      }}
-    />
-  );
+      } as React.CSSProperties,
+    };
+
+    switch (meta?.editType) {
+      case 'number':
+        return (
+          <input
+            {...commonInputProps}
+            type="number"
+            value={(draft ?? '') as any}
+            placeholder={meta?.editPlaceholder}
+            onChange={(e) => setDraft(e.target.value)}
+          />
+        );
+      case 'date':
+        return (
+          <input
+            {...commonInputProps}
+            type="date"
+            value={(draft ?? '') as any}
+            placeholder={meta?.editPlaceholder}
+            onChange={(e) => setDraft(e.target.value)}
+          />
+        );
+      case 'textarea':
+        return (
+          <textarea
+            {...commonInputProps}
+            value={(draft ?? '') as any}
+            placeholder={meta?.editPlaceholder}
+            onChange={(e) => setDraft(e.target.value)}
+          />
+        );
+      case 'select':
+        return (
+          <select
+            {...commonInputProps}
+            value={(draft ?? '') as any}
+            onChange={(e) => setDraft(e.target.value)}
+          >
+            {(meta?.editOptions ?? []).map((opt: { label: string; value: string | number }) => (
+              <option key={String(opt.value)} value={String(opt.value)}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        );
+      case 'checkbox':
+        return (
+          <input
+            {...commonInputProps}
+            type="checkbox"
+            checked={Boolean(draft)}
+            onChange={(e) => setDraft(e.target.checked)}
+          />
+        );
+      case 'text':
+      default:
+        return (
+          <input
+            {...commonInputProps}
+            type="text"
+            value={(draft ?? '') as any}
+            placeholder={meta?.editPlaceholder}
+            onChange={(e) => setDraft(e.target.value)}
+          />
+        );
+    }
+  };
 
   const editor =
     meta?.renderEditor?.({
       value: draft,
       onChange: setDraft,
-      onCommit: commit,
+      onCommit: commitDraft,
       onCancel: cancel,
       onTab,
     }) ?? renderDefaultEditor();
@@ -164,7 +239,16 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
           >
             {editor}
           </div>) 
-        : flexRender(cell.column.columnDef.cell, cell.getContext())}
+        : meta?.renderCell
+          ? meta.renderCell({
+              value: cell.getValue(),
+              row: cell.row.original,
+              rowId,
+              columnId: colId,
+            })
+          : meta?.format
+            ? (formatCellValue(cell.getValue(), meta) as any)
+            : flexRender(cell.column.columnDef.cell, cell.getContext())}
     </td>
   );
 }

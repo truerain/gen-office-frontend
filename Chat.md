@@ -74,3 +74,60 @@ row-status 심볼/색상 디자인 더 정교화 (아이콘/tooltip)
 삭제된 created row를 “숨김” 대신 “회색 + 취소선” 표시
 tempId 키명을 옵션으로 노출해서 커스터마이즈 가능하게 하기
 필요하면 바로 이어서 적용할게.
+
+
+
+기본 renderer/editor 기반 구조를 추가했어.
+meta.format으로 렌더링, meta.editType으로 기본 에디터가 동작하고, 필요한 경우 meta.renderCell/meta.renderEditor로 언제든 확장 가능하도록 구성했어. 헬퍼 함수도 같이 넣어서 앱에서 편하게 메타를 채울 수 있게 했어.
+
+변경 내용
+
+기본 렌더러: meta.format에 따라 숫자/통화/퍼센트/날짜/불리언 표시
+기본 에디터: meta.editType에 따라 text/number/date/select/textarea/checkbox 렌더
+메타 확장 타입 보강 + 헬퍼 함수 제공
+editType만 있어도 편집 가능하도록 수정
+수정/추가 파일
+
+cellFormat.ts (기본 포맷터)
+utils.ts (메타 타입 확장)
+GenGridCell.tsx (렌더/에디터 적용)
+useCellEditing.ts (editType 허용)
+tanstack-table.d.ts (ColumnMeta 확장)
+columnHelpers.ts (헬퍼 함수)
+index.ts (헬퍼 export)
+사용 방식 예시 (meta 기반 + 헬퍼)
+
+// meta 직접 사용
+{
+  accessorKey: 'registeredAt',
+  header: '가입일',
+  meta: { format: 'date', editType: 'date', align: 'center', width: 110 },
+}
+
+// helper 사용
+numberColumn<Customer>('totalOrders', '주문수', { width: 100, align: 'right' })
+dateColumn<Customer>('registeredAt', '가입일', { width: 110, align: 'center' })
+selectColumn<Customer>('status', '상태', {
+  width: 100,
+  align: 'center',
+  options: [
+    { label: '활성', value: 'ACTIVE' },
+    { label: '비활성', value: 'INACTIVE' },
+    { label: '대기중', value: 'PENDING' },
+  ],
+})
+주의/확장 포인트
+
+meta.format이 있으면 기본 렌더러가 우선 사용됨
+(커스텀 렌더가 필요하면 meta.renderCell로 확장)
+에디터 확장은 meta.renderEditor 사용
+원하면 다음도 바로 추가해줄게:
+
+meta.format용 커스텀 formatter registry (앱 단에서 교체)
+editValidator/editParser/editFormatter 공식 지원
+통화/날짜 포맷 전역 기본값 설정 API
+
+
+리사이저 더블클릭 시 초기 width로 복원
+드래그 중 body cursor/selection 방지
+width 저장/복원 (localStorage 등)

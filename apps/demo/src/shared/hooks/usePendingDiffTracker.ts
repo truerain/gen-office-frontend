@@ -34,7 +34,7 @@ type Options<T, TId extends Id> = {
 export function usePendingDiffTracker<T, TId extends Id>(
   baselineRows: T[],
   baselineVersion: string | number,
-  currentRows: T[],
+  _currentRows: T[],
   options: Options<T, TId>
 ) {
   const { getRowId, isRowModified, isNewRow, getDeletedIds } = options;

@@ -85,17 +85,7 @@ function CustomerTable(props: CustomerTableProps) {
           enableRowSelection: true,
         }}
         onStateChange={(s) => {
-          const added = s.changes
-            .filter((c) => c.type === 'create')
-            .map((c: any) => c.row);
-          const modified = s.changes
-            .filter((c) => c.type === 'update')
-            .map((c: any) => ({ id: c.rowId, patch: c.patch }));
-          const deleted = s.changes
-            .filter((c) => c.type === 'delete')
-            .map((c: any) => ({ id: c.rowId }));
-
-          props.onDiffChange({ added, modified, deleted } as any);
+          props.onDiffChange(s.pendingDiff as any);
         }}
       />
     </div>

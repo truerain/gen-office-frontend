@@ -1,11 +1,29 @@
 // packages/datagrid/src/gen-grid/tanstack-table.d.ts
 import '@tanstack/react-table';
+import type * as React from 'react';
 
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData, TValue> {
     align?: 'left' | 'center' | 'right';
     mono?: boolean;
+    format?: 'text' | 'number' | 'currency' | 'percent' | 'date' | 'datetime' | 'boolean';
+    formatLocale?: string;
+    numberFormat?: Intl.NumberFormatOptions;
+    dateFormat?: Intl.DateTimeFormatOptions;
+    currency?: string;
+    trueLabel?: string;
+    falseLabel?: string;
+    emptyLabel?: string;
+    renderCell?: (args: {
+      value: unknown;
+      row: TData;
+      rowId: string;
+      columnId: string;
+    }) => React.ReactNode;
+    editType?: 'text' | 'number' | 'date' | 'select' | 'textarea' | 'checkbox';
+    editOptions?: { label: string; value: string | number }[];
+    editPlaceholder?: string;
   }
 }
 
@@ -22,5 +40,8 @@ export type GenGridTableActions<TData> = {
 declare module '@tanstack/react-table' {
   interface TableMeta<TData extends unknown> {
     genGrid?: GenGridTableActions<TData>;
+    genGridCrud?: {
+      deleteRow?: (rowId: string) => void;
+    };
   }
 }

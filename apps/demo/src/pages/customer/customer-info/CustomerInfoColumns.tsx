@@ -169,9 +169,7 @@ export function createCustomerColumns(): ColumnDef<Customer>[] {
         pinned: 'right',
       },
       cell: ({ row, table }) => {
-        const api = (table.options.meta as any)?.genGrid as
-          | { deleteRow?: (rowId: string) => void }
-          | undefined;
+        const api = table.options.meta?.genGridCrud;
         return (
           <Button
             type="button"

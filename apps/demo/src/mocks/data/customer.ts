@@ -1,7 +1,7 @@
 // apps/demo/src/features/customer/mocks/customerData.ts
 import type { Customer } from '@/entities/customer/model/types';
 
-export const mockCustomers: Customer[] = [
+const baseCustomers: Customer[] = [
   {
     id: 'CUST-001',
     name: '김철수',
@@ -159,6 +159,20 @@ export const mockCustomers: Customer[] = [
     grade: 'silver',
   },
 ];
+
+const MOCK_CUSTOMER_COUNT = 500;
+
+export const mockCustomers: Customer[] = Array.from(
+  { length: MOCK_CUSTOMER_COUNT },
+  (_, index) => {
+    const base = baseCustomers[index % baseCustomers.length];
+
+    return {
+      ...base,
+      id: `CUST-${String(index + 1).padStart(6, '0')}`,
+    };
+  }
+);
 
 // 필터링 함수
 export const filterCustomers = (

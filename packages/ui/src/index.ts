@@ -13,6 +13,10 @@ export * from './core/Badge';
 export * from './core/Select';
 export * from './core/Dialog';
 export * from './core/DropdownMenu';
+export * from './core/Tree';
 
 // composed
 export * from './composed/AlertDialog';
+export * from './composed/TreeView';
+export * from './composed/SplitLayout';
+export * from './composed/MasterDetailLayout';

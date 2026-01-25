@@ -5,7 +5,7 @@ import { Home, Users } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import { DataPanel } from '@/components/DataPanel';
 //import { usePageContext } from '@/contexts';
-import type { PageComponentProps } from '@/config/componentRegistry.dynamic';
+import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 
 import type { Customer } from '../../../entities/customer/model/types';
 import type { CrudChange } from '@gen-office/gen-grid-crud';

@@ -5,7 +5,7 @@ import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
 import { applyDiff } from './crud/applyDiff';
 import { usePendingChanges } from './crud/usePendingChanges';
 import type { CrudRowId } from './crud/types';
-import type { GenGridCrudProps, CrudUiState } from './GenGridCrud.types';
+import type { GenGridCrudProps, CrudUiState, CrudPendingDiff } from './GenGridCrud.types';
 import { CrudActionBar } from './components/CrudActionBar';
 
 import { GenGrid } from '@gen-office/gen-grid';
@@ -72,6 +72,34 @@ function getFirstEditableColumnId<TData>(columns: readonly ColumnDef<TData, any>
     if (typeof k === 'string') return k;
   }
   return null;
+}
+
+function buildPendingDiffFromPending<TData>(
+  pending: { created: Map<CrudRowId, TData>; updated: Map<CrudRowId, Partial<TData>>; deleted: Set<CrudRowId> }
+): CrudPendingDiff<TData> {
+  const createdIds = new Set<CrudRowId>(pending.created.keys());
+  const deletedIds = pending.deleted;
+
+  const added: TData[] = [];
+  for (const [id, row] of pending.created.entries()) {
+    if (deletedIds.has(id)) continue;
+    added.push(row);
+  }
+
+  const modified: { id: CrudRowId; patch: Partial<TData> }[] = [];
+  for (const [id, patch] of pending.updated.entries()) {
+    if (deletedIds.has(id)) continue;
+    if (createdIds.has(id)) continue;
+    modified.push({ id, patch });
+  }
+
+  const deleted: { id: CrudRowId }[] = [];
+  for (const id of deletedIds) {
+    if (createdIds.has(id)) continue;
+    deleted.push({ id });
+  }
+
+  return { added, modified, deleted };
 }
 
 export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
@@ -204,6 +232,21 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     [data, getRowId, pendingApi.pending]
   );
 
+  const tableMeta = React.useMemo(() => {
+    const baseMeta = (gridProps as any)?.tableMeta ?? {};
+    return {
+      ...baseMeta,
+      genGridCrud: {
+        deleteRow: (rowId: CrudRowId) => pendingApi.deleteRowIds([rowId]),
+      },
+    };
+  }, [gridProps, pendingApi]);
+
+  const pendingDiff = React.useMemo(
+    () => buildPendingDiffFromPending<TData>(pendingApi.pending),
+    [pendingApi.pending]
+  );
+
   // GenGrid???꾨떖??mutable array
   const gridData = React.useMemo<TData[]>(
     () => Array.from(diff.viewData),
@@ -260,6 +303,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       baseData: data,
       viewData: diff.viewData,
       changes,
+      pendingDiff,
       dirty: pendingApi.dirty,
       selectedRowIds,
       activeRowId: activeCell?.rowId,
@@ -340,6 +384,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       baseData: data,
       viewData: diff.viewData,
       changes: pendingApi.changes,
+      pendingDiff,
       dirty: pendingApi.dirty,
       selectedRowIds,
       activeRowId: activeCell?.rowId,
@@ -363,6 +408,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
           baseData: data,
           viewData: diff.viewData,
           changes: pendingApi.changes,
+          pendingDiff,
           dirty: pendingApi.dirty,
           selectedRowIds,
           activeRowId: activeCell?.rowId,
@@ -392,10 +438,10 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
         rowSelection={rowSelection}
         onRowSelectionChange={handleRowSelectionChange}
         {...gridProps}
+        tableMeta={tableMeta}
       />
 
       {(actionBarPosition === 'bottom' || actionBarPosition === 'both') && actionBarNode}
     </div>
   );
 }
-

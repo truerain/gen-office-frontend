@@ -8,6 +8,12 @@ export type CrudCommitContext<TData> = {
   viewData: readonly TData[];
 };
 
+export type CrudPendingDiff<TData> = {
+  added: TData[];
+  modified: { id: CrudRowId; patch: Partial<TData> }[];
+  deleted: { id: CrudRowId }[];
+};
+
 export type CrudCommitResult<TData> =
   | { ok: true; nextData?: readonly TData[] }
   | { ok: false; error: unknown; fieldErrors?: Record<string, string> };
@@ -16,6 +22,7 @@ export type CrudUiState<TData> = {
   baseData: readonly TData[];
   viewData: readonly TData[];
   changes: readonly CrudChange<TData>[];
+  pendingDiff: CrudPendingDiff<TData>;
   dirty: boolean;
 
   selectedRowIds: readonly CrudRowId[];
