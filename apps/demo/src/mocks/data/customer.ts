@@ -1,6 +1,26 @@
 // apps/demo/src/features/customer/mocks/customerData.ts
 import type { Customer } from '@/entities/customer/model/types';
 
+const menus = [
+  { id: 'root-1', parent_id: null, label: 'Dashboard' },
+  { id: 'root-2', parent_id: null, label: 'Management' },
+  { id: 'root-3', parent_id: null, label: 'Settings' },
+
+  { id: 'm-1', parent_id: 'root-2', label: 'Users' },
+  { id: 'm-2', parent_id: 'root-2', label: 'Roles' },
+  { id: 'm-3', parent_id: 'root-2', label: 'Teams' },
+
+  { id: 'u-1', parent_id: 'm-1', label: 'Active Users' },
+  { id: 'u-2', parent_id: 'm-1', label: 'Invitations' },
+
+  { id: 's-1', parent_id: 'root-3', label: 'Profile' },
+  { id: 's-2', parent_id: 'root-3', label: 'Security' },
+  { id: 's-3', parent_id: 'root-3', label: 'Notifications' },
+
+  { id: 't-1', parent_id: 'm-3', label: 'Engineering' },
+  { id: 't-2', parent_id: 'm-3', label: 'Design' },
+];
+
 const baseCustomers: Customer[] = [
   {
     id: 'CUST-001',

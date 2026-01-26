@@ -228,7 +228,7 @@ function MenuManagementPage(_props:  PageComponentProps) {
                   getRowId={(row) => row.id}
                   createRow={() => ({
                     id: createMenuId(),
-                    parent_id: selectedNode.id,
+                    parent_id: selectedNode?.id ?? '0',
                     label: '',
                   })}
                   makePatch={({ columnId, value }) => ({ [columnId]: value } as any)}
