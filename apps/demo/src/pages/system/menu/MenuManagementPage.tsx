@@ -11,13 +11,15 @@
  * - [주의사항/제약/성능]
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import { Home, MonitorCog, SquareMenu } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { GenGridCrud } from '@gen-office/gen-grid-crud';
 import type { CrudChange } from '@gen-office/gen-grid-crud';
+import type { Menu, MenuListParams } from '@/entities/system/menu/model/types';
+import { useMenuListQuery } from '@/entities/system/menu/api/menu';
 
 import styles from './MenuManagementPage.module.css';
 import { SplitLayout, TreeView } from '@gen-office/ui';
@@ -28,43 +30,23 @@ type MenuNode = {
   label: string;
 };
 
-export const treeSampleData = [
-  { id: 'root-1', parent_id: null, label: 'Dashboard' },
-  { id: 'root-2', parent_id: null, label: 'Management' },
-  { id: 'root-3', parent_id: null, label: 'Settings' },
-
-  { id: 'm-1', parent_id: 'root-2', label: 'Users' },
-  { id: 'm-2', parent_id: 'root-2', label: 'Roles' },
-  { id: 'm-3', parent_id: 'root-2', label: 'Teams' },
-
-  { id: 'u-1', parent_id: 'm-1', label: 'Active Users' },
-  { id: 'u-2', parent_id: 'm-1', label: 'Invitations' },
-
-  { id: 's-1', parent_id: 'root-3', label: 'Profile' },
-  { id: 's-2', parent_id: 'root-3', label: 'Security' },
-  { id: 's-3', parent_id: 'root-3', label: 'Notifications' },
-
-  { id: 't-1', parent_id: 'm-3', label: 'Engineering' },
-  { id: 't-2', parent_id: 'm-3', label: 'Design' },
-];
-
 const createMenuId = () =>
   `menu_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 
-const buildChildrenMap = (items: readonly MenuNode[]) => {
+const buildChildrenMap = (items: readonly Menu[]) => {
   const map = new Map<string | null, string[]>();
   for (const item of items) {
-    const key = item.parent_id;
+    const key = item.prnt_menu_id || null;
     const list = map.get(key);
-    if (list) list.push(item.id);
-    else map.set(key, [item.id]);
+    if (list) list.push(item.menu_id);
+    else map.set(key, [item.menu_id]);
   }
   return map;
 };
 
-const applyMenuChanges = (prev: readonly MenuNode[], changes: readonly CrudChange<MenuNode>[]) => {
-  const created = new Map<string, MenuNode>();
-  const updated = new Map<string, Partial<MenuNode>>();
+const applyMenuChanges = (prev: readonly Menu[], changes: readonly CrudChange<Menu>[]) => {
+  const created = new Map<string, Menu>();
+  const updated = new Map<string, Partial<Menu>>();
   const deleted = new Set<string>();
 
   for (const change of changes) {
@@ -102,7 +84,7 @@ const applyMenuChanges = (prev: readonly MenuNode[], changes: readonly CrudChang
   }
 
   let next = prev.map((row) => {
-    const patch = updated.get(row.id);
+    const patch = updated.get(row.menu_id);
     return patch ? { ...row, ...patch } : row;
   });
 
@@ -125,42 +107,66 @@ const applyMenuChanges = (prev: readonly MenuNode[], changes: readonly CrudChang
     }
   }
 
-  return next.filter((row) => !deleted.has(row.id));
+  return next.filter((row) => !deleted.has(row.menu_id));
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function MenuManagementPage(_props:  PageComponentProps) {
-  const [menuData, setMenuData] = useState<MenuNode[]>(
-    treeSampleData as MenuNode[]
-  );
+  const queryParams = useMemo<MenuListParams>(() => ({}), []);
+  const { data: menuList = [] } = useMenuListQuery(queryParams);
+
+  const didInit = useRef(false);
+  const [menuData, setMenuData] = useState<Menu[]>([]);
   const [menuVersion, setMenuVersion] = useState(0);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (didInit.current) return;
+    if (menuList.length === 0) return;
+    setMenuData(menuList);
+    didInit.current = true;
+  }, [menuList]);
+
+  const treeData = useMemo<MenuNode[]>(
+    () =>
+      menuData.map((item) => ({
+        id: item.menu_id,
+        parent_id: item.prnt_menu_id || null,
+        label: item.menu_name || item.menu_name_eng || item.menu_id,
+      })),
+    [menuData]
+  );
+
+  const rootIds = useMemo(
+    () => treeData.filter((node) => node.parent_id == null).map((node) => node.id),
+    [treeData]
+  );
+
   const selectedNode = useMemo(
-    () => menuData.find((node) => node.id === selectedNodeId) ?? null,
+    () => menuData.find((node) => node.menu_id === selectedNodeId) ?? null,
     [menuData, selectedNodeId]
   );
 
   const childMenus = useMemo(
-    () => menuData.filter((node) => node.parent_id === selectedNodeId),
+    () => menuData.filter((node) => (node.prnt_menu_id || null) === selectedNodeId),
     [menuData, selectedNodeId]
   );
 
-  const columns = useMemo<ColumnDef<MenuNode>[]>(
+  const columns = useMemo<ColumnDef<Menu>[]>(
     () => [
       {
-        id: 'id',
-        header: 'ID',
-        accessorKey: 'id',
+        id: 'menu_id',
+        header: 'Menu ID',
+        accessorKey: 'menu_id',
         meta: {
           width: 160,
           align: 'center',
         },
       },
       {
-        id: 'label',
-        header: 'Name',
-        accessorKey: 'label',
+        id: 'menu_name',
+        header: 'Menu Name',
+        accessorKey: 'menu_name',
         meta: {
           width: 220,
           editable: true,
@@ -169,12 +175,90 @@ function MenuManagementPage(_props:  PageComponentProps) {
         },
       },
       {
-        id: 'parent_id',
+        id: 'menu_name_eng',
+        header: 'Menu Name (Eng)',
+        accessorKey: 'menu_name_eng',
+        meta: {
+          width: 220,
+          editable: true,
+          editType: 'text',
+          editPlaceholder: 'Menu name (eng)',
+        },
+      },
+      {
+        id: 'menu_desc',
+        header: 'Description',
+        accessorKey: 'menu_desc',
+        meta: {
+          width: 240,
+          editable: true,
+          editType: 'text',
+          editPlaceholder: 'Description',
+        },
+      },
+      {
+        id: 'menu_level',
+        header: 'Level',
+        accessorKey: 'menu_level',
+        meta: {
+          width: 80,
+          align: 'center',
+          editable: true,
+          editType: 'text',
+        },
+      },
+      {
+        id: 'prnt_menu_id',
         header: 'Parent',
-        accessorKey: 'parent_id',
+        accessorKey: 'prnt_menu_id',
         meta: {
           width: 160,
           align: 'center',
+          editable: true,
+          editType: 'text',
+        },
+      },
+      {
+        id: 'display_flag',
+        header: 'Display',
+        accessorKey: 'display_flag',
+        meta: {
+          width: 90,
+          align: 'center',
+          editable: true,
+          editType: 'text',
+        },
+      },
+      {
+        id: 'use_flag',
+        header: 'Use',
+        accessorKey: 'use_flag',
+        meta: {
+          width: 90,
+          align: 'center',
+          editable: true,
+          editType: 'text',
+        },
+      },
+      {
+        id: 'sort_order',
+        header: 'Sort',
+        accessorKey: 'sort_order',
+        meta: {
+          width: 90,
+          align: 'center',
+          editable: true,
+          editType: 'number',
+        },
+      },
+      {
+        id: 'url',
+        header: 'URL',
+        accessorKey: 'url',
+        meta: {
+          width: 240,
+          editable: true,
+          editType: 'text',
         },
       },
     ],
@@ -213,28 +297,35 @@ function MenuManagementPage(_props:  PageComponentProps) {
             <div className={styles.wrapTreeView}>
               <TreeView
                 title="전체 메뉴 트리"
-                data={menuData} // [{ id, parent_id, label, ... }]
+                data={treeData} // [{ id, parent_id, label, ... }]
                 onSelect={(node) => setSelectedNodeId(node?.id ?? null)}
-                defaultExpandedIds={['root-1']}
+                defaultExpandedIds={rootIds}
               />
             </div>
           }
           right={
             <div className={styles.detailPane}>
-                <GenGridCrud<MenuNode>
+                <GenGridCrud<Menu>
                   key={selectedNodeId ?? 'none'}
                   data={childMenus}
                   columns={columns}
-                  getRowId={(row) => row.id}
+                  getRowId={(row) => row.menu_id}
                   createRow={() => ({
-                    id: createMenuId(),
-                    parent_id: selectedNode?.id ?? '0',
-                    label: '',
+                    menu_id: createMenuId(),
+                    menu_name: '',
+                    menu_name_eng: '',
+                    menu_desc: '',
+                    menu_level: selectedNode ? String(Number(selectedNode.menu_level || 0) + 1) : '1',
+                    prnt_menu_id: selectedNode?.menu_id ?? '',
+                    display_flag: 'Y',
+                    use_flag: 'Y',
+                    sort_order: 0,
+                    url: '',
                   })}
                   makePatch={({ columnId, value }) => ({ [columnId]: value } as any)}
                   deleteMode="selected"
                   onCommit={async ({ changes }) => {
-                    setMenuData((prev) => applyMenuChanges(prev, changes as CrudChange<MenuNode>[]));
+                    setMenuData((prev) => applyMenuChanges(prev, changes as CrudChange<Menu>[]));
                     setMenuVersion((v) => v + 1);
                     return { ok: true };
                   }}
