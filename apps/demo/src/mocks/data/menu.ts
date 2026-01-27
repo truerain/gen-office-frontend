@@ -24,27 +24,27 @@ function parseMenuCsv(csvText: string): Menu[] {
     const values = extractSqlValues(line);
     if (!values || values.length < 10) continue;
 
-    const menuId = values[0];
+    const menuId = toNumber(values[0]);
     const menuName = values[1];
     const menuNameEng = values[2];
     const menuDesc = values[3];
-    const menuLevel = values[4];
-    const parentMenuId = values[5];
+    const menuLevel = toNumber(values[4]);
+    const parentMenuId = toNumber(values[5]);
     const displayFlag = values[6];
     const useFlag = values[7];
-    const sortOrder = values[8];
+    const sortOrder = toNumber(values[8]);
     const url = values[9];
 
     menus.push({
-      menu_id: menuId ?? '',
-      menu_name: menuName ?? '',
-      menu_name_eng: menuNameEng ?? '',
-      menu_desc: menuDesc ?? '',
-      menu_level: menuLevel ?? '',
-      prnt_menu_id: parentMenuId ?? '',
-      display_flag: displayFlag ?? '',
-      use_flag: useFlag ?? '',
-      sort_order: toNumber(sortOrder),
+      menuId,
+      menuName: menuName ?? '',
+      menuNameEng: menuNameEng ?? '',
+      menuDesc: menuDesc ?? '',
+      menuLevel,
+      prntMenuId: parentMenuId,
+      dsplFlag: displayFlag ?? '',
+      useFlag: useFlag ?? '',
+      sortOrder,
       url: url ?? '',
     });
   }

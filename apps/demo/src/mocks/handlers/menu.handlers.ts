@@ -13,9 +13,9 @@ export const menuHandlers = [
 
     if (q) {
       items = items.filter((menu) => {
-        const name = (menu.menu_name ?? '').toLowerCase();
-        const nameEng = (menu.menu_name_eng ?? '').toLowerCase();
-        const desc = (menu.menu_desc ?? '').toLowerCase();
+        const name = (menu.menuName ?? '').toLowerCase();
+        const nameEng = (menu.menuNameEng ?? '').toLowerCase();
+        const desc = (menu.menuDesc ?? '').toLowerCase();
         return name.includes(q) || nameEng.includes(q) || desc.includes(q);
       });
     }

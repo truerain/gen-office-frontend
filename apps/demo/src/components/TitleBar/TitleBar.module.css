@@ -165,3 +165,7 @@
   display: inline-flex;
   margin-right: var(--spacing-sm);
 }
+
+.dropdownContent {
+  font-size: 16px;
+}

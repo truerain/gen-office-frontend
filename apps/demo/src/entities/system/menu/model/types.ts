@@ -1,16 +1,39 @@
 // apps/demo/src/entities/system/menu/model/types.ts
 
 export interface Menu {
-  menu_id: string;
-  menu_name: string;
-  menu_name_eng: string;
-  menu_desc: string;
-  menu_level: string;
-  prnt_menu_id: string;
-  display_flag: string;
-  use_flag: string;
-  sort_order: number;
+  menuId: number;
+  menuName: string;
+  menuNameEng: string;
+  menuDesc: string;
+  menuLevel: number;
+  prntMenuId: number;
+  dsplFlag: string;
+  useFlag: string;
+  sortOrder: number;
   url: string;
+  param1?: string;
+  param2?: string;
+  param3?: string;
+  param4?: string;
+  param5?: string;
+  abAuthFlag?: string;
+  attribute1?: string;
+  attribute2?: string;
+  attribute3?: string;
+  attribute4?: string;
+  attribute5?: string;
+  attribute6?: string;
+  attribute7?: string;
+  attribute8?: string;
+  attribute9?: string;
+  attribute10?: string;
+  creationDate?: string;
+  createdBy?: string;
+  lastUpdateDate?: string;
+  lastUpdatedBy?: string;
+  cauthFlag?: string;
+  eauthFlag?: string;
+  fauthFlag?: string;
 }
 
 export type MenuListParams = {

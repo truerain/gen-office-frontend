@@ -3,14 +3,14 @@ import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { http } from '@/shared/api/http';
 import type { Menu, MenuListParams } from '@/entities/system/menu/model/types';
 
-function buildUrl(path: string, params?: Record<string, string | undefined>) {
-  const url = new URL(path, window.location.origin);
-  if (params) {
-    Object.entries(params).forEach(([k, v]) => {
-      if (v != null && v !== '') url.searchParams.set(k, v);
-    });
-  }
-  return url.toString();
+function buildQuery(params?: Record<string, string | undefined>) {
+  if (!params) return '';
+  const sp = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v != null && v !== '') sp.set(k, v);
+  });
+  const query = sp.toString();
+  return query ? `?${query}` : '';
 }
 
 export const menuKeys = {
@@ -20,12 +20,17 @@ export const menuKeys = {
 
 export const menuApi = {
   list: (params: MenuListParams = {}) => {
-    const url = buildUrl('/api/menus', {
+    const url = `/api/menus${buildQuery({
       q: params.q,
       page: params.page ? String(params.page) : undefined,
       pageSize: params.pageSize ? String(params.pageSize) : undefined,
-    });
-    return http<Menu[]>(url, { method: 'GET' });
+    })}`;
+    return http<Menu[] | { items: Menu[] }>(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `Basic ${btoa('admin:admin123')}`,
+      },
+    }).then((res) => (Array.isArray(res) ? res : res.items ?? []));
   },
 };
 

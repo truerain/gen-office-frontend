@@ -1,15 +1,16 @@
 // apps/demo/src/App.tsx
-import { useEffect, Suspense, useState } from 'react';
+import { useEffect, Suspense, useState, useMemo } from 'react';
 import { MDIContainer, useMDIStore } from '@gen-office/mdi';
 import { Drawer } from '@gen-office/ui';
 import { useTheme } from '@gen-office/theme';
 import { Home, AlertCircle, Code, FileQuestion } from 'lucide-react';
 import { TitleBar } from '@/components/TitleBar';
 import HomePage from '@/pages/home/HomePage';
-import { findMenuItem } from '@/app/menu/menuData';
+import { findMenuItem, mapMenusToMenuItems, menuTree as buildMenuTree } from '@/app/menu/menuData';
 import { getLazyComponent } from '@/app/config/componentRegistry.dynamic';
 import { useAppStore } from '@/app/store/appStore';
 import { PageProvider } from '@/contexts';
+import { useMenuListQuery } from '@/entities/system/menu/api/menu';
 import '@gen-office/mdi/index.css';
 import styles from './App.module.css';
 
@@ -71,7 +72,11 @@ function App() {
   const addTab = useMDIStore((state) => state.addTab);
   const setActiveTab = useMDIStore((state) => state.setActiveTab);
   const tabs = useMDIStore((state) => state.tabs);
-  
+
+  const { data: menuList = [] } = useMenuListQuery({});
+  const menuItems = useMemo(() => mapMenusToMenuItems(menuList), [menuList]);
+  const menuTree = useMemo(() => buildMenuTree(menuItems), [menuItems]);
+  console.log(menuTree);
   // Theme 연동
   const { setMode } = useTheme();
   const appTheme = useAppStore((state) => state.theme);
@@ -126,7 +131,7 @@ function App() {
     params?: Record<string, unknown>
   ) => {
     // 1. 메뉴 데이터에서 아이템 찾기
-    const menuItem = findMenuItem(menuId);
+    const menuItem = findMenuItem(menuItems, menuId);
     console.log('Opening page for menu item:', menuItem);
     // 2. componentName으로 Lazy 컴포넌트 가져오기
     const LazyComponent = getLazyComponent(menuItem?.componentName);
@@ -163,6 +168,7 @@ function App() {
       <TitleBar 
         onOpenPage={handleOpenPage}
         onOpenHome={handleOpenHome}
+        menuTree={menuTree}
       />
 
       {/* MDI Container */}

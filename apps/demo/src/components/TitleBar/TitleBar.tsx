@@ -13,7 +13,6 @@ import {
 } from '@gen-office/ui';
 import { Settings, Moon, Sun, LogOut } from 'lucide-react';
 import { useTheme } from '@gen-office/theme';
-import { menuTree } from '@/app/menu/menuData';
 import { getIconComponent } from '@/app/menu/model/iconMapper';
 import type { MenuTreeItem } from '@/types/menu.types';
 import lgLogo from '@/shared/assets/lg_logo_213x56.avif';
@@ -22,9 +21,10 @@ import styles from './TitleBar.module.css';
 interface TitleBarProps {
   onOpenPage: (menuId: string, title: string, icon: React.ReactNode) => void;
   onOpenHome?: () => void;
+  menuTree: MenuTreeItem[];
 }
 
-export function TitleBar({ onOpenPage, onOpenHome }: TitleBarProps) {
+export function TitleBar({ onOpenPage, onOpenHome, menuTree }: TitleBarProps) {
   const { mode, setMode } = useTheme();
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [isAnyMenuOpen, setIsAnyMenuOpen] = useState(false);
@@ -95,7 +95,7 @@ export function TitleBar({ onOpenPage, onOpenHome }: TitleBarProps) {
           <span className={styles.menuItemIcon}>{icon}</span>
           <span>{item.label}</span>
         </DropdownMenuSubTrigger>
-        <DropdownMenuSubContent>
+        <DropdownMenuSubContent className={styles.dropdownContent}>
           {item.children.map(child => renderSubMenu(child))}
         </DropdownMenuSubContent>
       </DropdownMenuSub>
@@ -137,6 +137,7 @@ export function TitleBar({ onOpenPage, onOpenHome }: TitleBarProps) {
 
                 <DropdownMenuContent
                   align="start"
+                  className={styles.dropdownContent}
                   onMouseMove={(e) => handleMouseMove(e)}
                 >
                   <DropdownMenuLabel>{category.label}</DropdownMenuLabel>
@@ -156,7 +157,7 @@ export function TitleBar({ onOpenPage, onOpenHome }: TitleBarProps) {
           <DropdownMenuTrigger className={styles.userButton}>
             <Settings size={18} />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className={styles.dropdownContent}>
             <DropdownMenuLabel>설정</DropdownMenuLabel>
             <DropdownMenuSeparator />
             
