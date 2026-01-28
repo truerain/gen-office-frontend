@@ -37,10 +37,10 @@ const componentPaths: Record<string, ComponentLoader> = {
   // 'SubscriptionPage': () => import('../pages/finance/SubscriptionPage'),
 
   // 시스템 관리
-  'MenuManagementPage': () => import('@/pages/system/menu/MenuManagementPage'),
+  'MenuManagementPage': () => import('@/pages/admin/menu/MenuManagementPage'),
   // 'RoleManagementPage': () => import('../pages/system/RoleManagementPage'),
   // 'RoleMenuPage': () => import('../pages/system/RoleMenuPage'),
-  // 'UserManagementPage': () => import('../pages/system/UserManagementPage'),
+  'UserManagementPage': () => import('@/pages/admin/user/UserManagementPage'),
 
   // Demo
   'PrimitivesPage': () => import('@/pages/demo/primitives/PrimitivesPage'),

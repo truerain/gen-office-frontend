@@ -1,0 +1,253 @@
+/**
+ * @file UserManagementPage.tsx
+ * @path apps/demo/src/pages/user/UserManagementPage.tsx
+ */
+
+import { useMemo, useState } from 'react';
+import type { ColumnDef } from '@tanstack/react-table';
+import { Users } from 'lucide-react';
+import { GenGridCrud } from '@gen-office/gen-grid-crud';
+import type { CrudChange } from '@gen-office/gen-grid-crud';
+import { GenericFilterBar } from '@gen-office/ui';
+import type { FilterField } from '@gen-office/ui';
+import { PageHeader } from '@/components/PageHeader/PageHeader';
+import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
+import { useUserListQuery, userApi } from '@/entities/system/user/api/user';
+import type { User, UserListParams, UserRequest } from '@/entities/system/user/model/types';
+import styles from './UserManagementPage.module.css';
+
+const createUserId = () => (Date.now() + Math.floor(Math.random() * 1000));
+
+const toUserRequest = (input: Partial<User>): UserRequest => ({
+  empNo: input.empNo,
+  empName: input.empName,
+  empNameEng: input.empNameEng,
+  password: input.password,
+  email: input.email,
+  orgId: input.orgId,
+  title: input.title,
+  langCd: input.langCd,
+  createdBy: input.createdBy,
+  lastUpdatedBy: input.lastUpdatedBy,
+});
+
+function findUserById(rows: readonly User[], rowId: CrudChange<User>['rowId']) {
+  const id = Number(rowId);
+  if (!Number.isFinite(id)) return undefined;
+  return rows.find((row) => row.userId === id);
+}
+
+async function commitUserChanges(
+  changes: readonly CrudChange<User>[],
+  ctxRows: readonly User[]
+) {
+  const created = new Map<CrudChange<User>['tempId'], User>();
+  const updated = new Map<CrudChange<User>['rowId'], Partial<User>>();
+  const deleted = new Set<CrudChange<User>['rowId']>();
+
+  for (const change of changes) {
+    switch (change.type) {
+      case 'create':
+        created.set(change.tempId, change.row);
+        break;
+      case 'update':
+        updated.set(change.rowId, { ...(updated.get(change.rowId) ?? {}), ...change.patch });
+        break;
+      case 'delete':
+        deleted.add(change.rowId);
+        break;
+      case 'undelete':
+      default:
+        break;
+    }
+  }
+
+  for (const [tempId, row] of created.entries()) {
+    if (deleted.has(tempId)) continue;
+    const patch = updated.get(tempId);
+    const merged = patch ? { ...row, ...patch } : row;
+    await userApi.create(toUserRequest(merged));
+  }
+
+  for (const [rowId, patch] of updated.entries()) {
+    if (created.has(rowId)) continue;
+    if (deleted.has(rowId)) continue;
+    const baseRow = findUserById(ctxRows, rowId);
+    const merged = baseRow ? { ...baseRow, ...patch } : patch;
+    const id = Number(rowId);
+    if (!Number.isFinite(id)) continue;
+    await userApi.update(id, toUserRequest(merged));
+  }
+
+  for (const rowId of deleted) {
+    const id = Number(rowId);
+    if (!Number.isFinite(id)) continue;
+    await userApi.remove(id);
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export default function UserManagementPage(_props: PageComponentProps) {
+  const [draftFilters, setDraftFilters] = useState<{ empName: string }>({ empName: '' });
+  const [filters, setFilters] = useState<{ empName: string }>({ empName: '' });
+  const queryParams = useMemo<UserListParams>(
+    () => ({
+      empName: filters.empName?.trim() || undefined,
+    }),
+    [filters.empName]
+  );
+  const { data: userList = [], refetch, dataUpdatedAt } = useUserListQuery(queryParams);
+
+  const columns = useMemo<ColumnDef<User>[]>(
+    () => [
+      {
+        id: 'userId',
+        header: 'User ID',
+        accessorKey: 'userId',
+        meta: { width: 120, align: 'center' },
+      },
+      {
+        id: 'empNo',
+        header: 'Emp No',
+        accessorKey: 'empNo',
+        meta: { width: 140, editable: true, editType: 'text' },
+      },
+      {
+        id: 'empName',
+        header: 'Name',
+        accessorKey: 'empName',
+        meta: { width: 160, editable: true, editType: 'text' },
+      },
+      {
+        id: 'empNameEng',
+        header: 'Name (Eng)',
+        accessorKey: 'empNameEng',
+        meta: { width: 160, editable: true, editType: 'text' },
+      },
+      {
+        id: 'email',
+        header: 'Email',
+        accessorKey: 'email',
+        meta: { width: 220, editable: true, editType: 'text' },
+      },
+      {
+        id: 'orgId',
+        header: 'Org ID',
+        accessorKey: 'orgId',
+        meta: { width: 140, editable: true, editType: 'text' },
+      },
+      {
+        id: 'title',
+        header: 'Title',
+        accessorKey: 'title',
+        meta: { width: 140, editable: true, editType: 'text' },
+      },
+      {
+        id: 'langCd',
+        header: 'Lang',
+        accessorKey: 'langCd',
+        meta: { width: 80, editable: true, editType: 'text', align: 'center' },
+      },
+      {
+        id: 'password',
+        header: 'Password',
+        accessorKey: 'password',
+        meta: { width: 160, editable: true, editType: 'text' },
+      },
+      {
+        id: 'lastUpdatedBy',
+        header: 'Updated By',
+        accessorKey: 'lastUpdatedBy',
+        meta: { width: 140 },
+      },
+      {
+        id: 'lastUpdatedDate',
+        header: 'Updated At',
+        accessorKey: 'lastUpdatedDate',
+        meta: { width: 160 },
+      },
+    ],
+    []
+  );
+
+  const filterFields = useMemo<FilterField<{ empName: string }>[]>(() => {
+    return [
+      {
+        key: 'empName',
+        title:'사원이름',
+        type: 'text',
+        placeholder: '',
+        flex: 0,
+      },
+    ];
+  }, []);
+
+  const handleSearch = () => {
+    const same = draftFilters.empName.trim() === filters.empName.trim();
+    setFilters(draftFilters);
+    if (same) refetch();
+  };
+
+  return (
+    <div className={styles.page}>
+      <PageHeader
+        title="사용자 관리"
+        description="사용자 정보를 조회/관리합니다."
+        breadcrumbItems={[
+          { label: 'System', icon: <Users size={16} /> },
+          { label: 'User Management', icon: <Users size={16} /> },
+        ]}
+      />
+      <div className={styles.content}>
+        <GenericFilterBar
+          value={draftFilters}
+          fields={filterFields}
+          onChange={setDraftFilters}
+          onSearch={handleSearch}
+          searchLabel="검색"
+        />
+        <GenGridCrud<User>
+          data={userList}
+          columns={columns}
+          getRowId={(row) => row.userId}
+          createRow={() => ({
+            userId: createUserId(),
+            empNo: '',
+            empName: '',
+            empNameEng: '',
+            password: '',
+            email: '',
+            orgId: '',
+            title: '',
+            langCd: 'ko',
+            createdBy: 'admin',
+            lastUpdatedBy: 'admin',
+          })}
+          makePatch={({ columnId, value }) => ({ [columnId]: value } as Partial<User>)}
+          deleteMode="selected"
+          showActionBar
+          actionBarPosition="top"
+          onCommit={async ({ changes, ctx }) => {
+            await commitUserChanges(changes, ctx.viewData);
+            await refetch();
+            return { ok: true };
+          }}
+          onCommitError={({ error }) => {
+            console.error(error);
+            alert('Commit failed (see console).');
+          }}
+          gridProps={{
+            dataVersion: dataUpdatedAt,
+            rowHeight: 34,
+            overscan: 8,
+            enablePinning: true,
+            enableColumnSizing: true,
+            enableVirtualization: true,
+            enableRowStatus: true,
+            enableRowSelection: true,
+          }}
+        />
+      </div>
+    </div>
+  );
+}

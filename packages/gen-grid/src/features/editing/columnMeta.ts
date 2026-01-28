@@ -8,6 +8,9 @@ export type CellEditorRenderArgs<TValue> = {
   onChange: (v: TValue) => void;
   onCommit: () => void;
   onCancel: () => void;
+  onTab?: (dir: 1 | -1) => void;
+  commitValue?: (nextValue: unknown) => void;
+  applyValue?: (nextValue: unknown) => void;
 };
 
 declare module '@tanstack/react-table' {
@@ -18,6 +21,9 @@ declare module '@tanstack/react-table' {
       onChange: (v: TValue) => void;
       onCommit: () => void;
       onCancel: () => void;
+      onTab?: (dir: 1 | -1) => void;
+      commitValue?: (nextValue: unknown) => void;
+      applyValue?: (nextValue: unknown) => void;
     }) => React.ReactNode;
   }
 }

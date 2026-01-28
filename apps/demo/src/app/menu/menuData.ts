@@ -1,11 +1,12 @@
 ﻿// apps/demo/src/app/menu/menuData.ts
 import type { MenuData, MenuItem } from '@/types/menu.types';
-import type { Menu } from '@/entities/system/menu/model/types';
 import { buildMenuTree, findMenuItemById } from '@/app/menu/menuTree';
+import type { AppMenu } from './model/types';
 
 const componentNameByMenuId: Record<string, string> = {
   'customer-info': 'CustomerInfoPage',
   'menu-management': 'MenuManagementPage',
+  'user-management': 'UserManagementPage',
   primitives: 'PrimitivesPage',
   datagrid: 'DataGridPage',
   mdi: 'MDIPage',
@@ -41,7 +42,7 @@ const iconByMenuId: Record<string, string> = {
   'composed-alert-dialog': 'MessageSquare',
 };
 
-export function mapMenusToMenuItems(menus: Menu[]): MenuItem[] {
+export function mapMenusToMenuItems(menus:AppMenu[]): MenuItem[] {
   return menus
       .filter((item) => {
           return item.dsplFlag === 'Y';
@@ -50,7 +51,9 @@ export function mapMenusToMenuItems(menus: Menu[]): MenuItem[] {
         menuId: String(m.menuId),
         label: m.menuName || m.menuNameEng || String(m.menuId),
         icon: iconByMenuId[String(m.menuId)] ?? 'Menu',
-        componentName: m.url ? String(m.url) : null,
+        componentName:
+          componentNameByMenuId[String(m.menuId)] ??
+          (m.url ? String(m.url) : undefined),
         parentMenuId: m.prntMenuId ? String(m.prntMenuId) : null,
         order: m.sortOrder,
         isActive: m.useFlag ? m.useFlag.toLowerCase() === 'y' : undefined,

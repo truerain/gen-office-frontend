@@ -1,4 +1,4 @@
 import { customerHandlers } from './customer.handlers';
-import { menuHandlers } from './menu.handlers';
+import { appMenuHandlers } from './appMenu.handlers';
 
-export const handlers = [...customerHandlers, ...menuHandlers];
+export const handlers = [...customerHandlers, ...appMenuHandlers];

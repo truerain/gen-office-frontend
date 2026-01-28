@@ -311,6 +311,12 @@ export function useActiveCellNavigation<TData>(args: {
       const wholeGrid = e.ctrlKey || e.metaKey;
 
       switch (e.key) {
+        case 'Tab': {
+          e.preventDefault();
+          const dir = e.shiftKey ? 'left' : 'right';
+          move(dir);
+          break;
+        }
         case 'ArrowLeft':
           e.preventDefault();
           move('left');

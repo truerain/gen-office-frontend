@@ -20,3 +20,7 @@ export * from './composed/AlertDialog';
 export * from './composed/TreeView';
 export * from './composed/SplitLayout';
 export * from './composed/MasterDetailLayout';
+export * from './composed/FilterBar/FilterBar';
+export * from './composed/FilterBar/SearchInput';
+export * from './composed/FilterBar/GenericFilterBar';
+export * from './composed/FilterBar/FilterBar.types';

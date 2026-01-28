@@ -22,7 +22,7 @@ import type { Menu, MenuListParams } from '@/entities/system/menu/model/types';
 import { useMenuListQuery } from '@/entities/system/menu/api/menu';
 
 import styles from './MenuManagementPage.module.css';
-import { SplitLayout, TreeView } from '@gen-office/ui';
+import { SimpleSelect, SplitLayout, Switch, TreeView } from '@gen-office/ui';
 
 type MenuNode = {
   id: number;
@@ -236,18 +236,54 @@ function MenuManagementPage(_props:  PageComponentProps) {
           width: 90,
           align: 'center',
           editable: true,
-          editType: 'text',
+          renderEditor: ({ value, onChange, applyValue }) => (
+            <SimpleSelect
+              value={value === 'Y' ? 'Y' : 'N'}
+              fitCell
+              onValueChange={(next) => {
+                onChange(next);
+                applyValue?.(next);
+              }}
+              options={[
+                { value: 'Y', label: 'Y' },
+                { value: 'N', label: 'N' },
+              ]}
+            />
+          ),
+          onSpace: ({ rowId, columnId }) => {
+            const cell = document.querySelector<HTMLElement>(
+              `[data-rowid="${CSS.escape(rowId)}"][data-colid="${CSS.escape(columnId)}"]`
+            );
+            const trigger = cell?.querySelector<HTMLElement>('button[role="combobox"]');
+            trigger?.click();
+          },
         },
       },
       {
         id: 'useFlag',
-        header: 'Use',
+        header: '사용여부',
         accessorKey: 'useFlag',
         meta: {
           width: 90,
           align: 'center',
           editable: true,
-          editType: 'text',
+          renderCell: ({ value, commitValue }) => (
+            <Switch
+              checked={value === 'Y'}
+              onCheckedChange={(next) => commitValue?.(next ? 'Y' : 'N')}
+              style={{
+                ['--switch-width' as any]: '2.25rem',
+                ['--switch-height' as any]: '1.25rem',
+                ['--switch-thumb-size' as any]: '1rem',
+                ['--switch-thumb-x' as any]: '0.125rem',
+                ['--switch-thumb-checked-x' as any]: '1.125rem',
+              }}
+            />
+          ),
+          onSpace: ({ value, commitValue }) => {
+            const next = value === 'Y' ? 'N' : 'Y';
+            commitValue?.(next);
+          },
         },
       },
       {

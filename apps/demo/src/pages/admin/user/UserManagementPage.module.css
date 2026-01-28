@@ -1,0 +1,17 @@
+/* apps/demo/src/pages/user/UserManagementPage.module.css */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: var(--spacing-md);
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+

@@ -28,6 +28,7 @@ export type GenGridCellProps<TData> = {
   cellProps: React.HTMLAttributes<HTMLTableCellElement>;
 
   onCommitValue: (nextValue: unknown) => void;
+  onApplyValue: (nextValue: unknown) => void;
   onCancelEdit: () => void;
 
   /** ✅ Tab / Shift+Tab 편집 이동 */
@@ -45,9 +46,14 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     enableColumnSizing,
     cellProps,
     onCommitValue,
+    onApplyValue,
     onCancelEdit,
     onTab,
   } = props;
+
+  React.useEffect(() => {
+    if (isEditing && !isActive) onCancelEdit();
+  }, [isEditing, isActive, onCancelEdit]);
 
   const colId = cell.column.id;
   const pinned = cell.column.getIsPinned();
@@ -202,6 +208,8 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
       onCommit: commitDraft,
       onCancel: cancel,
       onTab,
+      commitValue: onCommitValue,
+      applyValue: onApplyValue,
     }) ?? renderDefaultEditor();
 
   return (
@@ -228,6 +236,25 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
       data-editing-cell={isEditing ? 'true' : undefined}
       data-dirty={isDirty ? 'true' : undefined}
       {...cellProps}
+      onKeyDown={(e) => {
+        if (
+          !isEditing &&
+          isActive &&
+          (e.key === ' ' || e.key === 'Spacebar') &&
+          meta?.onSpace
+        ) {
+          e.preventDefault();
+          meta.onSpace({
+            value: cell.getValue(),
+            row: cell.row.original,
+            rowId,
+            columnId: colId,
+            commitValue: onCommitValue,
+          });
+          return;
+        }
+        cellProps.onKeyDown?.(e);
+      }}
     >
 
       {isEditing 
@@ -235,17 +262,22 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
             onMouseDownCapture={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
             onDoubleClick={(e) => e.stopPropagation()}
-            style={{ width: '100%', height: '100%' }}
+            style={{ display: "flex", justifyContent: "center" }}
           >
             {editor}
           </div>) 
         : meta?.renderCell
-          ? meta.renderCell({
-              value: cell.getValue(),
-              row: cell.row.original,
-              rowId,
-              columnId: colId,
-            })
+          ? (
+            <div style={{display: "flex", justifyContent: "center" }}>
+              {meta.renderCell({
+                value: cell.getValue(),
+                row: cell.row.original,
+                rowId,
+                columnId: colId,
+                commitValue: onCommitValue,
+              })}
+            </div>
+          )
           : meta?.format
             ? (formatCellValue(cell.getValue(), meta) as any)
             : flexRender(cell.column.columnDef.cell, cell.getContext())}

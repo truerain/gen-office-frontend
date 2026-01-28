@@ -20,7 +20,15 @@ declare module '@tanstack/react-table' {
       row: TData;
       rowId: string;
       columnId: string;
+      commitValue?: (nextValue: unknown) => void;
     }) => React.ReactNode;
+    onSpace?: (args: {
+      value: unknown;
+      row: TData;
+      rowId: string;
+      columnId: string;
+      commitValue?: (nextValue: unknown) => void;
+    }) => void;
     editType?: 'text' | 'number' | 'date' | 'select' | 'textarea' | 'checkbox';
     editOptions?: { label: string; value: string | number }[];
     editPlaceholder?: string;

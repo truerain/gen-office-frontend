@@ -135,6 +135,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
                 enableColumnSizing={enableColumnSizing}
                 cellProps={mergedProps}
                 onCommitValue={(nextValue) => editing.commitValue({ rowId: row.id, columnId: colId }, nextValue)}
+                onApplyValue={(nextValue) => editing.applyValue({ rowId: row.id, columnId: colId }, nextValue)}
                 onCancelEdit={editing.cancelEditing}
                 onTab={(dir) => editing.moveEditByTab(dir)}
               />

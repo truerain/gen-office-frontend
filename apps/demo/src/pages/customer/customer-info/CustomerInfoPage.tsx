@@ -51,7 +51,6 @@ function CustomerInfoPage({
     deleted: [],
   });
   
-  console.log(pendingDiff);
   //const saveDisabled = !isDiffDirty(pendingDiff);
 
 
@@ -75,6 +74,7 @@ function CustomerInfoPage({
     };
   };
 
+  const [draftFilters, setDraftFilters] = useState<CustomerFilter>(getInitialFilters);
   const [filters, setFilters] = useState<CustomerFilter>(getInitialFilters);
 
   const queryParams = useMemo(() => {
@@ -148,7 +148,7 @@ function CustomerInfoPage({
   */
 
   const handleRefetch = () => {
-    listQuery.refetch();
+    setFilters(draftFilters);
   };
 
   const handleCommit = async (changes: readonly CrudChange<Customer>[]) => {
@@ -183,8 +183,8 @@ function CustomerInfoPage({
       <div className={styles.content}>
         {/* 검색 필터 */}
         <CustomerFilterBar
-          filters={filters}
-          onFilterChange={setFilters}
+          filters={draftFilters}
+          onFilterChange={setDraftFilters}
           onSearch={handleRefetch}
         />
 

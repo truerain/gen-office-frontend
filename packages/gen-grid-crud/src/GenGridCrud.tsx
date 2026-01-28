@@ -16,7 +16,8 @@ function withTempId<TData>(row: TData, tempId: CrudRowId): TData {
   const next = { ...(row as any) } as any;
   Object.defineProperty(next, CRUD_TEMP_ID_KEY, {
     value: tempId,
-    enumerable: false,
+    // keep temp id on row copies (spread/clone) so created rows remain editable
+    enumerable: true,
   });
   return next as TData;
 }
@@ -263,6 +264,12 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     [getRowId]
   );
 
+  // pending update용 rowId (number/string 그대로 유지)
+  const getPendingRowId = React.useCallback(
+    (row: TData) => getCrudRowId(row, (r) => getRowId(r, -1)),
+    [getRowId]
+  );
+
 
   // --- Action handlers
   const handleAdd = React.useCallback(() => {
@@ -351,29 +358,29 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   const handleGridDataChange = React.useCallback(
     (nextViewData: TData[]) => {
 
-      const prevById = new Map<string, TData>();
+      const prevById = new Map<CrudRowId, TData>();
       for (let i = 0; i < gridData.length; i++) {
         const r = gridData[i]!;
-        prevById.set(genGridGetRowId(r), r);
+        prevById.set(getPendingRowId(r), r);
       }
 
       for (let i = 0; i < nextViewData.length; i++) {
         const nextRow = nextViewData[i]!;
-        const idStr = genGridGetRowId(nextRow);
-        const prevRow = prevById.get(idStr);
+        const rowId = getPendingRowId(nextRow);
+        const prevRow = prevById.get(rowId);
         if (!prevRow) continue;
 
         if (diffKeys.length > 0 && typeof prevRow === 'object' && typeof nextRow === 'object') {
           const patch = shallowDiffPatch(prevRow as any, nextRow as any, diffKeys);
           if (Object.keys(patch).length) {
-            pendingApi.updateRow(idStr, patch as any);
+            pendingApi.updateRow(rowId, patch as any);
           }
         } else {
         }
       }
 
     },
-    [gridData, genGridGetRowId, pendingApi, diffKeys]
+    [gridData, getPendingRowId, pendingApi, diffKeys]
   );
 
   // --- state publish

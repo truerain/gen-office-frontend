@@ -48,6 +48,16 @@ export interface SimpleSelectProps extends Omit<RadixSelectProps, 'children'> {
    * Full width select
    */
   fullWidth?: boolean;
+
+  /**
+   * Fit to parent cell height/width (table cell usage)
+   */
+  fitCell?: boolean;
+
+  /**
+   * Extra class for trigger
+   */
+  triggerClassName?: string;
   
   /**
    * Error state
@@ -94,6 +104,8 @@ export const SimpleSelect = forwardRef<
   options = [],
   groups = [],
   fullWidth,
+  fitCell,
+  triggerClassName,
   error,
   ...props
 }, ref) => {
@@ -107,6 +119,8 @@ export const SimpleSelect = forwardRef<
         id={id} 
         fullWidth={fullWidth}
         error={error}
+        className={triggerClassName}
+        data-fit-cell={fitCell ? 'true' : undefined}
       >
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>

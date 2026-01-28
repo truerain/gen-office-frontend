@@ -10,9 +10,9 @@ import { findMenuItem, mapMenusToMenuItems, menuTree as buildMenuTree } from '@/
 import { getLazyComponent } from '@/app/config/componentRegistry.dynamic';
 import { useAppStore } from '@/app/store/appStore';
 import { PageProvider } from '@/contexts';
-import { useMenuListQuery } from '@/entities/system/menu/api/menu';
 import '@gen-office/mdi/index.css';
 import styles from './App.module.css';
+import { useAppMenuListQuery } from './menu/api/appMenu';
 
 // 로딩 컴포넌트
 const LoadingPage = () => (
@@ -73,10 +73,10 @@ function App() {
   const setActiveTab = useMDIStore((state) => state.setActiveTab);
   const tabs = useMDIStore((state) => state.tabs);
 
-  const { data: menuList = [] } = useMenuListQuery({});
+  const { data: menuList = [] } = useAppMenuListQuery();
   const menuItems = useMemo(() => mapMenusToMenuItems(menuList), [menuList]);
   const menuTree = useMemo(() => buildMenuTree(menuItems), [menuItems]);
-  console.log(menuTree);
+
   // Theme 연동
   const { setMode } = useTheme();
   const appTheme = useAppStore((state) => state.theme);
@@ -132,7 +132,6 @@ function App() {
   ) => {
     // 1. 메뉴 데이터에서 아이템 찾기
     const menuItem = findMenuItem(menuItems, menuId);
-    console.log('Opening page for menu item:', menuItem);
     // 2. componentName으로 Lazy 컴포넌트 가져오기
     const LazyComponent = getLazyComponent(menuItem?.componentName);
     

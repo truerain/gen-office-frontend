@@ -1,0 +1,27 @@
+/* packages/ui/src/composed/FilterBar/FilterBar.module.css */
+
+.filterBar {
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-md);
+  background: var(--color-surface);
+}
+
+.filterRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.filterActions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.filterItem {
+  flex: 1;
+  min-width: 200px;
+}
