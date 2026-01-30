@@ -18,7 +18,7 @@
   --color-header-border: #1a252f;
   
   /* Background Colors */
-  --color-background: #ffffff;
+  --color-background: #ffffff; 
   --color-surface: #f8f9fa;
   --color-surface-hover: #f0f1f3;
   
@@ -169,7 +169,7 @@
   --grid-cell-bg: #ffffff;
   --grid-cell-text: #1f2937;
   --grid-cell-border: #e5e7eb;
-  --grid-cell-padding-x: 12px;
+  --grid-cell-padding-x: 6px;
   --grid-cell-padding-y: 8px;
   --grid-cell-font-size: 14px;
 

@@ -50,7 +50,7 @@ export function mapMenusToMenuItems(menus:AppMenu[]): MenuItem[] {
       .map((m) => ({
         menuId: String(m.menuId),
         label: m.menuName || m.menuNameEng || String(m.menuId),
-        icon: iconByMenuId[String(m.menuId)] ?? 'Menu',
+        icon: iconByMenuId[String(m.menuId)] ?? 'SquareMenu',
         componentName:
           componentNameByMenuId[String(m.menuId)] ??
           (m.url ? String(m.url) : undefined),

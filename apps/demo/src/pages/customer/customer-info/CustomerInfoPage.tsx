@@ -45,7 +45,7 @@ function CustomerInfoPage({
   //const menuId = menuIdFromContext || menuIdFromProps;
 
 
-  const [pendingDiff, setPendingDiff] = useState<PendingDiff<Customer, string>>({
+  const [_pendingDiff, setPendingDiff] = useState<PendingDiff<Customer, string>>({
     added: [],
     modified: [],
     deleted: [],

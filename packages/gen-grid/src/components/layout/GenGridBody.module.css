@@ -45,6 +45,12 @@
   outline-offset: -2px;
 }
 
+/* Editing cell should not show focus outline */
+.tbody td[data-editing-cell="true"],
+.tbody td[data-editing-cell="true"]:focus-visible {
+  outline: none;
+}
+
 /* align/mono */
 .alignLeft { text-align: left; }
 .alignCenter { text-align: center; }

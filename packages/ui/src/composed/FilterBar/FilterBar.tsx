@@ -49,7 +49,7 @@ FilterBar.Item = function FilterBarItem({
       className={`${styles.filterItem} ${className || ''}`}
       style={{ flex, width }}
     >
-      <div>{title}</div>
+      <div className={styles.filterItemTitle}>{title}</div>
       {children}
     </div>
   );

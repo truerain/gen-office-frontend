@@ -38,6 +38,9 @@ type CommonGridOptions = {
   activeCell?: ActiveCell;
   onActiveCellChange?: (next: ActiveCell) => void;
 
+  /** when true, entering an active cell starts edit mode */
+  editOnActiveCell?: boolean;
+
   /** tanstack table meta */
   tableMeta?: Record<string, any>;
 };

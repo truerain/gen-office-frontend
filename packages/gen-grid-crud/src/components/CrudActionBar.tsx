@@ -5,61 +5,62 @@ import { Button } from '@gen-office/ui';
 import type { CrudRowId } from '../crud/types';
 import type { CrudUiState } from '../GenGridCrud.types';
 
+import styles from './CrudActionBar.module.css'
+
 export function CrudActionBar<TData>(props: {
   state: CrudUiState<TData>;
   onAdd?: () => void;
   onDelete?: (rowIds: readonly CrudRowId[]) => void;
   onSave?: () => void;
   onReset?: () => void;
+  onToggleFilter?: () => void;
+  filterEnabled?: boolean;
 }) {
-  const { state, onAdd, onDelete, onSave, onReset } = props;
+  const { state, onAdd, onDelete, onSave, onReset, onToggleFilter, filterEnabled } = props;
   const { dirty, isCommitting, selectedRowIds } = state;
 
   return (
-    <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: 8 }}>
-      <div>Rows: {state.viewData.length}</div>
-      <div style={{ flex: 1 }} />
+    <div className={styles.root}>
+      <div className={styles.leftActions}>
+        <div className={styles.total}>
+          <span>Total: {state.viewData.length} rows</span>
+        </div>
 
-      <Button
-        type="button"
-        variant="secondary"
-        size="sm"
-        onClick={onAdd}
-        disabled={!onAdd || isCommitting}
-      >
-        Add
-      </Button>
+        <div className={styles.actions}>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={onAdd}
+            disabled={!onAdd || isCommitting}
+          >
+            Add
+          </Button>
 
-      <Button
-        type="button"
-        variant="danger"
-        size="sm"
-        onClick={() => onDelete?.(selectedRowIds)}
-        disabled={!onDelete || isCommitting || selectedRowIds.length === 0}
-      >
-        Delete
-      </Button>
-
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={onReset}
-        disabled={!onReset || isCommitting || !dirty}
-      >
-        Reset
-      </Button>
-
-      <Button
-        type="button"
-        variant="primary"
-        size="sm"
-        onClick={onSave}
-        disabled={!onSave || isCommitting || !dirty}
-      >
-        {isCommitting ? 'Saving...' : 'Save'}
-      </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+                            if(!onDelete || isCommitting || selectedRowIds.length === 0) return;
+                            onDelete?.(selectedRowIds)
+                          }}
+          >
+            Delete
+          </Button>
+        </div>
+      </div>
+      <div className={styles.rightActions}>
+        <Button
+          type="button"
+          variant={filterEnabled ? 'primary' : 'secondary'}
+          size="sm"
+          onClick={onToggleFilter}
+          disabled={!onToggleFilter}
+          >
+            Filter
+        </Button>
+      </div>
     </div>
   );
 }
-

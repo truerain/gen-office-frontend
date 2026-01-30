@@ -30,6 +30,7 @@ type GenGridBodyProps<TData> = {
   activeCell: ActiveCell;
   onCellClick?: (rowId: string, columnId: string) => void;
   onActiveCellChange: (next: { rowId: string; columnId: string }) => void;
+  editOnActiveCell?: boolean;
   
   /** (선택) 실제 데이터 업데이트는 상위에서 처리 */
   onCellValueChange?: (coord: CellCoord, nextValue: unknown) => void;
@@ -46,6 +47,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
     tableClassName,
     activeCell,
     onActiveCellChange,
+    editOnActiveCell,
     onCellValueChange,
     isCellDirty
   } = props;
@@ -68,6 +70,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
     table,
     activeCell: activeCell ?? null,
     onActiveCellChange,
+    editOnActiveCell,
     isCellEditable: (rowId, columnId) => {
       // system column 제외
       if (isSystemCol(columnId)) return false;
@@ -111,6 +114,10 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
             const mergedProps: React.HTMLAttributes<HTMLTableCellElement> = {
               ...(navProps as any),
               ...(editProps as any),
+              onFocus: mergeHandlers(
+                (navProps as any).onFocus,
+                (editProps as any).onFocus
+              ) as any,
               onKeyDown: mergeHandlers(
                 (navProps as any).onKeyDown,
                 (editProps as any).onKeyDown

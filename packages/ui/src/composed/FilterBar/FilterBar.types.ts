@@ -28,7 +28,7 @@ export type FilterField<TFilters> =
       className?: string;
     };
 
-export type GenericFilterBarProps<TFilters> = {
+export type SimpleFilterBarProps<TFilters> = {
   value: TFilters;
   fields: FilterField<TFilters>[];
   onChange: (next: TFilters) => void;

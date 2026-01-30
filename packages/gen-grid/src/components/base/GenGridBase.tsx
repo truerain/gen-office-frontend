@@ -41,6 +41,8 @@ export type GenGridBaseProps<TData> = {
   enablePagination?: boolean;
   pageSizeOptions?: number[];
 
+  editOnActiveCell?: boolean;
+
   onCellValueChange?: (coord: { rowId: string; columnId: string }, value: unknown) => void;
   isRowDirty?: (rowId: string) => boolean;
   isCellDirty?: (rowId: string, columnId: string) => boolean;
@@ -71,6 +73,8 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
 
     enablePagination,
     pageSizeOptions = [10, 20, 50, 100],
+
+    editOnActiveCell,
 
     onCellValueChange,
     isCellDirty,
@@ -251,6 +255,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
               enableColumnSizing={columnSizingEnabled}
               activeCell={activeCell}
               onActiveCellChange={handleActiveCellChange}
+              editOnActiveCell={editOnActiveCell}
               onCellValueChange={handleCellValueChange}
               isRowDirty={props.isRowDirty}
               isCellDirty={isCellDirty}
@@ -262,6 +267,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
               enableColumnSizing={enableColumnSizing}
               activeCell={activeCell}
               onActiveCellChange={handleActiveCellChange}
+              editOnActiveCell={editOnActiveCell}
               onCellValueChange={handleCellValueChange}
               isRowDirty={props.isRowDirty}
               isCellDirty={isCellDirty}
@@ -269,12 +275,6 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
           )}
         </table>
       </div>
-
-      {enableRowSelection ? (
-        <div className={controls.footerInfo}>
-          Selected rows: {table.getSelectedRowModel().rows.length}
-        </div>
-      ) : null}
 
       {enablePagination ? (
         <GenGridPagination table={table} pageSizeOptions={pageSizeOptions} />

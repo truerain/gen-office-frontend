@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { cn } from '@gen-office/utils';
+import { ListChevronsUpDown, ListChevronsDownUp } from 'lucide-react';
 import { Button } from '../../core/Button';
 import { Tree } from '../../core/Tree';
 import type { TreeId } from '../../core/Tree';
@@ -92,11 +93,11 @@ export function TreeView<TItem>(props: TreeViewProps<TItem>) {
         <div className={styles.title}>{title}</div>
         {showControls ? (
           <div className={styles.actions}>
-            <Button size="sm" variant="ghost" onClick={handleExpandAll}>
-              Expand
+            <Button size="sm" variant="ghost" className={styles.actionButton} onClick={handleExpandAll}>
+              <ListChevronsUpDown size={16} />
             </Button>
-            <Button size="sm" variant="ghost" onClick={handleCollapseAll}>
-              Collapse
+            <Button size="sm" variant="ghost" className={styles.actionButton} onClick={handleCollapseAll}>
+              <ListChevronsDownUp size={16} />
             </Button>
           </div>
         ) : null}

@@ -235,7 +235,6 @@ function MenuManagementPage(_props:  PageComponentProps) {
         meta: {
           width: 90,
           align: 'center',
-          editable: true,
           renderEditor: ({ value, onChange, applyValue }) => (
             <SimpleSelect
               value={value === 'Y' ? 'Y' : 'N'}
@@ -266,7 +265,6 @@ function MenuManagementPage(_props:  PageComponentProps) {
         meta: {
           width: 90,
           align: 'center',
-          editable: true,
           renderCell: ({ value, commitValue }) => (
             <Switch
               checked={value === 'Y'}
@@ -390,6 +388,7 @@ function MenuManagementPage(_props:  PageComponentProps) {
                     enableVirtualization: true,
                     enableRowStatus: true,
                     enableRowSelection: true,
+                    editOnActiveCell: true,
                   }}
                 />
             </div>

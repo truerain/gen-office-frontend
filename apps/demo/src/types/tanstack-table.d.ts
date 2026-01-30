@@ -2,6 +2,27 @@ import '@tanstack/react-table';
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData, TValue> {
+    width?: number;
+    pinned?: 'left' | 'right';
+    editValidator?: (
+      value: any,
+      row: TData
+    ) => string | null | undefined | { valid: boolean; error?: string };
+    system?: string;
+    align?: 'left' | 'center' | 'right';
+    mono?: boolean;
+    format?: 'text' | 'number' | 'currency' | 'percent' | 'date' | 'datetime' | 'boolean';
+    formatLocale?: string;
+    numberFormat?: Intl.NumberFormatOptions;
+    dateFormat?: Intl.DateTimeFormatOptions;
+    currency?: string;
+    trueLabel?: string;
+    falseLabel?: string;
+    emptyLabel?: string;
+    editable?: boolean;
+    editType?: 'text' | 'number' | 'date' | 'select' | 'textarea' | 'checkbox';
+    editOptions?: { label: string; value: string | number }[];
+    editPlaceholder?: string;
     renderCell?: (args: {
       value: unknown;
       row: TData;

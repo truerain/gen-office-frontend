@@ -35,6 +35,137 @@ export type GenGridCellProps<TData> = {
   onTab?: (dir: 1 | -1) => void;
 };
 
+type ContentEditableEditorProps = {
+  value: unknown;
+  onChange: (next: string) => void;
+  onCommit: () => void;
+  onCancel: () => void;
+  onTabMove?: (dir: 1 | -1) => void;
+  multiline?: boolean;
+  style?: React.CSSProperties;
+};
+
+function ContentEditableEditor({
+  value,
+  onChange,
+  onCommit,
+  onCancel,
+  onTabMove,
+  multiline,
+  style,
+}: ContentEditableEditorProps) {
+  const ref = React.useRef<HTMLDivElement | null>(null);
+  const didAutoSelectRef = React.useRef(false);
+  const pendingAutoSelectRef = React.useRef(false);
+
+  React.useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (!didAutoSelectRef.current) {
+      el.focus({ preventScroll: true });
+      didAutoSelectRef.current = true;
+    }
+  }, []);
+
+  React.useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const nextText = value == null ? '' : String(value);
+    if (el.textContent !== nextText) {
+      el.textContent = nextText;
+    }
+    if (pendingAutoSelectRef.current && document.activeElement === el) {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+      pendingAutoSelectRef.current = false;
+    }
+  }, [value]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const root = ref.current;
+    const selection = window.getSelection();
+    const isCollapsed = selection?.isCollapsed ?? false;
+    const range = selection && selection.rangeCount ? selection.getRangeAt(0) : null;
+    const hasValidRange =
+      root && range && root.contains(range.startContainer) && root.contains(range.endContainer);
+
+    const isCaretAtStart = () => {
+      if (!root || !hasValidRange || !isCollapsed || !range) return false;
+      const pre = document.createRange();
+      pre.setStart(root, 0);
+      pre.setEnd(range.startContainer, range.startOffset);
+      return pre.toString().length === 0;
+    };
+
+    const isCaretAtEnd = () => {
+      if (!root || !hasValidRange || !isCollapsed || !range) return false;
+      const post = document.createRange();
+      post.setStart(range.endContainer, range.endOffset);
+      post.setEnd(root, root.childNodes.length);
+      return post.toString().length === 0;
+    };
+
+    if (e.key === 'ArrowLeft' || e.key === 'Home') {
+      if (!isCaretAtStart()) {
+        e.stopPropagation();
+      }
+    }
+    if (e.key === 'ArrowRight' || e.key === 'End') {
+      if (!isCaretAtEnd()) {
+        e.stopPropagation();
+      }
+    }
+
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      e.stopPropagation();
+      onCommit();
+      onTabMove?.(e.shiftKey ? -1 : 1);
+      return;
+    }
+    if (e.key === 'Enter' && !multiline) {
+      e.preventDefault();
+      e.stopPropagation();
+      onCommit();
+      return;
+    }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      onCancel();
+      return;
+    }
+  };
+
+  return (
+    <div
+      ref={ref}
+      contentEditable
+      suppressContentEditableWarning
+      role="textbox"
+      aria-multiline={multiline ? 'true' : undefined}
+      onFocus={() => {
+        pendingAutoSelectRef.current = true;
+      }}
+      onInput={() => onChange(ref.current?.textContent ?? '')}
+      onBlur={() => {
+        didAutoSelectRef.current = false;
+        pendingAutoSelectRef.current = false;
+        onCommit();
+      }}
+      onKeyDown={handleKeyDown}
+      style={{
+        ...style,
+        whiteSpace: multiline ? 'pre-wrap' : 'nowrap',
+        overflow: 'hidden',
+      }}
+    />
+  );
+}
+
 export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
   const {
     cell,
@@ -99,56 +230,56 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
   }, [cell, draft, meta?.editType, onCancelEdit, onCommitValue]);
 
   const renderDefaultEditor = () => {
-    const commonInputProps = {
-      autoFocus: true,
-      onBlur: () => commitDraft(),
-      onKeyDown: (e: React.KeyboardEvent) => {
-        if (e.key === 'Tab') {
-          e.preventDefault();
-          e.stopPropagation();
-          commitDraft();
-          onTab?.(e.shiftKey ? -1 : 1);
-          return;
-        }
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          e.stopPropagation();
-          commitDraft();
-          return;
-        }
-        if (e.key === 'Escape') {
-          e.preventDefault();
-          e.stopPropagation();
-          cancel();
-          return;
-        }
-      },
-      style: {
-        width: '100%',
-        height: '100%',
-        border: 'none',
-        outline: 'none',
-        background: 'transparent',
-        font: 'inherit',
-        color: 'inherit',
-      } as React.CSSProperties,
+    const commonEditorStyle: React.CSSProperties = {
+      width: '100%',
+      height: '100%',
+      border: 'none',
+      background: 'var(--grid-cell-bg)',
+      font: 'inherit',
+      color: 'inherit',
+      borderRadius: '2px',
+      outline: '1px solid var(--grid-cell-border)',
     };
 
     switch (meta?.editType) {
       case 'number':
         return (
-          <input
-            {...commonInputProps}
-            type="number"
-            value={(draft ?? '') as any}
-            placeholder={meta?.editPlaceholder}
-            onChange={(e) => setDraft(e.target.value)}
+          <ContentEditableEditor
+            value={draft ?? ''}
+            onChange={(next) => setDraft(next)}
+            onCommit={commitDraft}
+            onCancel={cancel}
+            onTabMove={onTab}
+            style={commonEditorStyle}
           />
         );
       case 'date':
         return (
           <input
-            {...commonInputProps}
+            autoFocus
+            onBlur={() => commitDraft()}
+            onKeyDown={(e: React.KeyboardEvent) => {
+              if (e.key === 'Tab') {
+                e.preventDefault();
+                e.stopPropagation();
+                commitDraft();
+                onTab?.(e.shiftKey ? -1 : 1);
+                return;
+              }
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                commitDraft();
+                return;
+              }
+              if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
+                cancel();
+                return;
+              }
+            }}
+            style={commonEditorStyle}
             type="date"
             value={(draft ?? '') as any}
             placeholder={meta?.editPlaceholder}
@@ -157,17 +288,43 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
         );
       case 'textarea':
         return (
-          <textarea
-            {...commonInputProps}
-            value={(draft ?? '') as any}
-            placeholder={meta?.editPlaceholder}
-            onChange={(e) => setDraft(e.target.value)}
+          <ContentEditableEditor
+            value={draft ?? ''}
+            onChange={(next) => setDraft(next)}
+            onCommit={commitDraft}
+            onCancel={cancel}
+            onTabMove={onTab}
+            multiline
+            style={commonEditorStyle}
           />
         );
       case 'select':
         return (
           <select
-            {...commonInputProps}
+            autoFocus
+            onBlur={() => commitDraft()}
+            onKeyDown={(e: React.KeyboardEvent) => {
+              if (e.key === 'Tab') {
+                e.preventDefault();
+                e.stopPropagation();
+                commitDraft();
+                onTab?.(e.shiftKey ? -1 : 1);
+                return;
+              }
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                commitDraft();
+                return;
+              }
+              if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
+                cancel();
+                return;
+              }
+            }}
+            style={commonEditorStyle}
             value={(draft ?? '') as any}
             onChange={(e) => setDraft(e.target.value)}
           >
@@ -181,7 +338,30 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
       case 'checkbox':
         return (
           <input
-            {...commonInputProps}
+            autoFocus
+            onBlur={() => commitDraft()}
+            onKeyDown={(e: React.KeyboardEvent) => {
+              if (e.key === 'Tab') {
+                e.preventDefault();
+                e.stopPropagation();
+                commitDraft();
+                onTab?.(e.shiftKey ? -1 : 1);
+                return;
+              }
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                commitDraft();
+                return;
+              }
+              if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
+                cancel();
+                return;
+              }
+            }}
+            style={commonEditorStyle}
             type="checkbox"
             checked={Boolean(draft)}
             onChange={(e) => setDraft(e.target.checked)}
@@ -190,12 +370,13 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
       case 'text':
       default:
         return (
-          <input
-            {...commonInputProps}
-            type="text"
-            value={(draft ?? '') as any}
-            placeholder={meta?.editPlaceholder}
-            onChange={(e) => setDraft(e.target.value)}
+          <ContentEditableEditor
+            value={draft ?? ''}
+            onChange={(next) => setDraft(next)}
+            onCommit={commitDraft}
+            onCancel={cancel}
+            onTabMove={onTab}
+            style={commonEditorStyle}
           />
         );
     }
@@ -232,7 +413,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
       })}
       data-rowid={rowId}
       data-colid={colId}
-      data-active-cell={isActive ? 'true' : undefined}
+      data-active-cell={isActive && !isEditing ? 'true' : undefined}
       data-editing-cell={isEditing ? 'true' : undefined}
       data-dirty={isDirty ? 'true' : undefined}
       {...cellProps}
@@ -262,7 +443,13 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
             onMouseDownCapture={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
             onDoubleClick={(e) => e.stopPropagation()}
-            style={{ display: "flex", justifyContent: "center" }}
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              padding: "1px",
+              border: "0 none",
+              boxSizing: "border-box",
+            }}
           >
             {editor}
           </div>) 

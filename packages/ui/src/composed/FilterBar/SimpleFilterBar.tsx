@@ -1,5 +1,5 @@
-// packages/ui/src/composed/FilterBar/GenericFilterBar.tsx
-import type { GenericFilterBarProps, FilterField } from './FilterBar.types';
+// packages/ui/src/composed/FilterBar/SimpleFilterBar.tsx
+import type { SimpleFilterBarProps, FilterField } from './FilterBar.types';
 import { FilterBar } from './FilterBar';
 import { SearchInput } from './SearchInput';
 import { Input } from '../../core/Input';
@@ -55,7 +55,7 @@ function renderDefaultField<TFilters>(
   }
 }
 
-export function GenericFilterBar<TFilters>({
+export function SimpleFilterBar<TFilters>({
   value,
   fields,
   onChange,
@@ -63,11 +63,11 @@ export function GenericFilterBar<TFilters>({
   onSearch,
   searchLabel = 'Search',
   className,
-}: GenericFilterBarProps<TFilters>) {
+}: SimpleFilterBarProps<TFilters>) {
   const resolvedActions =
     actions ??
     (onSearch ? (
-      <Button onClick={onSearch} variant="primary">
+      <Button onClick={onSearch} variant="default" size="sm" fullWidth={true}>
         <Search size={16} />
         {searchLabel}
       </Button>
@@ -94,4 +94,4 @@ export function GenericFilterBar<TFilters>({
   );
 }
 
-export default GenericFilterBar;
+export default SimpleFilterBar;

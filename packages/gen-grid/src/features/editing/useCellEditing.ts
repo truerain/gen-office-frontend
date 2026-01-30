@@ -9,6 +9,7 @@ export function useCellEditing<TData>(args: {
   table: Table<TData>;
   activeCell: CellCoord | null;
   onActiveCellChange: (next: CellCoord) => void;
+  editOnActiveCell?: boolean;
 
   /** 외부에서 실제 데이터 업데이트 하는 함수(옵션) */
   updateValue?: (coord: CellCoord, nextValue: unknown) => void;
@@ -16,7 +17,7 @@ export function useCellEditing<TData>(args: {
   /** 편집 가능 정책(시스템 컬럼 제외 등) */
   isCellEditable?: (rowId: string, columnId: string) => boolean;
 }) {
-  const { table, activeCell, onActiveCellChange, updateValue, isCellEditable } = args;
+  const { table, activeCell, onActiveCellChange, updateValue, isCellEditable, editOnActiveCell } = args;
 
   const [editCell, setEditCell] = React.useState<EditCell>(null);
 
@@ -58,6 +59,13 @@ export function useCellEditing<TData>(args: {
       const isEditing = !!editCell && editCell.rowId === rowId && editCell.columnId === columnId;
 
       return {
+        onFocus: () => {
+          if (!editOnActiveCell) return;
+          if (isEditing) return;
+          if (canEdit(rowId, columnId)) {
+            startEditing({ rowId, columnId });
+          }
+        },
         onDoubleClick: () => {
           // 더블클릭하면 해당 셀로 active 맞추고 편집 시작
           onActiveCellChange({ rowId, columnId });
@@ -95,7 +103,7 @@ export function useCellEditing<TData>(args: {
         },
       };
     },
-    [cancelEditing, canEdit, editCell, onActiveCellChange, startEditing]
+    [cancelEditing, canEdit, editCell, onActiveCellChange, startEditing, editOnActiveCell]
   );
 
   const getVisibleColumnIds = () =>

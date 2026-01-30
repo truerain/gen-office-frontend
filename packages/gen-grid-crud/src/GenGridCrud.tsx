@@ -7,6 +7,7 @@ import { usePendingChanges } from './crud/usePendingChanges';
 import type { CrudRowId } from './crud/types';
 import type { GenGridCrudProps, CrudUiState, CrudPendingDiff } from './GenGridCrud.types';
 import { CrudActionBar } from './components/CrudActionBar';
+import styles from './GenGridCrud.module.css';
 
 import { GenGrid } from '@gen-office/gen-grid';
 
@@ -166,6 +167,15 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     [onActiveCellChange, activeCellControlled]
   );
 
+  const [filterEnabled, setFilterEnabled] = React.useState<boolean>(
+    gridProps?.enableFiltering ?? false
+  );
+
+  React.useEffect(() => {
+    if (gridProps?.enableFiltering == null) return;
+    setFilterEnabled(Boolean(gridProps.enableFiltering));
+  }, [gridProps?.enableFiltering]);
+
   const handleRowSelectionChange = React.useCallback(
     (next: RowSelectionState) => {
       const nextIds = Object.keys(next).filter((k) => next[k]);
@@ -302,6 +312,10 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     pendingApi.reset();
   }, [pendingApi]);
 
+  const handleToggleFilter = React.useCallback(() => {
+    setFilterEnabled((prev) => !prev);
+  }, []);
+
   const handleSave = React.useCallback(async () => {
     const changes = pendingApi.changes;
     if (!changes.length) return;
@@ -426,11 +440,21 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
         onDelete={handleDelete}
         onReset={handleReset}
         onSave={handleSave}
+        onToggleFilter={handleToggleFilter}
+        filterEnabled={filterEnabled}
       />
     ) : null;
 
+  const mergedGridProps = React.useMemo(
+    () => ({
+      ...gridProps,
+      enableFiltering: filterEnabled,
+    }),
+    [gridProps, filterEnabled]
+  );
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minHeight: 0, flex: 1}}>
+    <div className={styles.root}>
       {(actionBarPosition === 'top' || actionBarPosition === 'both') && actionBarNode}
 
       <GenGrid<TData>
@@ -444,7 +468,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
         rowStatusResolver={(rowId) => pendingApi.getRowStatus(rowId)}
         rowSelection={rowSelection}
         onRowSelectionChange={handleRowSelectionChange}
-        {...gridProps}
+        {...mergedGridProps}
         tableMeta={tableMeta}
       />
 

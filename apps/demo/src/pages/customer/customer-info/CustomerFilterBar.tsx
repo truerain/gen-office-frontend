@@ -1,7 +1,6 @@
 // apps/demo/src/pages/customer/CustomerInfoPage/components/CustomerFilterBar.tsx
-import { Button, GenericFilterBar } from '@gen-office/ui';
+import { SimpleFilterBar } from '@gen-office/ui';
 import type { FilterField } from '@gen-office/ui';
-import { Search } from 'lucide-react';
 import type { CustomerFilter } from '../../../entities/customer/model/types';
 
 interface CustomerFilterBarProps {
@@ -44,7 +43,7 @@ function CustomerFilterBar({ filters, onFilterChange, onSearch }: CustomerFilter
   ];
 
   return (
-    <GenericFilterBar
+    <SimpleFilterBar
       value={filters}
       fields={fields}
       onChange={onFilterChange}

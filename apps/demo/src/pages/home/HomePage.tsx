@@ -1,9 +1,8 @@
+import { Suspense } from 'react';
 import { Button } from '@gen-office/ui';
 import { useMDIStore } from '@gen-office/mdi';
 import { Box, Grid3x3, Layers, Package } from 'lucide-react';
-import PrimitivesPage from '../demo/primitives/PrimitivesPage';
-import DataGridPage from '../demo/datagrid/DataGridPage';
-import MDIPage from '../demo/mdi/MDIPage';
+import { getLazyComponent } from '@/app/config/componentRegistry.dynamic';
 import styles from './HomePage.module.css';
 
 function HomePage() {
@@ -17,6 +16,31 @@ function HomePage() {
       icon,
       closable: true,
     });
+  };
+
+  const openLazyTab = (
+    id: string,
+    title: string,
+    componentName: string,
+    icon: React.ReactNode
+  ) => {
+    const LazyComponent = getLazyComponent(componentName);
+    if (!LazyComponent) return;
+
+    openTab(
+      id,
+      title,
+      <Suspense
+        fallback={
+          <div style={{ padding: '1.5rem', textAlign: 'center' }}>
+            Loading...
+          </div>
+        }
+      >
+        <LazyComponent />
+      </Suspense>,
+      icon
+    );
   };
 
   return (
@@ -55,7 +79,7 @@ function HomePage() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => openTab('primitives', 'Primitives', <PrimitivesPage />, <Box size={16} />)}
+                onClick={() => openLazyTab('primitives', 'Primitives', 'PrimitivesPage', <Box size={16} />)}
               >
                 Explore →
               </Button>
@@ -70,7 +94,7 @@ function HomePage() {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => openTab('datagrid', 'DataGrid', <DataGridPage />, <Grid3x3 size={16} />)}
+                onClick={() => openLazyTab('datagrid', 'DataGrid', 'DataGridPage', <Grid3x3 size={16} />)}
               >
                 Explore →
               </Button>
@@ -85,7 +109,7 @@ function HomePage() {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => openTab('mdi-demo', 'MDI Demo', <MDIPage />, <Layers size={16} />)}
+                onClick={() => openLazyTab('mdi-demo', 'MDI Demo', 'MDIPage', <Layers size={16} />)}
               >
                 Explore →
               </Button>

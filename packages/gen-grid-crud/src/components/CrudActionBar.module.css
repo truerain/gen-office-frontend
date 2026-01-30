@@ -1,0 +1,34 @@
+.root {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0 0.125rem;
+
+}
+
+.leftActions {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+.rightActions{
+  display: flex;
+  flex-direction: row;
+}
+
+.total {
+  align-self: flex-end;
+  font-family: var(--font-family-primary);
+  font-weight: 600;
+  font-size: var(--font-size-base);
+  color: var(--color-fg-secondary);
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}

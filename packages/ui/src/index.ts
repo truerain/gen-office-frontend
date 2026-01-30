@@ -13,6 +13,7 @@ export * from './core/Badge';
 export * from './core/Select';
 export * from './core/Dialog';
 export * from './core/DropdownMenu';
+export * from './core/Separator';
 export * from './core/Tree';
 
 // composed
@@ -22,5 +23,5 @@ export * from './composed/SplitLayout';
 export * from './composed/MasterDetailLayout';
 export * from './composed/FilterBar/FilterBar';
 export * from './composed/FilterBar/SearchInput';
-export * from './composed/FilterBar/GenericFilterBar';
+export * from './composed/FilterBar/SimpleFilterBar';
 export * from './composed/FilterBar/FilterBar.types';

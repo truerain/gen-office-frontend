@@ -1,10 +1,12 @@
 /* packages/ui/src/composed/FilterBar/FilterBar.module.css */
 
 .filterBar {
+  /*
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-lg);
+  */
   padding: var(--spacing-md);
-  background: var(--color-surface);
+  background: transparent;
 }
 
 .filterRow {
@@ -19,6 +21,10 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
+}
+
+.filterItemTitle {
+  font-size: font-size-base;
 }
 
 .filterItem {

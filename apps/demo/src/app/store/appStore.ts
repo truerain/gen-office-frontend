@@ -1,6 +1,17 @@
 // apps/demo/src/store/appStore.ts
 import { create } from 'zustand';
 
+const LAYOUT_MODE_KEY = 'gen-office:layout-mode';
+const DEFAULT_LAYOUT_MODE: AppState['layoutMode'] = 'titlebar';
+
+const getInitialLayoutMode = (): AppState['layoutMode'] => {
+  if (typeof window === 'undefined') return DEFAULT_LAYOUT_MODE;
+  const saved = window.localStorage.getItem(LAYOUT_MODE_KEY);
+  return saved === 'left-panel' || saved === 'titlebar'
+    ? saved
+    : DEFAULT_LAYOUT_MODE;
+};
+
 interface User {
   id: string;
   name: string;
@@ -25,6 +36,8 @@ interface AppState {
   notifications: Array<{ id: string; message: string; type: 'info' | 'success' | 'error' }>;
   addNotification: (message: string, type?: 'info' | 'success' | 'error') => void;
   removeNotification: (id: string) => void;
+  layoutMode: 'titlebar' | 'left-panel';
+  setLayoutMode: (mode: 'titlebar' | 'left-panel') => void;
 }
 
 /**
@@ -66,4 +79,11 @@ export const useAppStore = create<AppState>((set) => ({
     set((state) => ({
       notifications: state.notifications.filter((n) => n.id !== id),
     })),
+  layoutMode: getInitialLayoutMode(),
+  setLayoutMode: (mode) => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(LAYOUT_MODE_KEY, mode);
+    }
+    set({ layoutMode: mode });
+  },
 }));

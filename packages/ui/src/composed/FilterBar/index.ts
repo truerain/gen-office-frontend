@@ -1,4 +1,4 @@
 export { FilterBar } from './FilterBar';
 export { SearchInput } from './SearchInput';
-export { GenericFilterBar } from './GenericFilterBar';
-export type { FilterField, FilterFieldOption, GenericFilterBarProps } from './FilterBar.types';
+export { SimpleFilterBar } from './SimpleFilterBar';
+export type { FilterField, FilterFieldOption, SimpleFilterBarProps } from './FilterBar.types';

@@ -7,8 +7,8 @@ import { useMemo, useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Users } from 'lucide-react';
 import { GenGridCrud } from '@gen-office/gen-grid-crud';
-import type { CrudChange } from '@gen-office/gen-grid-crud';
-import { GenericFilterBar } from '@gen-office/ui';
+import type { CrudChange, CrudRowId } from '@gen-office/gen-grid-crud';
+import { SimpleFilterBar, Separator } from '@gen-office/ui';
 import type { FilterField } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
@@ -31,7 +31,7 @@ const toUserRequest = (input: Partial<User>): UserRequest => ({
   lastUpdatedBy: input.lastUpdatedBy,
 });
 
-function findUserById(rows: readonly User[], rowId: CrudChange<User>['rowId']) {
+function findUserById(rows: readonly User[], rowId: CrudRowId) {
   const id = Number(rowId);
   if (!Number.isFinite(id)) return undefined;
   return rows.find((row) => row.userId === id);
@@ -41,9 +41,9 @@ async function commitUserChanges(
   changes: readonly CrudChange<User>[],
   ctxRows: readonly User[]
 ) {
-  const created = new Map<CrudChange<User>['tempId'], User>();
-  const updated = new Map<CrudChange<User>['rowId'], Partial<User>>();
-  const deleted = new Set<CrudChange<User>['rowId']>();
+  const created = new Map<CrudRowId, User>();
+  const updated = new Map<CrudRowId, Partial<User>>();
+  const deleted = new Set<CrudRowId>();
 
   for (const change of changes) {
     switch (change.type) {
@@ -199,13 +199,14 @@ export default function UserManagementPage(_props: PageComponentProps) {
         ]}
       />
       <div className={styles.content}>
-        <GenericFilterBar
+        <SimpleFilterBar
           value={draftFilters}
           fields={filterFields}
           onChange={setDraftFilters}
           onSearch={handleSearch}
           searchLabel="검색"
         />
+        <Separator variant="default" />
         <GenGridCrud<User>
           data={userList}
           columns={columns}
