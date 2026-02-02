@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
+import { ChevronLeft, ChevronRight, LogOut, Moon, Settings, Sun } from 'lucide-react';
+
+import { useTheme } from '@gen-office/theme';
+
 import type { MenuTreeItem } from '@/types/menu.types';
 import { getIconComponent } from '@/app/menu/model/iconMapper';
-import lgLogo from '@/shared/assets/HIC_MIS.png';
 import { useAppStore } from '@/app/store/appStore';
-import { useTheme } from '@gen-office/theme';
 import { LayoutSettingsDialog } from './LayoutSettingsDialog';
-import { ChevronLeft, ChevronRight, LogOut, Moon, Settings, Sun } from 'lucide-react';
-import styles from './Layout.module.css';
+
+import styles from './LeftPanelLayout.module.css';
+import lgLogo from '@/shared/assets/HIC_MIS.png';
 
 interface LeftPanelLayoutProps {
   menuTree: MenuTreeItem[];

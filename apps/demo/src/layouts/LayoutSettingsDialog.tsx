@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+
 import {
   Button,
   Dialog,
@@ -11,6 +12,7 @@ import {
   Radio,
   RadioGroup,
 } from '@gen-office/ui';
+
 import styles from './LayoutSettingsDialog.module.css';
 
 type LayoutMode = 'titlebar' | 'left-panel';

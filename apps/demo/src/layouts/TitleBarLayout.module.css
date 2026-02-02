@@ -1,4 +1,17 @@
 /* apps/demo/src/components/TitleBar.module.css */
+.titleBarLayout {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.main {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
 
 .titleBar {
   display: flex;

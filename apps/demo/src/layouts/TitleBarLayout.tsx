@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { LogOut, Moon, Settings, Sun } from 'lucide-react';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,14 +14,13 @@ import {
   DropdownMenuTrigger,
 } from '@gen-office/ui';
 import { useTheme } from '@gen-office/theme';
-import { LogOut, Moon, Settings, Sun } from 'lucide-react';
 import { useAppStore } from '@/app/store/appStore';
 import { getIconComponent } from '@/app/menu/model/iconMapper';
 import type { MenuTreeItem } from '@/types/menu.types';
-import lgLogo from '@/shared/assets/lg_logo_213x56.avif';
-import styles from './Layout.module.css';
-import titleBarStyles from './TitleBarLayout.module.css';
 import { LayoutSettingsDialog } from './LayoutSettingsDialog';
+
+import styles from './TitleBarLayout.module.css';
+import lgLogo from '@/shared/assets/HIC_MIS.png';
 
 interface TitleBarLayoutProps {
   menuTree: MenuTreeItem[];
@@ -92,7 +93,7 @@ export function TitleBarLayout({
           key={item.menuId}
           onClick={() => handleMenuClick(item)}
         >
-          <span className={titleBarStyles.menuItemIcon}>{icon}</span>
+          <span className={styles.menuItemIcon}>{icon}</span>
           <span>{item.label}</span>
         </DropdownMenuItem>
       );
@@ -101,10 +102,10 @@ export function TitleBarLayout({
     return (
       <DropdownMenuSub key={item.menuId}>
         <DropdownMenuSubTrigger>
-          <span className={titleBarStyles.menuItemIcon}>{icon}</span>
+          <span className={styles.menuItemIcon}>{icon}</span>
           <span>{item.label}</span>
         </DropdownMenuSubTrigger>
-        <DropdownMenuSubContent className={titleBarStyles.dropdownContent}>
+        <DropdownMenuSubContent className={styles.dropdownContent}>
           {item.children.map(child => renderSubMenu(child))}
         </DropdownMenuSubContent>
       </DropdownMenuSub>
@@ -113,13 +114,13 @@ export function TitleBarLayout({
 
   return (
     <div className={styles.titleBarLayout}>
-      <header className={titleBarStyles.titleBar}>
-        <div className={titleBarStyles.leftSection}>
-          <div className={titleBarStyles.logoSection} onClick={handleLogoClick}>
-            <img src={lgLogo} alt="LG Logo" className={titleBarStyles.logo} />
+      <header className={styles.titleBar}>
+        <div className={styles.leftSection}>
+          <div className={styles.logoSection} onClick={handleLogoClick}>
+            <img src={lgLogo} alt="LG Logo" className={styles.logo} />
           </div>
 
-          <nav className={titleBarStyles.navigation} ref={navigationRef}>
+          <nav className={styles.navigation} ref={navigationRef}>
             {menuTree.map((category) => {
               const icon = getIconComponent(category.icon, 18);
 
@@ -133,18 +134,18 @@ export function TitleBarLayout({
                   <DropdownMenuTrigger asChild>
                     <button
                       type="button"
-                      className={titleBarStyles.navButton}
+                      className={styles.navButton}
                       data-menu-id={category.menuId}
                       onMouseMove={(e) => handleMouseMove(e)}
                     >
-                      <span className={titleBarStyles.navIcon}>{icon}</span>
+                      <span className={styles.navIcon}>{icon}</span>
                       <span>{category.label}</span>
                     </button>
                   </DropdownMenuTrigger>
 
                   <DropdownMenuContent
                     align="start"
-                    className={titleBarStyles.dropdownContent}
+                    className={styles.dropdownContent}
                     onMouseMove={(e) => handleMouseMove(e)}
                   >
                     <DropdownMenuLabel>{category.label}</DropdownMenuLabel>
@@ -158,12 +159,12 @@ export function TitleBarLayout({
           </nav>
         </div>
 
-        <div className={titleBarStyles.userSection}>
+        <div className={styles.userSection}>
           <DropdownMenu modal={false}>
-            <DropdownMenuTrigger className={titleBarStyles.userButton}>
+            <DropdownMenuTrigger className={styles.userButton}>
               <Settings size={18} />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className={titleBarStyles.dropdownContent}>
+            <DropdownMenuContent align="end" className={styles.dropdownContent}>
               <DropdownMenuLabel>설정</DropdownMenuLabel>
               <DropdownMenuSeparator />
 
