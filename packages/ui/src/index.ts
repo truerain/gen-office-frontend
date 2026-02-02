@@ -15,6 +15,8 @@ export * from './core/Dialog';
 export * from './core/DropdownMenu';
 export * from './core/Separator';
 export * from './core/Tree';
+export * from './core/Popover';
+export * from './core/Calendar';
 
 // composed
 export * from './composed/AlertDialog';
@@ -25,3 +27,4 @@ export * from './composed/FilterBar/FilterBar';
 export * from './composed/FilterBar/SearchInput';
 export * from './composed/FilterBar/SimpleFilterBar';
 export * from './composed/FilterBar/FilterBar.types';
+export * from './composed/DatePicker';

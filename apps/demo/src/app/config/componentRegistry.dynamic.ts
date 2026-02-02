@@ -48,6 +48,7 @@ const componentPaths: Record<string, ComponentLoader> = {
   'MDIPage': () => import('@/pages/demo/mdi'),
   'GlobalStateDemo': () => import('@/pages/demo/primitives/state/GlobalStateDemo'),
   'AlertDialogDemo': () => import('@/pages/demo/composed/AlertDialogDemo'),
+  'DatePickerDemoPage': () => import('@/pages/demo/datepicker/DatePickerDemoPage'),
 };
 
 /**

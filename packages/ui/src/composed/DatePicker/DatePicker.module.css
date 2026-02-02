@@ -1,0 +1,39 @@
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: 16rem;
+  height: 1.6rem;
+}
+
+.trigger[data-empty='true'] {
+  color: var(--color-fg-tertiary);
+}
+
+.icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.clearButton {
+  padding: 0 0.5rem;
+}
+
+.clearIcon {
+  width: 0.875rem;
+  height: 0.875rem;
+  margin-right: 0.25rem;
+}
