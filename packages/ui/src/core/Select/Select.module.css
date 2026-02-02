@@ -5,7 +5,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem; /* 8px */
-  height: 2.5rem; /* 40px */
+  height: 1.6rem; /*   origin : 40px (2.5rem) */
   padding: 0 1rem; /* 16px */
   border: 1px solid var(--color-border-default);
   border-radius: 0.375rem; /* 6px */

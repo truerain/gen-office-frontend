@@ -34,6 +34,7 @@ export type CrudUiState<TData> = {
 
 
 export type GenGridCrudProps<TData> = {
+  title?: string;
   data: readonly TData[];
   columns: readonly ColumnDef<TData, any>[];
   getRowId: (row: TData, index: number) => CrudRowId;

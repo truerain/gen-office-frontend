@@ -174,7 +174,7 @@ export default function UserManagementPage(_props: PageComponentProps) {
     return [
       {
         key: 'empName',
-        title:'사원이름',
+        title:'사원명',
         type: 'text',
         placeholder: '',
         flex: 0,
@@ -198,7 +198,7 @@ export default function UserManagementPage(_props: PageComponentProps) {
           { label: 'User Management', icon: <Users size={16} /> },
         ]}
       />
-      <div className={styles.content}>
+      <div className={styles.filter}>
         <SimpleFilterBar
           value={draftFilters}
           fields={filterFields}
@@ -206,8 +206,10 @@ export default function UserManagementPage(_props: PageComponentProps) {
           onSearch={handleSearch}
           searchLabel="검색"
         />
-        <Separator variant="default" />
+      </div>
+      <div className={styles.workarea}>
         <GenGridCrud<User>
+          title={"사용자목록"}
           data={userList}
           columns={columns}
           getRowId={(row) => row.userId}

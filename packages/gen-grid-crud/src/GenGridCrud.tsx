@@ -106,6 +106,7 @@ function buildPendingDiffFromPending<TData>(
 
 export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   const {
+    title,
     data,
     columns,
     getRowId,
@@ -425,6 +426,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   const actionBarNode =
     showActionBar ? (
       <CrudActionBar<TData>
+        title={title}
         state={{
           baseData: data,
           viewData: diff.viewData,

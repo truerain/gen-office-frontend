@@ -1,7 +1,6 @@
 .root {
   display: flex;
   flex-direction: row;
-  gap: 0.5rem;
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 0 0.125rem;
@@ -19,12 +18,23 @@
   flex-direction: row;
 }
 
+.title {
+  display: flex;
+  flex-direction: row;
+  font-weight: 400;
+  align-self: flex-end;
+}
+
+.title span {
+  display: inline-flex;
+  align-items: center;
+  width: 16px;
+}
+
 .total {
   align-self: flex-end;
-  font-family: var(--font-family-primary);
-  font-weight: 600;
-  font-size: var(--font-size-base);
   color: var(--color-fg-secondary);
+  padding-right: 50px;
 }
 
 .actions {

@@ -34,7 +34,7 @@ export function getPinnedStyles<TData>(
 
   const style: React.CSSProperties = {
     position: 'sticky',
-    background: 'var(--color-surface, #fff)',
+    background: opts?.isHeader ? 'var(--grid-header-bg-pinned, #fff)' : 'var(--grid-cell-bg-pinned, #fff)',    //'var(--color-surface, #fff)',
     zIndex: opts?.isHeader ? 30 : 3
   };
 

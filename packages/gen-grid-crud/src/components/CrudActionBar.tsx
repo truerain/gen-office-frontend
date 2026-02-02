@@ -1,6 +1,9 @@
 ﻿// packages/gen-grid-crud/src/components/CrudActionBar.tsx
 
 import * as React from 'react';
+
+import { CircleDot } from 'lucide-react';
+
 import { Button } from '@gen-office/ui';
 import type { CrudRowId } from '../crud/types';
 import type { CrudUiState } from '../GenGridCrud.types';
@@ -8,6 +11,7 @@ import type { CrudUiState } from '../GenGridCrud.types';
 import styles from './CrudActionBar.module.css'
 
 export function CrudActionBar<TData>(props: {
+  title?: string;
   state: CrudUiState<TData>;
   onAdd?: () => void;
   onDelete?: (rowIds: readonly CrudRowId[]) => void;
@@ -16,14 +20,20 @@ export function CrudActionBar<TData>(props: {
   onToggleFilter?: () => void;
   filterEnabled?: boolean;
 }) {
-  const { state, onAdd, onDelete, onSave, onReset, onToggleFilter, filterEnabled } = props;
+  const { title, state, onAdd, onDelete, onSave, onReset, onToggleFilter, filterEnabled } = props;
   const { dirty, isCommitting, selectedRowIds } = state;
 
   return (
     <div className={styles.root}>
       <div className={styles.leftActions}>
+        {title && (
+          <div className={styles.title}>
+            <span><CircleDot size={8} /> </span>
+            {title}
+          </div>
+        )}
         <div className={styles.total}>
-          <span>Total: {state.viewData.length} rows</span>
+          <span>(Total: {state.viewData.length} rows)</span>
         </div>
 
         <div className={styles.actions}>
