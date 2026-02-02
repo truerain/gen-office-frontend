@@ -1,0 +1,21 @@
+{
+  "common.search": "검색",
+  "common.status": "상태",
+  "common.grade": "등급",
+  "common.all": "전체",
+  "common.active": "활성",
+  "common.inactive": "비활성",
+  "common.pending": "대기중",
+  "common.total_rows": "(총 {{count}}행)",
+  "crud.add": "추가",
+  "crud.delete": "삭제",
+  "crud.filter": "필터",
+  "crud.rows": "Rows",
+  "menu.display": "표시",
+  "menu.use_flag": "사용여부",
+  "user.management.title": "사용자 관리",
+  "user.management.description": "사용자 정보를 조회/관리합니다.",
+  "user.name": "사용자명",
+  "user.id": "사용자 ID",
+  "i18n.remote_failed": "서버 번역을 불러오지 못했습니다. 기본 문구를 표시합니다."
+}

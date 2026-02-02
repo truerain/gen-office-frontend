@@ -1,5 +1,6 @@
 // apps/demo/src/App.tsx
 import { useEffect, Suspense, useState, useMemo, lazy } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MDIContainer, useMDIStore } from '@gen-office/mdi';
 import { Drawer } from '@gen-office/ui';
 import { useTheme } from '@gen-office/theme';
@@ -9,6 +10,7 @@ import { findMenuItem, mapMenusToMenuItems, menuTree as buildMenuTree } from '@/
 import { getLazyComponent } from '@/app/config/componentRegistry.dynamic';
 import { useAppStore } from '@/app/store/appStore';
 import { PageProvider } from '@/contexts';
+import { onI18nRemoteFailed } from '@/i18n';
 import '@gen-office/mdi/index.css';
 import styles from './App.module.css';
 import { useAppMenuListQuery } from './menu/api/appMenu';
@@ -73,6 +75,8 @@ function App() {
   const addTab = useMDIStore((state) => state.addTab);
   const setActiveTab = useMDIStore((state) => state.setActiveTab);
   const tabs = useMDIStore((state) => state.tabs);
+  const addNotification = useAppStore((state) => state.addNotification);
+  const { t } = useTranslation('common');
 
   const { data: menuList = [] } = useAppMenuListQuery();
   const menuItems = useMemo(() => mapMenusToMenuItems(menuList), [menuList]);
@@ -87,6 +91,14 @@ function App() {
   useEffect(() => {
     setMode(appTheme);
   }, [appTheme, setMode]);
+
+  useEffect(
+    () =>
+      onI18nRemoteFailed(() => {
+        addNotification(t('i18n.remote_failed'), 'error');
+      }),
+    [addNotification, t]
+  );
 
   // Drawer 상태
   const [notFoundDrawerOpen, setNotFoundDrawerOpen] = useState(false);

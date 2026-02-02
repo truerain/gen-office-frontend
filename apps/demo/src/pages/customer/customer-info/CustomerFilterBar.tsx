@@ -1,6 +1,7 @@
-// apps/demo/src/pages/customer/CustomerInfoPage/components/CustomerFilterBar.tsx
+// apps/demo/src/pages/customer/customer-info/CustomerFilterBar.tsx
 import { SimpleFilterBar } from '@gen-office/ui';
 import type { FilterField } from '@gen-office/ui';
+import { useTranslation } from 'react-i18next';
 import type { CustomerFilter } from '../../../entities/customer/model/types';
 
 interface CustomerFilterBarProps {
@@ -10,30 +11,32 @@ interface CustomerFilterBarProps {
 }
 
 function CustomerFilterBar({ filters, onFilterChange, onSearch }: CustomerFilterBarProps) {
+  const { t } = useTranslation();
+
   const fields: FilterField<CustomerFilter>[] = [
     {
       key: 'search',
       type: 'search',
-      placeholder: '고객명, 이메일, 회사명, 전화번호로 검색',
+      placeholder: t('common.search'),
       flex: 2,
     },
     {
       key: 'status',
       type: 'select',
-      placeholder: '상태',
+      placeholder: t('common.status'),
       options: [
-        { value: 'all', label: '전체 상태' },
-        { value: 'active', label: '활성' },
-        { value: 'inactive', label: '비활성' },
-        { value: 'pending', label: '대기중' },
+        { value: 'all', label: t('common.all') },
+        { value: 'active', label: t('common.active') },
+        { value: 'inactive', label: t('common.inactive') },
+        { value: 'pending', label: t('common.pending') },
       ],
     },
     {
       key: 'grade',
       type: 'select',
-      placeholder: '등급',
+      placeholder: t('common.grade'),
       options: [
-        { value: 'all', label: '전체 등급' },
+        { value: 'all', label: t('common.all') },
         { value: 'platinum', label: 'Platinum' },
         { value: 'gold', label: 'Gold' },
         { value: 'silver', label: 'Silver' },
@@ -48,7 +51,7 @@ function CustomerFilterBar({ filters, onFilterChange, onSearch }: CustomerFilter
       fields={fields}
       onChange={onFilterChange}
       onSearch={onSearch}
-      searchLabel="검색"
+      searchLabel={t('common.search')}
     />
   );
 }

@@ -25,6 +25,8 @@ export default defineConfig({
         'react', 
         'react-dom', 
         'react/jsx-runtime', 
+        'i18next',
+        'react-i18next',
         '@radix-ui/react-slot',
         '@gen-office/ui',
         '@gen-office/theme',

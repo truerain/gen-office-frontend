@@ -7,6 +7,7 @@ import { CircleDot } from 'lucide-react';
 import { Button } from '@gen-office/ui';
 import type { CrudRowId } from '../crud/types';
 import type { CrudUiState } from '../GenGridCrud.types';
+import { useTranslation } from 'react-i18next';
 
 import styles from './CrudActionBar.module.css'
 
@@ -22,6 +23,7 @@ export function CrudActionBar<TData>(props: {
 }) {
   const { title, state, onAdd, onDelete, onSave, onReset, onToggleFilter, filterEnabled } = props;
   const { dirty, isCommitting, selectedRowIds } = state;
+  const { t } = useTranslation('common');
 
   return (
     <div className={styles.root}>
@@ -33,7 +35,7 @@ export function CrudActionBar<TData>(props: {
           </div>
         )}
         <div className={styles.total}>
-          <span>(Total: {state.viewData.length} rows)</span>
+          <span>{t('common.total_rows', { count: state.viewData.length })}</span>
         </div>
 
         <div className={styles.actions}>
@@ -44,7 +46,7 @@ export function CrudActionBar<TData>(props: {
             onClick={onAdd}
             disabled={!onAdd || isCommitting}
           >
-            Add
+            {t('crud.add')}
           </Button>
 
           <Button
@@ -56,7 +58,7 @@ export function CrudActionBar<TData>(props: {
                             onDelete?.(selectedRowIds)
                           }}
           >
-            Delete
+            {t('crud.delete')}
           </Button>
         </div>
       </div>
@@ -68,7 +70,7 @@ export function CrudActionBar<TData>(props: {
           onClick={onToggleFilter}
           disabled={!onToggleFilter}
           >
-            Filter
+            {t('crud.filter')}
         </Button>
       </div>
     </div>

@@ -1,0 +1,21 @@
+{
+  "common.search": "Search",
+  "common.status": "Status",
+  "common.grade": "Grade",
+  "common.all": "All",
+  "common.active": "Active",
+  "common.inactive": "Inactive",
+  "common.pending": "Pending",
+  "common.total_rows": "(Total: {{count}} rows)",
+  "crud.add": "Add",
+  "crud.delete": "Delete",
+  "crud.filter": "Filter",
+  "crud.rows": "Rows",
+  "menu.display": "Display",
+  "menu.use_flag": "Use",
+  "user.management.title": "User Management",
+  "user.management.description": "Manage user information.",
+  "user.name": "User Name",
+  "user.id": "User ID",
+  "i18n.remote_failed": "Failed to load translations from server. Showing default text."
+}

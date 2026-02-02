@@ -6,14 +6,16 @@
 import { useMemo, useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Users } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
 import { GenGridCrud } from '@gen-office/gen-grid-crud';
 import type { CrudChange, CrudRowId } from '@gen-office/gen-grid-crud';
-import { SimpleFilterBar, Separator } from '@gen-office/ui';
-import type { FilterField } from '@gen-office/ui';
+import { SimpleFilterBar, type FilterField } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 import { useUserListQuery, userApi } from '@/entities/system/user/api/user';
 import type { User, UserListParams, UserRequest } from '@/entities/system/user/model/types';
+
 import styles from './UserManagementPage.module.css';
 
 const createUserId = () => (Date.now() + Math.floor(Math.random() * 1000));
@@ -88,6 +90,8 @@ async function commitUserChanges(
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function UserManagementPage(_props: PageComponentProps) {
+  const { t } = useTranslation();
+
   const [draftFilters, setDraftFilters] = useState<{ empName: string }>({ empName: '' });
   const [filters, setFilters] = useState<{ empName: string }>({ empName: '' });
   const queryParams = useMemo<UserListParams>(
@@ -102,7 +106,7 @@ export default function UserManagementPage(_props: PageComponentProps) {
     () => [
       {
         id: 'userId',
-        header: 'User ID',
+        header: t('user.id'),
         accessorKey: 'userId',
         meta: { width: 120, align: 'center' },
       },
@@ -174,7 +178,7 @@ export default function UserManagementPage(_props: PageComponentProps) {
     return [
       {
         key: 'empName',
-        title:'사원명',
+        title:t('user.name'),
         type: 'text',
         placeholder: '',
         flex: 0,
