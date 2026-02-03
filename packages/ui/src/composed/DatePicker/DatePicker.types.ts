@@ -9,6 +9,7 @@ export interface DatePickerProps {
   locale?: string;
   format?: (date: Date) => string;
   formatOptions?: Intl.DateTimeFormatOptions;
+  parse?: (value: string) => Date | undefined;
   clearable?: boolean;
   calendarProps?: Omit<CalendarProps, 'mode' | 'selected' | 'onSelect'>;
   className?: string;

@@ -373,6 +373,13 @@ export function useActiveCellNavigation<TData>(args: {
         },
 
         onMouseDown: (e: React.MouseEvent) => {
+          const target = e.target as HTMLElement | null;
+          if (
+            target &&
+            target.closest('input,select,textarea,button,[contenteditable="true"]')
+          ) {
+            return;
+          }
           // 기본 포커스/텍스트 선택 튐 방지 + 직접 focus
           e.preventDefault();
           setActive(rowId, columnId, { focus: true });

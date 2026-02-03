@@ -11,6 +11,8 @@ import { getMeta } from './utils';
 import { formatCellValue } from './cellFormat';
 import { SELECTION_COLUMN_ID } from '../../features/selection/selection';
 import { ROW_NUMBER_COLUMN_ID } from '../../features/row-number/useRowNumberColumn';
+import { useGenGridContext } from '../../core/context/GenGridProvider';
+import { focusGridCell } from '../../features/active-cell/cellDom';
 
 export type GenGridCellProps<TData> = {
   cell: Cell<TData, unknown>;
@@ -28,8 +30,9 @@ export type GenGridCellProps<TData> = {
   cellProps: React.HTMLAttributes<HTMLTableCellElement>;
 
   onCommitValue: (nextValue: unknown) => void;
+  onCommitEdit: () => void;
   onApplyValue: (nextValue: unknown) => void;
-  onCancelEdit: () => void;
+  onCancelEdit: (opts?: { preserve?: boolean }) => void;
 
   /** ✅ Tab / Shift+Tab 편집 이동 */
   onTab?: (dir: 1 | -1) => void;
@@ -40,9 +43,11 @@ type ContentEditableEditorProps = {
   onChange: (next: string) => void;
   onCommit: () => void;
   onCancel: () => void;
+  onEscFocus?: () => void;
   onTabMove?: (dir: 1 | -1) => void;
   multiline?: boolean;
   style?: React.CSSProperties;
+  allowArrowNavigation?: boolean;
 };
 
 function ContentEditableEditor({
@@ -50,13 +55,25 @@ function ContentEditableEditor({
   onChange,
   onCommit,
   onCancel,
+  onEscFocus,
   onTabMove,
   multiline,
   style,
+  allowArrowNavigation,
 }: ContentEditableEditorProps) {
   const ref = React.useRef<HTMLDivElement | null>(null);
   const didAutoSelectRef = React.useRef(false);
   const pendingAutoSelectRef = React.useRef(false);
+  const autoSelectActiveRef = React.useRef(false);
+
+  const setAutoSelectActive = (next: boolean) => {
+    autoSelectActiveRef.current = next;
+    const el = ref.current;
+    if (el) {
+      if (next) el.setAttribute('data-gen-grid-autoselect', 'true');
+      else el.removeAttribute('data-gen-grid-autoselect');
+    }
+  };
 
   React.useLayoutEffect(() => {
     const el = ref.current;
@@ -81,6 +98,7 @@ function ContentEditableEditor({
       selection?.removeAllRanges();
       selection?.addRange(range);
       pendingAutoSelectRef.current = false;
+      setAutoSelectActive(true);
     }
   }, [value]);
 
@@ -108,20 +126,23 @@ function ContentEditableEditor({
       return post.toString().length === 0;
     };
 
-    if (e.key === 'ArrowLeft' || e.key === 'Home') {
-      if (!isCaretAtStart()) {
-        e.stopPropagation();
+    if (!allowArrowNavigation || !autoSelectActiveRef.current) {
+      if (e.key === 'ArrowLeft' || e.key === 'Home') {
+        if (!isCaretAtStart()) {
+          e.stopPropagation();
+        }
       }
-    }
-    if (e.key === 'ArrowRight' || e.key === 'End') {
-      if (!isCaretAtEnd()) {
-        e.stopPropagation();
+      if (e.key === 'ArrowRight' || e.key === 'End') {
+        if (!isCaretAtEnd()) {
+          e.stopPropagation();
+        }
       }
     }
 
     if (e.key === 'Tab') {
       e.preventDefault();
       e.stopPropagation();
+      setAutoSelectActive(false);
       onCommit();
       onTabMove?.(e.shiftKey ? -1 : 1);
       return;
@@ -129,13 +150,16 @@ function ContentEditableEditor({
     if (e.key === 'Enter' && !multiline) {
       e.preventDefault();
       e.stopPropagation();
+      setAutoSelectActive(false);
       onCommit();
       return;
     }
     if (e.key === 'Escape') {
       e.preventDefault();
       e.stopPropagation();
+      setAutoSelectActive(false);
       onCancel();
+      onEscFocus?.();
       return;
     }
   };
@@ -150,10 +174,17 @@ function ContentEditableEditor({
       onFocus={() => {
         pendingAutoSelectRef.current = true;
       }}
-      onInput={() => onChange(ref.current?.textContent ?? '')}
+      onInput={() => {
+        setAutoSelectActive(false);
+        onChange(ref.current?.textContent ?? '');
+      }}
+      onMouseDown={() => {
+        setAutoSelectActive(false);
+      }}
       onBlur={() => {
         didAutoSelectRef.current = false;
         pendingAutoSelectRef.current = false;
+        setAutoSelectActive(false);
         onCommit();
       }}
       onKeyDown={handleKeyDown}
@@ -167,6 +198,7 @@ function ContentEditableEditor({
 }
 
 export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
+  const { options } = useGenGridContext<TData>();
   const {
     cell,
     rowId,
@@ -177,14 +209,11 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     enableColumnSizing,
     cellProps,
     onCommitValue,
+    onCommitEdit,
     onApplyValue,
     onCancelEdit,
     onTab,
   } = props;
-
-  React.useEffect(() => {
-    if (isEditing && !isActive) onCancelEdit();
-  }, [isEditing, isActive, onCancelEdit]);
 
   const colId = cell.column.id;
   const pinned = cell.column.getIsPinned();
@@ -202,17 +231,24 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
   const [draft, setDraft] = React.useState<unknown>(cell.getValue());
 
   React.useEffect(() => {
-    if (isEditing) setDraft(cell.getValue());
+    if (isEditing) {
+      const nextValue = cell.getValue();
+      // eslint-disable-next-line no-console
+      setDraft(nextValue);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditing, rowId, colId]);
 
-  const cancel = React.useCallback(() => {
-    onCancelEdit();
+  const cancel = React.useCallback((opts?: { preserve?: boolean }) => {
+    onCancelEdit(opts);
   }, [onCancelEdit]);
+  const focusActiveCell = React.useCallback(() => {
+    focusGridCell(rowId, colId);
+  }, [rowId, colId]);
 
   const commitDraft = React.useCallback(() => {
     const currentValue = cell.getValue();
-
+    // eslint-disable-next-line no-console
     let nextValue: unknown = draft;
     if (meta?.editType === 'number') {
       const n = typeof draft === 'number' ? draft : Number(draft);
@@ -222,12 +258,12 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     }
 
     if (Object.is(currentValue, nextValue)) {
-      onCancelEdit();
+      onCommitEdit();
       return;
     }
 
     onCommitValue(nextValue);
-  }, [cell, draft, meta?.editType, onCancelEdit, onCommitValue]);
+  }, [cell, draft, meta?.editType, onCommitEdit, onCommitValue]);
 
   const renderDefaultEditor = () => {
     const commonEditorStyle: React.CSSProperties = {
@@ -246,11 +282,16 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
         return (
           <ContentEditableEditor
             value={draft ?? ''}
-            onChange={(next) => setDraft(next)}
+            onChange={(next) => {
+              // eslint-disable-next-line no-console
+              setDraft(next);
+            }}
             onCommit={commitDraft}
-            onCancel={cancel}
+            onCancel={() => cancel({ preserve: false })}
+            onEscFocus={focusActiveCell}
             onTabMove={onTab}
             style={commonEditorStyle}
+            allowArrowNavigation={Boolean(options.keepEditingOnNavigate)}
           />
         );
       case 'date':
@@ -275,7 +316,8 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
               if (e.key === 'Escape') {
                 e.preventDefault();
                 e.stopPropagation();
-                cancel();
+                cancel({ preserve: false });
+                focusActiveCell();
                 return;
               }
             }}
@@ -283,22 +325,33 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
             type="date"
             value={(draft ?? '') as any}
             placeholder={meta?.editPlaceholder}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={(e) => {
+              const next = e.target.value;
+              // eslint-disable-next-line no-console
+              setDraft(next);
+            }}
           />
         );
       case 'textarea':
         return (
           <ContentEditableEditor
             value={draft ?? ''}
-            onChange={(next) => setDraft(next)}
+            onChange={(next) => {
+              // eslint-disable-next-line no-console
+              setDraft(next);
+            }}
             onCommit={commitDraft}
-            onCancel={cancel}
+            onCancel={() => cancel({ preserve: false })}
+            onEscFocus={focusActiveCell}
             onTabMove={onTab}
             multiline
             style={commonEditorStyle}
+            allowArrowNavigation={Boolean(options.keepEditingOnNavigate)}
           />
         );
       case 'select':
+        {
+          const options = meta?.getEditOptions?.(cell.row.original) ?? meta?.editOptions ?? [];
         return (
           <select
             autoFocus
@@ -320,21 +373,27 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
               if (e.key === 'Escape') {
                 e.preventDefault();
                 e.stopPropagation();
-                cancel();
+                cancel({ preserve: false });
+                focusActiveCell();
                 return;
               }
             }}
             style={commonEditorStyle}
             value={(draft ?? '') as any}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={(e) => {
+              const next = e.target.value;
+              // eslint-disable-next-line no-console
+              setDraft(next);
+            }}
           >
-            {(meta?.editOptions ?? []).map((opt: { label: string; value: string | number }) => (
+            {options.map((opt: { label: string; value: string | number }) => (
               <option key={String(opt.value)} value={String(opt.value)}>
                 {opt.label}
               </option>
             ))}
           </select>
         );
+        }
       case 'checkbox':
         return (
           <input
@@ -357,14 +416,19 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
               if (e.key === 'Escape') {
                 e.preventDefault();
                 e.stopPropagation();
-                cancel();
+                cancel({ preserve: false });
+                focusActiveCell();
                 return;
               }
             }}
             style={commonEditorStyle}
             type="checkbox"
             checked={Boolean(draft)}
-            onChange={(e) => setDraft(e.target.checked)}
+            onChange={(e) => {
+              const next = e.target.checked;
+              // eslint-disable-next-line no-console
+              setDraft(next);
+            }}
           />
         );
       case 'text':
@@ -372,10 +436,14 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
         return (
           <ContentEditableEditor
             value={draft ?? ''}
-            onChange={(next) => setDraft(next)}
+            onChange={(next) => {
+              // eslint-disable-next-line no-console
+              setDraft(next);
+            }}
             onCommit={commitDraft}
-            onCancel={cancel}
+            onCancel={() => cancel({ preserve: false })}
             onTabMove={onTab}
+            onEscFocus={focusActiveCell}
             style={commonEditorStyle}
           />
         );
@@ -385,13 +453,31 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
   const editor =
     meta?.renderEditor?.({
       value: draft,
+      row: cell.row.original,
+      rowId,
+      columnId: colId,
       onChange: setDraft,
       onCommit: commitDraft,
       onCancel: cancel,
       onTab,
       commitValue: onCommitValue,
       applyValue: onApplyValue,
-    }) ?? renderDefaultEditor();
+    }) ??
+    options.editorFactory?.({
+      value: draft,
+      row: cell.row.original,
+      rowId,
+      columnId: colId,
+      meta,
+      editType: meta?.editType,
+      onChange: setDraft,
+      onCommit: commitDraft,
+      onCancel: cancel,
+      onTab,
+      commitValue: onCommitValue,
+      applyValue: onApplyValue,
+    }) ??
+    renderDefaultEditor();
 
   return (
     <td
@@ -440,9 +526,6 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
 
       {isEditing 
         ? (<div 
-            onMouseDownCapture={(e) => e.stopPropagation()}
-            onClick={(e) => e.stopPropagation()}
-            onDoubleClick={(e) => e.stopPropagation()}
             style={{
               display: "flex",
               justifyContent: "center",

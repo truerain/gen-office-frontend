@@ -4,9 +4,8 @@
  */
 
 import { useMemo, useState } from 'react';
-import type { ColumnDef } from '@tanstack/react-table';
-import { Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Users } from 'lucide-react';
 
 import { GenGridCrud } from '@gen-office/gen-grid-crud';
 import type { CrudChange, CrudRowId } from '@gen-office/gen-grid-crud';
@@ -17,6 +16,7 @@ import { useUserListQuery, userApi } from '@/entities/system/user/api/user';
 import type { User, UserListParams, UserRequest } from '@/entities/system/user/model/types';
 
 import styles from './UserManagementPage.module.css';
+import { createUserManagementColumns } from './UserManagementColumns';
 
 const createUserId = () => (Date.now() + Math.floor(Math.random() * 1000));
 
@@ -92,6 +92,8 @@ async function commitUserChanges(
 export default function UserManagementPage(_props: PageComponentProps) {
   const { t } = useTranslation();
 
+  const [gridDirty, setGridDirty] = useState(false);
+
   const [draftFilters, setDraftFilters] = useState<{ empName: string }>({ empName: '' });
   const [filters, setFilters] = useState<{ empName: string }>({ empName: '' });
   const queryParams = useMemo<UserListParams>(
@@ -102,77 +104,7 @@ export default function UserManagementPage(_props: PageComponentProps) {
   );
   const { data: userList = [], refetch, dataUpdatedAt } = useUserListQuery(queryParams);
 
-  const columns = useMemo<ColumnDef<User>[]>(
-    () => [
-      {
-        id: 'userId',
-        header: t('user.id'),
-        accessorKey: 'userId',
-        meta: { width: 120, align: 'center' },
-      },
-      {
-        id: 'empNo',
-        header: 'Emp No',
-        accessorKey: 'empNo',
-        meta: { width: 140, editable: true, editType: 'text' },
-      },
-      {
-        id: 'empName',
-        header: 'Name',
-        accessorKey: 'empName',
-        meta: { width: 160, editable: true, editType: 'text' },
-      },
-      {
-        id: 'empNameEng',
-        header: 'Name (Eng)',
-        accessorKey: 'empNameEng',
-        meta: { width: 160, editable: true, editType: 'text' },
-      },
-      {
-        id: 'email',
-        header: 'Email',
-        accessorKey: 'email',
-        meta: { width: 220, editable: true, editType: 'text' },
-      },
-      {
-        id: 'orgId',
-        header: 'Org ID',
-        accessorKey: 'orgId',
-        meta: { width: 140, editable: true, editType: 'text' },
-      },
-      {
-        id: 'title',
-        header: 'Title',
-        accessorKey: 'title',
-        meta: { width: 140, editable: true, editType: 'text' },
-      },
-      {
-        id: 'langCd',
-        header: 'Lang',
-        accessorKey: 'langCd',
-        meta: { width: 80, editable: true, editType: 'text', align: 'center' },
-      },
-      {
-        id: 'password',
-        header: 'Password',
-        accessorKey: 'password',
-        meta: { width: 160, editable: true, editType: 'text' },
-      },
-      {
-        id: 'lastUpdatedBy',
-        header: 'Updated By',
-        accessorKey: 'lastUpdatedBy',
-        meta: { width: 140 },
-      },
-      {
-        id: 'lastUpdatedDate',
-        header: 'Updated At',
-        accessorKey: 'lastUpdatedDate',
-        meta: { width: 160 },
-      },
-    ],
-    []
-  );
+  const columns = useMemo(() => createUserManagementColumns(t), [t]);
 
   const filterFields = useMemo<FilterField<{ empName: string }>[]>(() => {
     return [
@@ -193,7 +125,7 @@ export default function UserManagementPage(_props: PageComponentProps) {
   };
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} data-grid-dirty={gridDirty ? 'true' : 'false'}>
       <PageHeader
         title="사용자 관리"
         description="사용자 정보를 조회/관리합니다."
@@ -243,6 +175,18 @@ export default function UserManagementPage(_props: PageComponentProps) {
             console.error(error);
             alert('Commit failed (see console).');
           }}
+          onCellEdit={({ rowId, columnId, rowIndex, prevValue, nextValue }) => {
+            console.log('[UserManagement] cell edit', {
+              rowId,
+              columnId,
+              rowIndex,
+              prevValue,
+              nextValue,
+            });
+          }}
+          onStateChange={({ dirty }) => {
+            setGridDirty(dirty);
+          }}
           gridProps={{
             dataVersion: dataUpdatedAt,
             rowHeight: 34,
@@ -252,6 +196,8 @@ export default function UserManagementPage(_props: PageComponentProps) {
             enableVirtualization: true,
             enableRowStatus: true,
             enableRowSelection: true,
+            editOnActiveCell: false,
+            keepEditingOnNavigate: true,
           }}
         />
       </div>

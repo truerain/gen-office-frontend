@@ -67,7 +67,7 @@ export function SimpleFilterBar<TFilters>({
   const resolvedActions =
     actions ??
     (onSearch ? (
-      <Button onClick={onSearch} variant="default" size="sm" fullWidth={true}>
+      <Button onClick={onSearch} variant="secondary" size="md" fullWidth={true}>
         <Search size={16} />
         {searchLabel}
       </Button>

@@ -4,7 +4,7 @@
 export { GenGrid } from './GenGrid';
 
 // 2. types
-export type { GenGridProps } from './GenGrid.types';
+export type { GenGridProps, GenGridEditorFactory, GenGridEditorContext } from './GenGrid.types';
 export type { GenGridHandle } from './types/GenGridHandle';
 
 // 3. provider

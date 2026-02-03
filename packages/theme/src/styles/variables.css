@@ -24,7 +24,7 @@
   --color-workarea: #e7f1f0;
   
   /* Text Colors */
-  --color-text: #212529;
+  --color-text: #34383c;    /* #212529; */
   --color-text-secondary: #6c757d;
   --color-text-disabled: #adb5bd;
   
@@ -114,7 +114,7 @@
   /* ===== UI Semantic Aliases (for @gen-office/ui) ===== */
   /* Backgrounds */
   --color-bg-primary: var(--color-background);
-  --color-bg-secondary: var(--color-secondary-light);
+  --color-bg-secondary: var(--color-secondary);
   --color-bg-tertiary: var(--color-secondary-light);
 
   /* Foregrounds */
@@ -129,6 +129,7 @@
 
   /* Brand */
   --color-brand-primary: var(--color-primary);
+  --color-brand-secondary: var(--color-secondary);
 
   /* Status (ui expects these names) */
   --color-status-success: var(--color-success);
@@ -150,7 +151,7 @@
   --grid-header-bg: #EEEEF0;    /* org: #f9fafb */
   --grid-header-text: #111827;     /* near-black */
   --grid-header-border: #d4d4d4;  /* origin: #e5e7eb */
-  --grid-header-font-weight: 600;
+  --grid-header-font-weight: 400;
   --grid-header-height: 44px;
 
   --grid-header-bg-hover: #f3f4f6;

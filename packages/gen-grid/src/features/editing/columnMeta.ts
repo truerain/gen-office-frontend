@@ -3,28 +3,24 @@
 import type * as React from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 
-export type CellEditorRenderArgs<TValue> = {
-  value: TValue;
-  onChange: (v: TValue) => void;
+export type CellEditorRenderArgs<TData> = {
+  value: unknown;
+  row: TData;
+  rowId: string;
+  columnId: string;
+  onChange: (v: unknown) => void;
   onCommit: () => void;
   onCancel: () => void;
   onTab?: (dir: 1 | -1) => void;
-  commitValue?: (nextValue: unknown) => void;
-  applyValue?: (nextValue: unknown) => void;
+  commitValue: (nextValue: unknown) => void;
+  applyValue: (nextValue: unknown) => void;
 };
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData, TValue> {
     editable?: boolean;
-    renderEditor?: (props: {
-      value: TValue;
-      onChange: (v: TValue) => void;
-      onCommit: () => void;
-      onCancel: () => void;
-      onTab?: (dir: 1 | -1) => void;
-      commitValue?: (nextValue: unknown) => void;
-      applyValue?: (nextValue: unknown) => void;
-    }) => React.ReactNode;
+    getEditOptions?: (row: TData) => { label: string; value: string | number }[];
+    renderEditor?: (props: CellEditorRenderArgs<TData>) => React.ReactNode;
   }
 }
 

@@ -38,7 +38,7 @@
 }
 
 .md {
-  height: 2.5rem; /* 40px */
+  height: 2.0rem; /* 40px, 2.5rem */
   padding: 0 1rem; /* 16px */
   font-size: 0.875rem; /* 14px */
   border-radius: 0.375rem; /* 6px */
@@ -88,14 +88,14 @@
 
 /* Secondary Variant - Theme 변수 사용 */
 .secondary {
-  background: var(--color-bg-primary);
-  color: var(--color-fg-primary);
+  background: var(--color-bg-secondary);
+  color: var(--color-fg-inverse);
   border-color: var(--color-border-default);
   box-shadow: 0 0.0625rem 0.125rem rgba(0, 0, 0, 0.05);
 }
 
 .secondary:hover:not(:disabled) {
-  background: var(--color-bg-secondary);
+  background: var(--color-secondary-dark);
   border-color: var(--color-border-strong);
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.08);
 }
@@ -273,7 +273,7 @@
 
 .md .iconWrapper {
   width: 1rem; /* 16px */
-  height: 1rem; /* 16px */
+  height: 1rem; /* 16px  */
 }
 
 .lg .iconWrapper {

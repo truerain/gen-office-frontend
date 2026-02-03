@@ -133,6 +133,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     onActiveCellChange,
 
     onStateChange,
+    onCellEdit,
+    editorFactory,
 
     gridProps,
   } = props;
@@ -281,6 +283,17 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     [getRowId]
   );
 
+  const pendingRowIdByGridId = React.useMemo(() => {
+    const map = new Map<string, CrudRowId>();
+    for (const row of gridData) {
+      const pendingId = getPendingRowId(row);
+      map.set(String(pendingId), pendingId);
+    }
+    return map;
+  }, [gridData, getPendingRowId]);
+
+  const skipNextOnDataChangeRef = React.useRef(false);
+
 
   // --- Action handlers
   const handleAdd = React.useCallback(() => {
@@ -372,6 +385,10 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   // GenGrid?먯꽌 ?꾨떖??viewData 蹂寃쎌쓣 pending patch濡?蹂??
   const handleGridDataChange = React.useCallback(
     (nextViewData: TData[]) => {
+      if (skipNextOnDataChangeRef.current) {
+        skipNextOnDataChangeRef.current = false;
+        return;
+      }
 
       const prevById = new Map<CrudRowId, TData>();
       for (let i = 0; i < gridData.length; i++) {
@@ -396,6 +413,30 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
 
     },
     [gridData, getPendingRowId, pendingApi, diffKeys]
+  );
+
+  const handleCellValueChange = React.useCallback(
+    (args: { rowId: string; columnId: string; value: unknown }) => {
+      const pendingRowId = pendingRowIdByGridId.get(args.rowId) ?? args.rowId;
+      const rowIndex = gridData.findIndex(
+        (row) => String(getPendingRowId(row)) === String(pendingRowId)
+      );
+      const row = rowIndex >= 0 ? gridData[rowIndex] : undefined;
+      const prevValue = row ? (row as any)[args.columnId] : undefined;
+      if (row && !Object.is(prevValue, args.value)) {
+        onCellEdit?.({
+          rowId: args.rowId,
+          columnId: args.columnId,
+          rowIndex,
+          prevValue,
+          nextValue: args.value,
+          row,
+        });
+      }
+      skipNextOnDataChangeRef.current = true;
+      pendingApi.updateCell(pendingRowId, args.columnId, args.value, makePatch);
+    },
+    [gridData, getPendingRowId, makePatch, onCellEdit, pendingApi, pendingRowIdByGridId]
   );
 
   // --- state publish
@@ -461,17 +502,22 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
 
       <GenGrid<TData>
         data={gridData}
+        onCellValueChange={handleCellValueChange}
         onDataChange={handleGridDataChange}
         dataVersion={gridProps?.dataVersion}
         columns={columns as ColumnDef<TData, any>[]}
         getRowId={genGridGetRowId}
         activeCell={activeCellForGrid}
         onActiveCellChange={(next) => setActiveCell(next)}
-        rowStatusResolver={(rowId) => pendingApi.getRowStatus(rowId)}
+        rowStatusResolver={(rowId) => {
+          const pendingRowId = pendingRowIdByGridId.get(String(rowId)) ?? rowId;
+          return pendingApi.getRowStatus(pendingRowId);
+        }}
         rowSelection={rowSelection}
         onRowSelectionChange={handleRowSelectionChange}
         {...mergedGridProps}
         tableMeta={tableMeta}
+        editorFactory={editorFactory}
       />
 
       {(actionBarPosition === 'bottom' || actionBarPosition === 'both') && actionBarNode}

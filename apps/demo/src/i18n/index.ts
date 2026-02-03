@@ -10,6 +10,7 @@ const DEFAULT_NS = 'common';
 const STORAGE_KEY = 'gen-office-locale';
 const MISSING_KEY_STORAGE = 'i18n.missing-keys';
 const I18N_REMOTE_FAILED_EVENT = 'i18n:remote-failed';
+const NO_FALLBACK: string[] = [];
 
 type MissingKeyEntry = {
   key: string;
@@ -26,7 +27,7 @@ function resolveInitialLocale(): string {
   return nav.startsWith('ko') ? 'ko' : 'en';
 }
 
-function recordMissingKey(lngs: string | string[], ns: string, key: string) {
+function recordMissingKey(lngs: string | readonly string[], ns: string, key: string) {
   if (typeof window === 'undefined') return;
   const lng = Array.isArray(lngs) ? lngs[0] ?? 'en' : lngs;
   const entry: MissingKeyEntry = { key, ns, lng, ts: Date.now() };
@@ -72,7 +73,7 @@ export function getFixedTWithPolicy(namespace: string, allowFallback = isFallbac
   return (key: string, options?: Record<string, unknown>) =>
     t(key, {
       ...options,
-      fallbackLng: allowFallback ? undefined : false,
+      fallbackLng: allowFallback ? undefined : NO_FALLBACK,
     });
 }
 

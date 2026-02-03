@@ -42,6 +42,7 @@ export type GenGridBaseProps<TData> = {
   pageSizeOptions?: number[];
 
   editOnActiveCell?: boolean;
+  keepEditingOnNavigate?: boolean;
 
   onCellValueChange?: (coord: { rowId: string; columnId: string }, value: unknown) => void;
   isRowDirty?: (rowId: string) => boolean;
@@ -75,6 +76,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     pageSizeOptions = [10, 20, 50, 100],
 
     editOnActiveCell,
+    keepEditingOnNavigate,
 
     onCellValueChange,
     isCellDirty,
@@ -256,6 +258,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
               activeCell={activeCell}
               onActiveCellChange={handleActiveCellChange}
               editOnActiveCell={editOnActiveCell}
+              keepEditingOnNavigate={keepEditingOnNavigate}
               onCellValueChange={handleCellValueChange}
               isRowDirty={props.isRowDirty}
               isCellDirty={isCellDirty}
@@ -268,6 +271,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
               activeCell={activeCell}
               onActiveCellChange={handleActiveCellChange}
               editOnActiveCell={editOnActiveCell}
+              keepEditingOnNavigate={keepEditingOnNavigate}
               onCellValueChange={handleCellValueChange}
               isRowDirty={props.isRowDirty}
               isCellDirty={isCellDirty}

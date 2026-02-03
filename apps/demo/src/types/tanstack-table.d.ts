@@ -22,6 +22,7 @@ declare module '@tanstack/react-table' {
     editable?: boolean;
     editType?: 'text' | 'number' | 'date' | 'select' | 'textarea' | 'checkbox';
     editOptions?: { label: string; value: string | number }[];
+    getEditOptions?: (row: TData) => { label: string; value: string | number }[];
     editPlaceholder?: string;
     renderCell?: (args: {
       value: unknown;
@@ -31,13 +32,16 @@ declare module '@tanstack/react-table' {
       commitValue?: (nextValue: unknown) => void;
     }) => React.ReactNode;
     renderEditor?: (props: {
-      value: TValue;
-      onChange: (v: TValue) => void;
+      value: unknown;
+      row: TData;
+      rowId: string;
+      columnId: string;
+      onChange: (v: unknown) => void;
       onCommit: () => void;
       onCancel: () => void;
       onTab?: (dir: 1 | -1) => void;
-      commitValue?: (nextValue: unknown) => void;
-      applyValue?: (nextValue: unknown) => void;
+      commitValue: (nextValue: unknown) => void;
+      applyValue: (nextValue: unknown) => void;
     }) => React.ReactNode;
     onSpace?: (args: {
       value: unknown;

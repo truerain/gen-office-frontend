@@ -12,17 +12,20 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Home, MonitorCog, SquareMenu } from 'lucide-react';
+
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
-import { Home, MonitorCog, SquareMenu } from 'lucide-react';
-import type { ColumnDef } from '@tanstack/react-table';
+import { SplitLayout, TreeView } from '@gen-office/ui';
 import { GenGridCrud } from '@gen-office/gen-grid-crud';
 import type { CrudChange } from '@gen-office/gen-grid-crud';
 import type { Menu, MenuListParams } from '@/entities/system/menu/model/types';
 import { useMenuListQuery } from '@/entities/system/menu/api/menu';
 
+import {createMenuManagementColumns} from './MenuManagementColumns';
+
 import styles from './MenuManagementPage.module.css';
-import { SimpleSelect, SplitLayout, Switch, TreeView } from '@gen-office/ui';
 
 type MenuNode = {
   id: number;
@@ -114,6 +117,8 @@ const applyMenuChanges = (prev: readonly Menu[], changes: readonly CrudChange<Me
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function MenuManagementPage(_props:  PageComponentProps) {
+  const { t } = useTranslation();
+
   const queryParams = useMemo<MenuListParams>(() => ({}), []);
   const { data: menuList = [] } = useMenuListQuery(queryParams);
 
@@ -121,6 +126,7 @@ function MenuManagementPage(_props:  PageComponentProps) {
   const [menuData, setMenuData] = useState<Menu[]>([]);
   const [menuVersion, setMenuVersion] = useState(0);
   const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
+
 
   useEffect(() => {
     if (didInit.current) return;
@@ -162,152 +168,7 @@ function MenuManagementPage(_props:  PageComponentProps) {
     [menuData, selectedNodeId]
   );
 
-  const columns = useMemo<ColumnDef<Menu>[]>(
-    () => [
-      {
-        id: 'menuId',
-        header: 'Menu ID',
-        accessorKey: 'menuId',
-        meta: {
-          width: 160,
-          align: 'center',
-        },
-      },
-      {
-        id: 'menuName',
-        header: 'Menu Name',
-        accessorKey: 'menuName',
-        meta: {
-          width: 220,
-          editable: true,
-          editType: 'text',
-          editPlaceholder: 'Menu name',
-        },
-      },
-      {
-        id: 'menuNameEng',
-        header: 'Menu Name (Eng)',
-        accessorKey: 'menuNameEng',
-        meta: {
-          width: 220,
-          editable: true,
-          editType: 'text',
-          editPlaceholder: 'Menu name (eng)',
-        },
-      },
-      {
-        id: 'menuDesc',
-        header: 'Description',
-        accessorKey: 'menuDesc',
-        meta: {
-          width: 240,
-          editable: true,
-          editType: 'text',
-          editPlaceholder: 'Description',
-        },
-      },
-      {
-        id: 'menuLevel',
-        header: 'Level',
-        accessorKey: 'menuLevel',
-        meta: {
-          width: 80,
-          align: 'center',
-          editable: true,
-          editType: 'number',
-        },
-      },
-      {
-        id: 'prntMenuId',
-        header: 'Parent',
-        accessorKey: 'prntMenuId',
-        meta: {
-          width: 160,
-          align: 'center',
-          editable: true,
-          editType: 'number',
-        },
-      },
-      {
-        id: 'dsplFlag',
-        header: 'Display',
-        accessorKey: 'dsplFlag',
-        meta: {
-          width: 90,
-          align: 'center',
-          renderEditor: ({ value, onChange, applyValue }) => (
-            <SimpleSelect
-              value={value === 'Y' ? 'Y' : 'N'}
-              fitCell
-              onValueChange={(next) => {
-                onChange(next);
-                applyValue?.(next);
-              }}
-              options={[
-                { value: 'Y', label: 'Y' },
-                { value: 'N', label: 'N' },
-              ]}
-            />
-          ),
-          onSpace: ({ rowId, columnId }) => {
-            const cell = document.querySelector<HTMLElement>(
-              `[data-rowid="${CSS.escape(rowId)}"][data-colid="${CSS.escape(columnId)}"]`
-            );
-            const trigger = cell?.querySelector<HTMLElement>('button[role="combobox"]');
-            trigger?.click();
-          },
-        },
-      },
-      {
-        id: 'useFlag',
-        header: '사용여부',
-        accessorKey: 'useFlag',
-        meta: {
-          width: 90,
-          align: 'center',
-          renderCell: ({ value, commitValue }) => (
-            <Switch
-              checked={value === 'Y'}
-              onCheckedChange={(next) => commitValue?.(next ? 'Y' : 'N')}
-              style={{
-                ['--switch-width' as any]: '2.25rem',
-                ['--switch-height' as any]: '1.25rem',
-                ['--switch-thumb-size' as any]: '1rem',
-                ['--switch-thumb-x' as any]: '0.125rem',
-                ['--switch-thumb-checked-x' as any]: '1.125rem',
-              }}
-            />
-          ),
-          onSpace: ({ value, commitValue }) => {
-            const next = value === 'Y' ? 'N' : 'Y';
-            commitValue?.(next);
-          },
-        },
-      },
-      {
-        id: 'sortOrder',
-        header: 'Sort',
-        accessorKey: 'sortOrder',
-        meta: {
-          width: 90,
-          align: 'center',
-          editable: true,
-          editType: 'number',
-        },
-      },
-      {
-        id: 'url',
-        header: 'URL',
-        accessorKey: 'url',
-        meta: {
-          width: 240,
-          editable: true,
-          editType: 'text',
-        },
-      },
-    ],
-    []
-  );
+  const columns = useMemo(() => createMenuManagementColumns(t), [t]);
 
   const dataVersion = useMemo(
     () => `${selectedNodeId ?? 'none'}-${menuVersion}`,

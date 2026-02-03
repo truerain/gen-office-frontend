@@ -21,10 +21,23 @@ export type GenGridColumnMeta = {
     rowId: string;
     columnId: string;
   }) => React.ReactNode;
+  renderEditor?: (args: {
+    value: unknown;
+    row: unknown;
+    rowId: string;
+    columnId: string;
+    onChange: (nextValue: unknown) => void;
+    onCommit: () => void;
+    onCancel: () => void;
+    onTab?: (dir: 1 | -1) => void;
+    commitValue: (nextValue: unknown) => void;
+    applyValue: (nextValue: unknown) => void;
+  }) => React.ReactNode;
 
   // editor
   editType?: 'text' | 'number' | 'date' | 'select' | 'textarea' | 'checkbox';
   editOptions?: { label: string; value: string | number }[];
+  getEditOptions?: (row: unknown) => { label: string; value: string | number }[];
   editPlaceholder?: string;
 };
 

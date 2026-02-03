@@ -41,11 +41,11 @@ export function useRowStatusColumn<TData>(args: {
 
         const symbol =
           status === 'created'
-            ? '+'
+            ? 'C'
             : status === 'updated'
-              ? '●'
+              ? 'M'
               : status === 'deleted'
-                ? '×'
+                ? 'D'
                 : '';
 
         const symbolColor =

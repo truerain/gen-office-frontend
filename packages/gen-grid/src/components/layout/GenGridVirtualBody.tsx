@@ -8,6 +8,7 @@ import type { CellCoord } from './types';
 
 import { useActiveCellNavigation } from '../../features/active-cell/useActiveCellNavigation';
 import { useCellEditing } from '../../features/editing/useCellEditing';
+import { useGenGridContext } from '../../core/context/GenGridProvider';
 import { GenGridCell } from './GenGridCell';
 
 import { SELECTION_COLUMN_ID } from '../../features/selection/selection';
@@ -38,6 +39,7 @@ type GenGridVirtualBodyProps<TData> = {
   onCellClick?: (rowId: string, columnId: string) => void;
   onActiveCellChange: (next: { rowId: string; columnId: string }) => void;
   editOnActiveCell?: boolean;
+  keepEditingOnNavigate?: boolean;
   
   /** (선택) 실제 데이터 업데이트는 상위에서 처리 */
   onCellValueChange?: (coord: CellCoord, nextValue: unknown) => void;
@@ -59,9 +61,11 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
     activeCell,
     onActiveCellChange,
     editOnActiveCell,
+    keepEditingOnNavigate,
     onCellValueChange,
   } = props;
 
+  const { editMode, setEditMode } = useGenGridContext<TData>();
   const rows = table.getRowModel().rows;
 
   const rowVirtualizer = useVirtualizer({
@@ -120,6 +124,9 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
     activeCell: activeCell ?? null,
     onActiveCellChange,
     editOnActiveCell,
+    keepEditingOnNavigate,
+    editMode,
+    setEditMode,
     isCellEditable: (rowId, columnId) => {
       // system column 제외
       if (isSystemCol(columnId)) return false;
@@ -173,6 +180,50 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
             const mergedProps: React.HTMLAttributes<HTMLTableCellElement> = {
               ...(navProps as any),
               ...(editProps as any),
+              onMouseDownCapture:
+                keepEditingOnNavigate && isEditing
+                  ? ((e: React.MouseEvent) => {
+                      const target = e.target as HTMLElement | null;
+                      if (
+                        target &&
+                        target.closest('input,select,textarea,button,[contenteditable="true"]')
+                      ) {
+                        return;
+                      }
+                      // Allow default focus/blur so the editor can commit its value.
+                    })
+                  : undefined,
+              onKeyDownCapture:
+                keepEditingOnNavigate && isEditing
+                  ? ((e: React.KeyboardEvent) => {
+                      const target = e.target as HTMLElement | null;
+                      const isEditorTarget =
+                        !!target &&
+                        !!target.closest('input,select,textarea,button,[contenteditable="true"]');
+                      if (isEditorTarget) return;
+                      if (
+                        e.key === 'ArrowLeft' ||
+                        e.key === 'ArrowRight' ||
+                        e.key === 'ArrowUp' ||
+                        e.key === 'ArrowDown' ||
+                        e.key === 'Home' ||
+                        e.key === 'End' ||
+                        e.key === 'PageUp' ||
+                        e.key === 'PageDown'
+                      ) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        nav.handleKeyDown(e);
+                      }
+                    })
+                  : undefined,
+              onMouseDown:
+                keepEditingOnNavigate && isEditing
+                  ? (editProps as any).onMouseDown
+                  : (mergeHandlers(
+                      (navProps as any).onMouseDown,
+                      (editProps as any).onMouseDown
+                    ) as any),
               onFocus: mergeHandlers(
                 (navProps as any).onFocus,
                 (editProps as any).onFocus
@@ -199,6 +250,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
                 enableColumnSizing={enableColumnSizing}
                 cellProps={mergedProps}
                 onCommitValue={(nextValue) => editing.commitValue({ rowId: row.id, columnId: colId }, nextValue)}
+                onCommitEdit={() => editing.commitEditing()}
                 onApplyValue={(nextValue) => editing.applyValue({ rowId: row.id, columnId: colId }, nextValue)}
                 onCancelEdit={editing.cancelEditing}
                 onTab={(dir) => editing.moveEditByTab(dir)}

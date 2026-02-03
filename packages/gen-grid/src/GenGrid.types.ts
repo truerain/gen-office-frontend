@@ -1,7 +1,26 @@
 // packages/gen-grid/src/GenGrid.types.ts
 
 import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
+import type * as React from 'react';
 import type { ActiveCell } from './features/active-cell/types';
+import type { GenGridColumnMeta } from './components/layout/utils';
+
+export type GenGridEditorContext<TData> = {
+  value: unknown;
+  row: TData;
+  rowId: string;
+  columnId: string;
+  meta?: GenGridColumnMeta;
+  editType?: GenGridColumnMeta['editType'];
+  onChange: (nextValue: unknown) => void;
+  onCommit: () => void;
+  onCancel: () => void;
+  onTab?: (dir: 1 | -1) => void;
+  commitValue: (nextValue: unknown) => void;
+  applyValue: (nextValue: unknown) => void;
+};
+
+export type GenGridEditorFactory<TData> = (ctx: GenGridEditorContext<TData>) => React.ReactNode;
 
 type CommonGridOptions = {
   caption?: string;
@@ -40,6 +59,8 @@ type CommonGridOptions = {
 
   /** when true, entering an active cell starts edit mode */
   editOnActiveCell?: boolean;
+  /** keep edit mode when active cell moves (arrow/mouse/tab) */
+  keepEditingOnNavigate?: boolean;
 
   /** tanstack table meta */
   tableMeta?: Record<string, any>;
@@ -63,6 +84,7 @@ export type GenGridProps<TData> = CommonGridOptions &
   (ControlledDataProps<TData> | UncontrolledDataProps<TData>) & {
     columns: ColumnDef<TData, any>[];
     getRowId: (row: TData) => string;
+    editorFactory?: GenGridEditorFactory<TData>;
 
     /** ?� ?�집 커밋 ?�점???�정?�히 ???�??변�??�벤??*/
      onCellValueChange?: (args: {

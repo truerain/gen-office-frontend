@@ -5,9 +5,12 @@ import type { Table } from '@tanstack/react-table';
 
 import { focusGridCell } from '../../features/active-cell/cellDom';
 import { ActiveCell } from '../../features/active-cell/types';
+import type { GenGridEditorFactory } from '../../GenGrid.types';
 
 export type GenGridOptions = {
   isCellNavigable?: (rowId: string, columnId: string) => boolean;
+  editorFactory?: GenGridEditorFactory<any>;
+  keepEditingOnNavigate?: boolean;
 };
 
 type GenGridContextValue<TData> = {
@@ -16,6 +19,9 @@ type GenGridContextValue<TData> = {
 
   activeCell: ActiveCell;
   setActiveCell: (cell: ActiveCell) => void;
+
+  editMode: boolean;
+  setEditMode: (next: boolean) => void;
 
   // 편의 command (필요하면 사용)
   focusCell: (cell: { rowId: string; columnId: string }) => void;
@@ -43,6 +49,7 @@ export function GenGridProvider<TData>(props: {
 
   const [uncontrolled, setUncontrolled] = React.useState<ActiveCell>(null);
   const activeCell = controlled ?? uncontrolled;
+  const [editMode, setEditMode] = React.useState(false);
 
   const setActiveCell = React.useCallback(
     (next: ActiveCell) => {
@@ -66,9 +73,11 @@ export function GenGridProvider<TData>(props: {
       options: options ?? {},
       activeCell,
       setActiveCell,
+      editMode,
+      setEditMode,
       focusCell,
     }),
-    [table, options, activeCell, setActiveCell, focusCell]
+    [table, options, activeCell, setActiveCell, editMode, focusCell]
   );
 
   return <GenGridContext.Provider value={value}>{children}</GenGridContext.Provider>;
