@@ -28,6 +28,16 @@
   background: var(--grid-cell-bg-hover);
 }
 
+.tbody .tr.activeRow .td {
+  background: color-mix(in srgb, var(--color-focus, #3b82f6) 8%, var(--grid-cell-bg));
+}
+.tbody .tr.activeRow .td[data-pinned="true"] {
+  background: color-mix(in srgb, var(--color-focus, #3b82f6) 8%, var(--grid-cell-bg-pinned));
+}
+.tbody .tr.activeRow {
+  --grid-cell-bg-pinned-active: color-mix(in srgb, var(--color-focus, #3b82f6) 8%, var(--grid-cell-bg-pinned));
+}
+
 .tbody .tr.is-selected .td {
   background: var(--grid-cell-bg-selected);
 }

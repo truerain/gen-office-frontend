@@ -30,6 +30,30 @@
   box-shadow: var(--grid-shadow);
 }
 
+/* Scoped scrollbar styling for GenGrid only */
+.tableScroll {
+  /*scrollbar-width: auto;*/
+  scrollbar-color: var(--grid-scrollbar-thumb) var(--grid-scrollbar-track);
+}
+
+.tableScroll::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+.tableScroll::-webkit-scrollbar-track {
+  background: var(--grid-scrollbar-track);
+}
+
+.tableScroll::-webkit-scrollbar-thumb {
+  background: var(--grid-scrollbar-thumb);
+  border-radius: var(--border-radius-full);
+}
+
+.tableScroll::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--grid-scrollbar-thumb) 80%, #000000 20%);
+}
+
 .root[data-has-footer] .tableScroll {
   border-bottom: 0;
   border-bottom-left-radius: 0;
@@ -72,4 +96,3 @@
   font-weight: 600;
   color: var(--grid-header-text);
 }
-

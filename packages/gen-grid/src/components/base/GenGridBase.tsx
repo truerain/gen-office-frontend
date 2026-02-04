@@ -38,6 +38,7 @@ export type GenGridBaseProps<TData> = {
 
   enableRowSelection?: boolean;
   enableRowNumber?: boolean;
+  enableActiveRowHighlight?: boolean;
 
   enablePagination?: boolean;
   pageSizeOptions?: number[];
@@ -80,6 +81,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
 
     enableRowSelection,
     enableRowNumber,
+    enableActiveRowHighlight = false,
 
     enablePagination,
     pageSizeOptions = [10, 20, 50, 100],
@@ -312,6 +314,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
               overscan={overscan}
               enablePinning={enablePinning}
               enableColumnSizing={columnSizingEnabled}
+              enableActiveRowHighlight={enableActiveRowHighlight}
               activeCell={activeCell}
               onActiveCellChange={handleActiveCellChange}
               editOnActiveCell={editOnActiveCell}
@@ -326,6 +329,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
               table={table}
               enablePinning={enablePinning}
               enableColumnSizing={enableColumnSizing}
+              enableActiveRowHighlight={enableActiveRowHighlight}
               activeCell={activeCell}
               onActiveCellChange={handleActiveCellChange}
               editOnActiveCell={editOnActiveCell}

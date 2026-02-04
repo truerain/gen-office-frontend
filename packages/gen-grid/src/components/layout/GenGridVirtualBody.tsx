@@ -28,6 +28,7 @@ type GenGridVirtualBodyProps<TData> = {
   pageMode?: 'readonly' | 'editable';
   enablePinning?: boolean;
   enableColumnSizing?: boolean;
+  enableActiveRowHighlight?: boolean;
 
   scrollRef: React.RefObject<HTMLDivElement | null>;
   rowHeight: number;
@@ -58,6 +59,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
     overscan,
     enablePinning,
     enableColumnSizing,
+    enableActiveRowHighlight = false,
     tableClassName,
     activeCell,
     onActiveCellChange,
@@ -162,8 +164,16 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
           key={row.id} 
           className={[
             bodyStyles.tr,
+            enableActiveRowHighlight && !!activeCell && activeCell.rowId === row.id
+              ? bodyStyles.activeRow
+              : '',
             props.isRowDirty?.(row.id) ? bodyStyles.rowDirty : '',
           ].filter(Boolean).join(' ')}
+          data-active-row={
+            enableActiveRowHighlight && !!activeCell && activeCell.rowId === row.id
+              ? 'true'
+              : undefined
+          }
           >
           {row.getVisibleCells().map((cell) => {
             const colId = cell.column.id;

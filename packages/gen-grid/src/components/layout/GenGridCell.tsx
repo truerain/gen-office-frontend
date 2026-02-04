@@ -502,6 +502,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
       data-active-cell={isActive && !isEditing ? 'true' : undefined}
       data-editing-cell={isEditing ? 'true' : undefined}
       data-dirty={isDirty ? 'true' : undefined}
+      data-pinned={pinned ? 'true' : undefined}
       {...cellProps}
       onKeyDown={(e) => {
         if (

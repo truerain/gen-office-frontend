@@ -25,6 +25,7 @@ type GenGridBodyProps<TData> = {
   pageMode?: 'readonly' | 'editable';
   enablePinning?: boolean;
   enableColumnSizing?: boolean;
+  enableActiveRowHighlight?: boolean;
 
   tableClassName?: string; // (선택) bodyStyles.table 같은 걸 전달해서 cell에서 focus selector에 활용 가능
 
@@ -48,6 +49,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
     pageMode,
     enablePinning,
     enableColumnSizing,
+    enableActiveRowHighlight = false,
     tableClassName,
     activeCell,
     onActiveCellChange,
@@ -103,8 +105,16 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
           key={row.id} 
           className={[
             bodyStyles.tr,
+            enableActiveRowHighlight && !!activeCell && activeCell.rowId === row.id
+              ? bodyStyles.activeRow
+              : '',
             props.isRowDirty?.(row.id) ? bodyStyles.rowDirty : '',
           ].filter(Boolean).join(' ')}
+          data-active-row={
+            enableActiveRowHighlight && !!activeCell && activeCell.rowId === row.id
+              ? 'true'
+              : undefined
+          }
           >
           {row.getVisibleCells().map((cell) => {
             const colId = cell.column.id;

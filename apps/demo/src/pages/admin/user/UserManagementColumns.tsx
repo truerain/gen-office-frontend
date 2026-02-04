@@ -22,7 +22,7 @@ export const createUserManagementColumns = (
     id: 'userId',
     header: t('user.id'),
     accessorKey: 'userId',
-    meta: { width: 120, align: 'center' },
+    meta: { width: 120, align: 'center', pinned: 'left' },
     footer: _ => (
           <div style={{textAlign: 'center', fontWeight: 500}}>Total</div>
     )

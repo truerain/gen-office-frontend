@@ -43,6 +43,7 @@ type CommonGridOptions<TData> = {
   rowStatusResolver?: (rowId: string) => 'clean' | 'created' | 'updated' | 'deleted';
   enableRowSelection?: boolean;
   enableRowNumber?: boolean;
+  enableActiveRowHighlight?: boolean;
 
   enablePagination?: boolean;
   pageSizeOptions?: number[];

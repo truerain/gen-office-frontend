@@ -3,12 +3,13 @@
 import * as React from 'react';
 import type { Table } from '@tanstack/react-table';
 import { focusGridCell } from './cellDom';
+import { ROW_STATUS_COLUMN_ID } from '../row-status/rowStatus';
 
 export type ActiveCell = { rowId: string; columnId: string } | null;
 
 type Direction = 'left' | 'right' | 'up' | 'down';
 
-// focusGridCell(rowId, colId, opts?) 형태를 가정
+// focusGridCell(rowId, colId, opts?) ?�태�?가??
 type FocusOptions = Parameters<typeof focusGridCell>[2];
 
 function clamp(n: number, min: number, max: number) {
@@ -21,24 +22,24 @@ export function useActiveCellNavigation<TData>(args: {
   onActiveCellChange: (next: { rowId: string; columnId: string }) => void;
 
   /**
-   * Navigable 대상 제어 (예: system column 제외)
+   * Navigable ?�???�어 (?? system column ?�외)
    * default: true
    */
   isCellNavigable?: (rowId: string, columnId: string) => boolean;
 
   /**
-   * focusGridCell 호출 시 넘길 옵션 (sticky/pinned 고려)
+   * focusGridCell ?�출 ???�길 ?�션 (sticky/pinned 고려)
    */
   focusOptions?: FocusOptions;
 
   /**
-   * navigable 아닌 셀/컬럼을 만났을 때 건너뛰기
+   * navigable ?�닌 ?�/컬럼??만났????건너?�기
    * default: true
    */
   skipNonNavigable?: boolean;
 
   /**
-   * PageUp/PageDown 한 번에 이동할 row 수 계산을 위한 fallback
+   * PageUp/PageDown ??번에 ?�동??row ??계산???�한 fallback
    * default: 10
    */
   pageRowFallback?: number;
@@ -55,7 +56,7 @@ export function useActiveCellNavigation<TData>(args: {
 
   const rows = table.getRowModel().rows;
 
-  // row와 무관한 "보이는 컬럼" 순서
+  // row?� 무�???"보이??컬럼" ?�서
   const visibleColumnIds = React.useMemo(() => {
     return table.getVisibleLeafColumns().map((c) => c.id);
   }, [table]);
@@ -95,6 +96,41 @@ export function useActiveCellNavigation<TData>(args: {
       if (opts?.focus) focus(rowId, columnId);
     },
     [onActiveCellChange, canNavigate, focus]
+  );
+
+  const getRepresentativeColumnId = React.useCallback(
+    (rowId?: string) => {
+      if (visibleColumnIds.length === 0) return null;
+
+      if (visibleColumnIds.includes(ROW_STATUS_COLUMN_ID)) {
+        return ROW_STATUS_COLUMN_ID;
+      }
+
+      const rowIndex = rowId ? rowIndexById.get(rowId) : undefined;
+      const row = rowIndex == null ? undefined : rows[rowIndex];
+      const isGrouped =
+        row && typeof (row as any).getIsGrouped === 'function'
+          ? (row as any).getIsGrouped()
+          : false;
+
+      if (isGrouped) {
+        const grouping = (table.getState() as any)?.grouping as string[] | undefined;
+        const groupColId = grouping?.[0];
+        if (groupColId && visibleColumnIds.includes(groupColId)) return groupColId;
+      }
+
+      return visibleColumnIds[0];
+    },
+    [rows, rowIndexById, table, visibleColumnIds]
+  );
+
+  const setActiveRow = React.useCallback(
+    (rowId: string, opts?: { focus?: boolean }) => {
+      const colId = getRepresentativeColumnId(rowId);
+      if (!colId) return;
+      setActive(rowId, colId, opts);
+    },
+    [getRepresentativeColumnId, setActive]
   );
 
   const firstNavigableColId = React.useCallback(
@@ -144,7 +180,7 @@ export function useActiveCellNavigation<TData>(args: {
         }
       };
 
-      // 목표 칸부터 검사하며 skip
+      // 목표 칸�???검?�하�?skip
       for (let guard = 0; guard < 5000; guard++) {
         if (r < 0 || r > maxRow || c < 0 || c > maxCol) return null;
 
@@ -163,9 +199,9 @@ export function useActiveCellNavigation<TData>(args: {
   );
 
   /**
-   * PageUp/PageDown 이동 row delta 계산
-   * - 현재 active cell DOM을 기준으로 컨테이너 높이 / 셀 높이로 추정
-   * - 못 찾으면 fallback 사용
+   * PageUp/PageDown ?�동 row delta 계산
+   * - ?�재 active cell DOM??기�??�로 컨테?�너 ?�이 / ?� ?�이�?추정
+   * - �?찾으�?fallback ?�용
    */
   const getPageRowDelta = React.useCallback(() => {
     if (!activeCell) return pageRowFallback;
@@ -181,7 +217,7 @@ export function useActiveCellNavigation<TData>(args: {
     const rowPx = el.getBoundingClientRect().height || 36;
     const visiblePx = container.clientHeight;
 
-    // 한 화면 - 1줄 정도 이동
+    // ???�면 - 1�??�도 ?�동
     const delta = Math.max(1, Math.floor(visiblePx / rowPx) - 1);
     return delta;
   }, [activeCell, pageRowFallback]);
@@ -359,7 +395,7 @@ export function useActiveCellNavigation<TData>(args: {
     [move, moveHomeEnd, movePage]
   );
 
-  // ✅ GenGridBody에서 td에 그대로 spread 할 수 있는 props 제공
+  // ??GenGridBody?�서 td??그�?�?spread ?????�는 props ?�공
   const getCellProps = React.useCallback(
     (rowId: string, columnId: string, isActive: boolean) => {
       return {
@@ -380,7 +416,7 @@ export function useActiveCellNavigation<TData>(args: {
           ) {
             return;
           }
-          // 기본 포커스/텍스트 선택 튐 방지 + 직접 focus
+          // 기본 ?�커???�스???�택 ??방�? + 직접 focus
           e.preventDefault();
           setActive(rowId, columnId, { focus: true });
         },
@@ -395,9 +431,11 @@ export function useActiveCellNavigation<TData>(args: {
 
   return {
     getCellProps,
-    handleKeyDown, // 외부에서 grid wrapper에 걸고 싶을 때도 사용 가능
+    handleKeyDown, // ?��??�서 grid wrapper??걸고 ?�을 ?�도 ?�용 가??
     move,
     setActive,
+    setActiveRow,
+    getRepresentativeColumnId,
     rows,
     visibleColumnIds,
     rowIndexById,
