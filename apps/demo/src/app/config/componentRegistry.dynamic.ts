@@ -49,6 +49,7 @@ const componentPaths: Record<string, ComponentLoader> = {
   'GlobalStateDemo': () => import('@/pages/demo/primitives/state/GlobalStateDemo'),
   'AlertDialogDemo': () => import('@/pages/demo/composed/AlertDialogDemo'),
   'DatePickerDemoPage': () => import('@/pages/demo/datepicker/DatePickerDemoPage'),
+  'RowGroupingDemoPage': () => import('@/pages/demo/row-grouping'),
 };
 
 /**

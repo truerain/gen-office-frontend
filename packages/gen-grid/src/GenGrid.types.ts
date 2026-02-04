@@ -1,6 +1,6 @@
 // packages/gen-grid/src/GenGrid.types.ts
 
-import type { ColumnDef, RowSelectionState, Table } from '@tanstack/react-table';
+import type { ColumnDef, ExpandedState, GroupingState, RowSelectionState, Table } from '@tanstack/react-table';
 import type * as React from 'react';
 import type { ActiveCell } from './features/active-cell/types';
 import type { GenGridColumnMeta } from './components/layout/utils';
@@ -44,6 +44,7 @@ type CommonGridOptions<TData> = {
   enableRowSelection?: boolean;
   enableRowNumber?: boolean;
   enableActiveRowHighlight?: boolean;
+  enableGrouping?: boolean;
 
   enablePagination?: boolean;
   pageSizeOptions?: number[];
@@ -63,6 +64,12 @@ type CommonGridOptions<TData> = {
 
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: (next: RowSelectionState) => void;
+
+  grouping?: GroupingState;
+  onGroupingChange?: (next: GroupingState) => void;
+
+  expanded?: ExpandedState;
+  onExpandedChange?: (next: ExpandedState) => void;
 
   activeCell?: ActiveCell;
   onActiveCellChange?: (next: ActiveCell) => void;

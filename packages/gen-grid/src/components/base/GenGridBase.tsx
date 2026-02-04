@@ -39,6 +39,7 @@ export type GenGridBaseProps<TData> = {
   enableRowSelection?: boolean;
   enableRowNumber?: boolean;
   enableActiveRowHighlight?: boolean;
+  enableGrouping?: boolean;
 
   enablePagination?: boolean;
   pageSizeOptions?: number[];
@@ -82,6 +83,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     enableRowSelection,
     enableRowNumber,
     enableActiveRowHighlight = false,
+    enableGrouping,
 
     enablePagination,
     pageSizeOptions = [10, 20, 50, 100],
@@ -98,6 +100,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     onCellValueChange,
     isCellDirty,
   } = props;
+  void enableGrouping;
 
   const stickyHeaderEnabled =  enableStickyHeader !== undefined ? enableStickyHeader : true;
   const headerRowCount = table.getHeaderGroups().length + (enableFiltering ? 1 : 0);

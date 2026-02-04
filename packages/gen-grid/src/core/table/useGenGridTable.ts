@@ -2,12 +2,16 @@
 import * as React from 'react';
 import {
   getCoreRowModel,
+  getExpandedRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   getFilteredRowModel,
+  getGroupedRowModel,
   useReactTable,
   type ColumnDef,
   type ColumnFiltersState,
+  type ExpandedState,
+  type GroupingState,
   type PaginationState,
   type RowSelectionState,
   type SortingState,
@@ -50,6 +54,13 @@ export type GenGridTableProps<TData> = {
   enableRowSelection?: boolean;
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: (next: RowSelectionState) => void;
+
+  enableGrouping?: boolean;
+  grouping?: GroupingState;
+  onGroupingChange?: (next: GroupingState) => void;
+
+  expanded?: ExpandedState;
+  onExpandedChange?: (next: ExpandedState) => void;
 
   // row number
   enableRowNumber?: boolean;
@@ -104,6 +115,13 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     rowSelection,
     onRowSelectionChange,
 
+    enableGrouping,
+    grouping,
+    onGroupingChange,
+
+    expanded,
+    onExpandedChange,
+
     enableRowNumber,
     rowNumberHeader,
     rowNumberWidth,
@@ -137,6 +155,8 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
   // ---------- internal states ----------
   const [innerSorting, setInnerSorting] = React.useState<SortingState>([]);
   const [innerRowSelection, setInnerRowSelection] = React.useState<RowSelectionState>({});
+  const [innerGrouping, setInnerGrouping] = React.useState<GroupingState>([]);
+  const [innerExpanded, setInnerExpanded] = React.useState<ExpandedState>({});
   const [innerPagination, setInnerPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [innerColumnFilters, setInnerColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [innerGlobalFilter, setInnerGlobalFilter] = React.useState<string>('');
@@ -167,6 +187,8 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
   // ---------- resolved states ----------
   const resolvedSorting = sorting ?? innerSorting;
   const resolvedRowSelection = rowSelection ?? innerRowSelection;
+  const resolvedGrouping = grouping ?? innerGrouping;
+  const resolvedExpanded = expanded ?? innerExpanded;
   const resolvedPagination = pagination ?? innerPagination;
   const resolvedColumnFilters = columnFilters ?? innerColumnFilters;
   const resolvedGlobalFilter = globalFilter ?? innerGlobalFilter;
@@ -228,9 +250,12 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
   return useReactTable<TData>({
     data,
     columns: resolvedColumns,
+    autoResetExpanded: false,
     state: {
       sorting: resolvedSorting,
       rowSelection: resolvedRowSelection,
+      grouping: enableGrouping ? resolvedGrouping : undefined,
+      expanded: enableGrouping ? resolvedExpanded : undefined,
       pagination: enablePagination ? resolvedPagination : undefined,
       columnFilters: enableFiltering ? resolvedColumnFilters : undefined,
       globalFilter: enableGlobalFilter ? resolvedGlobalFilter : undefined,
@@ -246,6 +271,18 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     onRowSelectionChange: (updater) => {
       const next = typeof updater === 'function' ? updater(resolvedRowSelection) : updater;
       onRowSelectionChange ? onRowSelectionChange(next) : setInnerRowSelection(next);
+    },
+
+    onGroupingChange: (updater) => {
+      if (!enableGrouping) return;
+      const next = typeof updater === 'function' ? updater(resolvedGrouping) : updater;
+      onGroupingChange ? onGroupingChange(next) : setInnerGrouping(next);
+    },
+
+    onExpandedChange: (updater) => {
+      if (!enableGrouping) return;
+      const next = typeof updater === 'function' ? updater(resolvedExpanded) : updater;
+      onExpandedChange ? onExpandedChange(next) : setInnerExpanded(next);
     },
 
     onPaginationChange: (updater) => {
@@ -294,6 +331,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     },
 
     enableRowSelection: enableRowSelection ?? false,
+    enableGrouping: enableGrouping ?? false,
     enableColumnResizing: enableColumnSizing ?? false,
     columnResizeMode: 'onChange',
 
@@ -302,8 +340,10 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     getRowId,
 
     getCoreRowModel: getCoreRowModel(),
+    getGroupedRowModel: enableGrouping ? getGroupedRowModel() : undefined,
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: enableAnyFiltering ? getFilteredRowModel() : undefined,
     getPaginationRowModel: enablePagination ? getPaginationRowModel() : undefined,
+    getExpandedRowModel: enableGrouping ? getExpandedRowModel() : undefined,
   });
 }
