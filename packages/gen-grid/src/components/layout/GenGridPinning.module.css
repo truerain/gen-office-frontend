@@ -13,6 +13,17 @@
   background: var(--grid-cell-bg-selected);
 }
 
+/* footer pinned */
+tfoot .pinned {
+  background: var(--grid-footer-bg, var(--grid-header-bg));
+}
+tfoot .pinnedLeft {
+  box-shadow: var(--grid-header-shadow-pinned-left);
+}
+tfoot .pinnedRight {
+  box-shadow: var(--grid-header-shadow-pinned-right);
+}
+
 .pinnedLeft {
   box-shadow: var(--grid-cell-shadow-pinned-left);
 }

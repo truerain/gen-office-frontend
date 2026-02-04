@@ -1,7 +1,7 @@
 // packages/gen-grid-crud/src/GenGridCrud.types.ts
 import type * as React from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
-import type { GenGridEditorFactory } from '@gen-office/gen-grid';
+import type { GenGridEditorFactory, GenGridProps } from '@gen-office/gen-grid';
 import type { CrudChange, CrudRowId, UseMakePatch } from './crud/types';
 
 export type CrudCommitContext<TData> = {
@@ -86,5 +86,18 @@ export type GenGridCrudProps<TData> = {
   onCellEdit?: (event: CrudCellEditEvent<TData>) => void;
 
   /** pass-through (GenGrid props???�로?�트??맞게 ?�??치환) */
-  gridProps?: Record<string, any>;
+  gridProps?: Omit<
+    GenGridProps<TData>,
+    | 'data'
+    | 'defaultData'
+    | 'columns'
+    | 'getRowId'
+    | 'onDataChange'
+    | 'onCellValueChange'
+    | 'rowSelection'
+    | 'onRowSelectionChange'
+    | 'activeCell'
+    | 'onActiveCellChange'
+    | 'rowStatusResolver'
+  >;
 };

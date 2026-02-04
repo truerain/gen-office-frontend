@@ -30,6 +30,26 @@
   box-shadow: var(--grid-shadow);
 }
 
+.root[data-has-footer] .tableScroll {
+  border-bottom: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.footer {
+  flex: 0 0 auto;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  padding: 8px 12px;
+  background: var(--grid-bg);
+  color: var(--grid-cell-text);
+  border: 1px solid var(--grid-border);
+  border-top: 0;
+  border-bottom-left-radius: var(--grid-border-radius);
+  border-bottom-right-radius: var(--grid-border-radius);
+}
+
 .tableScroll[data-resizing] {
   cursor: col-resize;
 }

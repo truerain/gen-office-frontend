@@ -22,6 +22,18 @@ const config: StorybookConfig = {
       optimizeDeps: {
         include: ["@gen-office/design-tokens", "@gen-office/theme", "@gen-office/ui"],
       },
+      build: {
+        ...config.build,
+        rollupOptions: {
+          ...config.build?.rollupOptions,
+          onwarn(warning, warn) {
+            if (warning.code === "MODULE_LEVEL_DIRECTIVE") {
+              return;
+            }
+            warn(warning);
+          },
+        },
+      },
     };
   },
   staticDirs: [

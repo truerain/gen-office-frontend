@@ -1,6 +1,6 @@
 // packages/gen-grid/src/GenGrid.types.ts
 
-import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
+import type { ColumnDef, RowSelectionState, Table } from '@tanstack/react-table';
 import type * as React from 'react';
 import type { ActiveCell } from './features/active-cell/types';
 import type { GenGridColumnMeta } from './components/layout/utils';
@@ -22,7 +22,7 @@ export type GenGridEditorContext<TData> = {
 
 export type GenGridEditorFactory<TData> = (ctx: GenGridEditorContext<TData>) => React.ReactNode;
 
-type CommonGridOptions = {
+type CommonGridOptions<TData> = {
   caption?: string;
 
   height?: number | string;
@@ -46,6 +46,15 @@ type CommonGridOptions = {
 
   enablePagination?: boolean;
   pageSizeOptions?: number[];
+
+  /** column footer row (TanStack columnDef.footer) */
+  enableFooterRow?: boolean;
+  /** sticky footer row inside table scroll */
+  enableStickyFooterRow?: boolean;
+
+  enableFooter?: boolean;
+  footer?: React.ReactNode;
+  renderFooter?: (table: Table<TData>) => React.ReactNode;
 
   onDirtyChange?: (dirty: boolean) => void;               // dirty ?�태가 바�????�림
   onDirtyRowsChange?: (rowIds: string[]) => void;         // dirty ??목록??바�????�림  
@@ -80,7 +89,7 @@ type UncontrolledDataProps<TData> = {
   data?: never;
 };
 
-export type GenGridProps<TData> = CommonGridOptions &
+export type GenGridProps<TData> = CommonGridOptions<TData> &
   (ControlledDataProps<TData> | UncontrolledDataProps<TData>) & {
     columns: ColumnDef<TData, any>[];
     getRowId: (row: TData) => string;

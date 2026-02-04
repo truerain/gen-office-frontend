@@ -198,6 +198,8 @@ export default function UserManagementPage(_props: PageComponentProps) {
             enableRowSelection: true,
             editOnActiveCell: false,
             keepEditingOnNavigate: true,
+            enableFooterRow: true,
+            enableStickyFooterRow: true,
           }}
         />
       </div>

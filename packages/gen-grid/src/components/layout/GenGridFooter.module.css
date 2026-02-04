@@ -1,0 +1,36 @@
+/* packages/gen-grid/src/components/layout/GenGridFooter.module.css */
+
+.tfoot {
+  background: var(--grid-footer-bg, var(--grid-header-bg));
+}
+
+.td {
+  height: var(--gen-grid-row-height);
+  padding: 0 12px;
+  border-right: 1px solid var(--grid-footer-border, var(--grid-header-border));
+
+  font-size: var(--grid-font-size);
+  font-weight: var(--grid-header-font-weight);
+  white-space: nowrap;
+
+  background: var(--grid-footer-bg, var(--grid-header-bg));
+  color: var(--grid-footer-text, var(--grid-header-text));
+  position: relative;
+}
+
+.td::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  border-top: 1px solid var(--grid-footer-border, var(--grid-header-border));
+  z-index: 1;
+}
+
+/* sticky footer row inside scroll */
+[data-sticky-footer-row] .tfoot td {
+  position: sticky;
+  bottom: 0;
+  z-index: var(--grid-z-header);
+}

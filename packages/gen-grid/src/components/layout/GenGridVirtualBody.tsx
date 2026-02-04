@@ -46,6 +46,7 @@ type GenGridVirtualBodyProps<TData> = {
   isRowDirty?: (rowId: string) => boolean;
   isCellDirty?: (rowId: string, columnId: string) => boolean;
 
+  footerSpacerHeight?: number;
 };
 
 export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>) {
@@ -63,6 +64,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
     editOnActiveCell,
     keepEditingOnNavigate,
     onCellValueChange,
+    footerSpacerHeight = 0,
   } = props;
 
   const { editMode, setEditMode } = useGenGridContext<TData>();
@@ -88,6 +90,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
   const paddingBottom = virtualItems.length
     ? totalSize - virtualItems[virtualItems.length - 1]!.end
     : 0;
+  const bottomSpacerHeight = paddingBottom + footerSpacerHeight;
 
   const colSpan = table.getVisibleLeafColumns().length;
 
@@ -262,9 +265,9 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
       })}
 
       {/* bottom spacer */}
-      {paddingBottom > 0 ? (
+      {bottomSpacerHeight > 0 ? (
         <tr>
-          <td colSpan={colSpan} style={{ height: paddingBottom, padding: 0, border: 0 }} />
+          <td colSpan={colSpan} style={{ height: bottomSpacerHeight, padding: 0, border: 0 }} />
         </tr>
       ) : null}
     </tbody>

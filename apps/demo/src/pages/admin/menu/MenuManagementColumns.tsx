@@ -2,7 +2,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
 import type { Menu } from '@/entities/system/menu/model/types';
 
-import { SimpleSelect, Switch } from '@gen-office/ui';
+import { Switch } from '@gen-office/ui';
 
 export type SelectOption = { label: string; value: string };
 

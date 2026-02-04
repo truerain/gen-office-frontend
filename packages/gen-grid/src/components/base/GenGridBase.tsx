@@ -6,6 +6,7 @@ import type { Table } from '@tanstack/react-table';
 import { useGenGridContext } from '../../core/context/GenGridProvider';
 
 import { GenGridHeader } from '../layout/GenGridHeader';
+import { GenGridFooter } from '../layout/GenGridFooter';
 import { GenGridBody } from '../layout/GenGridBody';
 import { GenGridVirtualBody } from '../layout/GenGridVirtualBody';
 import { GenGridPagination } from '../../components/pagination/GenGridPagination';
@@ -41,6 +42,13 @@ export type GenGridBaseProps<TData> = {
   enablePagination?: boolean;
   pageSizeOptions?: number[];
 
+  enableFooter?: boolean;
+  footer?: React.ReactNode;
+  renderFooter?: (table: Table<TData>) => React.ReactNode;
+
+  enableFooterRow?: boolean;
+  enableStickyFooterRow?: boolean;
+
   editOnActiveCell?: boolean;
   keepEditingOnNavigate?: boolean;
 
@@ -51,6 +59,7 @@ export type GenGridBaseProps<TData> = {
 
 export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
+  const [scrollHeight, setScrollHeight] = React.useState(0);
 
   const {
     table,
@@ -75,6 +84,12 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     enablePagination,
     pageSizeOptions = [10, 20, 50, 100],
 
+    enableFooter,
+    footer,
+    renderFooter,
+    enableFooterRow,
+    enableStickyFooterRow,
+
     editOnActiveCell,
     keepEditingOnNavigate,
 
@@ -85,6 +100,46 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
   const stickyHeaderEnabled =  enableStickyHeader !== undefined ? enableStickyHeader : true;
   const headerRowCount = table.getHeaderGroups().length + (enableFiltering ? 1 : 0);
   const columnSizingEnabled = enableColumnSizing !== undefined ? enableColumnSizing : true;
+  const footerContent = renderFooter ? renderFooter(table) : footer;
+  const footerEnabled = enableFooter !== undefined ? enableFooter : false;
+  const showFooter = footerEnabled && footerContent !== null && footerContent !== undefined;
+
+  const footerRowEnabled = enableFooterRow !== undefined ? enableFooterRow : true;
+  const stickyFooterRowEnabled =
+    enableStickyFooterRow !== undefined ? enableStickyFooterRow : false;
+
+  React.useLayoutEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const update = () => setScrollHeight(el.clientHeight);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const hasFooterRowContent = React.useMemo(() => {
+    if (!footerRowEnabled) return false;
+    const groups = table.getFooterGroups();
+    for (const group of groups) {
+      for (const header of group.headers) {
+        if (header.isPlaceholder) continue;
+        if (header.column.columnDef.footer != null) return true;
+      }
+    }
+    return false;
+  }, [footerRowEnabled, table]);
+
+  const footerRowCount = hasFooterRowContent ? table.getFooterGroups().length : 0;
+  const totalHeaderHeight = (headerHeight ?? 40) * headerRowCount;
+  const totalFooterHeight = (rowHeight ?? 36) * footerRowCount;
+  const rowCount = table.getRowModel().rows.length;
+  const totalBodyHeight = (rowHeight ?? 36) * rowCount;
+  const availableBodyHeight = Math.max(0, scrollHeight - totalHeaderHeight - totalFooterHeight);
+  const footerSpacerHeight =
+    stickyFooterRowEnabled
+      ? Math.max(0, availableBodyHeight - totalBodyHeight)
+      : 0;
 
   const autoSizeColumn = React.useCallback((columnId: string) => {
     void columnId;
@@ -214,6 +269,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
   return (
     <div
       className={layout.root}
+      data-has-footer={showFooter || undefined}
       style={{
         ['--gen-grid-header-height' as any]: `${headerHeight ?? 40}px`,
         ['--gen-grid-row-height' as any]: `${rowHeight ?? 36}px`,
@@ -223,6 +279,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
         ref={scrollRef}
         className={layout.tableScroll}
         data-sticky-header={stickyHeaderEnabled || undefined}
+        data-sticky-footer-row={stickyFooterRowEnabled || undefined}
         data-header-rows={headerRowCount}
         tabIndex={0}
         onKeyDown={(e) => {
@@ -262,6 +319,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
               onCellValueChange={handleCellValueChange}
               isRowDirty={props.isRowDirty}
               isCellDirty={isCellDirty}
+              footerSpacerHeight={footerSpacerHeight}
             />
           ) : (
             <GenGridBody<TData>
@@ -275,10 +333,25 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
               onCellValueChange={handleCellValueChange}
               isRowDirty={props.isRowDirty}
               isCellDirty={isCellDirty}
+              footerSpacerHeight={footerSpacerHeight}
             />
           )}
+
+          {footerRowEnabled ? (
+            <GenGridFooter<TData>
+              table={table}
+              enablePinning={enablePinning}
+              enableColumnSizing={columnSizingEnabled}
+            />
+          ) : null}
         </table>
       </div>
+
+      {showFooter ? (
+        <div className={layout.footer} data-sticky-footer>
+          {footerContent}
+        </div>
+      ) : null}
 
       {enablePagination ? (
         <GenGridPagination table={table} pageSizeOptions={pageSizeOptions} />

@@ -1,3 +1,4 @@
+import React from 'react'
 import type { ColumnDef } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
 import type { User } from '@/entities/system/user/model/types';
@@ -22,12 +23,19 @@ export const createUserManagementColumns = (
     header: t('user.id'),
     accessorKey: 'userId',
     meta: { width: 120, align: 'center' },
+    footer: _ => (
+          <div style={{textAlign: 'center', fontWeight: 500}}>Total</div>
+    )
   },
   {
     id: 'empNo',
     header: 'Emp No',
     accessorKey: 'empNo',
-    meta: { width: 140, editable: true, editType: 'text' },
+    meta: { width: 140, editable: true, editType: 'text', align: 'center'},
+    footer: info => (
+          <div style={{textAlign: 'right', fontWeight: 450}}>{info.table.getRowCount()}</div>
+    )
+            
   },
   {
     id: 'empName',
