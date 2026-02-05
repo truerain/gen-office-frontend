@@ -12,6 +12,7 @@ const componentNameByMenuId: Record<string, string> = {
   mdi: 'MDIPage',
   'global-state': 'GlobalStateDemo',
   'composed-alert-dialog': 'AlertDialogDemo',
+  'combobox-demo': 'ComboboxDemoPage',
 };
 
 const iconByMenuId: Record<string, string> = {
@@ -40,6 +41,7 @@ const iconByMenuId: Record<string, string> = {
   'global-state': 'Database',
   composed: 'Boxes',
   'composed-alert-dialog': 'MessageSquare',
+  'combobox-demo': 'Search',
 };
 
 export function mapMenusToMenuItems(menus:AppMenu[]): MenuItem[] {

@@ -19,7 +19,7 @@
 }
 
 .root[data-state='checked'] {
-  background-color: var(--color-brand-primary);
+  background-color: var(--color-primary);
 }
 
 .root[data-state='checked']:hover {

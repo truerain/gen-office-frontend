@@ -115,6 +115,13 @@ export default function UserManagementPage(_props: PageComponentProps) {
         placeholder: '',
         flex: 0,
       },
+      {
+        key: 'email',
+        title:t('user.email'),
+        type: 'text',
+        placeholder: '',
+        flex: 0,
+      },
     ];
   }, []);
 

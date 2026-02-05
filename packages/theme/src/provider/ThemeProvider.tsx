@@ -65,7 +65,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
             inverse: getVar('--color-fg-inverse'),
           },
           brand: {
-            primary: getVar('--color-brand-primary'),
+            primary: getVar('--color-primary'),
             secondary: getVar('--color-brand-secondary'),
           },
           status: {

@@ -50,6 +50,8 @@ const componentPaths: Record<string, ComponentLoader> = {
   'AlertDialogDemo': () => import('@/pages/demo/composed/AlertDialogDemo'),
   'DatePickerDemoPage': () => import('@/pages/demo/datepicker/DatePickerDemoPage'),
   'RowGroupingDemoPage': () => import('@/pages/demo/row-grouping'),
+  'SliderDemoPage': () => import('@/pages/demo/slider'),
+  'ComboboxDemoPage': () => import('@/pages/demo/combobox'),
 };
 
 /**

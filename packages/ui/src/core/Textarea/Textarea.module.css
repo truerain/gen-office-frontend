@@ -59,7 +59,7 @@
 
 .textarea:focus {
   outline: none;
-  border-color: var(--color-brand-primary);
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 0.1875rem rgba(165, 0, 52, 0.15); /* 3px */
 }
 

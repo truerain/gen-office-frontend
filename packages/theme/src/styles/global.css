@@ -7,8 +7,8 @@ body {
   font-family: var(--font-family-primary);
   font-size: var(--font-size-base);
   line-height: var(--line-height-normal);
-  background-color: var(--color-background);
-  color: var(--color-text);
+  background-color: var(--color-bg-primary);
+  color: var(--color-fg-primary);
   transition: background-color var(--transition-base), color var(--transition-base);
 }
 
@@ -19,11 +19,11 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-surface);
+  background: var(--color-bg-secondary);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
+  background: var(--color-border-default);
   border-radius: var(--border-radius-full);
 }
 

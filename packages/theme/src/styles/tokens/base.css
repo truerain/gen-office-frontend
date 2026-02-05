@@ -1,0 +1,145 @@
+/* Base Tokens */
+:root {
+  /* Colors (Base) */
+  /* Neutral Palette (Base) */
+  --base-neutral-0: #ffffff;
+  --base-neutral-50: #f8f9fa;
+  --base-neutral-75: #f5f5f5;
+  --base-neutral-100: #f3f4f6;
+  --base-neutral-150: #f0f1f3;
+  --base-neutral-200: #dee2e6;
+  --base-neutral-300: #adb5bd;
+  --base-neutral-400: #6c757d;
+  --base-neutral-500: #6b7280;
+  --base-neutral-600: #4b5563;
+  --base-neutral-700: #34383c;
+  --base-neutral-800: #333333;
+  --base-neutral-900: #1f2937;
+  --base-neutral-950: #111827;
+
+  /* Tints (Base) */
+  --base-tint-workarea: #e7f1f0;
+
+  /* Brand Palette (Base) */
+  --base-brand-20: #fff4f7;
+  --base-brand-50: #fde8ef;
+  --base-brand-200: #f5b6c8;
+  --base-brand-500: #a50034;
+  --base-brand-700: #7d0027;
+  --base-brand-900: #4d0018;
+
+  /* Primary Colors */
+  --color-primary: var(--base-neutral-500);
+  --color-primary-light: var(--base-neutral-100);
+  --color-primary-dark: var(--base-neutral-600);
+
+  /* Brand Colors */
+  --color-brand: var(--base-brand-500);
+  --color-brand-light: var(--base-brand-200);
+  --color-brand-dark: var(--base-brand-700);
+
+  /* Secondary Colors */
+  --color-secondary: var(--base-neutral-200);
+  --color-secondary-light: var(--base-neutral-75);
+  --color-secondary-dark: var(--base-neutral-800);
+
+  /* Header/TitleBar Colors (Base) */
+  --color-header-bg: var(--base-neutral-500);
+  --color-header-text: var(--base-neutral-0);
+  --color-header-border: #1a252f;
+
+  /* Background Colors (Base) */
+  --color-background: var(--base-neutral-0);
+  --color-surface: var(--base-neutral-50);
+  --color-surface-hover: var(--base-neutral-150);
+  --color-workarea: var(--base-tint-workarea);
+
+  /* Text Colors (Base) */
+  --color-text: var(--base-neutral-700);    /* #212529; */
+  --color-text-secondary: var(--base-neutral-400);
+  --color-text-disabled: var(--base-neutral-300);
+
+  /* Border Colors (Base) */
+  --color-border: var(--base-neutral-200);
+  --color-border-strong: var(--base-neutral-300);
+
+  /* Status Colors (Base) */
+  --color-success: #28a745;
+  --color-success-light: #d4edda;
+  --color-warning: #ffc107;
+  --color-warning-light: #fff3cd;
+  --color-danger: #dc3545;
+  --color-danger-light: #f8d7da;
+  --color-info: #17a2b8;
+  --color-info-light: #d1ecf1;
+
+  /* Spacing (Base) */
+  --spacing-xs: 0.25rem;   /* 4px */
+  --spacing-sm: 0.5rem;    /* 8px */
+  --spacing-md: 1rem;      /* 16px */
+  --spacing-lg: 1.5rem;    /* 24px */
+  --spacing-xl: 2rem;      /* 32px */
+  --spacing-2xl: 3rem;     /* 48px */
+  --spacing-3xl: 4rem;     /* 64px */
+
+  /* Typography (Base) */
+  /* Font Families (Base) */
+  --font-family-primary: 'LG Smart', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  --font-family-mono: 'Courier New', Courier, monospace;
+
+  /* Font Sizes (Base) */
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;     /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.875rem;  /* 30px */
+  --font-size-4xl: 2.25rem;   /* 36px */
+
+  /* Font Weights (Base) */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Line Heights (Base) */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* Border Radius (Base) */
+  --border-radius-sm: 0.25rem;   /* 4px */
+  --border-radius-md: 0.5rem;    /* 8px */
+  --border-radius-lg: 0.75rem;   /* 12px */
+  --border-radius-xl: 1rem;      /* 16px */
+  --border-radius-full: 9999px;
+
+  /* Shadows (Base) */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Z-Index (Base) */
+  --z-index-dropdown: 1000;
+  --z-index-sticky: 1020;
+  --z-index-fixed: 1030;
+  --z-index-modal-backdrop: 1040;
+  --z-index-modal: 1050;
+  --z-index-popover: 1060;
+  --z-index-tooltip: 1070;
+
+  /* Transitions (Base) */
+  --transition-base: 200ms ease-in-out;
+  --transition-fast: 100ms ease-in-out;
+  --transition-slow: 300ms ease-in-out;
+
+  /* Breakpoints (Base, for reference in JS) */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}

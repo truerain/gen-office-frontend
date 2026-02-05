@@ -12,7 +12,8 @@
     "demo" : "turbo run dev --filter=@gen-office/demo",
     "rdg" : "turbo run dev --filter=@gen-office/rdg-demo",
     "storybook": "turbo run --filter=@gen-office/storybook dev",
-    "clean": "find . -name \"node_modules\" -type d -prune -exec rm -rf '{}' + && find . -name \"dist\" -type d -prune -exec rm -rf '{}' +"
+    "clean": "find . -name \"node_modules\" -type d -prune -exec rm -rf '{}' + && find . -name \"dist\" -type d -prune -exec rm -rf '{}' +",
+    "tokens:map": "node scripts/generate-token-mapping.mjs"
   },
   "devDependencies": {
     "turbo": "latest",

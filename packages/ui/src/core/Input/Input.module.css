@@ -49,6 +49,62 @@
   transition: all 0.15s ease;
 }
 
+.inputWithPrefix {
+  padding-left: 2rem;
+}
+
+.inputWithSuffix {
+  padding-right: 2rem;
+}
+
+.prefix {
+  position: absolute;
+  left: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.suffix {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.clearButton {
+  all: unset;
+  width: 1.25rem;
+  height: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: var(--color-fg-tertiary);
+  background: var(--color-bg-primary);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease, color 0.12s ease, background-color 0.12s ease;
+}
+
+.clearButton:hover {
+  color: var(--color-fg-primary);
+  background-color: var(--color-bg-secondary);
+}
+
+.inputWrapper:hover .clearButton,
+.inputWrapper:focus-within .clearButton {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .input::placeholder {
   color: var(--color-fg-tertiary);
 }
@@ -59,7 +115,7 @@
 
 .input:focus {
   outline: none;
-  border-color: var(--color-brand-primary);
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 0.1875rem rgba(165, 0, 52, 0.15); /* 3px */
 }
 
@@ -114,4 +170,9 @@
 
 .input[type='file']::-webkit-file-upload-button:hover {
   background-color: var(--color-bg-tertiary);
+}
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
 }

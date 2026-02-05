@@ -27,7 +27,7 @@
 /* Drawer Container */
 .drawer {
   position: absolute;
-  background-color: var(--color-surface);
+  background-color: var(--color-bg-secondary);
   box-shadow: var(--shadow-xl);
   display: flex;
   flex-direction: column;
@@ -157,7 +157,7 @@
   justify-content: space-between;
   gap: var(--spacing-md);
   padding: var(--spacing-lg);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border-default);
   flex-shrink: 0;
 }
 
@@ -169,14 +169,14 @@
 .title {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-text);
+  color: var(--color-fg-primary);
   margin: 0;
   line-height: 1.4;
 }
 
 .description {
   font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
+  color: var(--color-fg-secondary);
   margin: var(--spacing-xs) 0 0;
   line-height: 1.5;
 }
@@ -191,15 +191,15 @@
   border: none;
   border-radius: var(--border-radius-md);
   background-color: transparent;
-  color: var(--color-text-secondary);
+  color: var(--color-fg-secondary);
   cursor: pointer;
   flex-shrink: 0;
   transition: all var(--transition-base);
 }
 
 .closeButton:hover {
-  background-color: var(--color-background);
-  color: var(--color-text);
+  background-color: var(--color-bg-primary);
+  color: var(--color-fg-primary);
 }
 
 .closeButton:active {
@@ -215,7 +215,7 @@
 
 /* Footer */
 .footer {
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--color-border-default);
   padding: var(--spacing-lg);
   flex-shrink: 0;
 }

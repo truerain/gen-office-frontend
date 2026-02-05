@@ -25,12 +25,12 @@ export function SearchInput({
 }: SearchInputProps) {
   return (
     <div className={`${styles.searchWrapper} ${className || ''}`}>
-      <Search size={16} className={styles.searchIcon} />
       <Input
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={styles.searchInput}
+        prefixContent={<Search size={16} className={styles.searchIcon} />}
+        clearable
       />
     </div>
   );

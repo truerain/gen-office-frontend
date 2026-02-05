@@ -1,0 +1,81 @@
+/* Component Tokens: Button */
+:root {
+  /* Focus */
+  --button-focus-ring: rgba(107, 114, 128, 0.2);
+
+  /* Default */
+  --button-default-bg: var(--color-bg-secondary);
+  --button-default-text: var(--color-fg-primary);
+  --button-default-border: var(--color-border-default);
+  --button-default-bg-hover: var(--color-bg-tertiary);
+  --button-default-border-hover: var(--color-border-strong);
+
+  /* Primary */
+  --button-primary-bg: var(--color-primary);
+  --button-primary-text: var(--color-fg-inverse);
+  --button-primary-bg-hover: var(--color-primary-dark);
+  --button-primary-bg-active: var(--color-primary-dark);
+  --button-primary-shadow: 0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.12),
+    0 0.0625rem 0.125rem rgba(0, 0, 0, 0.08);
+  --button-primary-shadow-hover: 0 0.125rem 0.375rem rgba(107, 114, 128, 0.25),
+    0 0.125rem 0.25rem rgba(0, 0, 0, 0.12);
+
+  /* Brand */
+  --button-brand-bg: var(--color-brand);
+  --button-brand-text: var(--color-fg-inverse);
+  --button-brand-bg-hover: var(--color-brand-dark);
+  --button-brand-bg-active: #7d0027;
+  --button-brand-shadow: 0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.12),
+    0 0.0625rem 0.125rem rgba(0, 0, 0, 0.08);
+  --button-brand-shadow-hover: 0 0.125rem 0.375rem rgba(165, 0, 52, 0.25),
+    0 0.125rem 0.25rem rgba(0, 0, 0, 0.12);
+
+  /* Secondary */
+  --button-secondary-bg: var(--color-bg-secondary);
+  --button-secondary-text: var(--color-fg-secondary);
+  --button-secondary-border: var(--color-border-default);
+  --button-secondary-bg-hover: var(--color-secondary-dark);
+  --button-secondary-text-hover: var(--color-fg-inverse);
+  --button-secondary-border-hover: var(--color-border-strong);
+
+  /* Outline */
+  --button-outline-text: var(--color-primary);
+  --button-outline-border: var(--color-primary);
+  --button-outline-bg-hover: rgba(107, 114, 128, 0.04);
+  --button-outline-text-hover: var(--color-primary-dark);
+  --button-outline-border-hover: var(--color-primary-dark);
+  --button-outline-bg-active: rgba(107, 114, 128, 0.08);
+  --button-outline-text-active: #374151;
+  --button-outline-border-active: #374151;
+
+  /* Ghost */
+  --button-ghost-text: var(--color-fg-secondary);
+  --button-ghost-bg-hover: var(--color-bg-secondary);
+  --button-ghost-text-hover: var(--color-fg-primary);
+  --button-ghost-bg-active: var(--color-bg-tertiary);
+  --button-ghost-text-active: var(--color-fg-primary);
+
+  /* Danger */
+  --button-danger-bg: var(--color-status-error);
+  --button-danger-text: var(--color-fg-inverse);
+  --button-danger-bg-hover: #b91c1c;
+  --button-danger-bg-active: #991b1b;
+  --button-danger-shadow-hover: 0 0.125rem 0.375rem rgba(220, 38, 38, 0.25),
+    0 0.125rem 0.25rem rgba(0, 0, 0, 0.12);
+
+  /* Destructive Outline */
+  --button-destructive-text: var(--color-status-error);
+  --button-destructive-border: var(--color-status-error);
+  --button-destructive-bg-hover: rgba(220, 38, 38, 0.04);
+  --button-destructive-text-hover: #b91c1c;
+  --button-destructive-border-hover: #b91c1c;
+  --button-destructive-bg-active: rgba(220, 38, 38, 0.08);
+  --button-destructive-text-active: #991b1b;
+  --button-destructive-border-active: #991b1b;
+
+  /* Link */
+  --button-link-text: var(--color-primary);
+  --button-link-text-hover: var(--color-primary-dark);
+  --button-link-text-active: #374151;
+  --button-link-loading-ring: rgba(107, 114, 128, 0.2);
+}

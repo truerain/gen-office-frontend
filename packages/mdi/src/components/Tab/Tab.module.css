@@ -5,8 +5,8 @@
   align-items: center;
   gap: var(--spacing-xs);
   padding: var(--spacing-sm) var(--spacing-sm);
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-default);
   border-bottom: none;
   cursor: pointer;
   user-select: none;
@@ -17,7 +17,7 @@
 }
 
 .tab:hover {
-  background-color: var(--color-surface-hover);
+  background-color: var(--color-bg-tertiary);
 }
 
 .tab:focus-visible {
@@ -27,8 +27,8 @@
 }
 
 .tab.active {
-  background-color: var(--color-background);
-  border-bottom-color: var(--color-background);
+  background-color: var(--color-bg-primary);
+  border-bottom-color: var(--color-bg-primary);
   z-index: 2;
   cursor: default;
 }
@@ -58,7 +58,7 @@
   flex-shrink: 0;
   width: 16px;
   height: 16px;
-  color: var(--color-text-secondary);
+  color: var(--color-fg-secondary);
 }
 
 .tab.active .tabIcon {
@@ -69,14 +69,14 @@
   flex: 1;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
-  color: var(--color-text);
+  color: var(--color-fg-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .tab.active .tabTitle {
-  color: var(--color-text);
+  color: var(--color-fg-primary);
   font-weight: var(--font-weight-semibold);
 }
 

@@ -36,7 +36,7 @@
 }
 
 .primary {
-  background-color: var(--color-brand-primary);
+  background-color: var(--color-primary);
   color: var(--color-fg-inverse);
 }
 

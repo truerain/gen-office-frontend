@@ -5,13 +5,5 @@
 }
 
 .searchIcon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
   color: var(--color-text-muted);
-}
-
-.searchInput {
-  padding-left: 36px;
 }

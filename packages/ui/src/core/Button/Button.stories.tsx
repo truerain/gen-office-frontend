@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Button } from './Button';
-import { Save, ArrowRight, Download, Trash2, Plus, Search } from 'lucide-react';
+import { Save, ArrowRight, Download, Trash2, Plus, Search, Star } from 'lucide-react';
 
 const meta = {
   title: 'Primitives/Button',
@@ -12,7 +12,7 @@ const meta = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['primary', 'secondary', 'outline', 'ghost', 'danger', 'destructive', 'link'],
+      options: ['primary', 'brand', 'secondary', 'outline', 'ghost', 'danger', 'destructive', 'link'],
     },
     size: {
       control: 'select',
@@ -44,6 +44,13 @@ export const Secondary: Story = {
   args: {
     children: 'Secondary Button',
     variant: 'secondary',
+  },
+};
+
+export const Brand: Story = {
+  args: {
+    children: 'Brand Button',
+    variant: 'brand',
   },
 };
 
@@ -145,6 +152,7 @@ export const IconExamples: Story = {
   render: () => (
     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
       <Button variant="primary" leftIcon={<Save />}>Save</Button>
+      <Button variant="brand" leftIcon={<Star />}>Brand</Button>
       <Button variant="secondary" leftIcon={<Download />}>Download</Button>
       <Button variant="outline" leftIcon={<Search />}>Search</Button>
       <Button variant="danger" leftIcon={<Trash2 />}>Delete</Button>
@@ -161,6 +169,7 @@ export const AllVariants: Story = {
   render: () => (
     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
       <Button variant="primary">Primary</Button>
+      <Button variant="brand">Brand</Button>
       <Button variant="secondary">Secondary</Button>
       <Button variant="outline">Outline</Button>
       <Button variant="ghost">Ghost</Button>
@@ -230,6 +239,7 @@ export const LoadingStates: Story = {
   render: () => (
     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
       <Button variant="primary" loading>Primary Loading</Button>
+      <Button variant="brand" loading>Brand Loading</Button>
       <Button variant="secondary" loading>Secondary Loading</Button>
       <Button variant="outline" loading>Outline Loading</Button>
       <Button variant="ghost" loading>Ghost Loading</Button>

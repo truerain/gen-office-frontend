@@ -38,6 +38,6 @@
 
 .resizer:hover::before,
 .resizerActive::before {
-  background: var(--color-brand-primary);
+  background: var(--color-primary);
   opacity: 1;
 }

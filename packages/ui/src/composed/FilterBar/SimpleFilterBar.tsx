@@ -50,6 +50,7 @@ function renderDefaultField<TFilters>(
           onChange={(e) => setFieldValue(e.target.value)}
           placeholder={field.placeholder}
           className={field.className}
+          clearable
         />
       );
   }
@@ -67,7 +68,7 @@ export function SimpleFilterBar<TFilters>({
   const resolvedActions =
     actions ??
     (onSearch ? (
-      <Button onClick={onSearch} variant="secondary" size="md" fullWidth={true}>
+      <Button onClick={onSearch} variant="primary" size="md" fullWidth={true}>
         <Search size={16} />
         {searchLabel}
       </Button>

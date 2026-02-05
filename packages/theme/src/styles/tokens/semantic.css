@@ -1,0 +1,31 @@
+/* Semantic Tokens */
+:root {
+  /* UI Semantic Aliases (for @gen-office/ui) */
+  /* Backgrounds (Semantic) */
+  --color-bg-primary: var(--base-neutral-0);
+  --color-bg-secondary: var(--base-neutral-0);
+  --color-bg-tertiary: var(--base-neutral-100);
+
+  /* Foregrounds (Semantic) */
+  --color-fg-primary: var(--base-neutral-700);
+  --color-fg-secondary: var(--base-neutral-400);
+  --color-fg-tertiary: var(--base-neutral-400);
+  --color-fg-inverse: #ffffff;
+
+  /* Borders (Semantic) */
+  --color-border-default: var(--base-neutral-200);
+  --color-border-subtle: var(--base-neutral-200);
+  --color-border-strong: var(--base-neutral-300);
+
+  /* Brand (Semantic) */
+  --color-brand-secondary: var(--color-secondary);
+
+  /* Status (Semantic, ui expects these names) */
+  --color-status-success: var(--color-success);
+  --color-status-warning: var(--color-warning);
+  --color-status-error: var(--color-danger);
+  --color-status-info: var(--color-info);
+
+  /* Optional: if ui uses this (Semantic) */
+  --color-text-tertiary: var(--base-neutral-400);
+}

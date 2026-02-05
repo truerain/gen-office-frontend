@@ -2,8 +2,8 @@
 
 .tabBar {
   display: flex;
-  background-color: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border-default);
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: thin;
@@ -11,7 +11,7 @@
 
 .tabBar.bottom {
   border-bottom: none;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--color-border-default);
 }
 
 .tabBar::-webkit-scrollbar {
@@ -19,16 +19,16 @@
 }
 
 .tabBar::-webkit-scrollbar-track {
-  background: var(--color-surface);
+  background: var(--color-bg-secondary);
 }
 
 .tabBar::-webkit-scrollbar-thumb {
-  background: var(--color-border);
+  background: var(--color-border-default);
   border-radius: 3px;
 }
 
 .tabBar::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-secondary);
+  background: var(--color-fg-secondary);
 }
 
 .tabList {
@@ -40,5 +40,5 @@
 /* bottom 위치일 때 탭 스타일 조정 */
 .tabBar.bottom .tabList > * {
   border-top: none;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border-default);
 }

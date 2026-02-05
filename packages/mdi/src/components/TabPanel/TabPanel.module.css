@@ -3,7 +3,7 @@
 .tabPanel {
   flex: 1;
   overflow: auto;
-  background-color: var(--color-background);
+  background-color: var(--color-bg-primary);
   padding: 0 var(--spacing-md);
 }
 

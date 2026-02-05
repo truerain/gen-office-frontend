@@ -17,6 +17,7 @@ export * from './core/Separator';
 export * from './core/Tree';
 export * from './core/Popover';
 export * from './core/Calendar';
+export * from './core/Slider';
 
 // composed
 export * from './composed/AlertDialog';
@@ -28,3 +29,4 @@ export * from './composed/FilterBar/SearchInput';
 export * from './composed/FilterBar/SimpleFilterBar';
 export * from './composed/FilterBar/FilterBar.types';
 export * from './composed/DatePicker';
+export * from './composed/Combobox';
