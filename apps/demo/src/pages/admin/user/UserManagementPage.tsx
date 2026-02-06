@@ -94,7 +94,7 @@ export default function UserManagementPage(_props: PageComponentProps) {
 
   const [gridDirty, setGridDirty] = useState(false);
 
-  const [draftFilters, setDraftFilters] = useState<{ empName: string }>({ empName: '' });
+  const [draftFilters, setDraftFilters] = useState<{ empName: string, email: string }>({ empName: '', email: '' });
   const [filters, setFilters] = useState<{ empName: string }>({ empName: '' });
   const queryParams = useMemo<UserListParams>(
     () => ({
@@ -106,7 +106,7 @@ export default function UserManagementPage(_props: PageComponentProps) {
 
   const columns = useMemo(() => createUserManagementColumns(t), [t]);
 
-  const filterFields = useMemo<FilterField<{ empName: string }>[]>(() => {
+  const filterFields = useMemo<FilterField<{ empName: string, email: string }>[]>(() => {
     return [
       {
         key: 'empName',
@@ -123,7 +123,7 @@ export default function UserManagementPage(_props: PageComponentProps) {
         flex: 0,
       },
     ];
-  }, []);
+  }, [t]);
 
   const handleSearch = () => {
     const same = draftFilters.empName.trim() === filters.empName.trim();
