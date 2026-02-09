@@ -11,9 +11,11 @@ import {
   Send,
   Download
 } from 'lucide-react';
+import { useAppStore } from '@/app/store/appStore';
 import styles from './AlertDialogDemo.module.css';
 
 function AlertDialogDemo() {
+  const addNotification = useAppStore((state) => state.addNotification);
   const [infoOpen, setInfoOpen] = useState(false);
   const [warningOpen, setWarningOpen] = useState(false);
   const [errorOpen, setErrorOpen] = useState(false);
@@ -28,13 +30,13 @@ function AlertDialogDemo() {
     console.log('비동기 작업 시작...');
     await new Promise(resolve => setTimeout(resolve, 2000));
     console.log('비동기 작업 완료!');
-    alert('작업이 완료되었습니다!');
+    addNotification('작업이 완료되었습니다!', 'success');
   };
 
   // 삭제 작업
   const handleDelete = () => {
     console.log('삭제됨');
-    alert('항목이 삭제되었습니다!');
+    addNotification('항목이 삭제되었습니다!', 'success');
   };
 
   return (

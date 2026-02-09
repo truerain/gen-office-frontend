@@ -27,6 +27,11 @@ function resolveInitialLocale(): string {
   return nav.startsWith('ko') ? 'ko' : 'en';
 }
 
+export function getCurrentLocale(): string {
+  if (i18n.isInitialized) return i18n.language || resolveInitialLocale();
+  return resolveInitialLocale();
+}
+
 function recordMissingKey(lngs: string | readonly string[], ns: string, key: string) {
   if (typeof window === 'undefined') return;
   const lng = Array.isArray(lngs) ? lngs[0] ?? 'en' : lngs;

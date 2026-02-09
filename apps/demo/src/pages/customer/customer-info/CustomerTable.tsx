@@ -7,6 +7,7 @@ import type { CrudChange } from '@gen-office/gen-grid-crud';
 import type { Customer } from '../../../entities/customer/model/types';
 import { createCustomerColumns } from './CustomerInfoColumns';
 import type { PendingDiff } from '@/shared/models/pendingDiff';
+import { useAppStore } from '@/app/store/appStore';
 
 import styles from './CustomerTable.module.css';
 
@@ -21,6 +22,7 @@ interface CustomerTableProps {
 
 function CustomerTable(props: CustomerTableProps) {
   const columns = useMemo(() => createCustomerColumns(), []);
+  const addNotification = useAppStore((state) => state.addNotification);
 
   const [gridState, setGridState] = useState(() => ({
     rows: props.rows,
@@ -62,12 +64,13 @@ function CustomerTable(props: CustomerTableProps) {
         }}
         onCommitError={({ error }) => {
           console.error(error);
-          alert('Commit failed (see console)');
+          const message = error instanceof Error ? error.message : 'Commit failed (see console)';
+          addNotification(message, 'error');
         }}
         beforeCommit={({ changes }) => {
           // 간단한 가드: 변경 건수가 너무 많으면 차단
           if (changes.length > 200) {
-            alert('Too many changes');
+            addNotification('Too many changes', 'error');
             return false;
           }
           return true;

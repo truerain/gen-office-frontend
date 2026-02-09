@@ -14,6 +14,7 @@ import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 import { useUserListQuery, userApi } from '@/entities/system/user/api/user';
 import type { User, UserListParams, UserRequest } from '@/entities/system/user/model/types';
+import { useAppStore } from '@/app/store/appStore';
 
 import styles from './UserManagementPage.module.css';
 import { createUserManagementColumns } from './UserManagementColumns';
@@ -91,6 +92,7 @@ async function commitUserChanges(
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function UserManagementPage(_props: PageComponentProps) {
   const { t } = useTranslation();
+  const addNotification = useAppStore((state) => state.addNotification);
 
   const [gridDirty, setGridDirty] = useState(false);
 
@@ -180,7 +182,8 @@ export default function UserManagementPage(_props: PageComponentProps) {
           }}
           onCommitError={({ error }) => {
             console.error(error);
-            alert('Commit failed (see console).');
+            const message = error instanceof Error ? error.message : 'Commit failed (see console).';
+            addNotification(message, 'error');
           }}
           onCellEdit={({ rowId, columnId, rowIndex, prevValue, nextValue }) => {
             console.log('[UserManagement] cell edit', {

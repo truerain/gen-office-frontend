@@ -17,5 +17,8 @@
   "user.management.description": "Manage user information.",
   "user.name": "User Name",
   "user.id": "User ID",
-  "i18n.remote_failed": "Failed to load translations from server. Showing default text."
+  "i18n.remote_failed": "Failed to load translations from server. Showing default text.",
+  "user.not_found": "User not found.",
+  "menu.not_found": "Menu not found.",
+  "common.internal_error": "An internal error occurred."
 }

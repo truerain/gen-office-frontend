@@ -104,8 +104,8 @@ function CustomerInfoPage({
   const refreshing = listQuery.isFetching && !listQuery.isLoading;
 
   /*
-  const handleExport = () => alert('CSV 내보내기 기능 (미구현)');
-  const handleImport = () => alert('CSV 가져오기 기능 (미구현)');
+  const handleExport = () => addNotification('CSV 내보내기 기능 (미구현)', 'info');
+  const handleImport = () => addNotification('CSV 가져오기 기능 (미구현)', 'info');
 
   const handleSave = async() => {
     console.log(pendingDiff)
@@ -118,7 +118,7 @@ function CustomerInfoPage({
     try {
       await createMut.mutateAsync({ name: name.trim(), status: 'ACTIVE' });
     } catch (e) {
-      alert((e as Error).message);
+      addNotification((e as Error).message, 'error');
     }
   };
   */
@@ -131,7 +131,7 @@ function CustomerInfoPage({
     try {
       await updateMut.mutateAsync({ id, input: { name: nextName.trim() } });
     } catch (e) {
-      alert((e as Error).message);
+      addNotification((e as Error).message, 'error');
     }
   };
 
@@ -142,7 +142,7 @@ function CustomerInfoPage({
     try {
       await deleteMut.mutateAsync(id);
     } catch (e) {
-      alert((e as Error).message);
+      addNotification((e as Error).message, 'error');
     }
   };
   */

@@ -22,6 +22,7 @@ import { GenGridCrud } from '@gen-office/gen-grid-crud';
 import type { CrudChange } from '@gen-office/gen-grid-crud';
 import type { Menu, MenuListParams } from '@/entities/system/menu/model/types';
 import { useMenuListQuery } from '@/entities/system/menu/api/menu';
+import { useAppStore } from '@/app/store/appStore';
 
 import {createMenuManagementColumns} from './MenuManagementColumns';
 
@@ -118,6 +119,7 @@ const applyMenuChanges = (prev: readonly Menu[], changes: readonly CrudChange<Me
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function MenuManagementPage(_props:  PageComponentProps) {
   const { t } = useTranslation();
+  const addNotification = useAppStore((state) => state.addNotification);
 
   const queryParams = useMemo<MenuListParams>(() => ({}), []);
   const { data: menuList = [] } = useMenuListQuery(queryParams);
@@ -236,7 +238,8 @@ function MenuManagementPage(_props:  PageComponentProps) {
                   }}
                   onCommitError={({ error }) => {
                     console.error(error);
-                    alert('Commit failed (see console)');
+                    const message = error instanceof Error ? error.message : 'Commit failed (see console)';
+                    addNotification(message, 'error');
                   }}
                   showActionBar
                   actionBarPosition="top"

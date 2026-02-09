@@ -231,11 +231,12 @@ openUserTab('789');`}</code></pre>
             <h3>Max Tabs Limit</h3>
             <div className={styles.codeBlock}>
               <pre><code>{`const tabs = useMDIStore((state) => state.tabs);
+const addNotification = useAppStore((state) => state.addNotification);
 const maxTabs = 5;
 
 const handleOpenTab = () => {
   if (tabs.length >= maxTabs) {
-    alert('Maximum tabs reached!');
+    addNotification('Maximum tabs reached!', 'error');
     return;
   }
   
