@@ -9,6 +9,7 @@
   "common.total_rows": "(총 {{count}}행)",
   "crud.add": "추가",
   "crud.delete": "삭제",
+  "crud.save": "저장",
   "crud.filter": "필터",
   "crud.rows": "행",
   "menu.display": "표시",

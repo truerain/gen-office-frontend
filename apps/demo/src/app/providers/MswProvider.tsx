@@ -2,11 +2,13 @@ import type { PropsWithChildren } from 'react';
 import { useEffect, useState } from 'react';
 
 export function MswProvider({ children }: PropsWithChildren) {
-  const [ready, setReady] = useState(!import.meta.env.DEV);
+  const useMock = import.meta.env.VITE_USE_MOCK === 'true';
+  const [ready, setReady] = useState(!import.meta.env.DEV || !useMock);
 
   useEffect(() => {
+    if (!useMock) return;
+
     let active = true;
-    //if (!import.meta.env.DEV) return undefined;
 
     import('@/mocks/browser')
       .then(({ worker }) => worker.start({ onUnhandledRequest: 'bypass' }))
@@ -20,7 +22,7 @@ export function MswProvider({ children }: PropsWithChildren) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [useMock]);
 
   if (!ready) return null;
 

@@ -136,6 +136,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     onCellEdit,
     editorFactory,
 
+    clearDirtyOnRevert = true,
+
     gridProps,
   } = props;
 
@@ -292,6 +294,15 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     return map;
   }, [gridData, getPendingRowId]);
 
+  const baseRowById = React.useMemo(() => {
+    const map = new Map<CrudRowId, TData>();
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i]!;
+      map.set(getRowId(row, i), row);
+    }
+    return map;
+  }, [data, getRowId]);
+
   const skipNextOnDataChangeRef = React.useRef(false);
 
 
@@ -434,9 +445,44 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
         });
       }
       skipNextOnDataChangeRef.current = true;
-      pendingApi.updateCell(pendingRowId, args.columnId, args.value, makePatch);
+      if (clearDirtyOnRevert) {
+        const baseRow = baseRowById.get(pendingRowId);
+        const patch =
+          makePatch?.({ rowId: pendingRowId, columnId: args.columnId, value: args.value }) ??
+          ({ [args.columnId]: args.value } as any);
+
+        if (!baseRow) {
+          pendingApi.updateRow(pendingRowId, patch);
+          return;
+        }
+
+        const keys = Object.keys(patch);
+        const keysToClear = keys.filter((k) => Object.is((baseRow as any)[k], (patch as any)[k]));
+        const keysToSet = keys.filter((k) => !Object.is((baseRow as any)[k], (patch as any)[k]));
+
+        if (keysToSet.length) {
+          const nextPatch: Partial<TData> = {};
+          for (const k of keysToSet) (nextPatch as any)[k] = (patch as any)[k];
+          pendingApi.updateRow(pendingRowId, nextPatch);
+        }
+
+        if (keysToClear.length) {
+          pendingApi.clearPatchKeys(pendingRowId, keysToClear);
+        }
+      } else {
+        pendingApi.updateCell(pendingRowId, args.columnId, args.value, makePatch);
+      }
     },
-    [gridData, getPendingRowId, makePatch, onCellEdit, pendingApi, pendingRowIdByGridId]
+    [
+      gridData,
+      getPendingRowId,
+      makePatch,
+      onCellEdit,
+      pendingApi,
+      pendingRowIdByGridId,
+      clearDirtyOnRevert,
+      baseRowById,
+    ]
   );
 
   // --- state publish

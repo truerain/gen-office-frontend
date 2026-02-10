@@ -9,7 +9,7 @@ import type { CrudRowId } from '../crud/types';
 import type { CrudUiState } from '../GenGridCrud.types';
 import { useTranslation } from 'react-i18next';
 
-import styles from './CrudActionBar.module.css'
+import styles from './CrudActionBar.module.css';
 
 export function CrudActionBar<TData>(props: {
   title?: string;
@@ -59,6 +59,15 @@ export function CrudActionBar<TData>(props: {
                           }}
           >
             {t('crud.delete')}
+          </Button>
+          <Button
+            type="button"
+            variant="brand"
+            size="sm"
+            onClick={onSave}
+            disabled={!onSave || !dirty || isCommitting}
+          >
+            {t('crud.save')}
           </Button>
         </div>
       </div>

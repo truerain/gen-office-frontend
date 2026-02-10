@@ -40,7 +40,13 @@ async function fetchRemoteBundle(locale: string, ns: string, version?: string) {
   url.searchParams.set('ns', ns);
   if (version) url.searchParams.set('version', version);
 
-  const res = await fetch(url.toString(), { method: 'GET' });
+  const res = await fetch(url.toString(), {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      'X-Lang': locale,
+    },
+  });
   if (!res.ok) throw new Error(`i18n fetch failed: ${res.status}`);
   const data = await res.json();
 

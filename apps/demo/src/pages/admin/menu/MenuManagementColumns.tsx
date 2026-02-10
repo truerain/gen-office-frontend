@@ -26,6 +26,10 @@ export const createMenuManagementColumns = (
         meta: {
           width: 160,
           align: 'center',
+          editable: true,
+          editType: 'number',
+          editPlaceholder: 'Menu ID',
+          renderCell: ({ value }) => (value == null || value === 0 ? '' : String(value)),
         },
       },
       {

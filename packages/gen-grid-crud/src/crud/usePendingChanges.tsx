@@ -56,6 +56,7 @@ export type PendingApi<TData> = {
     value: unknown,
     makePatch?: UseMakePatch<TData>
   ) => void;
+  clearPatchKeys: (rowId: CrudRowId, keys: readonly string[]) => void;
 
   deleteRowIds: (rowIds: readonly CrudRowId[]) => void;
   undeleteRowIds: (rowIds: readonly CrudRowId[]) => void;
@@ -110,6 +111,11 @@ export function usePendingChanges<TData>(
 
   const dirty =
     pending.created.size > 0 || pending.updated.size > 0 || pending.deleted.size > 0;
+
+  const changes = React.useMemo(
+    () => buildChangesFromPending(pending),
+    [pending]
+  );
 
   const addRow = React.useCallback(
     (row: TData, opts?: { tempId?: CrudRowId }) => {
@@ -176,6 +182,36 @@ export function usePendingChanges<TData>(
       updateRow(rowId, patch);
     },
     [updateRow]
+  );
+
+  const clearPatchKeys = React.useCallback(
+    (rowId: CrudRowId, keys: readonly string[]) => {
+      if (!keys.length) return;
+      setPending((prev) => {
+        if (prev.created.has(rowId)) return prev;
+        const existing = prev.updated.get(rowId);
+        if (!existing) return prev;
+
+        const next = clonePending(prev);
+        const patch = { ...(next.updated.get(rowId) as any) };
+        let changed = false;
+        for (const k of keys) {
+          if (k in patch) {
+            delete patch[k];
+            changed = true;
+          }
+        }
+        if (!changed) return prev;
+
+        if (Object.keys(patch).length === 0) {
+          next.updated.delete(rowId);
+        } else {
+          next.updated.set(rowId, patch);
+        }
+        return next;
+      });
+    },
+    []
   );
 
   const deleteRowIds = React.useCallback(
@@ -304,13 +340,14 @@ export function usePendingChanges<TData>(
   );
 
   return {
-    changes: pending.log,
+    changes,
     pending,
     dirty,
 
     addRow,
     updateRow,
     updateCell,
+    clearPatchKeys,
     deleteRowIds,
     undeleteRowIds,
     removeCreated,
@@ -332,6 +369,26 @@ function clonePending<TData>(prev: PendingIndex<TData>): PendingIndex<TData> {
     deleted: new Set(prev.deleted),
     log: prev.log.slice(),
   };
+}
+
+function buildChangesFromPending<TData>(
+  pending: PendingIndex<TData>
+): CrudChange<TData>[] {
+  const changes: CrudChange<TData>[] = [];
+
+  for (const [tempId, row] of pending.created.entries()) {
+    changes.push({ type: 'create', tempId, row });
+  }
+
+  for (const [rowId, patch] of pending.updated.entries()) {
+    changes.push({ type: 'update', rowId, patch });
+  }
+
+  for (const rowId of pending.deleted.values()) {
+    changes.push({ type: 'delete', rowId });
+  }
+
+  return changes;
 }
 
 function replayChanges<TData>(

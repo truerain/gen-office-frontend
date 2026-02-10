@@ -4,36 +4,42 @@ import type { ReactNode } from 'react';
 export type AlertDialogVariant = 'info' | 'warning' | 'error' | 'success';
 
 export interface AlertDialogProps {
-  /** Dialog 표시 여부 */
+  /** Dialog open state */
   open: boolean;
-  
-  /** Dialog 열림/닫힘 상태 변경 핸들러 */
+
+  /** Change open state */
   onOpenChange: (open: boolean) => void;
-  
-  /** Alert 제목 (string 또는 JSX) */
+
+  /** Dialog title (string or JSX) */
   title: string | ReactNode;
-  
-  /** Alert 설명 (string 또는 JSX - HTML 태그 사용 가능) */
+
+  /** Dialog description (string or JSX) */
   description?: string | ReactNode;
-  
-  /** 확인 버튼 텍스트 */
+
+  /** Confirm button text */
   confirmText?: string;
-  
-  /** 취소 버튼 텍스트 */
+
+  /** Cancel button text */
   cancelText?: string;
-  
-  /** 확인 버튼 클릭 핸들러 */
+
+  /** Confirm action */
   onConfirm: () => void | Promise<void>;
-  
-  /** 취소 버튼 클릭 핸들러 (선택적) */
+
+  /** Cancel action (optional) */
   onCancel?: () => void;
-  
-  /** Alert 타입 */
+
+  /** Alert variant */
   variant?: AlertDialogVariant;
-  
-  /** 취소 버튼 숨기기 */
+
+  /** Hide cancel button */
   hideCancelButton?: boolean;
-  
-  /** 확인 버튼 로딩 상태 */
+
+  /** Third button text (for Yes/No/Cancel) */
+  thirdText?: string;
+
+  /** Third button action */
+  onThird?: () => void;
+
+  /** Confirm loading state */
   isLoading?: boolean;
 }

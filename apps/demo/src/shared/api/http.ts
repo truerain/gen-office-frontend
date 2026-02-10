@@ -51,9 +51,25 @@ export class HttpError extends Error {
 }
 
 let lastContentLanguage: string | null = null;
+let authExpiredHandler: ((status: number, error: HttpError) => void) | null = null;
+let csrfTokenProvider: (() => string | null) | null = null;
 
 export function getLastContentLanguage(): string | null {
   return lastContentLanguage;
+}
+
+export function setAuthExpiredHandler(handler: ((status: number, error: HttpError) => void) | null) {
+  authExpiredHandler = handler;
+}
+
+export function setCsrfTokenProvider(provider: (() => string | null) | null) {
+  csrfTokenProvider = provider;
+}
+
+function getCsrfHeader(): Record<string, string> {
+  const token = csrfTokenProvider?.();
+  if (!token) return {};
+  return { 'X-XSRF-TOKEN': token };
 }
 
 function withBaseUrl(input: RequestInfo): RequestInfo {
@@ -66,9 +82,13 @@ function withBaseUrl(input: RequestInfo): RequestInfo {
 export async function http<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
   const res = await fetch(withBaseUrl(input), {
     ...init,
+    credentials: init?.credentials ?? 'include',
     headers: {
       'Content-Type': 'application/json',
       'X-Lang': getCurrentLocale(),
+      ...(init?.method && !['GET', 'HEAD', 'OPTIONS'].includes(init.method.toUpperCase())
+        ? getCsrfHeader()
+        : {}),
       ...(init?.headers ?? {}),
     },
   });
@@ -91,7 +111,7 @@ export async function http<T>(input: RequestInfo, init?: RequestInit): Promise<T
       res.statusText ||
       `HTTP ${res.status}`;
 
-    throw new HttpError({
+    const error = new HttpError({
       status: res.status,
       message,
       code: data?.code,
@@ -103,6 +123,12 @@ export async function http<T>(input: RequestInfo, init?: RequestInit): Promise<T
       contentLanguage: lastContentLanguage,
       raw: data ?? text,
     });
+
+    if (res.status === 401 || res.status === 440) {
+      authExpiredHandler?.(res.status, error);
+    }
+
+    throw error;
   }
 
   if (res.status === 204) return undefined as T;

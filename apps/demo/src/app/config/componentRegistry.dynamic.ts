@@ -18,6 +18,15 @@ export interface PageComponentProps {
 }
 
 type ComponentLoader = () => Promise<{ default: ComponentType<PageComponentProps> }>;
+const LAZY_DELAY_MS = 0;
+
+function withLazyDelay<T>(loader: () => Promise<T>): Promise<T> {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      loader().then(resolve).catch(reject);
+    }, LAZY_DELAY_MS);
+  });
+}
 
 /**
  * 컴포넌트 경로 매핑
@@ -72,7 +81,7 @@ export const getLazyComponent = (componentName?: string): ComponentType<PageComp
   const loader = componentPaths[componentName];
   if (!loader) return undefined;
   
-  return lazy(loader);
+  return lazy(() => withLazyDelay(loader));
 };
 
 /**

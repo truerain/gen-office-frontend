@@ -25,13 +25,33 @@ export const menuApi = {
       page: params.page ? String(params.page) : undefined,
       pageSize: params.pageSize ? String(params.pageSize) : undefined,
     })}`;
-    return http<Menu[] | { items: Menu[] }>(url, {
-      method: 'GET',
-      headers: {
-        Authorization: `Basic ${btoa('admin:admin123')}`,
-      },
-    }).then((res) => (Array.isArray(res) ? res : res.items ?? []));
+    return http<Menu[] | { items: Menu[] }>(url, { method: 'GET' }).then((res) =>
+      Array.isArray(res) ? res : res.items ?? []
+    );
   },
+  children: (parentId: number | null) => {
+    const url =
+      parentId == null
+        ? '/api/menus/submenu'
+        : `/api/menus/submenu/${encodeURIComponent(String(parentId))}`;
+    return http<Menu[] | { items: Menu[] }>(url, { method: 'GET' }).then((res) =>
+      Array.isArray(res) ? res : res.items ?? []
+    );
+  },
+  create: (input: Partial<Menu>) =>
+    http<Menu>('/api/menus', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+  update: (id: number, input: Partial<Menu>) =>
+    http<Menu>(`/api/menus/${encodeURIComponent(String(id))}`, {
+      method: 'PUT',
+      body: JSON.stringify(input),
+    }),
+  remove: (id: number) =>
+    http<{ ok: true }>(`/api/menus/${encodeURIComponent(String(id))}`, {
+      method: 'DELETE',
+    }),
 };
 
 // -------- Queries --------

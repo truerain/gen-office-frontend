@@ -9,6 +9,7 @@
   "common.total_rows": "(Total: {{count}} rows)",
   "crud.add": "Add",
   "crud.delete": "Delete",
+  "crud.save": "Save",
   "crud.filter": "Filter",
   "crud.rows": "Rows",
   "menu.display": "Display",

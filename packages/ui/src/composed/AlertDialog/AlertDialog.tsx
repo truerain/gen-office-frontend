@@ -1,12 +1,12 @@
 // packages/ui/src/composed/AlertDialog/AlertDialog.tsx
 import { useState } from 'react';
-import { 
+import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter 
+  DialogFooter,
 } from '../../core/Dialog';
 import { Button } from '../../core/Button';
 import type { AlertDialogProps } from './AlertDialog.types';
@@ -19,8 +19,10 @@ export function AlertDialog({
   description,
   confirmText = '확인',
   cancelText = '취소',
+  thirdText,
   onConfirm,
   onCancel,
+  onThird,
   variant = 'info',
   hideCancelButton = false,
   isLoading = false,
@@ -33,6 +35,7 @@ export function AlertDialog({
       await onConfirm();
       onOpenChange(false);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('AlertDialog confirm error:', error);
     } finally {
       setLoading(false);
@@ -40,9 +43,12 @@ export function AlertDialog({
   };
 
   const handleCancel = () => {
-    if (onCancel) {
-      onCancel();
-    }
+    onCancel?.();
+    onOpenChange(false);
+  };
+
+  const handleThird = () => {
+    onThird?.();
     onOpenChange(false);
   };
 
@@ -64,11 +70,11 @@ export function AlertDialog({
       case 'error':
         return 'destructive' as const;
       case 'warning':
-        return 'default' as const;
+        return 'primary' as const;
       case 'success':
-        return 'default' as const;
+        return 'primary' as const;
       default:
-        return 'default' as const;
+        return 'primary' as const;
     }
   };
 
@@ -77,27 +83,34 @@ export function AlertDialog({
       <DialogContent className={getVariantClass()}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          {description && (
-            <DialogDescription>{description}</DialogDescription>
-          )}
+          {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
-        
+
         <DialogFooter>
           {!hideCancelButton && (
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleCancel}
               disabled={loading || isLoading}
             >
               {cancelText}
             </Button>
           )}
-          <Button 
+          {thirdText && (
+            <Button
+              variant="outline"
+              onClick={handleThird}
+              disabled={loading || isLoading}
+            >
+              {thirdText}
+            </Button>
+          )}
+          <Button
             variant={getConfirmButtonVariant()}
             onClick={handleConfirm}
             disabled={loading || isLoading}
           >
-            {(loading || isLoading) ? '처리중...' : confirmText}
+            {loading || isLoading ? '처리중...' : confirmText}
           </Button>
         </DialogFooter>
       </DialogContent>

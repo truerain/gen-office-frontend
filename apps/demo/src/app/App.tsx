@@ -11,6 +11,9 @@ import { getLazyComponent } from '@/app/config/componentRegistry.dynamic';
 import { useAppStore } from '@/app/store/appStore';
 import { PageProvider } from '@/contexts';
 import { onI18nRemoteFailed } from '@/i18n';
+import { setAuthExpiredHandler, setCsrfTokenProvider } from '@/shared/api/http';
+import { ensureCsrf, getMe } from '@/shared/api/auth';
+import LoginPage from '@/pages/auth/LoginPage';
 import '@gen-office/mdi/index.css';
 import styles from './App.module.css';
 import { useAppMenuListQuery } from './menu/api/appMenu';
@@ -25,19 +28,38 @@ const LoadingPage = () => (
     flexDirection: 'column',
     gap: '1rem'
   }}>
-    <div style={{
-      width: '40px',
-      height: '40px',
-      border: '3px solid #e0e0e0',
-      borderTopColor: '#a50034',
-      borderRadius: '50%',
-      animation: 'spin 1s linear infinite'
-    }}></div>
-    <p style={{ color: '#666' }}>페이지를 불러오는 중...</p>
+    <div className={styles.loadingSpinner}></div>
+    <p style={{ color: '#666' }}>페이지를 불러오는 중(여기)...</p>
   </div>
 );
 
-const LazyHomePage = lazy(() => import('@/pages/home/HomePage'));
+const LAZY_DELAY_MS = 0;
+const withLazyDelay = <T,>(loader: () => Promise<T>) =>
+  new Promise<T>((resolve, reject) => {
+    setTimeout(() => {
+      loader().then(resolve).catch(reject);
+    }, LAZY_DELAY_MS);
+  });
+
+const LazyHomePage = lazy(() => withLazyDelay(() => import('@/pages/home/HomePage')));
+
+function readCookie(name: string) {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(
+    new RegExp(`(?:^|; )${name.replace(/[$()*+./?[\\\]^{|}-]/g, '\\$&')}=([^;]*)`)
+  );
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function readCsrfToken() {
+  if (typeof document === 'undefined') return null;
+  const meta =
+    document.querySelector('meta[name="csrf-token"]') ||
+    document.querySelector('meta[name="x-csrf-token"]');
+  const content = meta?.getAttribute('content');
+  if (content) return content;
+  return readCookie('XSRF-TOKEN');
+}
 
 // 알림 컴포넌트
 const Notifications = () => {
@@ -76,9 +98,12 @@ function App() {
   const setActiveTab = useMDIStore((state) => state.setActiveTab);
   const tabs = useMDIStore((state) => state.tabs);
   const addNotification = useAppStore((state) => state.addNotification);
+  const resetSession = useAppStore((state) => state.resetSession);
+  const user = useAppStore((state) => state.user);
+  const setUser = useAppStore((state) => state.setUser);
   const { t } = useTranslation('common');
 
-  const { data: menuList = [] } = useAppMenuListQuery();
+  const { data: menuList = [] } = useAppMenuListQuery({ enabled: !!user });
   const menuItems = useMemo(() => mapMenusToMenuItems(menuList), [menuList]);
   const menuTree = useMemo(() => buildMenuTree(menuItems), [menuItems]);
 
@@ -99,6 +124,49 @@ function App() {
       }),
     [addNotification, t]
   );
+
+  useEffect(() => {
+    setCsrfTokenProvider(readCsrfToken);
+    setAuthExpiredHandler(() => {
+      const currentUser = useAppStore.getState().user;
+      resetSession();
+      if (currentUser) {
+        addNotification('세션이 만료되었습니다. 다시 로그인해 주세요.', 'error');
+      }
+    });
+    ensureCsrf().catch(() => {
+      // ignore; login flow will retry
+    });
+    return () => setAuthExpiredHandler(null);
+  }, [addNotification, resetSession]);
+
+  const [bootstrapping, setBootstrapping] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    if (user) {
+      setBootstrapping(false);
+      return () => {
+        active = false;
+      };
+    }
+
+    (async () => {
+      try {
+        const result = await getMe();
+        if (!active) return;
+        if (result?.user) setUser(result.user);
+      } catch {
+        // ignore; login flow will handle unauthenticated
+      } finally {
+        if (active) setBootstrapping(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [user, setUser]);
 
   // Drawer 상태
   const [notFoundDrawerOpen, setNotFoundDrawerOpen] = useState(false);
@@ -183,7 +251,13 @@ function App() {
     });
   };
 
-  return (
+  if (bootstrapping) {
+    return <LoadingPage />;
+  }
+
+  return !user ? (
+    <LoginPage />
+  ) : (
     <div className={styles.app} data-layout={layoutMode}>
       {layoutMode === 'left-panel' ? (
         <LeftPanelLayout

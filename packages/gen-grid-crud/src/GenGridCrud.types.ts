@@ -81,6 +81,9 @@ export type GenGridCrudProps<TData> = {
   /** editor factory (GenGrid) */
   editorFactory?: GenGridEditorFactory<TData>;
 
+  /** when true, reverting a cell to its base value clears dirty for that field */
+  clearDirtyOnRevert?: boolean;
+
   /** UI hooks */
   onStateChange?: (state: CrudUiState<TData>) => void;
   onCellEdit?: (event: CrudCellEditEvent<TData>) => void;

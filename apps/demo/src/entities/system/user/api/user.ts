@@ -18,10 +18,6 @@ export const userKeys = {
   list: (params: UserListParams) => ['user', 'list', params] as const,
 };
 
-const authHeaders = {
-  Authorization: `Basic ${btoa('admin:admin123')}`,
-};
-
 export const userApi = {
   list: (params: UserListParams = {}) => {
     const url = `/api/users${buildQuery({
@@ -29,33 +25,29 @@ export const userApi = {
       page: params.page ? String(params.page) : undefined,
       pageSize: params.pageSize ? String(params.pageSize) : undefined,
     })}`;
-    return http<User[]>(url, { method: 'GET', headers: authHeaders });
+    return http<User[]>(url, { method: 'GET' });
   },
 
   get: (id: number) =>
     http<User>(`/api/users/${encodeURIComponent(String(id))}`, {
       method: 'GET',
-      headers: authHeaders,
     }),
 
   create: (input: UserRequest) =>
     http<User>('/api/users', {
       method: 'POST',
-      headers: authHeaders,
       body: JSON.stringify(input),
     }),
 
   update: (id: number, input: UserRequest) =>
     http<User>(`/api/users/${encodeURIComponent(String(id))}`, {
       method: 'PUT',
-      headers: authHeaders,
       body: JSON.stringify(input),
     }),
 
   remove: (id: number) =>
     http<{ ok: true }>(`/api/users/${encodeURIComponent(String(id))}`, {
       method: 'DELETE',
-      headers: authHeaders,
     }),
 };
 

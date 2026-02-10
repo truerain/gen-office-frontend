@@ -23,6 +23,7 @@ interface AppState {
   // 사용자 정보
   user: User | null;
   setUser: (user: User | null) => void;
+  resetSession: () => void;
 
   // 테마
   theme: 'light' | 'dark';
@@ -47,13 +48,9 @@ interface AppState {
  */
 export const useAppStore = create<AppState>((set) => ({
   // 사용자 정보
-  user: {
-    id: 'user-001',
-    name: '김철수',
-    email: 'kim@example.com',
-    role: 'admin',
-  },
+  user: null,
   setUser: (user) => set({ user }),
+  resetSession: () => set({ user: null, isLoading: false }),
 
   // 테마
   theme: 'light',
