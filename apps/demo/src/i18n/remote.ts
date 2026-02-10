@@ -103,7 +103,6 @@ export async function loadRemoteBundles(i18n: I18nInstance, namespaces: string[]
           ? cached
           : remote;
       if (!next) return;
-
       i18n.addResourceBundle(locale, ns, next.resources, true, true);
       writeCache(next);
     })

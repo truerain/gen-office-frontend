@@ -91,7 +91,7 @@ async function commitUserChanges(
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function UserManagementPage(_props: PageComponentProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
   const addNotification = useAppStore((state) => state.addNotification);
 
   const [gridDirty, setGridDirty] = useState(false);
@@ -112,14 +112,14 @@ export default function UserManagementPage(_props: PageComponentProps) {
     return [
       {
         key: 'empName',
-        title:t('user.name'),
+        title:t('username'),
         type: 'text',
         placeholder: '',
         flex: 0,
       },
       {
         key: 'email',
-        title:t('user.email'),
+        title:t('email'),
         type: 'text',
         placeholder: '',
         flex: 0,

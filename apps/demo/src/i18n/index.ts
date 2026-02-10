@@ -23,7 +23,7 @@ function resolveInitialLocale(): string {
   if (typeof window === 'undefined') return 'ko';
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored) return stored;
-  const nav = navigator.language || 'en';
+  const nav = navigator.language || 'ko';
   return nav.startsWith('ko') ? 'ko' : 'en';
 }
 
