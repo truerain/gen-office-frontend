@@ -2,23 +2,23 @@
 :root {
   /* Colors (Base) */
   /* Neutral Palette (Base) */
-  --base-neutral-0: #ffffff;
-  --base-neutral-50: #f8f9fa;
-  --base-neutral-75: #f5f5f5;
-  --base-neutral-100: #f3f4f6;
-  --base-neutral-150: #f0f1f3;
-  --base-neutral-200: #dee2e6;
-  --base-neutral-300: #adb5bd;
-  --base-neutral-400: #6c757d;
-  --base-neutral-500: #6b7280;
-  --base-neutral-600: #4b5563;
-  --base-neutral-700: #34383c;
-  --base-neutral-800: #333333;
-  --base-neutral-900: #1f2937;
-  --base-neutral-950: #111827;
+  --base-neutral-0: oklch(1 0 0);
+  --base-neutral-50: oklch(0.985 0 0);
+  --base-neutral-75: oklch(0.97 0 0);
+  --base-neutral-100: oklch(0.922 0 0);
+  --base-neutral-150: oklch(0.922 0 0);
+  --base-neutral-200: oklch(0.922 0 0);
+  --base-neutral-300: oklch(0.708 0 0);
+  --base-neutral-400: oklch(0.556 0 0);
+  --base-neutral-500: oklch(0.556 0 0);
+  --base-neutral-600: oklch(0.269 0 0);
+  --base-neutral-700: oklch(0.205 0 0);
+  --base-neutral-800: oklch(0.145 0 0);
+  --base-neutral-900: oklch(0.145 0 0);
+  --base-neutral-950: oklch(0.145 0 0);
 
   /* Tints (Base) */
-  --base-tint-workarea: #e7f1f0;
+  --base-tint-workarea: oklch(0.97 0 0);
 
   /* Brand Palette (Base) */
   --base-brand-20: #fff4f7;
@@ -29,9 +29,9 @@
   --base-brand-900: #4d0018;
 
   /* Primary Colors */
-  --color-primary: var(--base-neutral-500);
-  --color-primary-light: var(--base-neutral-100);
-  --color-primary-dark: var(--base-neutral-600);
+  --color-primary: oklch(0.205 0 0);
+  --color-primary-light: oklch(0.97 0 0);
+  --color-primary-dark: oklch(0.145 0 0);
 
   /* Brand Colors */
   --color-brand: var(--base-brand-500);
@@ -39,29 +39,29 @@
   --color-brand-dark: var(--base-brand-700);
 
   /* Secondary Colors */
-  --color-secondary: var(--base-neutral-200);
-  --color-secondary-light: var(--base-neutral-75);
-  --color-secondary-dark: var(--base-neutral-800);
+  --color-secondary: oklch(0.97 0 0);
+  --color-secondary-light: oklch(0.985 0 0);
+  --color-secondary-dark: oklch(0.205 0 0);
 
   /* Header/TitleBar Colors (Base) */
-  --color-header-bg: var(--base-neutral-500);
-  --color-header-text: var(--base-neutral-0);
-  --color-header-border: #1a252f;
+  --color-header-bg: var(--color-primary);
+  --color-header-text: oklch(0.985 0 0);
+  --color-header-border: oklch(0.145 0 0);
 
   /* Background Colors (Base) */
-  --color-background: var(--base-neutral-0);
-  --color-surface: var(--base-neutral-50);
-  --color-surface-hover: var(--base-neutral-150);
+  --color-background: oklch(1 0 0);
+  --color-surface: oklch(0.985 0 0);
+  --color-surface-hover: oklch(0.97 0 0);
   --color-workarea: var(--base-tint-workarea);
 
   /* Text Colors (Base) */
-  --color-text: var(--base-neutral-700);    /* #212529; */
-  --color-text-secondary: var(--base-neutral-400);
-  --color-text-disabled: var(--base-neutral-300);
+  --color-text: oklch(0.145 0 0);
+  --color-text-secondary: oklch(0.556 0 0);
+  --color-text-disabled: oklch(0.708 0 0);
 
   /* Border Colors (Base) */
-  --color-border: var(--base-neutral-200);
-  --color-border-strong: var(--base-neutral-300);
+  --color-border: oklch(0.922 0 0);
+  --color-border-strong: oklch(0.708 0 0);
 
   /* Status Colors (Base) */
   --color-success: #28a745;

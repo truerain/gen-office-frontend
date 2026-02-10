@@ -1,7 +1,7 @@
 /* Component Tokens: Button */
 :root {
   /* Focus */
-  --button-focus-ring: rgba(107, 114, 128, 0.2);
+  --button-focus-ring: oklch(0.205 0 0 / 0.2);
 
   /* Default */
   --button-default-bg: var(--color-bg-secondary);
@@ -41,12 +41,12 @@
   /* Outline */
   --button-outline-text: var(--color-primary);
   --button-outline-border: var(--color-primary);
-  --button-outline-bg-hover: rgba(107, 114, 128, 0.04);
+  --button-outline-bg-hover: oklch(0.205 0 0 / 0.04);
   --button-outline-text-hover: var(--color-primary-dark);
   --button-outline-border-hover: var(--color-primary-dark);
-  --button-outline-bg-active: rgba(107, 114, 128, 0.08);
-  --button-outline-text-active: #374151;
-  --button-outline-border-active: #374151;
+  --button-outline-bg-active: oklch(0.205 0 0 / 0.08);
+  --button-outline-text-active: oklch(0.269 0 0);
+  --button-outline-border-active: oklch(0.269 0 0);
 
   /* Ghost */
   --button-ghost-text: var(--color-fg-secondary);
@@ -66,10 +66,10 @@
   /* Destructive Outline */
   --button-destructive-text: var(--color-status-error);
   --button-destructive-border: var(--color-status-error);
-  --button-destructive-bg-hover: rgba(220, 38, 38, 0.04);
+  --button-destructive-bg-hover: oklch(0.577 0.245 27.325 / 0.04);
   --button-destructive-text-hover: #b91c1c;
   --button-destructive-border-hover: #b91c1c;
-  --button-destructive-bg-active: rgba(220, 38, 38, 0.08);
+  --button-destructive-bg-active: oklch(0.577 0.245 27.325 / 0.08);
   --button-destructive-text-active: #991b1b;
   --button-destructive-border-active: #991b1b;
 
@@ -77,5 +77,5 @@
   --button-link-text: var(--color-primary);
   --button-link-text-hover: var(--color-primary-dark);
   --button-link-text-active: #374151;
-  --button-link-loading-ring: rgba(107, 114, 128, 0.2);
+  --button-link-loading-ring: oklch(0.205 0 0 / 0.2);
 }

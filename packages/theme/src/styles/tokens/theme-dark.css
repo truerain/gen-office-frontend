@@ -1,111 +1,110 @@
 /* Dark Theme Overrides */
 [data-theme="dark"] {
   /* Base Neutral Palette (Dark Overrides) */
-  --base-neutral-0: #1a1a1a;
-  --base-neutral-50: #2d2d2d;
-  --base-neutral-75: #2d2d2d;
-  --base-neutral-100: #3a3a3a;
-  --base-neutral-150: #3a3a3a;
-  --base-neutral-200: #495057;
-  --base-neutral-300: #6c757d;
-  --base-neutral-400: #adb5bd;
-  --base-neutral-700: #e9ecef;
+  --base-neutral-0: oklch(0.145 0 0);
+  --base-neutral-50: oklch(0.205 0 0);
+  --base-neutral-75: oklch(0.269 0 0);
+  --base-neutral-100: oklch(0.269 0 0);
+  --base-neutral-150: oklch(0.269 0 0);
+  --base-neutral-200: oklch(0.269 0 0);
+  --base-neutral-300: oklch(0.371 0 0);
+  --base-neutral-400: oklch(0.556 0 0);
+  --base-neutral-700: oklch(0.985 0 0);
 
   /* Base Tokens (Dark Overrides) */
-  --color-background: #1a1a1a;
-  --color-surface: #2d2d2d;
-  --color-surface-hover: #3a3a3a;
+  --color-background: oklch(0.145 0 0);
+  --color-surface: oklch(0.205 0 0);
+  --color-surface-hover: oklch(0.269 0 0);
 
-  --color-text: #e9ecef;
-  --color-text-secondary: #adb5bd;
-  --color-text-disabled: #6c757d;
+  --color-text: oklch(0.985 0 0);
+  --color-text-secondary: oklch(0.708 0 0);
+  --color-text-disabled: oklch(0.556 0 0);
+  --color-fg-inverse: oklch(0.205 0 0);
 
-  --color-border: #495057;
-  --color-border-strong: #6c757d;
+  --color-border: oklch(1 0 0 / 10%);
+  --color-border-strong: oklch(1 0 0 / 15%);
+
+  --color-primary: oklch(0.922 0 0);
+  --color-primary-light: oklch(0.985 0 0);
+  --color-primary-dark: oklch(0.708 0 0);
+
+  --color-secondary: oklch(0.269 0 0);
+  --color-secondary-light: oklch(0.371 0 0);
+  --color-secondary-dark: oklch(0.205 0 0);
 
   /* Header/TitleBar Colors (Base, Dark Mode) */
-  --color-header-bg: #1e2936;
-  --color-header-border: #0d1419;
+  --color-header-bg: var(--color-primary);
+  --color-header-border: oklch(0.145 0 0);
 
   /* Component Tokens (Dark Overrides) */
-  /* LG Grid Theme – Dark Mode Tokens */
-  /* Grid Container */
-  --grid-bg: #0b0d10;              /* 거의 black */
-  --grid-border: #1f2933;
+  /* Grid */
+  --grid-bg: var(--color-bg-primary);
+  --grid-border: var(--color-border-default);
   --grid-border-radius: 6px;
   --grid-shadow: none;
 
-  /* Grid Header */
-  --grid-header-bg: #111318;
-  --grid-header-text: #e5e7eb;
-  --grid-header-border: #1f2933;
+  --grid-header-bg: var(--color-bg-tertiary);
+  --grid-header-text: var(--color-fg-primary);
+  --grid-header-border: var(--color-border-strong);
   --grid-header-font-weight: 600;
   --grid-header-height: 44px;
 
-  --grid-header-bg-hover: #1a1d23;
-  --grid-header-bg-active: #2a0f18; /* LG red dark tint */
-  --grid-header-sort-icon: #9ca3af; /* Neutral gray (dark friendly) */
+  --grid-header-bg-hover: var(--color-bg-secondary);
+  --grid-header-bg-active: var(--color-bg-secondary);
+  --grid-header-sort-icon: var(--color-fg-secondary);
 
-  /* Grid Rows */
   --grid-row-bg: transparent;
-  --grid-row-bg-hover: #141821;
-  --grid-row-bg-selected: #2a0f18;
-  --grid-row-bg-disabled: #111318;
+  --grid-row-bg-hover: var(--color-bg-secondary);
+  --grid-row-bg-selected: var(--color-bg-tertiary);
+  --grid-row-bg-disabled: var(--color-bg-tertiary);
 
-  /* Grid Cells */
-  --grid-cell-bg: #0b0d10;
-  --grid-cell-text: #d1d5db;
-  --grid-cell-border: #1f2933;
+  --grid-cell-bg: var(--color-bg-primary);
+  --grid-cell-text: var(--color-fg-primary);
+  --grid-cell-border: var(--color-border-default);
   --grid-cell-padding-x: 12px;
   --grid-cell-padding-y: 8px;
   --grid-cell-font-size: 14px;
 
-  --grid-cell-bg-hover: #141821;
-  --grid-cell-bg-selected: #2a0f18; /* dark red tint */
-  --grid-cell-bg-focus: #3a1322;
+  --grid-cell-bg-hover: var(--color-bg-secondary);
+  --grid-cell-bg-selected: var(--color-bg-tertiary);
+  --grid-cell-bg-focus: var(--color-bg-tertiary);
 
-  /* Pinned / Sticky Columns */
-  --grid-cell-bg-pinned: #0e1117;
-  --grid-cell-border-pinned: #1f2933;
-  --grid-cell-shadow-pinned: 2px 0 6px rgba(0,0,0,0.6);
+  --grid-cell-bg-pinned: var(--color-bg-primary);
+  --grid-cell-border-pinned: var(--color-border-default);
+  --grid-cell-shadow-pinned: 2px 0 6px rgba(0, 0, 0, 0.6);
 
-  --grid-header-bg-pinned: #111318;
-  --grid-header-border-pinned: #1f2933;
-  --grid-header-shadow-pinned: 2px 0 6px rgba(0,0,0,0.7);
+  --grid-header-bg-pinned: var(--color-bg-tertiary);
+  --grid-header-border-pinned: var(--color-border-strong);
+  --grid-header-shadow-pinned: 2px 0 6px rgba(0, 0, 0, 0.7);
 
-  /* Selection / Checkbox Column */
-  --grid-selection-bg: #0b0d10;
-  --grid-selection-bg-hover: #2a0f18;
-  --grid-selection-check: #9ca3af;   /* Neutral gray for dark */
-  --grid-selection-border: #374151;
+  --grid-selection-bg: var(--color-bg-primary);
+  --grid-selection-bg-hover: var(--color-bg-secondary);
+  --grid-selection-check: var(--color-fg-secondary);
+  --grid-selection-border: var(--color-border-strong);
 
-  /* Empty / Loading / Skeleton States */
-  --grid-empty-text: #9ca3af;
-  --grid-empty-bg: #0b0d10;
+  --grid-empty-text: var(--color-fg-secondary);
+  --grid-empty-bg: var(--color-bg-primary);
 
-  --grid-loading-bg: #0b0d10;
-  --grid-skeleton-bg: #1a1d23;
+  --grid-loading-bg: var(--color-bg-primary);
+  --grid-skeleton-bg: var(--color-bg-tertiary);
   --grid-skeleton-shimmer: linear-gradient(
     90deg,
-    #1a1d23 25%,
-    #2a2f3a 37%,
-    #1a1d23 63%
+    oklch(0.269 0 0) 25%,
+    oklch(0.371 0 0) 37%,
+    oklch(0.269 0 0) 63%
   );
 
-  /* Scroll / Divider / Resize Handle */
-  --grid-scrollbar-thumb: #374151;
-  --grid-scrollbar-track: #111318;
+  --grid-scrollbar-thumb: var(--color-border-strong);
+  --grid-scrollbar-track: var(--color-bg-tertiary);
 
-  --grid-column-resizer: #374151;
-  --grid-column-resizer-hover: #9ca3af;
+  --grid-column-resizer: var(--color-border-strong);
+  --grid-column-resizer-hover: var(--color-fg-secondary);
 
-  /* Typography (Optional) */
   --grid-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
     'Noto Sans KR', sans-serif;
   --grid-font-size: 14px;
   --grid-line-height: 1.4;
 
-  /* Z-index Layering */
   --grid-z-header: 20;
   --grid-z-pinned: 15;
   --grid-z-cell-overlay: 30;

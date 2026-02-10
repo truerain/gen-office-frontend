@@ -1,78 +1,77 @@
 /* Component Tokens: Grid */
 :root {
-  /* LG Grid Theme Specific Variables */
   /* Grid Container */
-  --grid-bg: #ffffff;
-  --grid-border: #e5e7eb;          /* light gray */
+  --grid-bg: var(--color-bg-primary);
+  --grid-border: var(--color-border-default);
   --grid-border-radius: 6px;
-  --grid-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  --grid-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 
   /* Grid Header */
-  --grid-header-bg: #EEEEF0;    /* org: #f9fafb */
-  --grid-header-text: #111827;     /* near-black */
-  --grid-header-border: #d4d4d4;  /* origin: #e5e7eb */
-  --grid-header-font-weight: 400;
+  --grid-header-bg: var(--color-bg-tertiary);
+  --grid-header-text: var(--color-fg-primary);
+  --grid-header-border: var(--color-border-default); /*var(--color-border-strong);*/
+  --grid-header-font-weight: 500;
   --grid-header-height: 44px;
 
-  --grid-header-bg-hover: #f3f4f6;
-  --grid-header-bg-active: #eef2ff;
-  --grid-header-sort-icon: #6b7280; /* Neutral gray */
+  --grid-header-bg-hover: var(--color-bg-secondary);
+  --grid-header-bg-active: var(--color-bg-secondary);
+  --grid-header-sort-icon: var(--color-fg-secondary);
 
   /* Grid Rows */
   --grid-row-bg: transparent;
-  --grid-row-bg-hover: #f9fafb;
-  --grid-row-bg-selected: #fff1f4;
-  --grid-row-bg-disabled: #f3f4f6;
-  --grid-row-text: #374151;        /* dark gray */
-  --grid-row-border: #e5e7eb;
-  --grid-row-font-weight: 400;
+  --grid-row-bg-hover: var(--color-bg-secondary);
+  --grid-row-bg-selected: var(--color-primary-light);
+  --grid-row-bg-disabled: var(--color-bg-tertiary);
+  --grid-row-text: var(--color-fg-primary);
+  --grid-row-border: var(--color-border-default);
+  --grid-row-font-weight: 450;
 
   /* Grid Cells */
-  --grid-cell-bg: #ffffff;
-  --grid-cell-text: #1f2937;
-  --grid-cell-border: #e5e7eb;
+  --grid-cell-bg: var(--color-bg-primary);
+  --grid-cell-text: var(--color-fg-primary);
+  --grid-cell-border: var(--color-border-default);
   --grid-cell-padding-x: 6px;
   --grid-cell-padding-y: 8px;
   --grid-cell-font-size: 14px;
 
-  --grid-cell-bg-hover: #f9fafb;
-  --grid-cell-bg-selected: #fff1f4; /* LG red tint */
-  --grid-cell-bg-focus: #ffe4ea;
+  --grid-cell-bg-hover: var(--color-bg-secondary);
+  --grid-cell-bg-selected: var(--color-primary-light);
+  --grid-cell-bg-focus: var(--color-bg-tertiary);
 
   /* Pinned / Sticky Columns */
-  --grid-cell-bg-pinned: #ffffff;
-  --grid-cell-border-pinned: #e5e7eb;
-  --grid-cell-shadow-pinned: 2px 0 4px rgba(0,0,0,0.06);
+  --grid-cell-bg-pinned: var(--color-bg-primary);
+  --grid-cell-border-pinned: var(--color-border-default);
+  --grid-cell-shadow-pinned: 2px 0 4px rgba(0, 0, 0, 0.06);
 
-  --grid-header-bg-pinned: #EEEEF0;     /* origin: #f9fafb */
-  --grid-header-border-pinned: #d4d4d4;  /* origin: #e5e7eb*/
-  --grid-header-shadow-pinned: 2px 0 4px rgba(0,0,0,0.08);
+  --grid-header-bg-pinned: var(--color-bg-tertiary);
+  --grid-header-border-pinned: var(--color-border-strong);
+  --grid-header-shadow-pinned: 2px 0 4px rgba(0, 0, 0, 0.08);
 
   /* Selection / Checkbox Column */
-  --grid-selection-bg: #ffffff;
-  --grid-selection-bg-hover: #fff1f4;
-  --grid-selection-check: #6b7280;   /* Neutral gray */
-  --grid-selection-border: #d1d5db;
+  --grid-selection-bg: var(--color-bg-primary);
+  --grid-selection-bg-hover: var(--color-bg-secondary);
+  --grid-selection-check: var(--color-fg-secondary);
+  --grid-selection-border: var(--color-border-strong);
 
   /* Empty / Loading / Skeleton States */
-  --grid-empty-text: #6b7280;
-  --grid-empty-bg: #ffffff;
+  --grid-empty-text: var(--color-fg-secondary);
+  --grid-empty-bg: var(--color-bg-primary);
 
-  --grid-loading-bg: #ffffff;
-  --grid-skeleton-bg: #f3f4f6;
+  --grid-loading-bg: var(--color-bg-primary);
+  --grid-skeleton-bg: var(--color-bg-tertiary);
   --grid-skeleton-shimmer: linear-gradient(
     90deg,
-    #f3f4f6 25%,
-    #e5e7eb 37%,
-    #f3f4f6 63%
+    var(--color-bg-tertiary) 25%,
+    var(--color-border-default) 37%,
+    var(--color-bg-tertiary) 63%
   );
 
   /* Scroll / Divider / Resize Handle */
-  --grid-scrollbar-thumb: #d1d5db;
-  --grid-scrollbar-track: #f9fafb;
+  --grid-scrollbar-thumb: var(--color-border-strong);
+  --grid-scrollbar-track: var(--color-bg-secondary);
 
-  --grid-column-resizer: #d1d5db;
-  --grid-column-resizer-hover: #6b7280;
+  --grid-column-resizer: var(--color-border-strong);
+  --grid-column-resizer-hover: var(--color-fg-secondary);
 
   /* Typography (Optional) */
   --grid-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',

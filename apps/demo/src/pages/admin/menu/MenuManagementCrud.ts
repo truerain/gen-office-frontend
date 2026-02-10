@@ -176,7 +176,8 @@ export function hasMissingMenuId(changes: readonly CrudChange<Menu>[]) {
   return Array.from(created.entries()).some(([tempId, row]) => {
     const merged = { ...row, ...(patches.get(tempId) ?? {}) } as Menu;
     const value = merged.menuId;
-    if (value == null || value === '') return true;
+    if (value == null) return true;
+    if (String(value).trim() === '') return true;
     return !Number.isFinite(Number(value)) || Number(value) <= 0;
   });
 }

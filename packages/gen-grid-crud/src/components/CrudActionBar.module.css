@@ -36,7 +36,10 @@
   align-self: flex-end;
   color: var(--color-fg-secondary);
   padding-right: 50px;
+  font-size:  var(--grid-font-size);
+  font-weight: 500;
 }
+
 
 .actions {
   display: inline-flex;

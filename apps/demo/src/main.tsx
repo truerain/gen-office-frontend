@@ -18,7 +18,7 @@ initI18n().finally(() => {
   root.render(
     <React.StrictMode>
       <I18nextProvider i18n={i18n}>
-        <ThemeProvider defaultMode="light" useLGFont={true}>
+        <ThemeProvider defaultMode="light" useLGFont={false}>
           <AppProviders>
             <App />
           </AppProviders>

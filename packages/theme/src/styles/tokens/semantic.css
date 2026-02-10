@@ -2,20 +2,19 @@
 :root {
   /* UI Semantic Aliases (for @gen-office/ui) */
   /* Backgrounds (Semantic) */
-  --color-bg-primary: var(--base-neutral-0);
-  --color-bg-secondary: var(--base-neutral-0);
-  --color-bg-tertiary: var(--base-neutral-100);
+  --color-bg-primary: var(--color-background);
+  --color-bg-secondary: var(--color-surface);
+  --color-bg-tertiary: #eceff1; /*var(--color-surface-hover);*/
 
   /* Foregrounds (Semantic) */
-  --color-fg-primary: var(--base-neutral-700);
-  --color-fg-secondary: var(--base-neutral-400);
-  --color-fg-tertiary: var(--base-neutral-400);
-  --color-fg-inverse: #ffffff;
+  --color-fg-primary: var(--color-text);
+  --color-fg-secondary: var(--color-text-secondary);
+  --color-fg-tertiary: var(--color-text-secondary);
+  --color-fg-inverse: oklch(0.985 0 0);
 
   /* Borders (Semantic) */
-  --color-border-default: var(--base-neutral-200);
-  --color-border-subtle: var(--base-neutral-200);
-  --color-border-strong: var(--base-neutral-300);
+  --color-border-default: var(--color-border);
+  --color-border-subtle: var(--color-border);
 
   /* Brand (Semantic) */
   --color-brand-secondary: var(--color-secondary);
@@ -27,5 +26,5 @@
   --color-status-info: var(--color-info);
 
   /* Optional: if ui uses this (Semantic) */
-  --color-text-tertiary: var(--base-neutral-400);
+  --color-text-tertiary: var(--color-text-secondary);
 }
