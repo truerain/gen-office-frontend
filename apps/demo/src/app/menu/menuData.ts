@@ -6,6 +6,7 @@ import type { AppMenu } from './model/types';
 const componentNameByMenuId: Record<string, string> = {
   'customer-info': 'CustomerInfoPage',
   'menu-management': 'MenuManagementPage',
+  'role-management': 'RoleManagementPage',
   'user-management': 'UserManagementPage',
   primitives: 'PrimitivesPage',
   datagrid: 'DataGridPage',
