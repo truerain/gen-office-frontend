@@ -12,6 +12,14 @@ type Direction = 'left' | 'right' | 'up' | 'down';
 // focusGridCell(rowId, colId, opts?) ?ïÌÉúÎ•?Í∞Ä??
 type FocusOptions = Parameters<typeof focusGridCell>[2];
 
+type TreeMeta = {
+  treeColumnId?: string;
+  hasChildrenByRowId?: Record<string, boolean>;
+  expandedRowIds?: Record<string, boolean>;
+  isExpanded?: (rowId: string) => boolean;
+  toggleRow?: (rowId: string) => void;
+};
+
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
@@ -340,7 +348,32 @@ export function useActiveCellNavigation<TData>(args: {
       findNextNavigable,
     ]
   );
-
+  const handleTreeArrowKey = React.useCallback(
+    (key: 'ArrowLeft' | 'ArrowRight') => {
+      if (!activeCell) return false;
+      const treeMeta = ((table.options.meta as any)?.genGridTree ?? null) as TreeMeta | null;
+      if (!treeMeta) return false;
+      const treeColumnId = treeMeta.treeColumnId ?? visibleColumnIds[0];
+      if (!treeColumnId) return false;
+      if (activeCell.columnId !== treeColumnId) return false;
+      const rowId = activeCell.rowId;
+      const hasChildren = Boolean(treeMeta.hasChildrenByRowId?.[rowId]);
+      if (!hasChildren) return false;
+      const expanded = Boolean(
+        treeMeta.isExpanded?.(rowId) ?? treeMeta.expandedRowIds?.[rowId]
+      );
+      if (key === 'ArrowRight' && !expanded) {
+        treeMeta.toggleRow?.(rowId);
+        return true;
+      }
+      if (key === 'ArrowLeft' && expanded) {
+        treeMeta.toggleRow?.(rowId);
+        return true;
+      }
+      return false;
+    },
+    [activeCell, table, visibleColumnIds]
+  );
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent) => {
       // modifier Ï°∞Ìï©
@@ -355,10 +388,12 @@ export function useActiveCellNavigation<TData>(args: {
         }
         case 'ArrowLeft':
           e.preventDefault();
+          if (handleTreeArrowKey('ArrowLeft')) break;
           move('left');
           break;
         case 'ArrowRight':
           e.preventDefault();
+          if (handleTreeArrowKey('ArrowRight')) break;
           move('right');
           break;
         case 'ArrowUp':
@@ -392,7 +427,7 @@ export function useActiveCellNavigation<TData>(args: {
           break;
       }
     },
-    [move, moveHomeEnd, movePage]
+    [handleTreeArrowKey, move, moveHomeEnd, movePage]
   );
 
   // ??GenGridBody?êÏÑú td??Í∑∏Î?Î°?spread ?????àÎäî props ?úÍ≥µ
