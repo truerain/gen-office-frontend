@@ -107,3 +107,6 @@ type CommonGridOptions<TData> = {
 - orphan 경고 정책(UI/토스트/콘솔) 확정 여부
 - virtualization에서 depth/토글 렌더 성능 문제가 없는가
 
+
+## Related Document
+- Implementation breakdown: `packages/gen-grid/TREE_MODE_TODO.md`

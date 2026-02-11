@@ -97,6 +97,7 @@ function MenuManagementPage(_props: PageComponentProps) {
       loadingParentsRef.current.delete(parentKey);
     }
   };
+  void fetchChildren;
 
 
   const treeData = useMemo<MenuNode[]>(
@@ -212,8 +213,23 @@ function MenuManagementPage(_props: PageComponentProps) {
                   enableVirtualization: true,
                   enableRowStatus: true,
                   enableRowSelection: true,
+                  enablePagination: false,
                   editOnActiveCell: true,
                   keepEditingOnNavigate: false,
+                  tree: {
+                    enabled: true,
+                    idKey: 'menuId',
+                    parentIdKey: 'prntMenuId',
+                    treeColumnId: 'menuName',
+                    rootParentValue: 0,
+                    indentPx: 14,
+                    showOrphanWarning: true,
+                    onOrphanRowsChange: (rowIds) => {
+                      if (!rowIds.length) return;
+                      // eslint-disable-next-line no-console
+                      console.warn('[MenuManagementPage] orphan menu rows detected:', rowIds);
+                    },
+                  },
                 }}
               />
             </div>

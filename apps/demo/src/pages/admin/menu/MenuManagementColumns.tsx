@@ -38,8 +38,8 @@ export const createMenuManagementColumns = (
         accessorKey: 'menuName',
         meta: {
           width: 220,
-          editable: true,
-          editType: 'text',
+          editable: false,
+          //editType: 'text',
           editPlaceholder: 'Menu name',
         },
       },
