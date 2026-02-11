@@ -3,14 +3,14 @@ import type { ComponentType } from 'react';
 import { lazy } from 'react';
 
 /**
- * 동적 컴포넌트 레지스트리 (Code Splitting 지원)
+ * ?�적 컴포?�트 ?��??�트�?(Code Splitting 지??
  * 
- * 각 컴포넌트는 필요할 때만 로드됩니다.
- * 초기 번들 크기를 크게 줄일 수 있습니다.
+ * �?컴포?�트???�요???�만 로드?�니??
+ * 초기 번들 ?�기�??�게 줄일 ???�습?�다.
  */
 
 /**
- * 페이지 컴포넌트의 기본 Props
+ * ?�이지 컴포?�트??기본 Props
  */
 export interface PageComponentProps {
   menuId?: string;
@@ -29,25 +29,25 @@ function withLazyDelay<T>(loader: () => Promise<T>): Promise<T> {
 }
 
 /**
- * 컴포넌트 경로 매핑
+ * 컴포?�트 경로 매핑
  * 
- * DB에 저장되는 componentName과 실제 파일 경로를 매핑합니다.
- * 새 페이지 추가 시 여기만 수정하면 됩니다.
+ * DB???�?�되??componentName�??�제 ?�일 경로�?매핑?�니??
+ * ???�이지 추�? ???�기�??�정?�면 ?�니??
  */
 const componentPaths: Record<string, ComponentLoader> = {
-  // 고객 관리
+  // 고객 관�?
   'CustomerInfoPage': () => import('@/pages/customer/customer-info/CustomerInfoPage'),
   // 'CustomerServicePage': () => import('../pages/customer/CustomerServicePage'),
   // 'CustomerAnalysisPage': () => import('../pages/customer/CustomerAnalysisPage'),
 
-  // 금융 및 결제
+  // 금융 �?결제
   // 'PaymentProcessPage': () => import('../pages/finance/PaymentProcessPage'),
   // 'TransferPage': () => import('../pages/finance/TransferPage'),
   // 'SubscriptionPage': () => import('../pages/finance/SubscriptionPage'),
 
-  // 시스템 관리
+  // ?�스??관�?
   'MenuManagementPage': () => import('@/pages/admin/menu/MenuManagementPage'),
-  // 'RoleManagementPage': () => import('../pages/system/RoleManagementPage'),
+  'RoleManagementPage': () => import('@/pages/admin/role/RoleManagementPage'),
   // 'RoleMenuPage': () => import('../pages/system/RoleMenuPage'),
   'UserManagementPage': () => import('@/pages/admin/user/UserManagementPage'),
 
@@ -64,10 +64,10 @@ const componentPaths: Record<string, ComponentLoader> = {
 };
 
 /**
- * 컴포넌트 이름으로 Lazy 컴포넌트를 가져옵니다.
+ * 컴포?�트 ?�름?�로 Lazy 컴포?�트�?가?�옵?�다.
  * 
- * @param componentName - 컴포넌트 이름 (예: 'CustomerInfoPage')
- * @returns React Lazy 컴포넌트 또는 undefined
+ * @param componentName - 컴포?�트 ?�름 (?? 'CustomerInfoPage')
+ * @returns React Lazy 컴포?�트 ?�는 undefined
  * 
  * @example
  * const Component = getLazyComponent('CustomerInfoPage');
@@ -85,16 +85,16 @@ export const getLazyComponent = (componentName?: string): ComponentType<PageComp
 };
 
 /**
- * 컴포넌트를 미리 로드합니다 (Prefetch)
+ * 컴포?�트�?미리 로드?�니??(Prefetch)
  * 
- * 사용자가 메뉴에 마우스를 올렸을 때 미리 로드하여
- * 클릭 시 즉시 표시할 수 있습니다.
+ * ?�용?��? 메뉴??마우?��? ?�렸????미리 로드?�여
+ * ?�릭 ??즉시 ?�시?????�습?�다.
  * 
- * @param componentName - 컴포넌트 이름
+ * @param componentName - 컴포?�트 ?�름
  * 
  * @example
  * <button onMouseEnter={() => prefetchComponent('CustomerInfoPage')}>
- *   고객정보
+ *   고객?�보
  * </button>
  */
 export const prefetchComponent = (componentName: string): void => {
@@ -107,14 +107,15 @@ export const prefetchComponent = (componentName: string): void => {
 };
 
 /**
- * 여러 컴포넌트를 미리 로드합니다
+ * ?�러 컴포?�트�?미리 로드?�니??
  * 
- * @param componentNames - 컴포넌트 이름 배열
+ * @param componentNames - 컴포?�트 ?�름 배열
  * 
  * @example
- * // 사용자의 역할에 따라 자주 사용하는 페이지 미리 로드
+ * // ?�용?�의 ??��???�라 ?�주 ?�용?�는 ?�이지 미리 로드
  * prefetchComponents(['CustomerInfoPage', 'PaymentProcessPage']);
  */
 export const prefetchComponents = (componentNames: string[]): void => {
   componentNames.forEach(prefetchComponent);
 };
+
