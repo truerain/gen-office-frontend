@@ -14,6 +14,7 @@ import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic'
 import { useRoleListQuery, roleApi } from '@/entities/system/role/api/role';
 import type { Role, RoleListParams, RoleRequest } from '@/entities/system/role/model/types';
 import { useAppStore } from '@/app/store/appStore';
+import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
 
 import styles from './RoleManagementPage.module.css';
 import { createRoleManagementColumns } from './RoleManagementColumns';
@@ -81,10 +82,40 @@ async function commitRoleChanges(changes: readonly CrudChange<Role>[], ctxRows: 
   }
 }
 
+function hasMissingRoleName(changes: readonly CrudChange<Role>[]) {
+  const created = new Map<CrudRowId, Role>();
+  const patches = new Map<CrudRowId, Partial<Role>>();
+
+  for (const change of changes) {
+    if (change.type === 'create') {
+      created.set(change.tempId, change.row);
+      continue;
+    }
+    if (change.type === 'update') {
+      patches.set(change.rowId, {
+        ...(patches.get(change.rowId) ?? {}),
+        ...change.patch,
+      });
+    }
+  }
+
+  const hasInvalidCreated = Array.from(created.entries()).some(([tempId, row]) => {
+    const merged = { ...row, ...(patches.get(tempId) ?? {}) };
+    return !String(merged.roleName ?? '').trim();
+  });
+  if (hasInvalidCreated) return true;
+
+  return Array.from(patches.values()).some((patch) => {
+    if (!Object.prototype.hasOwnProperty.call(patch, 'roleName')) return false;
+    return !String(patch.roleName ?? '').trim();
+  });
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function RoleManagementPage(_props: PageComponentProps) {
   const { t } = useTranslation('common');
   const addNotification = useAppStore((state) => state.addNotification);
+  const { openAlert, openConfirm } = useAlertDialog();
 
   const [gridDirty, setGridDirty] = useState(false);
 
@@ -125,7 +156,15 @@ export default function RoleManagementPage(_props: PageComponentProps) {
           onCommit={async ({ changes, ctx }) => {
             await commitRoleChanges(changes, ctx.viewData);
             await refetch();
+            await openAlert({ title: '저장되었습니다.' });
             return { ok: true };
+          }}
+          beforeCommit={({ changes }) => {
+            if (hasMissingRoleName(changes)) {
+              void openAlert({ title: 'Role Name을 입력하세요.' });
+              return false;
+            }
+            return openConfirm({ title: '저장하시겠습니까?' });
           }}
           onCommitError={({ error }) => {
             console.error(error);
