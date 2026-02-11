@@ -71,8 +71,13 @@ function MenuManagementPage(_props: PageComponentProps) {
     if (didInit.current) return;
     if (menuList.length === 0) return;
     setMenuData(menuList);
+    setChildMenus(menuList);   // 임시
     didInit.current = true;
   }, [menuList]);
+
+  useEffect(() => {
+    //void fetchChildren(selectedNodeId);  //임시
+  }, [selectedNodeId]);
 
   const fetchChildren = async (nodeId: number) => {
     const parentId = nodeId === ROOT_ID ? 0 : nodeId;
@@ -93,9 +98,6 @@ function MenuManagementPage(_props: PageComponentProps) {
     }
   };
 
-  useEffect(() => {
-    void fetchChildren(selectedNodeId);
-  }, [selectedNodeId]);
 
   const treeData = useMemo<MenuNode[]>(
     () => [
@@ -211,7 +213,7 @@ function MenuManagementPage(_props: PageComponentProps) {
                   enableRowStatus: true,
                   enableRowSelection: true,
                   editOnActiveCell: true,
-                  keepEditingOnNavigate: true,
+                  keepEditingOnNavigate: false,
                 }}
               />
             </div>

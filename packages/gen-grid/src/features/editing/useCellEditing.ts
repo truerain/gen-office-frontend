@@ -35,6 +35,22 @@ export function useCellEditing<TData>(args: {
   const [editCell, setEditCell] = React.useState<EditCell>(null);
   const prevActiveCellRef = React.useRef<CellCoord | null>(null);
   const pendingEditCellRef = React.useRef<CellCoord | null>(null);
+  const suppressNextFocusEditRef = React.useRef<CellCoord | null>(null);
+  const suppressNextAutoEditOnceRef = React.useRef(false);
+
+  const isNavigationKey = React.useCallback((key: string) => {
+    return (
+      key === 'ArrowLeft' ||
+      key === 'ArrowRight' ||
+      key === 'ArrowUp' ||
+      key === 'ArrowDown' ||
+      key === 'Home' ||
+      key === 'End' ||
+      key === 'PageUp' ||
+      key === 'PageDown' ||
+      key === 'Tab'
+    );
+  }, []);
 
   const canEdit = React.useCallback(
     (rowId: string, columnId: string) => {
@@ -110,6 +126,10 @@ export function useCellEditing<TData>(args: {
           if (!editMode && !editCell) return;
           if (isEditing) return;
           if (editCell && (editCell.rowId !== rowId || editCell.columnId !== columnId)) {
+            if (!keepEditingOnNavigate) {
+              suppressNextAutoEditOnceRef.current = true;
+              suppressNextFocusEditRef.current = { rowId, columnId };
+            }
             pendingEditCellRef.current = { rowId, columnId };
             return;
           }
@@ -118,6 +138,15 @@ export function useCellEditing<TData>(args: {
           }
         },
         onFocus: () => {
+          if (suppressNextAutoEditOnceRef.current) {
+            suppressNextAutoEditOnceRef.current = false;
+            return;
+          }
+          const suppress = suppressNextFocusEditRef.current;
+          if (suppress && suppress.rowId === rowId && suppress.columnId === columnId) {
+            suppressNextFocusEditRef.current = null;
+            return;
+          }
           if (!editOnActiveCell && !editMode) return;
           if (isEditing) return;
           if (editCell && (editCell.rowId !== rowId || editCell.columnId !== columnId)) {
@@ -137,6 +166,9 @@ export function useCellEditing<TData>(args: {
         onKeyDown: (e: any) => {
           // 편집 중이면 Esc로 취소 (Enter는 editor에서 commit 예정)
           if (isEditing) {
+            if (!keepEditingOnNavigate && isNavigationKey(e.key)) {
+              suppressNextAutoEditOnceRef.current = true;
+            }
             // GenGridCell이 Editor 내부에서 처리하도록
             // 상위 핸들러가 먼저 먹지 않도록 방어
             if (e.key === 'Escape') {
@@ -175,10 +207,12 @@ export function useCellEditing<TData>(args: {
       canEdit,
       editCell,
       editOnActiveCell,
+      isNavigationKey,
       onActiveCellChange,
       startEditing,
       editMode,
       activeCell,
+      keepEditingOnNavigate,
     ]
   );
 
@@ -268,6 +302,12 @@ export function useCellEditing<TData>(args: {
       enterEdit(activeCell);
     }
   }, [activeCell, editCell, editMode, enterEdit, keepEditingOnNavigate]);
+
+  React.useEffect(() => {
+    if (editMode) return;
+    suppressNextFocusEditRef.current = null;
+    suppressNextAutoEditOnceRef.current = false;
+  }, [editMode]);
 
   React.useEffect(() => {
     if (typeof document === 'undefined') return;

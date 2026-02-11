@@ -22,6 +22,31 @@ export type GenGridEditorContext<TData> = {
 
 export type GenGridEditorFactory<TData> = (ctx: GenGridEditorContext<TData>) => React.ReactNode;
 
+export type GenGridTreeOptions<TData> = {
+  /** enable flat parent-child tree mode */
+  enabled: boolean;
+  /** row id field key (ex: 'menuId') */
+  idKey: keyof TData | string;
+  /** parent row id field key (ex: 'prntMenuId') */
+  parentIdKey: keyof TData | string;
+  /** tree toggle/indent render column id */
+  treeColumnId?: string;
+  /** root parent discriminator, default: null | undefined | 0 */
+  rootParentValue?: unknown;
+  /** per-depth indent in pixels, default: 12 */
+  indentPx?: number;
+  /** expand all rows on first mount, default: false */
+  defaultExpanded?: boolean;
+  /** controlled expanded state */
+  expandedRowIds?: Record<string, boolean>;
+  /** controlled expanded state change callback */
+  onExpandedRowIdsChange?: (next: Record<string, boolean>) => void;
+  /** show orphan row warning, default: true */
+  showOrphanWarning?: boolean;
+  /** orphan row id list callback */
+  onOrphanRowsChange?: (rowIds: string[]) => void;
+};
+
 type CommonGridOptions<TData> = {
   caption?: string;
 
@@ -81,6 +106,9 @@ type CommonGridOptions<TData> = {
 
   /** tanstack table meta */
   tableMeta?: Record<string, any>;
+
+  /** flat parent-child tree options */
+  tree?: GenGridTreeOptions<TData>;
 };
 
 type ControlledDataProps<TData> = {

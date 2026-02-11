@@ -24,7 +24,7 @@
   --grid-row-bg-disabled: var(--color-bg-tertiary);
   --grid-row-text: var(--color-fg-primary);
   --grid-row-border: var(--color-border-default);
-  --grid-row-font-weight: 450;
+  --grid-row-font-weight: 350;
 
   /* Grid Cells */
   --grid-cell-bg: var(--color-bg-primary);
