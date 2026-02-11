@@ -38,6 +38,17 @@ export type GenGridCellProps<TData> = {
   onTab?: (dir: 1 | -1) => void;
 };
 
+type GenGridTreeMeta = {
+  treeColumnId?: string;
+  indentPx?: number;
+  depthByRowId?: Record<string, number>;
+  hasChildrenByRowId?: Record<string, boolean>;
+  orphanRowIds?: string[];
+  expandedRowIds?: Record<string, boolean>;
+  isExpanded?: (rowId: string) => boolean;
+  toggleRow?: (rowId: string) => void;
+};
+
 type ContentEditableEditorProps = {
   value: unknown;
   onChange: (next: string) => void;
@@ -216,10 +227,22 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
   } = props;
 
   const colId = cell.column.id;
+  const table = cell.getContext().table;
   const pinned = cell.column.getIsPinned();
   const meta = getMeta(cell.column.columnDef) as any;
 
   const isSystemCol = colId === SELECTION_COLUMN_ID || colId === ROW_NUMBER_COLUMN_ID;
+  const treeMeta = ((table.options.meta as any)?.genGridTree ?? null) as GenGridTreeMeta | null;
+  const firstVisibleColumnId = table.getVisibleLeafColumns()[0]?.id;
+  const treeColumnId = treeMeta?.treeColumnId ?? firstVisibleColumnId;
+  const isTreeColumn = Boolean(treeMeta) && !isSystemCol && colId === treeColumnId;
+  const treeDepth = isTreeColumn ? (treeMeta?.depthByRowId?.[rowId] ?? 0) : 0;
+  const treeHasChildren = isTreeColumn ? Boolean(treeMeta?.hasChildrenByRowId?.[rowId]) : false;
+  const treeIsExpanded = treeHasChildren
+    ? Boolean(treeMeta?.isExpanded?.(rowId) ?? treeMeta?.expandedRowIds?.[rowId])
+    : false;
+  const treeIsOrphan = isTreeColumn ? Boolean(treeMeta?.orphanRowIds?.includes(rowId)) : false;
+  const treeIndentPx = Math.max(0, Number(treeMeta?.indentPx ?? 12) || 0);
 
   const alignClass =
     meta?.align === 'right'
@@ -479,6 +502,62 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     }) ??
     renderDefaultEditor();
 
+  const displayContent = meta?.renderCell
+    ? (
+      <div style={{display: "flex", justifyContent: "center" }}>
+        {meta.renderCell({
+          value: cell.getValue(),
+          row: cell.row.original,
+          rowId,
+          columnId: colId,
+          commitValue: onCommitValue,
+        })}
+      </div>
+    )
+    : meta?.format
+      ? (formatCellValue(cell.getValue(), meta) as any)
+      : flexRender(cell.column.columnDef.cell, cell.getContext());
+
+  const nonEditingContent =
+    !isTreeColumn
+      ? displayContent
+      : (
+        <div className={bodyStyles.treeCellWrap} style={{ paddingInlineStart: `${treeDepth * treeIndentPx}px` }}>
+          {treeHasChildren ? (
+            <button
+              type="button"
+              className={bodyStyles.treeToggle}
+              aria-label={treeIsExpanded ? 'Collapse row' : 'Expand row'}
+              aria-expanded={treeIsExpanded}
+              onMouseDown={(e) => {
+                e.stopPropagation();
+              }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                treeMeta?.toggleRow?.(rowId);
+              }}
+            >
+              {treeIsExpanded ? (
+                <svg viewBox="0 0 20 20" width="12" height="12" aria-hidden="true">
+                  <path d="M5 7l5 6 5-6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 20 20" width="12" height="12" aria-hidden="true">
+                  <path d="M7 5l6 5-6 5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </button>
+          ) : (
+            <span className={bodyStyles.treeTogglePlaceholder} aria-hidden="true" />
+          )}
+          <div className={bodyStyles.treeCellContent}>{displayContent}</div>
+          {treeIsOrphan ? (
+            <span className={bodyStyles.treeOrphanBadge} title="Orphan row">!</span>
+          ) : null}
+        </div>
+      );
+
   return (
     <td
       className={[
@@ -503,6 +582,8 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
       data-editing-cell={isEditing ? 'true' : undefined}
       data-dirty={isDirty ? 'true' : undefined}
       data-pinned={pinned ? 'true' : undefined}
+      data-tree-depth={isTreeColumn ? String(treeDepth) : undefined}
+      data-tree-orphan={isTreeColumn && treeIsOrphan ? 'true' : undefined}
       {...cellProps}
       onKeyDown={(e) => {
         if (
@@ -537,21 +618,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
           >
             {editor}
           </div>) 
-        : meta?.renderCell
-          ? (
-            <div style={{display: "flex", justifyContent: "center" }}>
-              {meta.renderCell({
-                value: cell.getValue(),
-                row: cell.row.original,
-                rowId,
-                columnId: colId,
-                commitValue: onCommitValue,
-              })}
-            </div>
-          )
-          : meta?.format
-            ? (formatCellValue(cell.getValue(), meta) as any)
-            : flexRender(cell.column.columnDef.cell, cell.getContext())}
+        : nonEditingContent}
     </td>
   );
 }
