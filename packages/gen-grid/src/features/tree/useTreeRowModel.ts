@@ -33,6 +33,19 @@ export type UseTreeRowModelArgs<TData> = {
   tree?: GenGridTreeOptions<TData>;
 };
 
+function areBooleanRecordEqual(
+  a: Record<string, boolean>,
+  b: Record<string, boolean>
+): boolean {
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  if (aKeys.length !== bKeys.length) return false;
+  for (const key of aKeys) {
+    if (Boolean(a[key]) !== Boolean(b[key])) return false;
+  }
+  return true;
+}
+
 function getValueByKey<TData>(row: TData, key: keyof TData | string): unknown {
   return (row as Record<string, unknown>)[String(key)];
 }
@@ -120,6 +133,7 @@ export function useTreeRowModel<TData>(args: UseTreeRowModelArgs<TData>): TreeRo
 
     if (!tree.defaultExpanded || !model) {
       setInnerExpandedRowIds({});
+      tree.onExpandedRowIdsChange?.({});
       didInitTreeRef.current = true;
       return;
     }
@@ -127,6 +141,7 @@ export function useTreeRowModel<TData>(args: UseTreeRowModelArgs<TData>): TreeRo
     const next: Record<string, boolean> = {};
     for (const id of model.expandableIds) next[id] = true;
     setInnerExpandedRowIds(next);
+    tree.onExpandedRowIdsChange?.(next);
     didInitTreeRef.current = true;
   }, [model, tree, treeEnabled]);
 
@@ -134,12 +149,13 @@ export function useTreeRowModel<TData>(args: UseTreeRowModelArgs<TData>): TreeRo
 
   const setExpandedRowIds = React.useCallback(
     (next: Record<string, boolean>) => {
+      if (areBooleanRecordEqual(expandedRowIds, next)) return;
       if (tree?.expandedRowIds == null) {
         setInnerExpandedRowIds(next);
       }
       tree?.onExpandedRowIdsChange?.(next);
     },
-    [tree]
+    [expandedRowIds, tree]
   );
 
   const isExpanded = React.useCallback(
@@ -195,8 +211,29 @@ export function useTreeRowModel<TData>(args: UseTreeRowModelArgs<TData>): TreeRo
   }, [data, expandedRowIds, model, treeEnabled]);
 
   React.useEffect(() => {
+    if (!treeEnabled || !tree || !model) return;
+    if (tree.expandedRowIds != null) return;
+
+    const next: Record<string, boolean> = {};
+    for (const [rowId, expanded] of Object.entries(innerExpandedRowIds)) {
+      if (!expanded) continue;
+      if (!model.nodesById.has(rowId)) continue;
+      next[rowId] = true;
+    }
+    if (!areBooleanRecordEqual(innerExpandedRowIds, next)) {
+      setInnerExpandedRowIds(next);
+      tree.onExpandedRowIdsChange?.(next);
+    }
+  }, [innerExpandedRowIds, model, tree, treeEnabled]);
+
+  const orphanNotifyKeyRef = React.useRef<string | null>(null);
+  React.useEffect(() => {
     if (!treeEnabled || !tree?.onOrphanRowsChange) return;
-    tree.onOrphanRowsChange(model?.orphanIds ?? []);
+    const orphanIds = model?.orphanIds ?? [];
+    const nextKey = orphanIds.join('|');
+    if (orphanNotifyKeyRef.current === nextKey) return;
+    orphanNotifyKeyRef.current = nextKey;
+    tree.onOrphanRowsChange(orphanIds);
   }, [model?.orphanIds, tree, treeEnabled]);
 
   return {

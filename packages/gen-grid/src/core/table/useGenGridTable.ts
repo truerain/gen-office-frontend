@@ -316,6 +316,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
             depthByRowId: treeModel.depthByRowId,
             hasChildrenByRowId: treeModel.hasChildrenByRowId,
             orphanRowIds: treeModel.orphanRowIds,
+            orphanRowCount: treeModel.orphanRowIds.length,
             expandedRowIds: treeModel.expandedRowIds,
             isExpanded: treeModel.isExpanded,
             toggleRow: treeModel.toggleRow,
