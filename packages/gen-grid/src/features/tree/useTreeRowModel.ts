@@ -30,7 +30,7 @@ export type TreeRowModelResult<TData> = {
 
 export type UseTreeRowModelArgs<TData> = {
   data: TData[];
-  tree: GenGridTreeOptions<TData>;
+  tree?: GenGridTreeOptions<TData>;
 };
 
 function getValueByKey<TData>(row: TData, key: keyof TData | string): unknown {
@@ -92,26 +92,52 @@ function buildTreeModel<TData>(data: TData[], tree: GenGridTreeOptions<TData>): 
 
 export function useTreeRowModel<TData>(args: UseTreeRowModelArgs<TData>): TreeRowModelResult<TData> {
   const { data, tree } = args;
+  const treeEnabled = Boolean(tree?.enabled);
 
-  const model = React.useMemo(() => buildTreeModel(data, tree), [data, tree]);
+  const model = React.useMemo(() => {
+    if (!treeEnabled || !tree) return null;
+    return buildTreeModel(data, tree);
+  }, [data, tree, treeEnabled]);
 
   const [innerExpandedRowIds, setInnerExpandedRowIds] = React.useState<Record<string, boolean>>(
     () => {
-      if (!tree.defaultExpanded) return {};
+      if (!treeEnabled || !tree?.defaultExpanded || !model) return {};
       const next: Record<string, boolean> = {};
       for (const id of model.expandableIds) next[id] = true;
       return next;
     }
   );
 
-  const expandedRowIds = tree.expandedRowIds ?? innerExpandedRowIds;
+  const didInitTreeRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if (!treeEnabled || !tree) {
+      didInitTreeRef.current = false;
+      return;
+    }
+    if (tree.expandedRowIds != null) return;
+    if (didInitTreeRef.current) return;
+
+    if (!tree.defaultExpanded || !model) {
+      setInnerExpandedRowIds({});
+      didInitTreeRef.current = true;
+      return;
+    }
+
+    const next: Record<string, boolean> = {};
+    for (const id of model.expandableIds) next[id] = true;
+    setInnerExpandedRowIds(next);
+    didInitTreeRef.current = true;
+  }, [model, tree, treeEnabled]);
+
+  const expandedRowIds = tree?.expandedRowIds ?? innerExpandedRowIds;
 
   const setExpandedRowIds = React.useCallback(
     (next: Record<string, boolean>) => {
-      if (tree.expandedRowIds == null) {
+      if (tree?.expandedRowIds == null) {
         setInnerExpandedRowIds(next);
       }
-      tree.onExpandedRowIdsChange?.(next);
+      tree?.onExpandedRowIdsChange?.(next);
     },
     [tree]
   );
@@ -132,6 +158,15 @@ export function useTreeRowModel<TData>(args: UseTreeRowModelArgs<TData>): TreeRo
   );
 
   const visible = React.useMemo(() => {
+    if (!treeEnabled || !model) {
+      return {
+        visibleRows: data,
+        visibleRowIds: data.map((_, i) => String(i)),
+        depthByRowId: {} as Record<string, number>,
+        hasChildrenByRowId: {} as Record<string, boolean>,
+      };
+    }
+
     const visibleRows: TData[] = [];
     const visibleRowIds: string[] = [];
     const depthByRowId: Record<string, number> = {};
@@ -157,23 +192,22 @@ export function useTreeRowModel<TData>(args: UseTreeRowModelArgs<TData>): TreeRo
     for (const rootId of model.rootIds) visit(rootId, 0);
 
     return { visibleRows, visibleRowIds, depthByRowId, hasChildrenByRowId };
-  }, [expandedRowIds, model]);
+  }, [data, expandedRowIds, model, treeEnabled]);
 
   React.useEffect(() => {
-    if (!tree.onOrphanRowsChange) return;
-    tree.onOrphanRowsChange(model.orphanIds);
-  }, [model.orphanIds, tree]);
+    if (!treeEnabled || !tree?.onOrphanRowsChange) return;
+    tree.onOrphanRowsChange(model?.orphanIds ?? []);
+  }, [model?.orphanIds, tree, treeEnabled]);
 
   return {
     visibleRows: visible.visibleRows,
     visibleRowIds: visible.visibleRowIds,
     depthByRowId: visible.depthByRowId,
     hasChildrenByRowId: visible.hasChildrenByRowId,
-    orphanRowIds: model.orphanIds,
+    orphanRowIds: model?.orphanIds ?? [],
     expandedRowIds,
     setExpandedRowIds,
     toggleRow,
     isExpanded,
   };
 }
-
