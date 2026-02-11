@@ -12,26 +12,12 @@ import { useAppStore } from '@/app/store/appStore';
 import { PageProvider } from '@/contexts';
 import { onI18nRemoteFailed } from '@/i18n';
 import { setAuthExpiredHandler, setCsrfTokenProvider } from '@/shared/api/http';
-import { ensureCsrf, getMe } from '@/shared/api/auth';
+import { ensureCsrf, getMe, logout } from '@/shared/api/auth';
+import LoadingPage from '@/shared/ui/loading/LoadingPage';
 import LoginPage from '@/pages/auth/LoginPage';
 import '@gen-office/mdi/index.css';
 import styles from './App.module.css';
 import { useAppMenuListQuery } from './menu/api/appMenu';
-
-// 로딩 컴포넌트
-const LoadingPage = () => (
-  <div style={{
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '400px',
-    flexDirection: 'column',
-    gap: '1rem'
-  }}>
-    <div className={styles.loadingSpinner}></div>
-    <p style={{ color: '#666' }}>페이지를 불러오는 중(여기)...</p>
-  </div>
-);
 
 const LAZY_DELAY_MS = 0;
 const withLazyDelay = <T,>(loader: () => Promise<T>) =>
@@ -213,6 +199,16 @@ function App() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch {
+      // ignore logout API error and clear local session
+    } finally {
+      resetSession();
+    }
+  };
+
   // 메뉴 클릭 핸들러 - Drawer로 미구현 알림
   const handleOpenPage = (
     menuId: string,
@@ -263,6 +259,7 @@ function App() {
         <LeftPanelLayout
           onOpenPage={handleOpenPage}
           onOpenHome={handleOpenHome}
+          onLogout={handleLogout}
           menuTree={menuTree}
         >
           <MDIContainer
@@ -281,6 +278,7 @@ function App() {
         <TitleBarLayout
           onOpenPage={handleOpenPage}
           onOpenHome={handleOpenHome}
+          onLogout={handleLogout}
           menuTree={menuTree}
         >
           <MDIContainer

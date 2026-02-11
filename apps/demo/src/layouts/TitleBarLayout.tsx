@@ -26,6 +26,7 @@ interface TitleBarLayoutProps {
   menuTree: MenuTreeItem[];
   onOpenPage: (menuId: string, title: string, icon: ReactNode) => void;
   onOpenHome?: () => void;
+  onLogout?: () => void | Promise<void>;
   children: ReactNode;
 }
 
@@ -33,6 +34,7 @@ export function TitleBarLayout({
   menuTree,
   onOpenPage,
   onOpenHome,
+  onLogout,
   children,
 }: TitleBarLayoutProps) {
   const { mode, setMode } = useTheme();
@@ -189,7 +191,7 @@ export function TitleBarLayout({
                 <span>환경설정</span>
               </DropdownMenuItem>
 
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => void onLogout?.()}>
                 <LogOut size={16} />
                 <span>로그아웃</span>
               </DropdownMenuItem>

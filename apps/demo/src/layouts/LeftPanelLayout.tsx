@@ -16,6 +16,7 @@ interface LeftPanelLayoutProps {
   menuTree: MenuTreeItem[];
   onOpenPage: (menuId: string, title: string, icon: ReactNode) => void;
   onOpenHome?: () => void;
+  onLogout?: () => void | Promise<void>;
   children: ReactNode;
 }
 
@@ -23,6 +24,7 @@ export function LeftPanelLayout({
   menuTree,
   onOpenPage,
   onOpenHome,
+  onLogout,
   children,
 }: LeftPanelLayoutProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -112,7 +114,7 @@ export function LeftPanelLayout({
             {mode === 'light' ? <Moon size={16} /> : <Sun size={16} />}
             <span className={styles.navLabel}>{mode === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
           </button>
-          <button type="button" className={styles.settingsButton}>
+          <button type="button" className={styles.settingsButton} onClick={() => void onLogout?.()}>
             <LogOut size={16} />
             <span className={styles.navLabel}>Logout</span>
           </button>

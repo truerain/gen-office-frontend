@@ -46,7 +46,7 @@ export async function ensureCsrf(force = false): Promise<void> {
 }
 
 export async function login(input: LoginRequest): Promise<LoginResponse> {
-  await ensureCsrf();
+  //await ensureCsrf();
   return http<LoginResponse>('/api/auth/login', {
     method: 'POST',
     body: JSON.stringify(input),
