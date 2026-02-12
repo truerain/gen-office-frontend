@@ -1,5 +1,5 @@
 // apps/demo/src/entities/system/role/api/role.ts
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { http } from '@/shared/api/http';
 import type { Role, RoleListParams, RoleRequest } from '@/entities/system/role/model/types';
 
@@ -59,7 +59,6 @@ export function useRoleListQuery(params: RoleListParams) {
   return useQuery({
     queryKey: roleKeys.list(params),
     queryFn: () => roleApi.list(params),
-    placeholderData: keepPreviousData,
   });
 }
 

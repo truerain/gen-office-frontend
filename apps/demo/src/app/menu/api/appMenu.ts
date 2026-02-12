@@ -1,5 +1,5 @@
 // apps/demo/src/entities/system/menu/api/menu.ts
-import { useQuery, keepPreviousData, type UseQueryOptions } from '@tanstack/react-query';
+import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
 import { http } from '@/shared/api/http';
 import type { AppMenu } from '../model/types';
 
@@ -24,7 +24,6 @@ export function useAppMenuListQuery(
   return useQuery({
     queryKey: ["app-menu"],
     queryFn: () => menuApi.list(),
-    placeholderData: keepPreviousData, // v5 "keep previous data"
     ...options,
   });
 }

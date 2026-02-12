@@ -1,5 +1,5 @@
 // apps/demo/src/entities/customer/api/customer.ts
-import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { http } from '@/shared/api/http';
 import type {
   Customer,
@@ -58,7 +58,6 @@ export function useCustomerListQuery(params: CustomerListParams) {
   return useQuery({
     queryKey: customerKeys.list(params),
     queryFn: () => customerApi.list(params),
-    placeholderData: keepPreviousData, // v5 "keep previous data"
   });
 }
 
