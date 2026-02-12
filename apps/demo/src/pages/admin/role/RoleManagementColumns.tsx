@@ -21,8 +21,8 @@ export const createRoleManagementColumns = (
     id: 'roleId',
     header: t('role.id', { defaultValue: 'Role ID' }),
     accessorKey: 'roleId',
+    size: 120,
     meta: {
-      width: 120,
       align: 'center',
       pinned: 'left',
       renderCell: ({ value }) => {
@@ -36,8 +36,8 @@ export const createRoleManagementColumns = (
     id: 'roleCd',
     header: t('role.code', { defaultValue: 'Role Code' }),
     accessorKey: 'roleCd',
+    size: 160,
     meta: {
-      width: 160,
       editable: true,
       editType: 'text',
       align: 'center',
@@ -48,8 +48,8 @@ export const createRoleManagementColumns = (
     id: 'roleName',
     header: t('role.name', { defaultValue: 'Role Name' }),
     accessorKey: 'roleName',
+    size: 200,
     meta: {
-      width: 200,
       editable: true,
       editType: 'text',
       editPlaceholder: 'Role name',
@@ -59,8 +59,8 @@ export const createRoleManagementColumns = (
     id: 'roleNameEng',
     header: t('role.nameEng', { defaultValue: 'Role Name (Eng)' }),
     accessorKey: 'roleNameEng',
+    size: 200,
     meta: {
-      width: 200,
       editable: true,
       editType: 'text',
       editPlaceholder: 'Role name (eng)',
@@ -70,8 +70,8 @@ export const createRoleManagementColumns = (
     id: 'roleDesc',
     header: t('role.description', { defaultValue: 'Description' }),
     accessorKey: 'roleDesc',
+    size: 260,
     meta: {
-      width: 260,
       editable: true,
       editType: 'text',
       editPlaceholder: 'Description',
@@ -81,8 +81,8 @@ export const createRoleManagementColumns = (
     id: 'useYn',
     header: t('common.useYn', { defaultValue: 'Use' }),
     accessorKey: 'useYn',
+    size: 100,
     meta: {
-      width: 100,
       editable: true,
       editType: 'select',
       align: 'center',
@@ -98,8 +98,8 @@ export const createRoleManagementColumns = (
     id: 'sortOrder',
     header: t('common.sortOrder', { defaultValue: 'Sort Order' }),
     accessorKey: 'sortOrder',
+    size: 110,
     meta: {
-      width: 110,
       align: 'center',
       editable: true,
       editType: 'number',
@@ -109,16 +109,12 @@ export const createRoleManagementColumns = (
     id: 'lastUpdatedBy',
     header: t('common.updatedBy', { defaultValue: 'Updated By' }),
     accessorKey: 'lastUpdatedBy',
-    meta: {
-      width: 140,
-    },
+    size: 140,
   },
   {
     id: 'lastUpdatedDate',
     header: t('common.updatedAt', { defaultValue: 'Updated At' }),
     accessorKey: 'lastUpdatedDate',
-    meta: {
-      width: 180,
-    },
+    size: 180,
   },
 ];

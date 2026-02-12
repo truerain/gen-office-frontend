@@ -19,9 +19,9 @@ function baseColumn<TData>(
     id: opts?.id ?? key,
     header,
     accessorKey: key,
+    size: opts?.width,
     cell: opts?.cell,
     meta: {
-      width: opts?.width,
       align: opts?.align,
       editable: opts?.editable,
       ...(opts?.meta ?? {}),

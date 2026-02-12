@@ -19,12 +19,12 @@ export const createMenuManagementColumns = (
   t: TFunction,
   options: MenuManagementColumnOptions = {}
 ): ColumnDef<Menu>[] => [
-   {
+  {
     id: 'treeItem',
     header: 'Menu',
     accessorKey: 'menuName',
+    size: 220,
     meta: {
-      width: 220,
       editable: false,
     },
   },
@@ -32,8 +32,8 @@ export const createMenuManagementColumns = (
     id: 'menuId',
     header: t('menu.id'),
     accessorKey: 'menuId',
+    size: 140,
     meta: {
-      width: 140,
       align: 'center',
       editable: true,
       editType: 'number',
@@ -45,8 +45,8 @@ export const createMenuManagementColumns = (
     id: 'menuName',
     header: 'Menu Name',
     accessorKey: 'menuName',
+    size: 220,
     meta: {
-      width: 220,
       editable: true,
       editType: 'text',
       editPlaceholder: 'Menu name',
@@ -56,8 +56,8 @@ export const createMenuManagementColumns = (
     id: 'menuNameEng',
     header: 'Menu Name (Eng)',
     accessorKey: 'menuNameEng',
+    size: 220,
     meta: {
-      width: 220,
       editable: true,
       editType: 'text',
       editPlaceholder: 'Menu name (eng)',
@@ -67,8 +67,8 @@ export const createMenuManagementColumns = (
     id: 'menuDesc',
     header: 'Description',
     accessorKey: 'menuDesc',
+    size: 240,
     meta: {
-      width: 240,
       editable: true,
       editType: 'text',
       editPlaceholder: 'Description',
@@ -78,8 +78,8 @@ export const createMenuManagementColumns = (
     id: 'menuDescEng',
     header: 'Description (Eng)',
     accessorKey: 'menuDescEng',
+    size: 240,
     meta: {
-      width: 240,
       editable: true,
       editType: 'text',
       editPlaceholder: 'Description (eng)',
@@ -89,8 +89,8 @@ export const createMenuManagementColumns = (
     id: 'menuLevel',
     header: 'Level',
     accessorKey: 'menuLevel',
+    size: 80,
     meta: {
-      width: 80,
       align: 'center',
       editable: true,
       editType: 'number',
@@ -100,8 +100,8 @@ export const createMenuManagementColumns = (
     id: 'parentMenuId',
     header: 'Parent',
     accessorKey: 'parentMenuId',
+    size: 140,
     meta: {
-      width: 140,
       align: 'center',
       editable: true,
       editType: 'number',
@@ -111,8 +111,8 @@ export const createMenuManagementColumns = (
     id: 'displayYn',
     header: 'Display',
     accessorKey: 'displayYn',
+    size: 90,
     meta: {
-      width: 90,
       editable: true,
       editType: 'select',
       align: 'center',
@@ -128,8 +128,8 @@ export const createMenuManagementColumns = (
     id: 'useYn',
     header: 'Use',
     accessorKey: 'useYn',
+    size: 90,
     meta: {
-      width: 90,
       align: 'center',
       renderCell: ({ value, commitValue }) => (
         <Switch
@@ -154,8 +154,8 @@ export const createMenuManagementColumns = (
     id: 'menuIcon',
     header: 'Icon',
     accessorKey: 'menuIcon',
+    size: 160,
     meta: {
-      width: 160,
       editable: true,
       editType: 'text',
       editPlaceholder: 'Lucide icon name',
@@ -165,8 +165,8 @@ export const createMenuManagementColumns = (
     id: 'execComponent',
     header: 'Component',
     accessorKey: 'execComponent',
+    size: 220,
     meta: {
-      width: 220,
       editable: true,
       editType: 'text',
       editPlaceholder: 'Component name',
@@ -176,8 +176,8 @@ export const createMenuManagementColumns = (
     id: 'sortOrder',
     header: 'Sort',
     accessorKey: 'sortOrder',
+    size: 90,
     meta: {
-      width: 90,
       align: 'center',
       editable: true,
       editType: 'number',

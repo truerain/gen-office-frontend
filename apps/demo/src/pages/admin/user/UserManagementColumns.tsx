@@ -21,7 +21,8 @@ export const createUserManagementColumns = (
     id: 'userId',
     header: t('user.id'),
     accessorKey: 'userId',
-    meta: { width: 120, align: 'center', pinned: 'left' },
+    size: 120,
+    meta: { align: 'center', pinned: 'left' },
     footer: _ => (
           <div style={{textAlign: 'center', fontWeight: 500}}>Total</div>
     )
@@ -30,7 +31,8 @@ export const createUserManagementColumns = (
     id: 'empNo',
     header: 'Emp No',
     accessorKey: 'empNo',
-    meta: { width: 140, editable: true, editType: 'text', align: 'center'},
+    size: 140,
+    meta: { editable: true, editType: 'text', align: 'center'},
     footer: info => (
           <div style={{textAlign: 'right', fontWeight: 450}}>{info.table.getRowCount()}</div>
     )
@@ -40,38 +42,43 @@ export const createUserManagementColumns = (
     id: 'empName',
     header: 'Name',
     accessorKey: 'empName',
-    meta: { width: 160, editable: true, editType: 'text' },
+    size: 160,
+    meta: { editable: true, editType: 'text' },
   },
   {
     id: 'empNameEng',
     header: 'Name (Eng)',
     accessorKey: 'empNameEng',
-    meta: { width: 160, editable: true, editType: 'text' },
+    size: 160,
+    meta: { editable: true, editType: 'text' },
   },
   {
     id: 'email',
     header: 'Email',
     accessorKey: 'email',
-    meta: { width: 220, editable: true, editType: 'text' },
+    size: 220,
+    meta: { editable: true, editType: 'text' },
   },
   {
     id: 'orgId',
     header: 'Org ID',
     accessorKey: 'orgId',
-    meta: { width: 140, editable: true, editType: 'text' },
+    size: 140,
+    meta: { editable: true, editType: 'text' },
   },
   {
     id: 'title',
     header: 'Title',
     accessorKey: 'title',
-    meta: { width: 140, editable: true, editType: 'text' },
+    size: 140,
+    meta: { editable: true, editType: 'text' },
   },
   {
     id: 'langCd',
     header: 'Lang',
     accessorKey: 'langCd',
+    size: 80,
     meta: {
-      width: 80,
       editable: true,
       editType: 'select',
       align: 'center',
@@ -87,18 +94,19 @@ export const createUserManagementColumns = (
     id: 'password',
     header: 'Password',
     accessorKey: 'password',
-    meta: { width: 160, editable: true, editType: 'text' },
+    size: 160,
+    meta: { editable: true, editType: 'text' },
   },
   {
     id: 'lastUpdatedBy',
     header: 'Updated By',
     accessorKey: 'lastUpdatedBy',
-    meta: { width: 140 },
+    size: 140,
   },
   {
     id: 'lastUpdatedDate',
     header: 'Updated At',
     accessorKey: 'lastUpdatedDate',
-    meta: { width: 160 },
+    size: 160,
   },
 ];
