@@ -53,6 +53,14 @@
   min-width: 6.25rem; /* 100px */
 }
 
+.icon {
+  height: 1.875rem;
+  width: 1.875rem;
+  min-width: 1.875rem;
+  padding: 0;
+  border-radius: 0.375rem;
+}
+
 .default {
   background: var(--button-default-bg);
   color: var(--button-default-text);
@@ -300,6 +308,11 @@
 .lg .iconWrapper {
   width: 1.125rem; /* 18px */
   height: 1.125rem; /* 18px */
+}
+
+.icon .iconWrapper {
+  width: 1rem;
+  height: 1rem;
 }
 
 .iconWrapper svg {

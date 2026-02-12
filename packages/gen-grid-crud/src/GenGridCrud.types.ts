@@ -2,6 +2,7 @@
 import type * as React from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 import type { GenGridEditorFactory, GenGridProps } from '@gen-office/gen-grid';
+import type { ButtonVariant } from '@gen-office/ui';
 import type { CrudChange, CrudRowId, UseMakePatch } from './crud/types';
 
 export type CrudCommitContext<TData> = {
@@ -42,6 +43,43 @@ export type CrudCellEditEvent<TData> = {
   row: TData;
 };
 
+export type CrudActionButtonStyle = 'text' | 'icon';
+export type CrudActionSide = 'left' | 'right';
+export type CrudBuiltInActionKey = 'add' | 'delete' | 'save' | 'filter' | 'reset';
+
+export type CrudActionApi = {
+  add?: () => void;
+  deleteSelected?: () => void;
+  save?: () => Promise<void>;
+  reset: () => void;
+  toggleFilter?: () => void;
+};
+
+export type CrudActionContext<TData> = {
+  state: CrudUiState<TData>;
+  api: CrudActionApi;
+};
+
+export type CrudActionItem<TData> = {
+  key: string;
+  label?: React.ReactNode;
+  icon?: React.ReactNode;
+  style?: CrudActionButtonStyle;
+  variant?: ButtonVariant;
+  side?: CrudActionSide;
+  order?: number;
+  visible?: boolean | ((ctx: CrudActionContext<TData>) => boolean);
+  disabled?: boolean | ((ctx: CrudActionContext<TData>) => boolean);
+  onClick?: (ctx: CrudActionContext<TData>) => void | Promise<void>;
+};
+
+export type CrudActionBarOptions<TData> = {
+  enabled?: boolean;
+  position?: 'top' | 'bottom' | 'both';
+  defaultStyle?: CrudActionButtonStyle;
+  includeBuiltIns?: readonly CrudBuiltInActionKey[];
+  customActions?: readonly CrudActionItem<TData>[];
+};
 
 export type GenGridCrudProps<TData> = {
   title?: string;
@@ -67,8 +105,13 @@ export type GenGridCrudProps<TData> = {
   beforeCommit?: (state: CrudUiState<TData>) => boolean | Promise<boolean>;
 
   /** ActionBar */
+  actionBar?: CrudActionBarOptions<TData>;
+  /** @deprecated use actionBar.enabled */
   showActionBar?: boolean;
+  /** @deprecated use actionBar.position */
   actionBarPosition?: 'top' | 'bottom' | 'both';
+  /** @deprecated use actionBar.defaultStyle */
+  actionButtonStyle?: 'text' | 'icon';
 
   /** selection (GenGrid API가 ?�르�??�기�?바꾸�??? */
   selectedRowIds?: readonly CrudRowId[];

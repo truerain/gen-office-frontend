@@ -7,4 +7,12 @@ export type { GenGridCrudProps as GenGridProps } from './GenGridCrud.types';
 // 원하면 원 이름도 노출
 export { GenGridCrud } from './GenGridCrud';
 export type { CrudChange, CrudRowId } from './crud/types';
-export type { GenGridCrudProps } from './GenGridCrud.types';
+export type {
+  GenGridCrudProps,
+  CrudActionApi,
+  CrudActionBarOptions,
+  CrudActionButtonStyle,
+  CrudActionContext,
+  CrudActionItem,
+  CrudBuiltInActionKey,
+} from './GenGridCrud.types';

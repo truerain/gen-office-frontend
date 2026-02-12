@@ -5,7 +5,12 @@ import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
 import { applyDiff } from './crud/applyDiff';
 import { usePendingChanges } from './crud/usePendingChanges';
 import type { CrudRowId } from './crud/types';
-import type { GenGridCrudProps, CrudUiState, CrudPendingDiff } from './GenGridCrud.types';
+import type {
+  GenGridCrudProps,
+  CrudUiState,
+  CrudPendingDiff,
+  CrudActionApi,
+} from './GenGridCrud.types';
 import { CrudActionBar } from './components/CrudActionBar';
 import styles from './GenGridCrud.module.css';
 
@@ -122,8 +127,10 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     onCommitError,
     beforeCommit,
 
+    actionBar,
     showActionBar = true,
     actionBarPosition = 'top',
+    actionButtonStyle = 'text',
 
     selectedRowIds: selectedRowIdsControlled,
     onSelectedRowIdsChange,
@@ -140,6 +147,12 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
 
     gridProps,
   } = props;
+
+  const actionBarEnabled = actionBar?.enabled ?? showActionBar;
+  const resolvedActionBarPosition = actionBar?.position ?? actionBarPosition;
+  const resolvedActionButtonStyle = actionBar?.defaultStyle ?? actionButtonStyle;
+  const includedBuiltInActions = actionBar?.includeBuiltIns;
+  const customActions = actionBar?.customActions;
 
   const [selectedRowIdsUncontrolled, setSelectedRowIdsUncontrolled] = React.useState<readonly CrudRowId[]>([]);
   const selectedRowIds = selectedRowIdsControlled ?? selectedRowIdsUncontrolled;
@@ -510,8 +523,19 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     isCommitting,
   ]);
 
+  const actionApi = React.useMemo<CrudActionApi>(
+    () => ({
+      add: createRow ? handleAdd : undefined,
+      deleteSelected: handleDelete,
+      save: handleSave,
+      reset: handleReset,
+      toggleFilter: handleToggleFilter,
+    }),
+    [createRow, handleAdd, handleDelete, handleSave, handleReset, handleToggleFilter]
+  );
+
   const actionBarNode =
-    showActionBar ? (
+    actionBarEnabled ? (
       <CrudActionBar<TData>
         title={title}
         state={{
@@ -525,12 +549,11 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
           activeColumnId: activeCell?.columnId,
           isCommitting,
         }}
-        onAdd={createRow ? handleAdd : undefined}
-        onDelete={handleDelete}
-        onReset={handleReset}
-        onSave={handleSave}
-        onToggleFilter={handleToggleFilter}
+        actionApi={actionApi}
         filterEnabled={filterEnabled}
+        actionButtonStyle={resolvedActionButtonStyle}
+        includeBuiltIns={includedBuiltInActions}
+        customActions={customActions}
       />
     ) : null;
 
@@ -544,7 +567,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
 
   return (
     <div className={styles.root}>
-      {(actionBarPosition === 'top' || actionBarPosition === 'both') && actionBarNode}
+      {(resolvedActionBarPosition === 'top' || resolvedActionBarPosition === 'both') && actionBarNode}
 
       <GenGrid<TData>
         data={gridData}
@@ -566,7 +589,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
         editorFactory={editorFactory}
       />
 
-      {(actionBarPosition === 'bottom' || actionBarPosition === 'both') && actionBarNode}
+      {(resolvedActionBarPosition === 'bottom' || resolvedActionBarPosition === 'both') && actionBarNode}
     </div>
   );
 }
