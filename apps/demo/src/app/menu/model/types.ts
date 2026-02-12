@@ -5,14 +5,12 @@ export interface AppMenu {
   menuName: string;
   menuNameEng: string;
   menuDesc?: string;
-  prntMenuId: number|null;
-  dsplFlag: string;
-  useFlag?: string;
+  menuDescEng?: string;
+  menuIcon?: string;
+  menuLevel?: number;
+  execComponent?: string;
+  parentMenuId: number|null;
+  displayYn: string;
+  useYn?: string;
   sortOrder: number;
-  url?: string;
-  param1?: string;
-  param2?: string;
-  param3?: string;
-  param4?: string;
-  param5?: string;
 }

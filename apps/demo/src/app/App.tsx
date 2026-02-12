@@ -1,12 +1,12 @@
 // apps/demo/src/App.tsx
-import { useEffect, Suspense, useState, useMemo, lazy } from 'react';
+import { useEffect, Suspense, useState, useMemo, lazy, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MDIContainer, useMDIStore } from '@gen-office/mdi';
 import { Drawer } from '@gen-office/ui';
 import { useTheme } from '@gen-office/theme';
 import { Home, AlertCircle, Code, FileQuestion } from 'lucide-react';
 import { LeftPanelLayout, TitleBarLayout } from '@/layouts';
-import { findMenuItem, mapMenusToMenuItems, menuTree as buildMenuTree } from '@/app/menu/menuData';
+import { buildSystemMenuData } from '@/app/menu/menuData';
 import { getLazyComponent } from '@/app/config/componentRegistry.dynamic';
 import { useAppStore } from '@/app/store/appStore';
 import { PageProvider } from '@/contexts';
@@ -89,9 +89,12 @@ function App() {
   const setUser = useAppStore((state) => state.setUser);
   const { t } = useTranslation('common');
 
-  const { data: menuList = [] } = useAppMenuListQuery({ enabled: !!user });
-  const menuItems = useMemo(() => mapMenusToMenuItems(menuList), [menuList]);
-  const menuTree = useMemo(() => buildMenuTree(menuItems), [menuItems]);
+  const { data: menuList = [], isSuccess: isMenuListSuccess, dataUpdatedAt: menuDataUpdatedAt } =
+    useAppMenuListQuery({ enabled: !!user });
+  const systemMenuData = useMemo(() => buildSystemMenuData(menuList), [menuList]);
+  const menuItems = systemMenuData.items;
+  const menuTree = systemMenuData.tree;
+  const hasLoggedMenuSnapshotRef = useRef(false);
 
   // Theme 연동
   const { setMode } = useTheme();
@@ -125,6 +128,20 @@ function App() {
     });
     return () => setAuthExpiredHandler(null);
   }, [addNotification, resetSession]);
+
+  useEffect(() => {
+    if (!isMenuListSuccess) return;
+    if (hasLoggedMenuSnapshotRef.current) return;
+
+    hasLoggedMenuSnapshotRef.current = true;
+    console.group('[AppMenu] first load snapshot');
+    console.log('raw menuList (API result):', menuList);
+    console.log('mapped menuItems (for rendering):', menuItems);
+    console.log('menuTree (for layout):', menuTree);
+    console.log('breadcrumbById (precomputed):', systemMenuData.breadcrumbById);
+    console.log('dataUpdatedAt:', menuDataUpdatedAt);
+    console.groupEnd();
+  }, [isMenuListSuccess, menuList, menuItems, menuTree, systemMenuData.breadcrumbById, menuDataUpdatedAt]);
 
   const [bootstrapping, setBootstrapping] = useState(true);
 
@@ -217,7 +234,7 @@ function App() {
     params?: Record<string, unknown>
   ) => {
     // 1. 메뉴 데이터에서 아이템 찾기
-    const menuItem = findMenuItem(menuItems, menuId);
+    const menuItem = systemMenuData.byId.get(menuId);
     // 2. componentName으로 Lazy 컴포넌트 가져오기
     const LazyComponent = getLazyComponent(menuItem?.componentName);
 

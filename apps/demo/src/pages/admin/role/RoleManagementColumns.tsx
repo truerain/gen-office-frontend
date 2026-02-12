@@ -18,19 +18,24 @@ export const createRoleManagementColumns = (
   options: RoleManagementColumnOptions = {}
 ): ColumnDef<Role>[] => [
   {
-    id: 'id',
+    id: 'roleId',
     header: t('role.id', { defaultValue: 'Role ID' }),
-    accessorKey: 'id',
+    accessorKey: 'roleId',
     meta: {
       width: 120,
       align: 'center',
       pinned: 'left',
+      renderCell: ({ value }) => {
+        const id = Number(value);
+        if (!Number.isFinite(id) || id <= 0) return '';
+        return String(id);
+      },
     },
   },
   {
-    id: 'roleCode',
+    id: 'roleCd',
     header: t('role.code', { defaultValue: 'Role Code' }),
-    accessorKey: 'roleCode',
+    accessorKey: 'roleCd',
     meta: {
       width: 160,
       editable: true,
@@ -51,6 +56,17 @@ export const createRoleManagementColumns = (
     },
   },
   {
+    id: 'roleNameEng',
+    header: t('role.nameEng', { defaultValue: 'Role Name (Eng)' }),
+    accessorKey: 'roleNameEng',
+    meta: {
+      width: 200,
+      editable: true,
+      editType: 'text',
+      editPlaceholder: 'Role name (eng)',
+    },
+  },
+  {
     id: 'roleDesc',
     header: t('role.description', { defaultValue: 'Description' }),
     accessorKey: 'roleDesc',
@@ -62,9 +78,9 @@ export const createRoleManagementColumns = (
     },
   },
   {
-    id: 'useFlag',
+    id: 'useYn',
     header: t('common.useYn', { defaultValue: 'Use' }),
-    accessorKey: 'useFlag',
+    accessorKey: 'useYn',
     meta: {
       width: 100,
       editable: true,
@@ -76,6 +92,17 @@ export const createRoleManagementColumns = (
         const label = resolved.find((opt) => opt.value === String(value ?? ''))?.label;
         return label ?? String(value ?? '');
       },
+    },
+  },
+  {
+    id: 'sortOrder',
+    header: t('common.sortOrder', { defaultValue: 'Sort Order' }),
+    accessorKey: 'sortOrder',
+    meta: {
+      width: 110,
+      align: 'center',
+      editable: true,
+      editType: 'number',
     },
   },
   {

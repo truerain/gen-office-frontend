@@ -1,20 +1,44 @@
 // apps/demo/src/entities/system/role/model/types.ts
 
 export interface RoleRequest {
+  roleCd?: string;
   roleName?: string;
-  roleCode?: string;
+  roleNameEng?: string;
   roleDesc?: string;
-  useFlag?: string;
+  sortOrder?: number;
+  useYn?: string;
+  attribute1: string;
+  attribute2: string;
+  attribute3: string;
+  attribute4: string;
+  attribute5: string;
+  attribute6: string;
+  attribute7: string;
+  attribute8: string;
+  attribute9: string;
+  attribute10: string;
   createdBy?: string;
   lastUpdatedBy?: string;
 }
 
 export interface Role {
-  id: number;
+  roleId: number;
+  roleCd?: string;
   roleName?: string;
-  roleCode?: string;
+  roleNameEng?: string;
   roleDesc?: string;
-  useFlag?: string;
+  sortOrder?: number;
+  useYn?: string;
+  attribute1: string;
+  attribute2: string;
+  attribute3: string;
+  attribute4: string;
+  attribute5: string;
+  attribute6: string;
+  attribute7: string;
+  attribute8: string;
+  attribute9: string;
+  attribute10: string;
   createdBy?: string;
   creationDate?: string;
   lastUpdatedBy?: string;

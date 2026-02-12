@@ -4,63 +4,109 @@ import { buildMenuTree, findMenuItemById } from '@/app/menu/menuTree';
 import type { AppMenu } from './model/types';
 
 const componentNameByMenuId: Record<string, string> = {
-  'customer-info': 'CustomerInfoPage',
-  'menu-management': 'MenuManagementPage',
-  'role-management': 'RoleManagementPage',
-  'user-management': 'UserManagementPage',
-  primitives: 'PrimitivesPage',
-  datagrid: 'DataGridPage',
-  mdi: 'MDIPage',
-  'global-state': 'GlobalStateDemo',
-  'composed-alert-dialog': 'AlertDialogDemo',
-  'combobox-demo': 'ComboboxDemoPage',
+  '100100': 'CustomerInfoPage',
+  '900100': 'UserManagementPage',
+  '900200': 'MenuManagementPage',
+  '900300': 'RoleManagementPage',
+  '990100': 'PrimitivesPage',
+  '990200': 'ComboboxDemoPage',
+  '990300': 'SliderDemoPage',
+  '990400': 'DatePickerDemoPage',
+  '990500': 'RowGroupingDemoPage',
 };
 
 const iconByMenuId: Record<string, string> = {
-  customer: 'Users',
-  finance: 'CreditCard',
-  system: 'Settings',
-  demo: 'Zap',
-  'customer-info': 'Users',
-  'customer-service': 'UserCheck',
-  'customer-analysis': 'BarChart3',
-  'customer-service-chat': 'MessageSquare',
-  'customer-service-call': 'Phone',
-  'customer-service-ticket': 'Ticket',
-  payment: 'CreditCard',
-  transfer: 'Send',
-  subscription: 'RefreshCw',
-  'payment-process': 'CreditCard',
-  'payment-history': 'History',
-  'payment-refund': 'RotateCcw',
-  'menu-management': 'Menu',
-  'role-management': 'Shield',
-  'user-management': 'Users',
-  primitives: 'Package',
-  datagrid: 'Table',
-  mdi: 'Layout',
-  'global-state': 'Database',
-  composed: 'Boxes',
-  'composed-alert-dialog': 'MessageSquare',
-  'combobox-demo': 'Search',
+  '100000': 'Users',
+  '100100': 'Users',
+  '900000': 'Settings',
+  '900100': 'Users',
+  '900200': 'Menu',
+  '900300': 'Shield',
+  '990000': 'Zap',
+  '990100': 'Package',
+  '990200': 'Search',
+  '990300': 'SlidersHorizontal',
+  '990400': 'CalendarDays',
+  '990500': 'Table2',
 };
 
-export function mapMenusToMenuItems(menus:AppMenu[]): MenuItem[] {
+export type SystemMenuData = {
+  items: MenuItem[];
+  tree: ReturnType<typeof buildMenuTree>;
+  byId: Map<string, MenuItem>;
+  breadcrumbById: Map<string, MenuItem[]>;
+};
+
+export function mapMenusToMenuItems(menus: AppMenu[]): MenuItem[] {
+  const isYes = (value: string | undefined) => String(value ?? '').trim().toUpperCase() === 'Y';
+  const normalizeParentMenuId = (value: number | null | undefined) =>
+    value == null || value === 0 ? null : String(value);
+  const resolveIconName = (menu: AppMenu) =>
+    String(menu.menuIcon ?? '').trim() || iconByMenuId[String(menu.menuId)] || 'SquareMenu';
+  const resolveComponentName = (menu: AppMenu) =>
+    String(menu.execComponent ?? '').trim() || componentNameByMenuId[String(menu.menuId)];
+
   return menus
       .filter((item) => {
-          return item.dsplFlag === 'Y';
+          return isYes(item.displayYn);
         })
       .map((m) => ({
         menuId: String(m.menuId),
         label: m.menuName || m.menuNameEng || String(m.menuId),
-        icon: iconByMenuId[String(m.menuId)] ?? 'SquareMenu',
-        componentName:
-          componentNameByMenuId[String(m.menuId)] ??
-          (m.url ? String(m.url) : undefined),
-        parentMenuId: m.prntMenuId ? String(m.prntMenuId) : null,
+        icon: resolveIconName(m),
+        componentName: resolveComponentName(m),
+        parentMenuId: normalizeParentMenuId(m.parentMenuId),
         order: m.sortOrder,
-        isActive: m.useFlag ? m.useFlag.toLowerCase() === 'y' : undefined,
+        isActive: m.useYn == null ? undefined : isYes(m.useYn),
       }));
+}
+
+function buildMenuIndexes(items: MenuItem[]) {
+  const byId = new Map<string, MenuItem>();
+  const breadcrumbById = new Map<string, MenuItem[]>();
+
+  items.forEach((item) => byId.set(item.menuId, item));
+
+  const visiting = new Set<string>();
+  const resolveBreadcrumb = (menuId: string): MenuItem[] => {
+    const cached = breadcrumbById.get(menuId);
+    if (cached) return cached;
+
+    const current = byId.get(menuId);
+    if (!current) return [];
+
+    if (visiting.has(menuId)) {
+      // circular parent safety
+      const fallback = [current];
+      breadcrumbById.set(menuId, fallback);
+      return fallback;
+    }
+
+    visiting.add(menuId);
+    const parentId = current.parentMenuId;
+    const parentPath =
+      parentId && byId.has(parentId)
+        ? resolveBreadcrumb(parentId)
+        : [];
+    const path = [...parentPath, current];
+    visiting.delete(menuId);
+
+    breadcrumbById.set(menuId, path);
+    return path;
+  };
+
+  items.forEach((item) => {
+    resolveBreadcrumb(item.menuId);
+  });
+
+  return { byId, breadcrumbById };
+}
+
+export function buildSystemMenuData(menus: AppMenu[]): SystemMenuData {
+  const items = mapMenusToMenuItems(menus);
+  const tree = buildMenuTree(items);
+  const { byId, breadcrumbById } = buildMenuIndexes(items);
+  return { items, tree, byId, breadcrumbById };
 }
 
 export function buildMenuData(items: MenuItem[]): MenuData {

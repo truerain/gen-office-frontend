@@ -5,18 +5,14 @@ export interface Menu {
   menuName: string;
   menuNameEng: string;
   menuDesc: string;
+  menuDescEng: string;
   menuLevel: number;
-  prntMenuId: number;
-  dsplFlag: string;
-  useFlag: string;
+  parentMenuId: number,
+  execComponent: string;
+  menuIcon: string,
+  displayYn: string;
+  useYn: string;
   sortOrder: number;
-  url: string;
-  param1?: string;
-  param2?: string;
-  param3?: string;
-  param4?: string;
-  param5?: string;
-  abAuthFlag?: string;
   attribute1?: string;
   attribute2?: string;
   attribute3?: string;
@@ -27,13 +23,10 @@ export interface Menu {
   attribute8?: string;
   attribute9?: string;
   attribute10?: string;
-  creationDate?: string;
-  createdBy?: string;
-  lastUpdateDate?: string;
-  lastUpdatedBy?: string;
-  cauthFlag?: string;
-  eauthFlag?: string;
-  fauthFlag?: string;
+  creationDate: string;
+  createdBy: string;
+  lastUpdatedDate: string;
+  lastUpdatedBy: string;
 }
 
 export type MenuListParams = {
@@ -41,6 +34,3 @@ export type MenuListParams = {
   page?: number;
   pageSize?: number;
 };
-
-
-

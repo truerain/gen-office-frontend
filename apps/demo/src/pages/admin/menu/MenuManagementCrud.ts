@@ -1,12 +1,6 @@
 /**
  * @file [MenuManagementPageCrud.ts]
  * @path apps/demo/src/pages/system/menu/MenuManagementPageCrud.ts
- * @summary [메뉴 관리 페이지 컴포넌트 - CRUD 로직구현]
- * @details
- * - [메뉴 관리 기능 구현]
- * - [CRUD 로직 구현]
- * @notes
- * - [주의사항/제약/기능]
  */
 
 import type { CrudChange, CrudRowId } from '@gen-office/gen-grid-crud';
@@ -16,7 +10,7 @@ import { menuApi } from '@/entities/system/menu/api/menu';
 const buildChildrenMap = (items: readonly Menu[]) => {
   const map = new Map<number, number[]>();
   for (const item of items) {
-    const key = item.prntMenuId ?? 0;
+    const key = item.parentMenuId ?? 0;
     const list = map.get(key);
     if (list) list.push(item.menuId);
     else map.set(key, [item.menuId]);
@@ -95,12 +89,26 @@ export const toMenuRequest = (input: Partial<Menu>) => ({
   menuName: input.menuName,
   menuNameEng: input.menuNameEng,
   menuDesc: input.menuDesc,
+  menuDescEng: input.menuDescEng,
   menuLevel: input.menuLevel,
-  prntMenuId: input.prntMenuId,
-  dsplFlag: input.dsplFlag,
-  useFlag: input.useFlag,
+  parentMenuId: input.parentMenuId,
+  execComponent: input.execComponent,
+  menuIcon: input.menuIcon,
+  displayYn: input.displayYn,
+  useYn: input.useYn,
   sortOrder: input.sortOrder,
-  url: input.url,
+  attribute1: input.attribute1,
+  attribute2: input.attribute2,
+  attribute3: input.attribute3,
+  attribute4: input.attribute4,
+  attribute5: input.attribute5,
+  attribute6: input.attribute6,
+  attribute7: input.attribute7,
+  attribute8: input.attribute8,
+  attribute9: input.attribute9,
+  attribute10: input.attribute10,
+  createdBy: input.createdBy,
+  lastUpdatedBy: input.lastUpdatedBy,
 });
 
 function findMenuById(rows: readonly Menu[], rowId: CrudRowId) {

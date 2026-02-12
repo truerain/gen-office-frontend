@@ -5,89 +5,21 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Users } from 'lucide-react';
+import { RefreshCcw, Users } from 'lucide-react';
 
 import { GenGridCrud } from '@gen-office/gen-grid-crud';
-import type { CrudChange, CrudRowId } from '@gen-office/gen-grid-crud';
 import { SimpleFilterBar, type FilterField } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
-import { useUserListQuery, userApi } from '@/entities/system/user/api/user';
-import type { User, UserListParams, UserRequest } from '@/entities/system/user/model/types';
+import { useUserListQuery } from '@/entities/system/user/api/user';
+import type { User, UserListParams } from '@/entities/system/user/model/types';
 import { useAppStore } from '@/app/store/appStore';
 
 import styles from './UserManagementPage.module.css';
 import { createUserManagementColumns } from './UserManagementColumns';
+import { commitUserChanges } from './UserManagementCrud';
 
 const createUserId = () => (Date.now() + Math.floor(Math.random() * 1000));
-
-const toUserRequest = (input: Partial<User>): UserRequest => ({
-  empNo: input.empNo,
-  empName: input.empName,
-  empNameEng: input.empNameEng,
-  password: input.password,
-  email: input.email,
-  orgId: input.orgId,
-  title: input.title,
-  langCd: input.langCd,
-  createdBy: input.createdBy,
-  lastUpdatedBy: input.lastUpdatedBy,
-});
-
-function findUserById(rows: readonly User[], rowId: CrudRowId) {
-  const id = Number(rowId);
-  if (!Number.isFinite(id)) return undefined;
-  return rows.find((row) => row.userId === id);
-}
-
-async function commitUserChanges(
-  changes: readonly CrudChange<User>[],
-  ctxRows: readonly User[]
-) {
-  const created = new Map<CrudRowId, User>();
-  const updated = new Map<CrudRowId, Partial<User>>();
-  const deleted = new Set<CrudRowId>();
-
-  for (const change of changes) {
-    switch (change.type) {
-      case 'create':
-        created.set(change.tempId, change.row);
-        break;
-      case 'update':
-        updated.set(change.rowId, { ...(updated.get(change.rowId) ?? {}), ...change.patch });
-        break;
-      case 'delete':
-        deleted.add(change.rowId);
-        break;
-      case 'undelete':
-      default:
-        break;
-    }
-  }
-
-  for (const [tempId, row] of created.entries()) {
-    if (deleted.has(tempId)) continue;
-    const patch = updated.get(tempId);
-    const merged = patch ? { ...row, ...patch } : row;
-    await userApi.create(toUserRequest(merged));
-  }
-
-  for (const [rowId, patch] of updated.entries()) {
-    if (created.has(rowId)) continue;
-    if (deleted.has(rowId)) continue;
-    const baseRow = findUserById(ctxRows, rowId);
-    const merged = baseRow ? { ...baseRow, ...patch } : patch;
-    const id = Number(rowId);
-    if (!Number.isFinite(id)) continue;
-    await userApi.update(id, toUserRequest(merged));
-  }
-
-  for (const rowId of deleted) {
-    const id = Number(rowId);
-    if (!Number.isFinite(id)) continue;
-    await userApi.remove(id);
-  }
-}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function UserManagementPage(_props: PageComponentProps) {
@@ -173,8 +105,24 @@ export default function UserManagementPage(_props: PageComponentProps) {
           })}
           makePatch={({ columnId, value }) => ({ [columnId]: value } as Partial<User>)}
           deleteMode="selected"
-          showActionBar
-          actionBarPosition="top"
+          actionBar={{
+            position: 'top',
+            defaultStyle: 'icon',
+            includeBuiltIns: ['add', 'delete', 'save', 'filter', 'reset'],
+            customActions: [
+              {
+                key: 'refresh',
+                label: 'Refresh',
+                icon: <RefreshCcw aria-hidden size={16} />,
+                side: 'right',
+                style: 'icon',
+                order: 20,
+                onClick: () => {
+                  void refetch();
+                },
+              },
+            ],
+          }}
           onCommit={async ({ changes, ctx }) => {
             await commitUserChanges(changes, ctx.viewData);
             await refetch();
@@ -208,7 +156,7 @@ export default function UserManagementPage(_props: PageComponentProps) {
             enableRowSelection: true,
             editOnActiveCell: false,
             keepEditingOnNavigate: true,
-            enableFooterRow: true,
+            enableFooterRow: false,
             enableStickyFooterRow: true,
             enableActiveRowHighlight: true,
           }}
