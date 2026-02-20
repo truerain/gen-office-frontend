@@ -1,4 +1,4 @@
-﻿## @gen-office/utils ?꾨찓???뺤쓽(?뺤젙)
+## @gen-office/utils ?꾨찓???뺤쓽(?뺤젙)
 
 ### 梨낆엫(OK)
 - className 議고빀(cn)

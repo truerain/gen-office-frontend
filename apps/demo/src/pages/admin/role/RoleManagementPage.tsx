@@ -51,6 +51,21 @@ function parseRoleId(rowId: CrudRowId | undefined): number | null {
   return parsed;
 }
 
+function collectDescendantMenuIds(
+  parentMenuId: number,
+  childrenByParent: Map<number, number[]>
+): number[] {
+  const result: number[] = [];
+  const queue = [...(childrenByParent.get(parentMenuId) ?? [])];
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    result.push(current);
+    const children = childrenByParent.get(current);
+    if (children?.length) queue.push(...children);
+  }
+  return result;
+}
+
 async function commitRoleMenuChanges(
   roleId: number,
   changes: readonly CrudChange<RoleMenu>[],
@@ -58,6 +73,11 @@ async function commitRoleMenuChanges(
 ) {
   const changedMenuIds = new Set<number>();
   const deletedMenuIds = new Set<number>();
+
+  const rowByMenuId = new Map<number, RoleMenu>();
+  for (const row of viewRows) {
+    rowByMenuId.set(row.menuId, row);
+  }
 
   for (const change of changes) {
     if (change.type === 'update') {
@@ -89,7 +109,7 @@ async function commitRoleMenuChanges(
 
   for (const menuId of changedMenuIds) {
     if (deletedMenuIds.has(menuId)) continue;
-    const row = viewRows.find((item) => item.menuId === menuId);
+    const row = rowByMenuId.get(menuId);
     if (!row) continue;
 
     await roleMenuApi.save({
@@ -335,6 +355,25 @@ export default function RoleManagementPage(_props: PageComponentProps) {
                   setRoleMenuDirty(dirty);
                   roleMenuChangesRef.current = changes;
                   roleMenuViewRowsRef.current = viewData;
+                }}
+                onCellEdit={({ columnId, rowId, nextValue, viewData }) => {
+                  if (columnId !== 'useYn') return [];
+                  const rootMenuId = Number(rowId);
+                  if (!Number.isFinite(rootMenuId)) return [];
+
+                  const childrenByParent = new Map<number, number[]>();
+                  for (const row of viewData) {
+                    const parentId = Number(row.parentMenuId);
+                    if (!childrenByParent.has(parentId)) childrenByParent.set(parentId, []);
+                    childrenByParent.get(parentId)!.push(row.menuId);
+                  }
+
+                  const descendants = collectDescendantMenuIds(rootMenuId, childrenByParent);
+                  const normalizedUseYn = String(nextValue ?? 'N');
+                  return descendants.map((menuId) => ({
+                    rowId: menuId,
+                    patch: { useYn: normalizedUseYn },
+                  }));
                 }}
                 gridProps={{
                   dataVersion: `${selectedRoleId ?? 'none'}-${roleMenuUpdatedAt}`,

@@ -1,0 +1,183 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  gap: var(--spacing-sm);
+}
+
+.splitLayout {
+  flex: 1;
+  height: 100%;
+}
+
+.pane {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  padding: 8px;
+  overflow: hidden;
+}
+
+.paneHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2px 8px;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.meta {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.editorWrap {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+  gap: 8px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fieldRow {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  gap: 8px;
+}
+
+.label {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.input {
+  height: 34px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  padding: 0 10px;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.toolbarButton {
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  height: 30px;
+  width: 30px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.toolbarButton[data-active='true'] {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.editor {
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  min-height: 220px;
+  padding: 12px;
+  overflow: auto;
+}
+
+.editor :global(.tiptap) {
+  min-height: 196px;
+  outline: none;
+  line-height: 1.55;
+}
+
+.editor :global(.tiptap p.is-editor-empty:first-child::before) {
+  content: attr(data-placeholder);
+  color: var(--color-text-tertiary);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.attachments {
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fileInput {
+  height: 34px;
+}
+
+.fileList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 120px;
+  overflow: auto;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.button {
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  height: 34px;
+  padding: 0 14px;
+  cursor: pointer;
+}
+
+.primaryButton {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.emptyText {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}

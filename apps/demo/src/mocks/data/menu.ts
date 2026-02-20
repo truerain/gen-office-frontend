@@ -77,6 +77,17 @@ const menus: AppMenu[] = [
     execComponent: 'RoleManagementPage',
   },
   {
+    menuId: 900400,
+    menuName: 'Notice Management',
+    menuNameEng: 'Notice Management',
+    menuIcon: 'Bell',
+    parentMenuId: 900000,
+    displayYn: 'Y',
+    useYn: 'Y',
+    sortOrder: 4,
+    execComponent: 'NoticeManagementPage',
+  },
+  {
     menuId: 990000,
     menuName: 'UI Demo',
     menuNameEng: 'UI Demo',

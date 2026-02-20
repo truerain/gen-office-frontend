@@ -41,6 +41,12 @@ export type CrudCellEditEvent<TData> = {
   prevValue: unknown;
   nextValue: unknown;
   row: TData;
+  viewData: readonly TData[];
+};
+
+export type CrudCellPatch<TData> = {
+  rowId: CrudRowId;
+  patch: Partial<TData>;
 };
 
 export type CrudActionButtonStyle = 'text' | 'icon';
@@ -113,11 +119,11 @@ export type GenGridCrudProps<TData> = {
   /** @deprecated use actionBar.defaultStyle */
   actionButtonStyle?: 'text' | 'icon';
 
-  /** selection (GenGrid API가 ?�르�??�기�?바꾸�??? */
+  /** selection (for compatibility with GenGrid API updates) */
   selectedRowIds?: readonly CrudRowId[];
   onSelectedRowIdsChange?: (rowIds: readonly CrudRowId[]) => void;
 
-  /** active cell (?�택) */
+  /** active cell */
   activeCell?: { rowId: CrudRowId; columnId: string } | null;
   onActiveCellChange?: (next: { rowId: CrudRowId; columnId: string } | null) => void;
 
@@ -129,9 +135,9 @@ export type GenGridCrudProps<TData> = {
 
   /** UI hooks */
   onStateChange?: (state: CrudUiState<TData>) => void;
-  onCellEdit?: (event: CrudCellEditEvent<TData>) => void;
+  onCellEdit?: (event: CrudCellEditEvent<TData>) => void | readonly CrudCellPatch<TData>[];
 
-  /** pass-through (GenGrid props???�로?�트??맞게 ?�??치환) */
+  /** pass-through (GenGrid props except controlled fields) */
   gridProps?: Omit<
     GenGridProps<TData>,
     | 'data'

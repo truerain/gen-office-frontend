@@ -1,4 +1,4 @@
-﻿// apps/demo/src/app/menu/menuData.ts
+// apps/demo/src/app/menu/menuData.ts
 import type { MenuData, MenuItem } from '@/types/menu.types';
 import { buildMenuTree, findMenuItemById } from '@/app/menu/menuTree';
 import type { AppMenu } from './model/types';
@@ -8,6 +8,7 @@ const componentNameByMenuId: Record<string, string> = {
   '900100': 'UserManagementPage',
   '900200': 'MenuManagementPage',
   '900300': 'RoleManagementPage',
+  '900400': 'NoticeManagementPage',
   '990100': 'PrimitivesPage',
   '990200': 'ComboboxDemoPage',
   '990300': 'SliderDemoPage',
@@ -22,6 +23,7 @@ const iconByMenuId: Record<string, string> = {
   '900100': 'Users',
   '900200': 'Menu',
   '900300': 'Shield',
+  '900400': 'Bell',
   '990000': 'Zap',
   '990100': 'Package',
   '990200': 'Search',

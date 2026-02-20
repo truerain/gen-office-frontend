@@ -1,4 +1,4 @@
-﻿# Session & Login 구현 가이드
+# Session & Login 구현 가이드
 
 이 문서는 백엔드 세션 기반 인증(JSESSIONID)과 프론트 적용 방식을 정리합니다.
 

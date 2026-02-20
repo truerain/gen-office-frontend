@@ -1,4 +1,4 @@
-﻿// packages/gen-grid/src/GenGrid.tsx
+// packages/gen-grid/src/GenGrid.tsx
 import * as React from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 

@@ -1,4 +1,4 @@
-﻿// apps/demo/src/utils/menuTree.ts
+// apps/demo/src/utils/menuTree.ts
 import type { MenuItem, MenuTreeItem } from '@/types/menu.types';
 
 /**

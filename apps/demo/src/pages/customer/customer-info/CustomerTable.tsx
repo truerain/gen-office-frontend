@@ -1,4 +1,4 @@
-﻿// apps/demo/src/pages/customer/CustomerInfoPage/components/CustomerTable.tsx
+// apps/demo/src/pages/customer/CustomerInfoPage/components/CustomerTable.tsx
 
 import { useState, useEffect, useMemo } from 'react';
 import { GenGridCrud } from '@gen-office/gen-grid-crud';

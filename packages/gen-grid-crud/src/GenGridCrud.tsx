@@ -1,4 +1,4 @@
-﻿// packages/gen-grid-crud/src/GenGridCrud.tsx
+// packages/gen-grid-crud/src/GenGridCrud.tsx
 import * as React from 'react';
 import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
 
@@ -10,6 +10,7 @@ import type {
   CrudUiState,
   CrudPendingDiff,
   CrudActionApi,
+  CrudCellPatch,
 } from './GenGridCrud.types';
 import { CrudActionBar } from './components/CrudActionBar';
 import styles from './GenGridCrud.module.css';
@@ -441,49 +442,61 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
 
   const handleCellValueChange = React.useCallback(
     (args: { rowId: string; columnId: string; value: unknown }) => {
+      const applyPatch = (targetRowId: CrudRowId, patch: Partial<TData>) => {
+        if (!patch || Object.keys(patch).length === 0) return;
+        if (clearDirtyOnRevert) {
+          const baseRow = baseRowById.get(targetRowId);
+          if (!baseRow) {
+            pendingApi.updateRow(targetRowId, patch);
+            return;
+          }
+
+          const keys = Object.keys(patch);
+          const keysToClear = keys.filter((k) => Object.is((baseRow as any)[k], (patch as any)[k]));
+          const keysToSet = keys.filter((k) => !Object.is((baseRow as any)[k], (patch as any)[k]));
+
+          if (keysToSet.length) {
+            const nextPatch: Partial<TData> = {};
+            for (const k of keysToSet) (nextPatch as any)[k] = (patch as any)[k];
+            pendingApi.updateRow(targetRowId, nextPatch);
+          }
+
+          if (keysToClear.length) {
+            pendingApi.clearPatchKeys(targetRowId, keysToClear);
+          }
+          return;
+        }
+        pendingApi.updateRow(targetRowId, patch);
+      };
+
       const pendingRowId = pendingRowIdByGridId.get(args.rowId) ?? args.rowId;
       const rowIndex = gridData.findIndex(
         (row) => String(getPendingRowId(row)) === String(pendingRowId)
       );
       const row = rowIndex >= 0 ? gridData[rowIndex] : undefined;
       const prevValue = row ? (row as any)[args.columnId] : undefined;
+      let additionalPatches: readonly CrudCellPatch<TData>[] = [];
       if (row && !Object.is(prevValue, args.value)) {
-        onCellEdit?.({
+        additionalPatches =
+          onCellEdit?.({
           rowId: args.rowId,
           columnId: args.columnId,
           rowIndex,
           prevValue,
           nextValue: args.value,
           row,
-        });
+          viewData: gridData,
+        }) ?? [];
       }
       skipNextOnDataChangeRef.current = true;
-      if (clearDirtyOnRevert) {
-        const baseRow = baseRowById.get(pendingRowId);
-        const patch =
-          makePatch?.({ rowId: pendingRowId, columnId: args.columnId, value: args.value }) ??
-          ({ [args.columnId]: args.value } as any);
+      const patch =
+        makePatch?.({ rowId: pendingRowId, columnId: args.columnId, value: args.value }) ??
+        ({ [args.columnId]: args.value } as any);
+      applyPatch(pendingRowId, patch);
 
-        if (!baseRow) {
-          pendingApi.updateRow(pendingRowId, patch);
-          return;
-        }
-
-        const keys = Object.keys(patch);
-        const keysToClear = keys.filter((k) => Object.is((baseRow as any)[k], (patch as any)[k]));
-        const keysToSet = keys.filter((k) => !Object.is((baseRow as any)[k], (patch as any)[k]));
-
-        if (keysToSet.length) {
-          const nextPatch: Partial<TData> = {};
-          for (const k of keysToSet) (nextPatch as any)[k] = (patch as any)[k];
-          pendingApi.updateRow(pendingRowId, nextPatch);
-        }
-
-        if (keysToClear.length) {
-          pendingApi.clearPatchKeys(pendingRowId, keysToClear);
-        }
-      } else {
-        pendingApi.updateCell(pendingRowId, args.columnId, args.value, makePatch);
+      for (const extra of additionalPatches) {
+        const targetRowId = pendingRowIdByGridId.get(String(extra.rowId)) ?? extra.rowId;
+        applyPatch(targetRowId, extra.patch);
       }
     },
     [

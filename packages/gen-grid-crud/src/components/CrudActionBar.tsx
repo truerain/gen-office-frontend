@@ -1,4 +1,4 @@
-﻿// packages/gen-grid-crud/src/components/CrudActionBar.tsx
+// packages/gen-grid-crud/src/components/CrudActionBar.tsx
 
 import * as React from 'react';
 

@@ -503,17 +503,13 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     renderDefaultEditor();
 
   const displayContent = meta?.renderCell
-    ? (
-      <div style={{display: "flex", justifyContent: "center" }}>
-        {meta.renderCell({
-          value: cell.getValue(),
-          row: cell.row.original,
-          rowId,
-          columnId: colId,
-          commitValue: onCommitValue,
-        })}
-      </div>
-    )
+    ? meta.renderCell({
+        value: cell.getValue(),
+        row: cell.row.original,
+        rowId,
+        columnId: colId,
+        commitValue: onCommitValue,
+      })
     : meta?.format
       ? (formatCellValue(cell.getValue(), meta) as any)
       : flexRender(cell.column.columnDef.cell, cell.getContext());
