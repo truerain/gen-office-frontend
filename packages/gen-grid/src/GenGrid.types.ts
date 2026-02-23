@@ -66,7 +66,7 @@ type CommonGridOptions<TData> = {
 
   enableRowStatus?: boolean;
   rowStatusResolver?: (rowId: string) => 'clean' | 'created' | 'updated' | 'deleted';
-  enableRowSelection?: boolean;
+  checkboxSelection?: boolean;
   enableRowNumber?: boolean;
   enableActiveRowHighlight?: boolean;
   enableGrouping?: boolean;

@@ -243,7 +243,7 @@ function MenuManagementPage(props: PageComponentProps) {
                   enableColumnSizing: true,
                   enableVirtualization: true,
                   enableRowStatus: true,
-                  enableRowSelection: true,
+                  checkboxSelection: true,
                   enablePagination: false,
                   editOnActiveCell: true,
                   keepEditingOnNavigate: false,

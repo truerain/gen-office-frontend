@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Bell,
   Bold as BoldIcon,
-  FilePlus2,
   Italic as ItalicIcon,
   List as BulletListIcon,
   ListOrdered as OrderedListIcon,
@@ -62,25 +61,29 @@ export default function NoticeManagementPage() {
   const addNotification = useAppStore((state) => state.addNotification);
   const { openAlert, openConfirm } = useAlertDialog();
 
+  // selectedRowIds: row_select column(checkbox) state
   const [selectedRowIds, setSelectedRowIds] = useState<readonly CrudRowId[]>([]);
-  const [selectedNoticeId, setSelectedNoticeId] = useState<number | null>(null);
+  // activeNoticeId: row where active cell currently belongs
+  const [activeNoticeId, setActiveNoticeId] = useState<number | null>(null);
   const [draft, setDraft] = useState<NoticeDraft>(() => createDefaultDraft());
   const [isSaving, setIsSaving] = useState(false);
   const [attachmentsByFileSetId, setAttachmentsByFileSetId] = useState<Record<string, File[]>>({});
   const skipEditorSyncRef = useRef(false);
 
+  const tempNoticeIdRef = useRef(-1);
+
   const queryParams = useMemo<NoticeListParams>(() => ({}), []);
   const { data: noticeList = [], refetch, dataUpdatedAt } = useNoticeListQuery(queryParams);
-  const { data: selectedNotice, isFetching: isDetailLoading, refetch: refetchDetail } = useNoticeDetailQuery(
-    selectedNoticeId ?? 0,
-    selectedNoticeId != null
+  const { data: activeNotice, isFetching: isDetailLoading, refetch: refetchDetail } = useNoticeDetailQuery(
+    activeNoticeId ?? 0,
+    activeNoticeId != null
   );
 
   const editor = useEditor({
     extensions: [
       StarterKit,
       Placeholder.configure({
-        placeholder: '공지 내용을 입력하세요.',
+        placeholder: '怨듭? ?댁슜???낅젰?섏꽭??',
       }),
     ],
     content: draft.content,
@@ -91,9 +94,9 @@ export default function NoticeManagementPage() {
   });
 
   useEffect(() => {
-    if (!selectedNotice) return;
-    setDraft(toDraft(selectedNotice));
-  }, [selectedNotice]);
+    if (!activeNotice) return;
+    setDraft(toDraft(activeNotice));
+  }, [activeNotice]);
 
   useEffect(() => {
     if (!editor) return;
@@ -107,29 +110,19 @@ export default function NoticeManagementPage() {
   const currentFileSetId = draft.fileSetId.trim();
   const currentAttachments = currentFileSetId ? (attachmentsByFileSetId[currentFileSetId] ?? []) : [];
 
-  const handleSelectionChange = (rowIds: readonly CrudRowId[]) => {
+  const handleSelectedRowsChange = useCallback((rowIds: readonly CrudRowId[]) => {
     setSelectedRowIds(rowIds);
-    const nextId = parseNoticeId(rowIds[0]);
-    setSelectedNoticeId(nextId);
-    if (nextId == null) {
-      setDraft(createDefaultDraft());
-    }
-  };
-
-  const handleCreateNew = () => {
-    setSelectedRowIds([]);
-    setSelectedNoticeId(null);
-    setDraft(createDefaultDraft());
-  };
+    // selected rows do not drive detail panel
+  }, []);
 
   const handleSave = async () => {
     if (!draft.title.trim()) {
-      await openAlert({ title: '공지 제목을 입력하세요.' });
+      await openAlert({ title: '怨듭? ?쒕ぉ???낅젰?섏꽭??' });
       return;
     }
 
     const confirmed = await openConfirm({
-      title: '저장하시겠습니까?',
+      title: '??ν븯?쒓쿋?듬땲源?',
       confirmText: 'Save',
       cancelText: 'Cancel',
     });
@@ -147,14 +140,14 @@ export default function NoticeManagementPage() {
     try {
       setIsSaving(true);
       const saved = await noticeApi.save(payload);
-      setSelectedNoticeId(saved.id);
+      setActiveNoticeId(saved.id);
       setSelectedRowIds([saved.id]);
       await refetch();
       await refetchDetail();
-      await openAlert({ title: '저장되었습니다.' });
+      await openAlert({ title: '??λ릺?덉뒿?덈떎.' });
     } catch (error) {
       console.error(error);
-      const message = error instanceof Error ? error.message : '공지 저장에 실패했습니다.';
+      const message = error instanceof Error ? error.message : '怨듭? ??μ뿉 ?ㅽ뙣?덉뒿?덈떎.';
       addNotification(message, 'error');
     } finally {
       setIsSaving(false);
@@ -164,7 +157,7 @@ export default function NoticeManagementPage() {
   const handleAddAttachment = (files: FileList | null) => {
     if (!files || files.length === 0) return;
     if (!currentFileSetId) {
-      addNotification('첨부 전에 file_set_id를 입력하세요.', 'error');
+      addNotification('泥⑤? ?꾩뿉 file_set_id瑜??낅젰?섏꽭??', 'error');
       return;
     }
 
@@ -187,7 +180,7 @@ export default function NoticeManagementPage() {
     <div className={styles.page}>
       <PageHeader
         title="Notice Management"
-        description="공지사항 목록 조회와 상세 편집을 관리합니다."
+        description="怨듭??ы빆 紐⑸줉 議고쉶? ?곸꽭 ?몄쭛??愿由ы빀?덈떎."
         breadcrumbItems={[
           { label: 'System', icon: <Bell size={16} /> },
           { label: 'Notice Management', icon: <Bell size={16} /> },
@@ -205,29 +198,39 @@ export default function NoticeManagementPage() {
                 data={noticeList}
                 columns={columns}
                 getRowId={(row) => row.id}
-                selectedRowIds={selectedRowIds}
-                onSelectedRowIdsChange={handleSelectionChange}
+                rowSelection={selectedRowIds}
+                onRowSelectionChange={(rowIds) => {
+                  void handleSelectedRowsChange(rowIds);
+                }}
                 onCommit={async () => ({ ok: true })}
                 onStateChange={({ activeRowId }) => {
+                  // detail panel follows active row only
+                  if (activeRowId == null) {
+                    setActiveNoticeId(null);
+                    setDraft(createDefaultDraft());
+                    return;
+                  }
+
                   const nextId = parseNoticeId(activeRowId);
-                  if (nextId == null || nextId === selectedNoticeId) return;
-                  setSelectedRowIds([nextId]);
-                  setSelectedNoticeId(nextId);
+                  setActiveNoticeId((prev) => (prev === nextId ? prev : nextId));
+                  if (nextId == null) {
+                    setDraft(createDefaultDraft());
+                  }
                 }}
+                createRow={() => ({
+                  id: tempNoticeIdRef.current--,
+                  title: '',
+                  content: '',
+                  fileSetId: '',
+                  useYn: 'Y',
+                  createdBy: 'admin',
+                  lastUpdatedBy: 'admin',
+                })}
                 actionBar={{
                   position: 'top',
                   defaultStyle: 'icon',
-                  includeBuiltIns: ['filter'],
+                  includeBuiltIns: ['add', 'delete', 'save', 'filter'],
                   customActions: [
-                    {
-                      key: 'new',
-                      label: 'New',
-                      icon: <FilePlus2 aria-hidden size={16} />,
-                      side: 'left',
-                      style: 'icon',
-                      order: 5,
-                      onClick: handleCreateNew,
-                    },
                     {
                       key: 'refresh',
                       label: 'Refresh',
@@ -249,7 +252,7 @@ export default function NoticeManagementPage() {
                   enableColumnSizing: true,
                   enableVirtualization: true,
                   enableRowStatus: false,
-                  enableRowSelection: true,
+                  checkboxSelection: true,
                   editOnActiveCell: false,
                   keepEditingOnNavigate: true,
                 }}
@@ -261,7 +264,7 @@ export default function NoticeManagementPage() {
               <div className={styles.paneHeader}>
                 <span>Notice Detail</span>
                 <span className={styles.meta}>
-                  <span>{selectedNoticeId ?? 'new'}</span>
+                  <span>{activeNoticeId ?? 'new'}</span>
                   <span>{isDetailLoading ? 'Loading...' : ''}</span>
                 </span>
               </div>
@@ -274,7 +277,7 @@ export default function NoticeManagementPage() {
                       className={styles.input}
                       value={draft.title}
                       onChange={(e) => setDraft((prev) => ({ ...prev, title: e.target.value }))}
-                      placeholder="공지 제목"
+                      placeholder="怨듭? ?쒕ぉ"
                     />
                   </div>
                   <div className={styles.field}>
@@ -283,7 +286,7 @@ export default function NoticeManagementPage() {
                       className={styles.input}
                       value={draft.fileSetId}
                       onChange={(e) => setDraft((prev) => ({ ...prev, fileSetId: e.target.value }))}
-                      placeholder="예: NOTICE_20260220_001"
+                      placeholder="?? NOTICE_20260220_001"
                     />
                   </div>
                 </div>
@@ -356,7 +359,7 @@ export default function NoticeManagementPage() {
                   />
                   <div className={styles.fileList}>
                     {currentAttachments.length === 0 ? (
-                      <p className={styles.emptyText}>등록된 첨부파일이 없습니다.</p>
+                      <p className={styles.emptyText}>?깅줉??泥⑤??뚯씪???놁뒿?덈떎.</p>
                     ) : (
                       currentAttachments.map((file, index) => (
                         <div key={`${file.name}-${index}`} className={styles.fileItem}>
@@ -394,3 +397,5 @@ export default function NoticeManagementPage() {
     </div>
   );
 }
+
+

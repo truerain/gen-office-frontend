@@ -27,7 +27,7 @@ export type CrudUiState<TData> = {
   pendingDiff: CrudPendingDiff<TData>;
   dirty: boolean;
 
-  selectedRowIds: readonly CrudRowId[];
+  rowSelection: readonly CrudRowId[];
   activeRowId?: CrudRowId;
   activeColumnId?: string;
 
@@ -119,9 +119,9 @@ export type GenGridCrudProps<TData> = {
   /** @deprecated use actionBar.defaultStyle */
   actionButtonStyle?: 'text' | 'icon';
 
-  /** selection (for compatibility with GenGrid API updates) */
-  selectedRowIds?: readonly CrudRowId[];
-  onSelectedRowIdsChange?: (rowIds: readonly CrudRowId[]) => void;
+  /** row_select column(checkbox) selection */
+  rowSelection?: readonly CrudRowId[];
+  onRowSelectionChange?: (rowIds: readonly CrudRowId[]) => void;
 
   /** active cell */
   activeCell?: { rowId: CrudRowId; columnId: string } | null;

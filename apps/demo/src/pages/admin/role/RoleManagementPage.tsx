@@ -237,8 +237,8 @@ export default function RoleManagementPage(_props: PageComponentProps) {
                 data={roleList}
                 columns={columns}
                 getRowId={(row) => row.roleId}
-                selectedRowIds={selectedRoleRowIds}
-                onSelectedRowIdsChange={(rowIds) => {
+                rowSelection={selectedRoleRowIds}
+                onRowSelectionChange={(rowIds) => {
                   void handleRoleSelectionChange(rowIds);
                 }}
                 createRow={() => ({
@@ -305,7 +305,7 @@ export default function RoleManagementPage(_props: PageComponentProps) {
                   enableColumnSizing: true,
                   enableVirtualization: true,
                   enableRowStatus: true,
-                  enableRowSelection: true,
+                  checkboxSelection: true,
                   editOnActiveCell: false,
                   keepEditingOnNavigate: true,
                 }}
@@ -383,7 +383,7 @@ export default function RoleManagementPage(_props: PageComponentProps) {
                   enableColumnSizing: true,
                   enableVirtualization: true,
                   enableRowStatus: false,
-                  enableRowSelection: false,
+                  checkboxSelection: false,
                   editOnActiveCell: false,
                   keepEditingOnNavigate: true,
                   tree: {
@@ -410,3 +410,5 @@ export default function RoleManagementPage(_props: PageComponentProps) {
     </div>
   );
 }
+
+

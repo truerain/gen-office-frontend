@@ -86,7 +86,7 @@ export function CrudActionBar<TData>(props: {
         order: 20,
         variant: actionButtonStyle === 'icon' ? 'ghost' : 'secondary',
         disabled: (c) =>
-          !c.api.deleteSelected || c.state.isCommitting || c.state.selectedRowIds.length === 0,
+          !c.api.deleteSelected || c.state.isCommitting || c.state.rowSelection.length === 0,
         onClick: (c) => c.api.deleteSelected?.(),
       },
       save: {

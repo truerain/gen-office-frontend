@@ -53,7 +53,7 @@ export type GenGridTableProps<TData> = {
   rowStatusResolver?: (rowId: string) => 'clean' | 'created' | 'updated' | 'deleted';
 
   // selection
-  enableRowSelection?: boolean;
+  checkboxSelection?: boolean;
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: (next: RowSelectionState) => void;
 
@@ -114,7 +114,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     isRowDirty,
     rowStatusResolver,
 
-    enableRowSelection,
+    checkboxSelection,
     rowSelection,
     onRowSelectionChange,
 
@@ -180,13 +180,13 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
       buildInitialPinningState({
         systemLeft: [
           ...(enableRowStatus ? [ROW_STATUS_COLUMN_ID] : []),
-          ...(enableRowSelection ? [SELECTION_COLUMN_ID] : []),
+          ...(checkboxSelection ? [SELECTION_COLUMN_ID] : []),
           ...(enableRowNumber ? [ROW_NUMBER_COLUMN_ID] : []),
         ],
         userLeft: userPinned.left,
         userRight: userPinned.right,
       }),
-    [enableRowStatus, enableRowSelection, enableRowNumber, userPinned.left, userPinned.right]
+    [enableRowStatus, checkboxSelection, enableRowNumber, userPinned.left, userPinned.right]
   );
 
   const { columnPinning: innerColumnPinning, setColumnPinning: setInnerColumnPinning } =
@@ -226,7 +226,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
       next = withRowStatusColumn(next, rowStatusColumn);
     }
 
-    if (enableRowSelection) {
+    if (checkboxSelection) {
       next = withSelectionColumn(next, selectionColumn);
     }
 
@@ -238,7 +238,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
   }, [
     columns,
     rowStatusColumn,
-    enableRowSelection,
+    checkboxSelection,
     selectionColumn,
     enableRowNumber,
     rowNumberColumn,
@@ -414,7 +414,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
       }
     },
 
-    enableRowSelection: enableRowSelection ?? false,
+    enableRowSelection: checkboxSelection ?? false,
     enableGrouping: treeEnabled ? false : enableGrouping ?? false,
     enableSorting: treeEnabled ? false : true,
     enableColumnResizing: enableColumnSizing ?? false,

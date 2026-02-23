@@ -36,7 +36,7 @@ export type GenGridBaseProps<TData> = {
   enablePinning?: boolean;
   enableColumnSizing?: boolean;
 
-  enableRowSelection?: boolean;
+  checkboxSelection?: boolean;
   enableRowNumber?: boolean;
   enableActiveRowHighlight?: boolean;
   enableGrouping?: boolean;
@@ -80,7 +80,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     enablePinning,
     enableColumnSizing,
 
-    enableRowSelection,
+    checkboxSelection,
     enableRowNumber,
     enableActiveRowHighlight = false,
     enableGrouping,
@@ -101,6 +101,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     isCellDirty,
   } = props;
   void enableGrouping;
+  void checkboxSelection;
 
   const stickyHeaderEnabled =  enableStickyHeader !== undefined ? enableStickyHeader : true;
   const headerRowCount = table.getHeaderGroups().length + (enableFiltering ? 1 : 0);

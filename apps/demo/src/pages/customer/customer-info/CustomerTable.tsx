@@ -85,7 +85,7 @@ function CustomerTable(props: CustomerTableProps) {
           enableColumnSizing: true,
           enableVirtualization: true,
           enableRowStatus: true,
-          enableRowSelection: true,
+          checkboxSelection: true,
         }}
         onStateChange={(s) => {
           props.onDiffChange(s.pendingDiff as any);

@@ -70,7 +70,7 @@ export const Basic: Story = {
           enableColumnSizing
           enablePinning
           enableFiltering
-          enableRowSelection
+          checkboxSelection
           enableRowNumber
           enableVirtualization
           overscan={12}

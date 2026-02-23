@@ -133,8 +133,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     actionBarPosition = 'top',
     actionButtonStyle = 'text',
 
-    selectedRowIds: selectedRowIdsControlled,
-    onSelectedRowIdsChange,
+    rowSelection: rowSelectionControlledIds,
+    onRowSelectionChange: onRowSelectionIdsChange,
 
     // active cell (?듭뀡)
     activeCell: activeCellControlled,
@@ -155,24 +155,24 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   const includedBuiltInActions = actionBar?.includeBuiltIns;
   const customActions = actionBar?.customActions;
 
-  const [selectedRowIdsUncontrolled, setSelectedRowIdsUncontrolled] = React.useState<readonly CrudRowId[]>([]);
-  const selectedRowIds = selectedRowIdsControlled ?? selectedRowIdsUncontrolled;
+  const [rowSelectionUncontrolled, setRowSelectionUncontrolled] = React.useState<readonly CrudRowId[]>([]);
+  const rowSelectionIds = rowSelectionControlledIds ?? rowSelectionUncontrolled;
 
   const rowSelection = React.useMemo<RowSelectionState>(() => {
     const next: RowSelectionState = {};
-    for (const id of selectedRowIds) {
+    for (const id of rowSelectionIds) {
       next[String(id)] = true;
     }
     return next;
-  }, [selectedRowIds]);
+  }, [rowSelectionIds]);
 
 
-  const setSelectedRowIds = React.useCallback(
+  const setRowSelectionIds = React.useCallback(
     (next: readonly CrudRowId[]) => {
-      onSelectedRowIdsChange?.(next);
-      if (selectedRowIdsControlled == null) setSelectedRowIdsUncontrolled(next);
+      onRowSelectionIdsChange?.(next);
+      if (rowSelectionControlledIds == null) setRowSelectionUncontrolled(next);
     },
-    [onSelectedRowIdsChange, selectedRowIdsControlled]
+    [onRowSelectionIdsChange, rowSelectionControlledIds]
   );
 
   const [activeCellUncontrolled, setActiveCellUncontrolled] = React.useState<{ rowId: CrudRowId; columnId: string } | null>(null);
@@ -198,9 +198,9 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   const handleRowSelectionChange = React.useCallback(
     (next: RowSelectionState) => {
       const nextIds = Object.keys(next).filter((k) => next[k]);
-      setSelectedRowIds(nextIds);
+      setRowSelectionIds(nextIds);
     },
-    [setSelectedRowIds]
+    [setRowSelectionIds]
   );
 
     // --- committing state
@@ -222,7 +222,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   const publishStateRef = React.useRef<string>("__init__");
 
   const publishStateKey = React.useMemo(() => {
-    const selectedKey = selectedRowIds.join(",");
+    const selectedKey = rowSelectionIds.join(",");
     const activeRowKey = activeCell?.rowId ?? "";
     const activeColKey = activeCell?.columnId ?? "";
     const changesKey = pendingApi.changes.map((c) => {
@@ -241,7 +241,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       changesKey,
     ].join("||");
   }, [
-    selectedRowIds,
+    rowSelectionIds,
     activeCell?.rowId,
     activeCell?.columnId,
     pendingApi.changes,
@@ -336,7 +336,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     let targets: readonly CrudRowId[] = [];
 
     if (deleteMode === 'selected') {
-      targets = selectedRowIds;
+      targets = rowSelectionIds;
     } else if (deleteMode === 'activeRow') {
       const rowId = activeCell?.rowId;
       targets = rowId != null ? [rowId] : [];
@@ -344,8 +344,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
 
     if (!targets.length) return;
     pendingApi.deleteRowIds(targets);
-    setSelectedRowIds([]);
-  }, [deleteMode, selectedRowIds, activeCell, activeCellControlled, pendingApi, setSelectedRowIds]);
+    setRowSelectionIds([]);
+  }, [deleteMode, rowSelectionIds, activeCell, activeCellControlled, pendingApi, setRowSelectionIds]);
 
   const handleReset = React.useCallback(() => {
     pendingApi.reset();
@@ -365,7 +365,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       changes,
       pendingDiff,
       dirty: pendingApi.dirty,
-      selectedRowIds,
+      rowSelection: rowSelectionIds,
       activeRowId: activeCell?.rowId,
       activeColumnId: activeCell?.columnId,
       isCommitting,
@@ -400,7 +400,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     onCommitError,
     beforeCommit,
     data,
-    selectedRowIds,
+    rowSelectionIds,
     activeCell, activeCellControlled,
     isCommitting,
     isCommittingControlled,
@@ -521,7 +521,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       changes: pendingApi.changes,
       pendingDiff,
       dirty: pendingApi.dirty,
-      selectedRowIds,
+      rowSelection: rowSelectionIds,
       activeRowId: activeCell?.rowId,
       activeColumnId: activeCell?.columnId,
       isCommitting,
@@ -531,7 +531,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     data,
     pendingApi.changes,
     pendingApi.dirty,
-    selectedRowIds,
+    rowSelectionIds,
     activeCell, activeCellControlled,
     isCommitting,
   ]);
@@ -557,7 +557,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
           changes: pendingApi.changes,
           pendingDiff,
           dirty: pendingApi.dirty,
-          selectedRowIds,
+          rowSelection: rowSelectionIds,
           activeRowId: activeCell?.rowId,
           activeColumnId: activeCell?.columnId,
           isCommitting,
