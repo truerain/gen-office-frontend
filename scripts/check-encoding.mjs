@@ -55,6 +55,24 @@ function hasReplacementChar(buf) {
   return buf.toString('utf8').includes('\uFFFD');
 }
 
+function hasSuspiciousMojibake(buf) {
+  const text = buf.toString('utf8');
+  const lines = text.split(/\r?\n/);
+
+  for (const line of lines) {
+    // Only inspect lines that contain Hangul.
+    if (!/[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(line)) continue;
+
+    // Typical mojibake signatures seen when CP949/UTF-8 decoding is mixed.
+    if (line.includes('??')) return true;
+    if (/\?[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(line)) return true;
+    if (/[가-힣ㄱ-ㅎㅏ-ㅣ]\?[^\s]/.test(line)) return true;
+    if (/\?[^\s]*\?/.test(line)) return true;
+  }
+
+  return false;
+}
+
 const files = getCandidateFiles().filter(isTextTarget);
 const problems = [];
 
@@ -68,6 +86,9 @@ for (const rel of files) {
   }
   if (hasReplacementChar(buf)) {
     problems.push(`${rel}: invalid UTF-8 or replacement character detected`);
+  }
+  if (hasSuspiciousMojibake(buf)) {
+    problems.push(`${rel}: suspicious mojibake pattern detected (possible encoding corruption)`);
   }
 }
 
