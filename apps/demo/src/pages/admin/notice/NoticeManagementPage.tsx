@@ -2,19 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Bell,
-  Bold as BoldIcon,
-  Italic as ItalicIcon,
-  List as BulletListIcon,
-  ListOrdered as OrderedListIcon,
-  Pilcrow as ParagraphIcon,
   RefreshCcw,
 } from 'lucide-react';
-import { EditorContent, useEditor } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Placeholder from '@tiptap/extension-placeholder';
 
 import { GenGridCrud } from '@gen-office/gen-grid-crud';
-import type { CrudRowId } from '@gen-office/gen-grid-crud';
+import type { CrudRowId, GenGridCrudProps } from '@gen-office/gen-grid-crud';
 import { SplitLayout } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import { noticeApi, useNoticeDetailQuery, useNoticeListQuery } from '@/entities/system/notice/api/notice';
@@ -24,19 +16,17 @@ import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
 
 import styles from './NoticeManagementPage.module.css';
 import { createNoticeManagementColumns } from './NoticeManagementColumns';
-
-type NoticeDraft = {
-  id?: number;
-  title: string;
-  content: string;
-  fileSetId: string;
-  readCount: number;
-};
+import { commitNoticeChanges } from './NoticeManagementCrud';
+import { NoticeDraftPanel, type NoticeDraft } from './NoticeDraftPanel';
 
 const createDefaultDraft = (): NoticeDraft => ({
   title: '',
   content: '',
   fileSetId: '',
+  dispStartDate: '',
+  dispEndDate: '',
+  popupYn: 'Y',
+  useYn: 'Y',
   readCount: 0,
 });
 
@@ -48,9 +38,13 @@ function parseNoticeId(rowId: CrudRowId | undefined): number | null {
 
 function toDraft(notice: Notice): NoticeDraft {
   return {
-    id: notice.id,
+    noticeId: notice.noticeId,
     title: String(notice.title ?? ''),
     content: String(notice.content ?? ''),
+    dispStartDate: String(notice.dispStartDate ?? ''),
+    dispEndDate: String(notice.dispEndDate ?? ''),
+    popupYn: String(notice.popupYn ?? 'Y'),
+    useYn: String(notice.useYn ?? 'Y'),
     fileSetId: String(notice.fileSetId ?? ''),
     readCount: Number(notice.readCount ?? 0),
   };
@@ -68,7 +62,6 @@ export default function NoticeManagementPage() {
   const [draft, setDraft] = useState<NoticeDraft>(() => createDefaultDraft());
   const [isSaving, setIsSaving] = useState(false);
   const [attachmentsByFileSetId, setAttachmentsByFileSetId] = useState<Record<string, File[]>>({});
-  const skipEditorSyncRef = useRef(false);
 
   const tempNoticeIdRef = useRef(-1);
 
@@ -78,33 +71,10 @@ export default function NoticeManagementPage() {
     activeNoticeId ?? 0,
     activeNoticeId != null
   );
-
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Placeholder.configure({
-        placeholder: '怨듭? ?댁슜???낅젰?섏꽭??',
-      }),
-    ],
-    content: draft.content,
-    onUpdate: ({ editor: nextEditor }) => {
-      if (skipEditorSyncRef.current) return;
-      setDraft((prev) => ({ ...prev, content: nextEditor.getHTML() }));
-    },
-  });
-
   useEffect(() => {
     if (!activeNotice) return;
     setDraft(toDraft(activeNotice));
   }, [activeNotice]);
-
-  useEffect(() => {
-    if (!editor) return;
-    if (editor.getHTML() === draft.content) return;
-    skipEditorSyncRef.current = true;
-    editor.commands.setContent(draft.content || '<p></p>', false);
-    skipEditorSyncRef.current = false;
-  }, [draft.content, editor]);
 
   const columns = useMemo(() => createNoticeManagementColumns(t), [t]);
   const currentFileSetId = draft.fileSetId.trim();
@@ -115,39 +85,61 @@ export default function NoticeManagementPage() {
     // selected rows do not drive detail panel
   }, []);
 
-  const handleSave = async () => {
+  const handleActiveRowChange = useCallback<
+    NonNullable<GenGridCrudProps<Notice>['onActiveRowChange']>
+  >(({ rowId }) => {
+    // Detail panel follows detail API data only; do not copy list row data into draft.
+    const nextId = parseNoticeId(rowId ?? undefined);
+    setActiveNoticeId((prev) => (prev === nextId ? prev : nextId));
+
+    if (nextId == null) {
+      setDraft(createDefaultDraft());
+    }
+  }, []);
+
+const handleSave = async () => {
     if (!draft.title.trim()) {
-      await openAlert({ title: '怨듭? ?쒕ぉ???낅젰?섏꽭??' });
+      await openAlert({ title: 'Please enter a notice title.' });
       return;
     }
 
     const confirmed = await openConfirm({
-      title: '??ν븯?쒓쿋?듬땲源?',
+      title: 'Do you want to save changes?',
       confirmText: 'Save',
       cancelText: 'Cancel',
     });
     if (!confirmed) return;
 
+    const resolvedNoticeId =
+      typeof draft.noticeId === 'number' && Number.isFinite(draft.noticeId) && draft.noticeId > 0
+        ? draft.noticeId
+        : activeNoticeId ?? undefined;
+
     const payload: NoticeRequest = {
-      id: draft.id,
+      noticeId: resolvedNoticeId,
       title: draft.title.trim(),
       content: draft.content,
+      dispStartDate: draft.dispStartDate || undefined,
+      dispEndDate: draft.dispEndDate || undefined,
+      popupYn: draft.popupYn,
+      useYn: draft.useYn,
       fileSetId: draft.fileSetId.trim() || undefined,
       lastUpdatedBy: 'admin',
-      createdBy: draft.id ? undefined : 'admin',
+      createdBy: resolvedNoticeId ? undefined : 'admin',
     };
 
     try {
       setIsSaving(true);
       const saved = await noticeApi.save(payload);
-      setActiveNoticeId(saved.id);
-      setSelectedRowIds([saved.id]);
+      setActiveNoticeId(saved.noticeId);
+      setSelectedRowIds([saved.noticeId]);
       await refetch();
       await refetchDetail();
-      await openAlert({ title: '??λ릺?덉뒿?덈떎.' });
+      await openAlert({ title: 'Saved successfully.' });
     } catch (error) {
       console.error(error);
-      const message = error instanceof Error ? error.message : '怨듭? ??μ뿉 ?ㅽ뙣?덉뒿?덈떎.';
+      const message =
+        error instanceof Error ? error.message : 'Failed to save notice.';
       addNotification(message, 'error');
     } finally {
       setIsSaving(false);
@@ -157,7 +149,7 @@ export default function NoticeManagementPage() {
   const handleAddAttachment = (files: FileList | null) => {
     if (!files || files.length === 0) return;
     if (!currentFileSetId) {
-      addNotification('泥⑤? ?꾩뿉 file_set_id瑜??낅젰?섏꽭??', 'error');
+      addNotification('Enter file_set_id before attaching files.', 'error');
       return;
     }
 
@@ -180,47 +172,43 @@ export default function NoticeManagementPage() {
     <div className={styles.page}>
       <PageHeader
         title="Notice Management"
-        description="怨듭??ы빆 紐⑸줉 議고쉶? ?곸꽭 ?몄쭛??愿由ы빀?덈떎."
+        description="Manage the notice list and edit notice details."
         breadcrumbItems={[
           { label: 'System', icon: <Bell size={16} /> },
           { label: 'Notice Management', icon: <Bell size={16} /> },
         ]}
       />
-
       <div className={styles.content}>
         <SplitLayout
           className={styles.splitLayout}
           leftWidth="52%"
+          minLeftWidth={360}
+          minRightWidth={360}
+          resizable
+          showResizeLine
           left={
             <div className={styles.pane}>
               <GenGridCrud<Notice>
                 title="Notice List"
                 data={noticeList}
                 columns={columns}
-                getRowId={(row) => row.id}
+                getRowId={(row) => row.noticeId}
                 rowSelection={selectedRowIds}
-                onRowSelectionChange={(rowIds) => {
-                  void handleSelectedRowsChange(rowIds);
-                }}
-                onCommit={async () => ({ ok: true })}
-                onStateChange={({ activeRowId }) => {
-                  // detail panel follows active row only
-                  if (activeRowId == null) {
-                    setActiveNoticeId(null);
-                    setDraft(createDefaultDraft());
-                    return;
-                  }
-
-                  const nextId = parseNoticeId(activeRowId);
-                  setActiveNoticeId((prev) => (prev === nextId ? prev : nextId));
-                  if (nextId == null) {
-                    setDraft(createDefaultDraft());
-                  }
+                deleteMode="selected"
+                onRowSelectionChange={(rowIds) => handleSelectedRowsChange(rowIds)}
+                onActiveRowChange={handleActiveRowChange}
+                onCommit={async ({ changes, ctx }) => {
+                  await commitNoticeChanges(changes, ctx.viewData);
+                  await refetch();
+                  return { ok: true };
                 }}
                 createRow={() => ({
-                  id: tempNoticeIdRef.current--,
+                  noticeId: tempNoticeIdRef.current--,
                   title: '',
                   content: '',
+                  dispStartDate: '',
+                  dispEndDate: '',
+                  popupYn: 'Y',
                   fileSetId: '',
                   useYn: 'Y',
                   createdBy: 'admin',
@@ -229,7 +217,7 @@ export default function NoticeManagementPage() {
                 actionBar={{
                   position: 'top',
                   defaultStyle: 'icon',
-                  includeBuiltIns: ['add', 'delete', 'save', 'filter'],
+                  includeBuiltIns: ['filter'],
                   customActions: [
                     {
                       key: 'refresh',
@@ -252,7 +240,8 @@ export default function NoticeManagementPage() {
                   enableColumnSizing: true,
                   enableVirtualization: true,
                   enableRowStatus: false,
-                  checkboxSelection: true,
+                  enableRowNumber: true,
+                  checkboxSelection: false,
                   editOnActiveCell: false,
                   keepEditingOnNavigate: true,
                 }}
@@ -260,142 +249,22 @@ export default function NoticeManagementPage() {
             </div>
           }
           right={
-            <div className={styles.pane}>
-              <div className={styles.paneHeader}>
-                <span>Notice Detail</span>
-                <span className={styles.meta}>
-                  <span>{activeNoticeId ?? 'new'}</span>
-                  <span>{isDetailLoading ? 'Loading...' : ''}</span>
-                </span>
-              </div>
-
-              <div className={styles.editorWrap}>
-                <div className={styles.fieldRow}>
-                  <div className={styles.field}>
-                    <label className={styles.label}>Title</label>
-                    <input
-                      className={styles.input}
-                      value={draft.title}
-                      onChange={(e) => setDraft((prev) => ({ ...prev, title: e.target.value }))}
-                      placeholder="怨듭? ?쒕ぉ"
-                    />
-                  </div>
-                  <div className={styles.field}>
-                    <label className={styles.label}>file_set_id</label>
-                    <input
-                      className={styles.input}
-                      value={draft.fileSetId}
-                      onChange={(e) => setDraft((prev) => ({ ...prev, fileSetId: e.target.value }))}
-                      placeholder="?? NOTICE_20260220_001"
-                    />
-                  </div>
-                </div>
-
-                <div className={styles.toolbar}>
-                  <button
-                    type="button"
-                    className={styles.toolbarButton}
-                    data-active={editor?.isActive('bold') ? 'true' : 'false'}
-                    onClick={() => editor?.chain().focus().toggleBold().run()}
-                    aria-label="Bold"
-                    title="Bold"
-                  >
-                    <BoldIcon size={16} aria-hidden />
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.toolbarButton}
-                    data-active={editor?.isActive('italic') ? 'true' : 'false'}
-                    onClick={() => editor?.chain().focus().toggleItalic().run()}
-                    aria-label="Italic"
-                    title="Italic"
-                  >
-                    <ItalicIcon size={16} aria-hidden />
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.toolbarButton}
-                    data-active={editor?.isActive('bulletList') ? 'true' : 'false'}
-                    onClick={() => editor?.chain().focus().toggleBulletList().run()}
-                    aria-label="Bullet List"
-                    title="Bullet List"
-                  >
-                    <BulletListIcon size={16} aria-hidden />
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.toolbarButton}
-                    data-active={editor?.isActive('orderedList') ? 'true' : 'false'}
-                    onClick={() => editor?.chain().focus().toggleOrderedList().run()}
-                    aria-label="Ordered List"
-                    title="Ordered List"
-                  >
-                    <OrderedListIcon size={16} aria-hidden />
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.toolbarButton}
-                    onClick={() => editor?.chain().focus().setParagraph().run()}
-                    aria-label="Paragraph"
-                    title="Paragraph"
-                  >
-                    <ParagraphIcon size={16} aria-hidden />
-                  </button>
-                </div>
-
-                <div className={styles.editor}>
-                  <EditorContent editor={editor} />
-                </div>
-
-                <div className={styles.attachments}>
-                  <label className={styles.label}>
-                    Attachments (group: {currentFileSetId || 'file_set_id not set'})
-                  </label>
-                  <input
-                    className={styles.fileInput}
-                    type="file"
-                    multiple
-                    onChange={(e) => handleAddAttachment(e.target.files)}
-                  />
-                  <div className={styles.fileList}>
-                    {currentAttachments.length === 0 ? (
-                      <p className={styles.emptyText}>?깅줉??泥⑤??뚯씪???놁뒿?덈떎.</p>
-                    ) : (
-                      currentAttachments.map((file, index) => (
-                        <div key={`${file.name}-${index}`} className={styles.fileItem}>
-                          <span>{file.name}</span>
-                          <button
-                            type="button"
-                            className={styles.button}
-                            onClick={() => handleRemoveAttachment(index)}
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                <div className={styles.actions}>
-                  <button
-                    type="button"
-                    className={`${styles.button} ${styles.primaryButton}`}
-                    onClick={() => {
-                      void handleSave();
-                    }}
-                    disabled={isSaving}
-                  >
-                    {isSaving ? 'Saving...' : 'Save'}
-                  </button>
-                </div>
-              </div>
-            </div>
+            <NoticeDraftPanel
+              draft={draft}
+              isDetailLoading={isDetailLoading}
+              isSaving={isSaving}
+              currentFileSetId={currentFileSetId}
+              currentAttachments={currentAttachments}
+              onDraftChange={setDraft}
+              onAddAttachment={handleAddAttachment}
+              onRemoveAttachment={handleRemoveAttachment}
+              onSave={() => {
+                void handleSave();
+              }}
+            />
           }
         />
       </div>
     </div>
   );
 }
-
-

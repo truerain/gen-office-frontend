@@ -1,7 +1,11 @@
 export interface Notice {
-  id: number;
+  noticeId: number;
   title: string;
   content: string;
+  dispStartDate?: string;
+  dispEndDate?: string;
+  popupYn: string;
+  useYn: string;
   fileSetId?: string;
   readCount?: number;
   createdBy?: string;
@@ -9,11 +13,15 @@ export interface Notice {
   lastUpdatedBy?: string;
   lastUpdatedDate?: string;
 }
-
+ 
 export interface NoticeRequest {
-  id?: number;
+  noticeId?: number;
   title: string;
   content: string;
+  dispStartDate?: string;
+  dispEndDate?: string;
+  popupYn: string;
+  useYn: string;
   fileSetId?: string;
   createdBy?: string;
   lastUpdatedBy?: string;

@@ -41,3 +41,7 @@
   background: var(--color-primary);
   opacity: 1;
 }
+
+.resizerNoLine::before {
+  opacity: 0;
+}

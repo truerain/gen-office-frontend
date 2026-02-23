@@ -47,6 +47,7 @@
 
 .input {
   flex: 1;
+  min-width: 0;
   height: 100%;
   border: 0;
   padding: 0 0.75rem;
@@ -67,6 +68,8 @@
 .triggerButton {
   all: unset;
   display: inline-flex;
+  flex: 0 0 2rem;
+  min-width: 2rem;
   align-items: center;
   justify-content: center;
   width: 2rem;

@@ -47,6 +47,11 @@ export const noticeApi = {
       method: 'PATCH',
       body: JSON.stringify({ incrementBy }),
     }),
+
+  remove: (id: number) =>
+    http<void>(`/api/notices/${encodeURIComponent(String(id))}`, {
+      method: 'DELETE',
+    }),
 };
 
 export function useNoticeListQuery(params: NoticeListParams) {

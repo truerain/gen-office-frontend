@@ -17,6 +17,7 @@ export function SplitLayout({
   minRightWidth = 0,
   gap = 16,
   resizable = false,
+  showResizeLine = true,
   onResize,
   className,
   leftClassName,
@@ -29,8 +30,34 @@ export function SplitLayout({
   });
 
   React.useEffect(() => {
-    if (typeof leftWidth === 'number') setCurrentWidth(leftWidth);
-  }, [leftWidth]);
+    if (!resizable) return;
+
+    if (typeof leftWidth === 'number') {
+      setCurrentWidth(leftWidth);
+      return;
+    }
+
+    if (typeof leftWidth !== 'string') return;
+    const root = rootRef.current;
+    if (!root) return;
+
+    const rootWidth = root.getBoundingClientRect().width;
+    const raw = leftWidth.trim();
+    let next: number | null = null;
+
+    if (raw.endsWith('%')) {
+      const ratio = Number(raw.slice(0, -1));
+      if (Number.isFinite(ratio)) next = (rootWidth * ratio) / 100;
+    } else if (raw.endsWith('px')) {
+      const px = Number(raw.slice(0, -2));
+      if (Number.isFinite(px)) next = px;
+    } else {
+      const n = Number(raw);
+      if (Number.isFinite(n)) next = n;
+    }
+
+    if (next != null && Number.isFinite(next)) setCurrentWidth(next);
+  }, [leftWidth, resizable]);
 
   const handlePointerDown = React.useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
@@ -75,12 +102,7 @@ export function SplitLayout({
     [resizable]
   );
 
-  const resolvedLeftWidth =
-    resizable && typeof leftWidth === 'number'
-      ? currentWidth
-      : typeof leftWidth === 'number'
-        ? leftWidth
-        : leftWidth;
+  const resolvedLeftWidth = resizable ? currentWidth : leftWidth;
 
   const style = {
     ['--split-gap' as any]: toCssSize(gap, '16px'),
@@ -94,7 +116,11 @@ export function SplitLayout({
       <div className={cn(styles.left, leftClassName)}>{left}</div>
       {resizable ? (
         <div
-          className={cn(styles.resizer, isDragging && styles.resizerActive)}
+          className={cn(
+            styles.resizer,
+            !showResizeLine && styles.resizerNoLine,
+            isDragging && styles.resizerActive
+          )}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}

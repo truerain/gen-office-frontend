@@ -1,6 +1,7 @@
 /* Trigger */
 .trigger {
   all: unset;
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
@@ -57,7 +58,9 @@
 }
 
 .fullWidth {
+  display: flex;
   width: 100%;
+  min-width: 0;
 }
 
 .triggerIcon {

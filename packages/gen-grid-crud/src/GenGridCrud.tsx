@@ -139,6 +139,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     // active cell (?듭뀡)
     activeCell: activeCellControlled,
     onActiveCellChange,
+    onActiveRowChange,
 
     onStateChange,
     onCellEdit,
@@ -308,6 +309,29 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     return map;
   }, [gridData, getPendingRowId]);
 
+  const prevActiveRowIdRef = React.useRef<CrudRowId | null>(null);
+  React.useEffect(() => {
+    const nextActiveRowId = activeCell?.rowId ?? null;
+    if (Object.is(prevActiveRowIdRef.current, nextActiveRowId)) return;
+    prevActiveRowIdRef.current = nextActiveRowId;
+
+    let row: TData | null = null;
+    let rowIndex = -1;
+
+    if (nextActiveRowId != null) {
+      rowIndex = gridData.findIndex(
+        (r) => String(getPendingRowId(r)) === String(nextActiveRowId)
+      );
+      if (rowIndex >= 0) row = gridData[rowIndex] ?? null;
+    }
+
+    onActiveRowChange?.({
+      rowId: nextActiveRowId,
+      row,
+      rowIndex,
+    });
+  }, [activeCell?.rowId, getPendingRowId, gridData, onActiveRowChange]);
+
   const baseRowById = React.useMemo(() => {
     const map = new Map<CrudRowId, TData>();
     for (let i = 0; i < data.length; i++) {
@@ -336,7 +360,9 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     let targets: readonly CrudRowId[] = [];
 
     if (deleteMode === 'selected') {
-      targets = rowSelectionIds;
+      targets = rowSelectionIds.map(
+        (rowId) => pendingRowIdByGridId.get(String(rowId)) ?? rowId
+      );
     } else if (deleteMode === 'activeRow') {
       const rowId = activeCell?.rowId;
       targets = rowId != null ? [rowId] : [];
@@ -345,7 +371,15 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     if (!targets.length) return;
     pendingApi.deleteRowIds(targets);
     setRowSelectionIds([]);
-  }, [deleteMode, rowSelectionIds, activeCell, activeCellControlled, pendingApi, setRowSelectionIds]);
+  }, [
+    deleteMode,
+    rowSelectionIds,
+    activeCell,
+    activeCellControlled,
+    pendingApi,
+    pendingRowIdByGridId,
+    setRowSelectionIds,
+  ]);
 
   const handleReset = React.useCallback(() => {
     pendingApi.reset();

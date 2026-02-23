@@ -49,6 +49,12 @@ export type CrudCellPatch<TData> = {
   patch: Partial<TData>;
 };
 
+export type CrudActiveRowChangeEvent<TData> = {
+  rowId: CrudRowId | null;
+  row: TData | null;
+  rowIndex: number;
+};
+
 export type CrudActionButtonStyle = 'text' | 'icon';
 export type CrudActionSide = 'left' | 'right';
 export type CrudBuiltInActionKey = 'add' | 'delete' | 'save' | 'filter' | 'reset';
@@ -126,6 +132,7 @@ export type GenGridCrudProps<TData> = {
   /** active cell */
   activeCell?: { rowId: CrudRowId; columnId: string } | null;
   onActiveCellChange?: (next: { rowId: CrudRowId; columnId: string } | null) => void;
+  onActiveRowChange?: (event: CrudActiveRowChangeEvent<TData>) => void;
 
   /** editor factory (GenGrid) */
   editorFactory?: GenGridEditorFactory<TData>;

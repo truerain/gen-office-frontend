@@ -1,0 +1,192 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 0;
+}
+
+.frame {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  min-height: 140px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.visualPane {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.tabs {
+  display: inline-flex;
+  gap: 0;
+  margin-top: -1px;
+  align-self: flex-start;
+}
+
+.tabButton {
+  border: 1px solid var(--color-border);
+  border-top: 0;
+  border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
+  background: #f3f4f6;
+  color: #4b5563;
+  height: 26px;
+  min-width: 84px;
+  padding: 0 12px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.tabButton[data-active='true'] {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-bottom-color: var(--color-surface);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  border-bottom: 1px solid var(--color-border);
+  background: #f8fafc;
+}
+
+.toolbarSelect {
+  height: 30px;
+  min-width: 92px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  padding: 0 8px;
+  font-size: 0.8125rem;
+}
+
+.toolbarColorLabel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-surface);
+  width: 30px;
+  height: 30px;
+  overflow: hidden;
+}
+
+.toolbarColorInput {
+  width: 20px;
+  height: 20px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.toolbarButton {
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  height: 30px;
+  width: 30px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.toolbarButton[data-active='true'] {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.toolbarButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.editor {
+  border: 0;
+  border-radius: 0;
+  min-height: 0;
+  flex: 1;
+  padding: 12px;
+  overflow: visible;
+}
+
+.htmlEditor {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--color-surface);
+  color: var(--color-text);
+  padding: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  resize: none;
+  overflow: auto;
+}
+
+.editor :global(.tiptap) {
+  height: 100%;
+  min-height: calc(var(--rte-min-height, 220px) - 24px);
+  outline: none;
+  line-height: 1.55;
+}
+
+.editor :global(.tiptap p.is-editor-empty:first-child::before) {
+  content: attr(data-placeholder);
+  color: var(--color-text-tertiary);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.editor :global(.tiptap img) {
+  max-width: 100%;
+  height: auto;
+}
+
+.editor :global(.tiptap .rte-resizable-image) {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  line-height: 0;
+}
+
+.editor :global(.tiptap .rte-resizable-image__img) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.editor :global(.tiptap .rte-resizable-image__handle) {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--color-primary);
+  border-radius: 2px;
+  background: var(--color-bg-primary);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+  cursor: nwse-resize;
+}

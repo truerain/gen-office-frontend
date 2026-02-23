@@ -55,6 +55,16 @@
   gap: 8px;
 }
 
+.noticeEditor {
+  flex: 1;
+  min-height: 0;
+}
+
+.noticeEditorBody {
+  flex: 1;
+  min-height: 0;
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -63,7 +73,15 @@
 
 .fieldRow {
   display: grid;
+  /*
   grid-template-columns: 1fr 240px;
+  gap: 8px;
+  */
+}
+
+.fieldRowMeta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -79,53 +97,6 @@
   padding: 0 10px;
   background: var(--color-surface);
   color: var(--color-text);
-}
-
-.toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.toolbarButton {
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-sm);
-  background: var(--color-surface);
-  color: var(--color-text);
-  height: 30px;
-  width: 30px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.toolbarButton[data-active='true'] {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-.editor {
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-sm);
-  min-height: 220px;
-  padding: 12px;
-  overflow: auto;
-}
-
-.editor :global(.tiptap) {
-  min-height: 196px;
-  outline: none;
-  line-height: 1.55;
-}
-
-.editor :global(.tiptap p.is-editor-empty:first-child::before) {
-  content: attr(data-placeholder);
-  color: var(--color-text-tertiary);
-  float: left;
-  height: 0;
-  pointer-events: none;
 }
 
 .attachments {
@@ -180,4 +151,8 @@
 .emptyText {
   color: var(--color-text-secondary);
   font-size: 0.875rem;
+}
+
+.selectLikeDatePicker {
+  max-width: 16rem;
 }

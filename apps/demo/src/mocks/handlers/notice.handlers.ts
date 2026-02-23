@@ -3,12 +3,12 @@ import { mockNotices } from '@/mocks/data/notice';
 import type { Notice, NoticeRequest } from '@/entities/system/notice/model/types';
 
 function parseNoticeId(value: string) {
-  const id = Number(value);
-  return Number.isFinite(id) ? id : null;
+  const noticeId = Number(value);
+  return Number.isFinite(noticeId) ? noticeId : null;
 }
 
 function nextNoticeId() {
-  const maxId = mockNotices.reduce((max, notice) => (notice.id > max ? notice.id : max), 0);
+  const maxId = mockNotices.reduce((max, notice) => (notice.noticeId > max ? notice.noticeId : max), 0);
   return maxId + 1;
 }
 
@@ -31,10 +31,10 @@ export const noticeHandlers = [
   }),
 
   http.get('/api/notices/:id', ({ params }) => {
-    const id = parseNoticeId(String(params.id));
-    if (id == null) return new HttpResponse('invalid id', { status: 400 });
+    const noticeId = parseNoticeId(String(params.noticeId));
+    if (noticeId == null) return new HttpResponse('invalid id', { status: 400 });
 
-    const found = mockNotices.find((notice) => notice.id === id);
+    const found = mockNotices.find((notice) => notice.noticeId === noticeId);
     if (!found) return new HttpResponse('not found', { status: 404 });
 
     return HttpResponse.json(found);
@@ -46,16 +46,20 @@ export const noticeHandlers = [
     if (!title) return new HttpResponse('title is required', { status: 400 });
 
     const now = new Date().toISOString();
-    const requestedId = Number(body.id);
+    const requestedId = Number(body.noticeId);
     const hasRequestedId = Number.isFinite(requestedId) && requestedId > 0;
 
     if (hasRequestedId) {
-      const idx = mockNotices.findIndex((notice) => notice.id === requestedId);
+      const idx = mockNotices.findIndex((notice) => notice.noticeId === requestedId);
       if (idx !== -1) {
         mockNotices[idx] = {
           ...mockNotices[idx],
           title,
           content: String(body.content ?? ''),
+          dispStartDate: String(body.dispStartDate ?? ''),
+          dispEndDate: String(body.dispEndDate ?? ''),
+          popupYn: String(body.popupYn ?? 'N'),
+          useYn: String(body.useYn ?? 'Y'),
           fileSetId: String(body.fileSetId ?? ''),
           lastUpdatedBy: String(body.lastUpdatedBy ?? 'admin'),
           lastUpdatedDate: now,
@@ -65,9 +69,13 @@ export const noticeHandlers = [
     }
 
     const created: Notice = {
-      id: nextNoticeId(),
+      noticeId: nextNoticeId(),
       title,
       content: String(body.content ?? ''),
+      dispStartDate: String(body.dispStartDate ?? ''),
+      dispEndDate: String(body.dispEndDate ?? ''),
+      popupYn: String(body.popupYn ?? 'N'),
+      useYn: String(body.useYn ?? 'Y'),
       fileSetId: String(body.fileSetId ?? ''),
       readCount: 0,
       createdBy: String(body.createdBy ?? 'admin'),
@@ -80,10 +88,10 @@ export const noticeHandlers = [
   }),
 
   http.patch('/api/notices/:id/read-count', async ({ params, request }) => {
-    const id = parseNoticeId(String(params.id));
-    if (id == null) return new HttpResponse('invalid id', { status: 400 });
+    const noticeId = parseNoticeId(String(params.noticeId));
+    if (noticeId == null) return new HttpResponse('invalid id', { status: 400 });
 
-    const idx = mockNotices.findIndex((notice) => notice.id === id);
+    const idx = mockNotices.findIndex((notice) => notice.noticeId === noticeId);
     if (idx === -1) return new HttpResponse('not found', { status: 404 });
 
     let incrementBy = 1;
@@ -103,5 +111,16 @@ export const noticeHandlers = [
     };
 
     return HttpResponse.json(mockNotices[idx]);
+  }),
+
+  http.delete('/api/notices/:id', ({ params }) => {
+    const noticeId = parseNoticeId(String(params.id));
+    if (noticeId == null) return new HttpResponse('invalid id', { status: 400 });
+
+    const idx = mockNotices.findIndex((notice) => notice.noticeId === noticeId);
+    if (idx === -1) return new HttpResponse('not found', { status: 404 });
+
+    mockNotices.splice(idx, 1);
+    return new HttpResponse(null, { status: 204 });
   }),
 ];
