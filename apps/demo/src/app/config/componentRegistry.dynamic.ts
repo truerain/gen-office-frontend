@@ -48,6 +48,7 @@ const componentPaths: Record<string, ComponentLoader> = {
   // 시스템 관리
   MenuManagementPage: () => import('@/pages/admin/menu/MenuManagementPage'),
   RoleManagementPage: () => import('@/pages/admin/role/RoleManagementPage'),
+  UserRoleManagementPage: () => import('@/pages/admin/user-role/UserRoleManagementPage'),
   // 'RoleMenuPage': () => import('../pages/system/RoleMenuPage'),
   UserManagementPage: () => import('@/pages/admin/user/UserManagementPage'),
   NoticeManagementPage: () => import('@/pages/admin/notice/NoticeManagementPage'),
