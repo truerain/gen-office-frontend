@@ -1,0 +1,35 @@
+.root {
+  width: 100%;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.triggerButton {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.25rem;
+  color: var(--color-fg-secondary);
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.triggerButton:hover {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-fg-primary);
+}
+
+.triggerButton:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.triggerButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
