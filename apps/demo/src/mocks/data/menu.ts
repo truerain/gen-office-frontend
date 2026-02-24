@@ -88,6 +88,17 @@ const menus: AppMenu[] = [
     execComponent: 'NoticeManagementPage',
   },
   {
+    menuId: 900500,
+    menuName: 'Message Management',
+    menuNameEng: 'Message Management',
+    menuIcon: 'Languages',
+    parentMenuId: 900000,
+    displayYn: 'Y',
+    useYn: 'Y',
+    sortOrder: 5,
+    execComponent: 'MessageManagementPage',
+  },
+  {
     menuId: 990000,
     menuName: 'UI Demo',
     menuNameEng: 'UI Demo',
