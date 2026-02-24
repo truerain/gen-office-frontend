@@ -9,8 +9,12 @@ export type MasterDetailLayoutProps = {
 
   leftWidth?: number | string;
   minLeftWidth?: number | string;
+  maxLeftWidth?: number | string;
   minRightWidth?: number | string;
   gap?: number;
+  resizable?: boolean;
+  showResizeLine?: boolean;
+  onResize?: (nextLeftWidth: number) => void;
 
   className?: string;
   masterClassName?: string;

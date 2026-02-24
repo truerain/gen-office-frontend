@@ -11,6 +11,7 @@ function toCssSize(value?: number | string, fallback?: string) {
 export function SplitLayout({
   left,
   right,
+  direction = 'horizontal',
   leftWidth = 280,
   minLeftWidth = 220,
   maxLeftWidth,
@@ -25,7 +26,7 @@ export function SplitLayout({
 }: SplitLayoutProps) {
   const rootRef = React.useRef<HTMLDivElement | null>(null);
   const [isDragging, setIsDragging] = React.useState(false);
-  const [currentWidth, setCurrentWidth] = React.useState<number>(() => {
+  const [currentSize, setCurrentSize] = React.useState<number>(() => {
     return typeof leftWidth === 'number' ? leftWidth : 280;
   });
 
@@ -33,7 +34,7 @@ export function SplitLayout({
     if (!resizable) return;
 
     if (typeof leftWidth === 'number') {
-      setCurrentWidth(leftWidth);
+      setCurrentSize(leftWidth);
       return;
     }
 
@@ -41,13 +42,14 @@ export function SplitLayout({
     const root = rootRef.current;
     if (!root) return;
 
-    const rootWidth = root.getBoundingClientRect().width;
+    const rect = root.getBoundingClientRect();
+    const rootSize = direction === 'vertical' ? rect.height : rect.width;
     const raw = leftWidth.trim();
     let next: number | null = null;
 
     if (raw.endsWith('%')) {
       const ratio = Number(raw.slice(0, -1));
-      if (Number.isFinite(ratio)) next = (rootWidth * ratio) / 100;
+      if (Number.isFinite(ratio)) next = (rootSize * ratio) / 100;
     } else if (raw.endsWith('px')) {
       const px = Number(raw.slice(0, -2));
       if (Number.isFinite(px)) next = px;
@@ -56,8 +58,8 @@ export function SplitLayout({
       if (Number.isFinite(n)) next = n;
     }
 
-    if (next != null && Number.isFinite(next)) setCurrentWidth(next);
-  }, [leftWidth, resizable]);
+    if (next != null && Number.isFinite(next)) setCurrentSize(next);
+  }, [direction, leftWidth, resizable]);
 
   const handlePointerDown = React.useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
@@ -76,19 +78,20 @@ export function SplitLayout({
       if (!root) return;
 
       const rect = root.getBoundingClientRect();
-      const raw = e.clientX - rect.left;
+      const raw = direction === 'vertical' ? e.clientY - rect.top : e.clientX - rect.left;
 
       const min = typeof minLeftWidth === 'number' ? minLeftWidth : 0;
       const max =
         typeof maxLeftWidth === 'number'
           ? maxLeftWidth
-          : rect.width - (typeof minRightWidth === 'number' ? minRightWidth : 0);
+          : (direction === 'vertical' ? rect.height : rect.width) -
+            (typeof minRightWidth === 'number' ? minRightWidth : 0);
 
       const next = Math.max(min, Math.min(raw, max));
-      setCurrentWidth(next);
+      setCurrentSize(next);
       onResize?.(next);
     },
-    [isDragging, maxLeftWidth, minLeftWidth, minRightWidth, onResize, resizable]
+    [direction, isDragging, maxLeftWidth, minLeftWidth, minRightWidth, onResize, resizable]
   );
 
   const handlePointerUp = React.useCallback(
@@ -102,7 +105,7 @@ export function SplitLayout({
     [resizable]
   );
 
-  const resolvedLeftWidth = resizable ? currentWidth : leftWidth;
+  const resolvedLeftWidth = resizable ? currentSize : leftWidth;
 
   const style = {
     ['--split-gap' as any]: toCssSize(gap, '16px'),
@@ -112,12 +115,19 @@ export function SplitLayout({
   } as React.CSSProperties;
 
   return (
-    <div ref={rootRef} className={cn(styles.root, className)} style={style}>
-      <div className={cn(styles.left, leftClassName)}>{left}</div>
+    <div
+      ref={rootRef}
+      className={cn(styles.root, direction === 'vertical' && styles.rootVertical, className)}
+      style={style}
+    >
+      <div className={cn(styles.left, direction === 'vertical' && styles.leftVertical, leftClassName)}>
+        {left}
+      </div>
       {resizable ? (
         <div
           className={cn(
             styles.resizer,
+            direction === 'vertical' && styles.resizerVertical,
             !showResizeLine && styles.resizerNoLine,
             isDragging && styles.resizerActive
           )}
@@ -126,7 +136,9 @@ export function SplitLayout({
           onPointerUp={handlePointerUp}
         />
       ) : null}
-      <div className={cn(styles.right, rightClassName)}>{right}</div>
+      <div className={cn(styles.right, direction === 'vertical' && styles.rightVertical, rightClassName)}>
+        {right}
+      </div>
     </div>
   );
 }

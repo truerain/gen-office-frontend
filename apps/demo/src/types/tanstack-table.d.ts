@@ -24,6 +24,12 @@ declare module '@tanstack/react-table' {
     editOptions?: { label: string; value: string | number }[];
     getEditOptions?: (row: TData) => { label: string; value: string | number }[];
     editPlaceholder?: string;
+    editValueNormalizer?: (args: {
+      value: unknown;
+      row: TData;
+      rowId: string;
+      columnId: string;
+    }) => unknown;
     renderCell?: (args: {
       value: unknown;
       row: TData;

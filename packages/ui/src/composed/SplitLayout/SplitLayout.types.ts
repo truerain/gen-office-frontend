@@ -3,6 +3,7 @@ import type * as React from 'react';
 export type SplitLayoutProps = {
   left: React.ReactNode;
   right: React.ReactNode;
+  direction?: 'horizontal' | 'vertical';
 
   leftWidth?: number | string;
   minLeftWidth?: number | string;

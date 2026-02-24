@@ -61,6 +61,46 @@ type ContentEditableEditorProps = {
   allowArrowNavigation?: boolean;
 };
 
+function getCaretOffset(root: HTMLElement): number | null {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0) return null;
+  const range = selection.getRangeAt(0);
+  if (!root.contains(range.startContainer)) return null;
+  const pre = document.createRange();
+  pre.setStart(root, 0);
+  pre.setEnd(range.startContainer, range.startOffset);
+  return pre.toString().length;
+}
+
+function setCaretOffset(root: HTMLElement, offset: number) {
+  const target = Math.max(0, Math.min(offset, root.textContent?.length ?? 0));
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let current: Node | null = walker.nextNode();
+  let remaining = target;
+
+  while (current) {
+    const len = current.textContent?.length ?? 0;
+    if (remaining <= len) {
+      const range = document.createRange();
+      range.setStart(current, remaining);
+      range.collapse(true);
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+      return;
+    }
+    remaining -= len;
+    current = walker.nextNode();
+  }
+
+  const fallback = document.createRange();
+  fallback.selectNodeContents(root);
+  fallback.collapse(false);
+  const selection = window.getSelection();
+  selection?.removeAllRanges();
+  selection?.addRange(fallback);
+}
+
 function ContentEditableEditor({
   value,
   onChange,
@@ -100,7 +140,11 @@ function ContentEditableEditor({
     if (!el) return;
     const nextText = value == null ? '' : String(value);
     if (el.textContent !== nextText) {
+      const caretOffset = document.activeElement === el ? getCaretOffset(el) : null;
       el.textContent = nextText;
+      if (caretOffset != null) {
+        setCaretOffset(el, caretOffset);
+      }
     }
     if (pendingAutoSelectRef.current && document.activeElement === el) {
       const range = document.createRange();
@@ -252,6 +296,21 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
         : bodyStyles.alignLeft;
 
   const [draft, setDraft] = React.useState<unknown>(cell.getValue());
+  const normalizeEditValue = React.useCallback(
+    (value: unknown) => {
+      const normalize = meta?.editValueNormalizer as
+        | ((args: { value: unknown; row: TData; rowId: string; columnId: string }) => unknown)
+        | undefined;
+      if (!normalize) return value;
+      return normalize({
+        value,
+        row: cell.row.original,
+        rowId,
+        columnId: colId,
+      });
+    },
+    [cell.row.original, colId, meta?.editValueNormalizer, rowId]
+  );
 
   React.useEffect(() => {
     if (isEditing) {
@@ -307,7 +366,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
             value={draft ?? ''}
             onChange={(next) => {
               // eslint-disable-next-line no-console
-              setDraft(next);
+              setDraft(normalizeEditValue(next));
             }}
             onCommit={commitDraft}
             onCancel={() => cancel({ preserve: false })}
@@ -351,7 +410,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
             onChange={(e) => {
               const next = e.target.value;
               // eslint-disable-next-line no-console
-              setDraft(next);
+              setDraft(normalizeEditValue(next));
             }}
           />
         );
@@ -361,7 +420,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
             value={draft ?? ''}
             onChange={(next) => {
               // eslint-disable-next-line no-console
-              setDraft(next);
+              setDraft(normalizeEditValue(next));
             }}
             onCommit={commitDraft}
             onCancel={() => cancel({ preserve: false })}
@@ -406,7 +465,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
             onChange={(e) => {
               const next = e.target.value;
               // eslint-disable-next-line no-console
-              setDraft(next);
+              setDraft(normalizeEditValue(next));
             }}
           >
             {options.map((opt: { label: string; value: string | number }) => (
@@ -450,7 +509,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
             onChange={(e) => {
               const next = e.target.checked;
               // eslint-disable-next-line no-console
-              setDraft(next);
+              setDraft(normalizeEditValue(next));
             }}
           />
         );
@@ -461,7 +520,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
             value={draft ?? ''}
             onChange={(next) => {
               // eslint-disable-next-line no-console
-              setDraft(next);
+              setDraft(normalizeEditValue(next));
             }}
             onCommit={commitDraft}
             onCancel={() => cancel({ preserve: false })}
@@ -479,7 +538,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
       row: cell.row.original,
       rowId,
       columnId: colId,
-      onChange: setDraft,
+      onChange: (next) => setDraft(normalizeEditValue(next)),
       onCommit: commitDraft,
       onCancel: cancel,
       onTab,
@@ -493,7 +552,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
       columnId: colId,
       meta,
       editType: meta?.editType,
-      onChange: setDraft,
+      onChange: (next) => setDraft(normalizeEditValue(next)),
       onCommit: commitDraft,
       onCancel: cancel,
       onTab,

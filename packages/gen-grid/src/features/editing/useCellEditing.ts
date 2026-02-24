@@ -363,7 +363,9 @@ export function useCellEditing<TData>(args: {
         const inEditor = !!target.closest('input,select,textarea,button,[contenteditable="true"]');
         const inCell = !!target.closest('td[data-rowid][data-colid]');
         if (!inEditor && !inCell) {
-          exitEdit({ preserve: false });
+          // Clicking blank area inside the same grid should not discard the in-progress draft.
+          // Let the editor keep its state until an explicit blur/commit path occurs.
+          return;
         }
         return;
       }

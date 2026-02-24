@@ -10,8 +10,12 @@ export function MasterDetailLayout({
   actions,
   leftWidth,
   minLeftWidth,
+  maxLeftWidth,
   minRightWidth,
   gap,
+  resizable,
+  showResizeLine,
+  onResize,
   className,
   masterClassName,
   detailClassName,
@@ -30,8 +34,12 @@ export function MasterDetailLayout({
           right={detail}
           leftWidth={leftWidth}
           minLeftWidth={minLeftWidth}
+          maxLeftWidth={maxLeftWidth}
           minRightWidth={minRightWidth}
           gap={gap}
+          resizable={resizable}
+          showResizeLine={showResizeLine}
+          onResize={onResize}
           leftClassName={masterClassName}
           rightClassName={detailClassName}
         />

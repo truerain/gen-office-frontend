@@ -1,7 +1,7 @@
 .root {
   display: flex;
   flex-direction: column;
-  padding: var(--spacing-md);
+  padding: 0 var(--spacing-md);
   background: transparent;
   /*
   border: 1px solid var(--color-border-default);
