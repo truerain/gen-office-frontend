@@ -23,3 +23,5 @@ export {
   dateColumn,
   selectColumn,
 } from './helpers/columnHelpers';
+export { PopupEditor } from './features/editing/PopupEditor';
+export type { PopupEditorSelection } from './features/editing/PopupEditor';

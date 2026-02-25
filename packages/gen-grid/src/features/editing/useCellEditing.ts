@@ -319,6 +319,7 @@ export function useCellEditing<TData>(args: {
 
       const target = event.target as HTMLElement | null;
       if (!target) return;
+      if (target.closest('[data-gen-grid-editor-overlay="true"]')) return;
 
       const cell = document.querySelector<HTMLElement>(
         `[data-row-id="${CSS.escape(activeCell.rowId)}"][data-col-id="${CSS.escape(activeCell.columnId)}"]`
@@ -347,6 +348,7 @@ export function useCellEditing<TData>(args: {
 
       const target = event.target as HTMLElement | null;
       if (!target) return;
+      if (target.closest('[data-gen-grid-editor-overlay="true"]')) return;
 
       const cell = document.querySelector<HTMLElement>(
         `[data-row-id="${CSS.escape(activeCell.rowId)}"][data-col-id="${CSS.escape(activeCell.columnId)}"]`

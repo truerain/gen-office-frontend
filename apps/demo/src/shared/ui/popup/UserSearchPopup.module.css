@@ -1,0 +1,62 @@
+.content {
+  width: min(36rem, 90vw);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.searchRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  align-items: end;
+}
+
+.result {
+  max-height: 18rem;
+  overflow: auto;
+  border: 1px solid var(--color-border-default);
+  border-radius: 0.375rem;
+  background-color: var(--color-bg-primary);
+}
+
+.message {
+  padding: 0.75rem;
+  color: var(--color-fg-tertiary);
+  font-size: 0.875rem;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.item {
+  all: unset;
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+.item:hover {
+  background-color: var(--color-bg-secondary);
+}
+
+.itemTitle {
+  font-size: 0.875rem;
+  color: var(--color-fg-primary);
+}
+
+.itemMeta {
+  font-size: 0.75rem;
+  color: var(--color-fg-tertiary);
+}
+

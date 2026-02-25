@@ -1,4 +1,10 @@
 import type { ColumnDef } from '@tanstack/react-table';
+import { PopupEditor } from '@gen-office/gen-grid';
+import type { CommonUser } from '@/shared/api/commonUser';
+import {
+  UserSearchPopup,
+  USER_SEARCH_POPUP_CONTENT_CLASS_NAME,
+} from '@/shared/ui/popup/UserSearchPopup';
 import type { UserRoleGridRow } from './UserRoleManagementCrud';
 
 const useYnOptions = [
@@ -13,36 +19,39 @@ const ynOptions = [
 
 export const createUserRoleManagementColumns = (): ColumnDef<UserRoleGridRow>[] => [
   {
-    id: 'userId',
-    header: 'User ID',
-    accessorKey: 'userId',
-    size: 120,
-    meta: {
-      editable: true,
-      editType: 'number',
-      align: 'right',
-      pinned: 'left',
-    },
-  },
-  {
-    id: 'roleId',
-    header: 'Role ID',
-    accessorKey: 'roleId',
-    size: 120,
-    meta: {
-      editable: true,
-      editType: 'number',
-      align: 'right',
-      pinned: 'left',
-    },
-  },
-  {
     id: 'empNo',
     header: 'Emp No',
     accessorKey: 'empNo',
     size: 120,
     meta: {
+      editable: true,
       pinned: 'left',
+      renderEditor: (editorProps) => (
+        <PopupEditor<UserRoleGridRow, CommonUser>
+          editor={editorProps}
+          placeholder="Search user"
+          readOnly={false}
+          contentClassName={USER_SEARCH_POPUP_CONTENT_CLASS_NAME}
+          mapSelectionToValue={(selection) => {
+            if (!selection?.data) return selection?.value ?? '';
+            return {
+              empNo: selection.data.empNo ?? '',
+              empName: selection.data.empName ?? '',
+              orgName: selection.data.orgName ?? '',
+            } satisfies Partial<UserRoleGridRow>;
+          }}
+          renderPopupContent={({ open, close, value: popupValue, setSelection }) => (
+            <UserSearchPopup
+              key={`${open}:${editorProps.row.empName ?? popupValue}`}
+              initialKeyword={editorProps.row.empName ?? popupValue}
+              onSelectUser={(selection) => {
+                setSelection(selection);
+              }}
+              onClose={close}
+            />
+          )}
+        />
+      ),
     },
   },
   {

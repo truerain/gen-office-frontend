@@ -1,17 +1,19 @@
 import { useMemo, useRef, useState } from 'react';
 import { RefreshCcw, UserCog } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
 
 import { GenGridCrud } from '@gen-office/gen-grid-crud';
-import { Button, Input, PopupInput, SimpleFilterBar, type FilterField } from '@gen-office/ui';
+import { PopupInput, SimpleFilterBar, type FilterField } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 import { HttpError } from '@/shared/api/http';
-import { userApi } from '@/entities/system/user/api/user';
 import { useUserRoleListQuery } from '@/entities/system/user-role/api/userRole';
 import type { UserRoleListParams } from '@/entities/system/user-role/model/types';
 import { useAppStore } from '@/app/store/appStore';
 import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
+import {
+  UserSearchPopup,
+  USER_SEARCH_POPUP_CONTENT_CLASS_NAME,
+} from '@/shared/ui/popup/UserSearchPopup';
 
 import styles from './UserRoleManagementPage.module.css';
 import { createUserRoleManagementColumns } from './UserRoleManagementColumns';
@@ -65,15 +67,16 @@ function toPositiveIntOrUndefined(input: string) {
   return normalized;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function UserRoleManagementPage(_props: PageComponentProps) {
   const addNotification = useAppStore((state) => state.addNotification);
   const { openAlert, openConfirm } = useAlertDialog();
 
   const [gridDirty, setGridDirty] = useState(false);
-  const [userPickerOpen, setUserPickerOpen] = useState(false);
-  const [userSearchInput, setUserSearchInput] = useState('');
-  const [userSearchKeyword, setUserSearchKeyword] = useState('');
   const [draftFilters, setDraftFilters] = useState<UserRoleFilters>(defaultFilters);
   const [filters, setFilters] = useState<UserRoleFilters>(defaultFilters);
   const tempSeqRef = useRef(1);
@@ -91,34 +94,6 @@ export default function UserRoleManagementPage(_props: PageComponentProps) {
   );
 
   const { data: userRoleList = [], refetch, dataUpdatedAt } = useUserRoleListQuery(queryParams);
-  const { data: userSearchResults, isFetching: isUserSearchLoading } = useQuery({
-    queryKey: ['user-role-filter-user-search', userSearchKeyword],
-    enabled: userPickerOpen && userSearchKeyword.trim().length > 0,
-    queryFn: async () => {
-      const keyword = userSearchKeyword.trim();
-      if (!keyword) return [];
-
-      if (/^\d+$/.test(keyword)) {
-        try {
-          const user = await userApi.get(Number(keyword));
-          return [user];
-        } catch {
-          return [];
-        }
-      }
-
-      const list = await userApi.list({
-        empName: keyword,
-        page: 0,
-        pageSize: 50,
-      });
-      return Array.isArray(list) ? list : [];
-    },
-  });
-  const userSearchResultList = useMemo(() => {
-    if (!Array.isArray(userSearchResults)) return [];
-    return userSearchResults;
-  }, [userSearchResults]);
   const rows = useMemo<UserRoleGridRow[]>(
     () =>
       userRoleList.map((item) => ({
@@ -140,74 +115,25 @@ export default function UserRoleManagementPage(_props: PageComponentProps) {
         render: (value, onChange) => (
           <PopupInput
             value={String(value ?? '')}
-            onValueChange={(next) => onChange(next)}
+            onValueChange={onChange}
+            onCommitValue={(_, committedSelection) => {
+              console.log('[UserRoleManagementPage] PopupInput onCommitValue:', {
+                committedSelection,
+              });
+            }}
             placeholder="Search user"
             readOnly={false}
-            fullWidth={true}
-            open={userPickerOpen}
-            onOpenChange={(nextOpen) => {
-              setUserPickerOpen(nextOpen);
-              if (!nextOpen) return;
-              setUserSearchInput('');
-              setUserSearchKeyword('');
-            }}
-            contentClassName={styles.userPopupContent}
-            content={({ close }) => (
-              <div className={styles.userPopupBody}>
-                <div className={styles.userPopupSearchRow}>
-                  <Input
-                    value={userSearchInput}
-                    onChange={(event) => setUserSearchInput(event.target.value)}
-                    placeholder="User ID or name"
-                    autoSelect={false}
-                    onKeyDown={(event) => {
-                      if (event.key !== 'Enter') return;
-                      event.preventDefault();
-                      setUserSearchKeyword(userSearchInput.trim());
-                    }}
-                  />
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => setUserSearchKeyword(userSearchInput.trim())}
-                  >
-                    Search
-                  </Button>
-                </div>
-                <div className={styles.userPopupResult}>
-                  {isUserSearchLoading ? (
-                    <div className={styles.userPopupMessage}>Loading...</div>
-                  ) : userSearchKeyword.trim().length === 0 ? (
-                    <div className={styles.userPopupMessage}>
-                      Enter a user ID or name and click Search.
-                    </div>
-                  ) : userSearchResultList.length === 0 ? (
-                    <div className={styles.userPopupMessage}>No users found.</div>
-                  ) : (
-                    <ul className={styles.userPopupList}>
-                      {userSearchResultList.map((user) => (
-                        <li key={user.userId}>
-                          <button
-                            type="button"
-                            className={styles.userPopupItem}
-                            onClick={() => {
-                              onChange(String(user.userId));
-                              close();
-                            }}
-                          >
-                            <span className={styles.userPopupItemTitle}>
-                              {user.empName ?? '-'} ({user.userId})
-                            </span>
-                            <span className={styles.userPopupItemMeta}>
-                              {user.empNo ?? '-'}
-                            </span>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </div>
+            contentClassName={USER_SEARCH_POPUP_CONTENT_CLASS_NAME}
+            content={({ open, close, value: popupValue, setSelection }) => (
+              <UserSearchPopup
+                key={`${open}:${popupValue}`}
+                initialKeyword={popupValue}
+                onSelectUser={(selection) => {
+                  setSelection(selection);
+                  onChange(selection.value);
+                }}
+                onClose={close}
+              />
             )}
           />
         ),
@@ -215,7 +141,7 @@ export default function UserRoleManagementPage(_props: PageComponentProps) {
       { key: 'roleId', title: 'Role ID', type: 'text', placeholder: '', flex: 0 },
       { key: 'useYn', title: 'Use(Y/N)', type: 'text', placeholder: 'Y | N', flex: 0 },
     ];
-  }, [isUserSearchLoading, userPickerOpen, userSearchInput, userSearchKeyword, userSearchResultList]);
+  }, []);
 
   const handleSearch = () => {
     const same =
@@ -256,7 +182,12 @@ export default function UserRoleManagementPage(_props: PageComponentProps) {
             ...defaultCreateRow,
             _rowId: `tmp:${Date.now()}:${tempSeqRef.current++}`,
           })}
-          makePatch={({ columnId, value }) => ({ [columnId]: value } as Partial<UserRoleGridRow>)}
+          makePatch={({ columnId, value }) => {
+            if (columnId === 'empNo' && isRecord(value)) {
+              return value as Partial<UserRoleGridRow>;
+            }
+            return { [columnId]: value } as Partial<UserRoleGridRow>;
+          }}
           deleteMode="selected"
           actionBar={{
             position: 'top',

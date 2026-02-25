@@ -19,7 +19,8 @@ export const createNoticeManagementColumns = (t: TFunction): ColumnDef<Notice>[]
     accessorKey: 'dispStartDate',
     size: 120,
     meta: {
-      align: 'center'
+      align: 'center',
+      editType: 'date'
     },
   },
   {
