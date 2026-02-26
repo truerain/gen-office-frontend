@@ -1,8 +1,8 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import type {
-  CommonCodeMasterGridRow,
-  CommonCodeDetailGridRow,
-} from './CommonCodeManagementCrud';
+  LkupMasterGridRow,
+  LkupDetailGridRow,
+} from './LkupManagementCrud';
 
 const useYnOptions = [
   { label: 'Y', value: 'Y' },
@@ -14,7 +14,7 @@ const normalizeUpperCode = (value: unknown) =>
     .toUpperCase()
     .replace(/[^A-Z0-9_]/g, '');
 
-export const createMasterColumns = (): ColumnDef<CommonCodeMasterGridRow>[] => [
+export const createMasterColumns = (): ColumnDef<LkupMasterGridRow>[] => [
   {
     id: 'lkupClssCd',
     header: 'Class Code',
@@ -151,7 +151,7 @@ export const createMasterColumns = (): ColumnDef<CommonCodeMasterGridRow>[] => [
   },
 ];
 
-export const createDetailColumns = (): ColumnDef<CommonCodeDetailGridRow>[] => [
+export const createDetailColumns = (): ColumnDef<LkupDetailGridRow>[] => [
   {
     id: 'lkupCd',
     header: 'Code',

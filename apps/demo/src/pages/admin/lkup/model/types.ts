@@ -1,8 +1,8 @@
-export interface CommonCodeMasterKey {
+export interface LkupMasterKey {
   lkupClssCd: string;
 }
 
-export interface CommonCodeMaster extends CommonCodeMasterKey {
+export interface LkupMaster extends LkupMasterKey {
   lkupClssName: string;
   lkupClssDesc?: string | null;
   useYn: string;
@@ -21,11 +21,11 @@ export interface CommonCodeMaster extends CommonCodeMasterKey {
   lastUpdatedAt?: string | null;
 }
 
-export interface CommonCodeDetailKey extends CommonCodeMasterKey {
+export interface LkupDetailKey extends LkupMasterKey {
   lkupCd: string;
 }
 
-export interface CommonCodeDetail extends CommonCodeDetailKey {
+export interface LkupDetail extends LkupDetailKey {
   lkupName: string;
   lkupNameEng?: string | null;
   sortOrder?: number | null;
@@ -52,7 +52,7 @@ export interface ListResponse<T> {
   total: number;
 }
 
-export type CommonCodeMasterListParams = {
+export type LkupMasterListParams = {
   lkupClssCd?: string;
   lkupClssName?: string;
   useYn?: string;
@@ -62,7 +62,7 @@ export type CommonCodeMasterListParams = {
   sort?: string;
 };
 
-export type CommonCodeDetailListParams = {
+export type LkupDetailListParams = {
   lkupCd?: string;
   lkupName?: string;
   useYn?: string;
@@ -72,7 +72,7 @@ export type CommonCodeDetailListParams = {
   sort?: string;
 };
 
-export interface CommonCodeMasterCreateRequest {
+export interface LkupMasterCreateRequest {
   lkupClssCd: string;
   lkupClssName: string;
   lkupClssDesc?: string | null;
@@ -89,7 +89,7 @@ export interface CommonCodeMasterCreateRequest {
   attribute10?: string | null;
 }
 
-export interface CommonCodeMasterUpdateRequest {
+export interface LkupMasterUpdateRequest {
   lkupClssName: string;
   lkupClssDesc?: string | null;
   useYn: string;
@@ -105,7 +105,7 @@ export interface CommonCodeMasterUpdateRequest {
   attribute10?: string | null;
 }
 
-export interface CommonCodeDetailCreateRequest {
+export interface LkupDetailCreateRequest {
   lkupCd: string;
   lkupName: string;
   lkupNameEng?: string | null;
@@ -123,7 +123,7 @@ export interface CommonCodeDetailCreateRequest {
   attribute10?: string | null;
 }
 
-export interface CommonCodeDetailUpdateRequest {
+export interface LkupDetailUpdateRequest {
   lkupName: string;
   lkupNameEng?: string | null;
   sortOrder?: number | null;

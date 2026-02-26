@@ -1,7 +1,7 @@
 // apps/demo/src/entities/system/user/api/user.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { http } from '@/shared/api/http';
-import type { User, UserListParams, UserRequest } from '@/entities/system/user/model/types';
+import type { User, UserListParams, UserRequest } from '@/pages/admin/user/model/types';
 
 function buildQuery(params?: Record<string, string | undefined>) {
   if (!params) return '';

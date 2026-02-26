@@ -1,6 +1,6 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
-import type { User } from '@/entities/system/user/model/types';
+import type { User } from '@/pages/admin/user/model/types';
 
 export type SelectOption = { label: string; value: string };
 
@@ -69,7 +69,7 @@ export const createUserManagementColumns = (
   {
     id: 'title',
     header: 'Title',
-    accessorKey: 'title',
+    accessorKey: 'titleCd',
     size: 140,
     meta: { editable: true, editType: 'text' },
   },

@@ -9,30 +9,30 @@ import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 import { http, HttpError } from '@/shared/api/http';
 import {
-  commonCodeKeys,
-  useCommonCodeMasterListQuery,
-  useCommonCodeDetailListQuery,
-} from '@/entities/system/common-code/api/commonCode';
+  LkupKeys,
+  useLkupMasterListQuery,
+  useLkupDetailListQuery,
+} from '@/pages/admin/lkup/api/lkup';
 import type {
-  CommonCodeMasterListParams,
-  CommonCodeDetailListParams,
-} from '@/entities/system/common-code/model/types';
+  LkupMasterListParams,
+  LkupDetailListParams,
+} from '@/pages/admin/lkup/model/types';
 import { useAppStore } from '@/app/store/appStore';
 import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
 
-import styles from './CommonCodeManagementPage.module.css';
+import styles from './LkupManagementPage.module.css';
 
 import {
-  commitCommonCodeMasterChanges,
-  commitCommonCodeDetailChanges,
-  hasMissingCommonCodeMasterRequired,
-  hasMissingCommonCodeDetailRequired,
-  toCommonCodeMasterRowId,
-  toCommonCodeDetailRowId,
-  type CommonCodeMasterGridRow,
-  type CommonCodeDetailGridRow,
-} from './CommonCodeManagementCrud';
-import { createDetailColumns, createMasterColumns } from './CommonCodeManagementColumns';
+  commitLkupMasterChanges,
+  commitLkupDetailChanges,
+  hasMissingLkupMasterRequired,
+  hasMissingLkupDetailRequired,
+  toLkupMasterRowId,
+  toLkupDetailRowId,
+  type LkupMasterGridRow,
+  type LkupDetailGridRow,
+} from './LkupManagementCrud';
+import { createDetailColumns, createMasterColumns } from './LkupManagementColumns';
 
 type masterFilters = {
   lkupClssCd: string;
@@ -72,7 +72,7 @@ const defaultItemCreateRow = {
   lastUpdatedAt: '',
 };
 
-type CommonCodeOption = {
+type LkupOption = {
   lkupClssCd: string;
   code: string;
   name: string;
@@ -81,7 +81,7 @@ type CommonCodeOption = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export default function CommonCodeManagementPage(_props: PageComponentProps) {
+export default function LkupManagementPage(_props: PageComponentProps) {
   const addNotification = useAppStore((state) => state.addNotification);
   const { openAlert, openConfirm } = useAlertDialog();
   const queryClient = useQueryClient();
@@ -100,10 +100,10 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
 
   const { data: useYnCodes = [] } = useQuery({
     queryKey: ['common-codes', 'USE_YN'],
-    queryFn: () => http<CommonCodeOption[]>('/api/common/codes/USE_YN', { method: 'GET' }),
+    queryFn: () => http<LkupOption[]>('/api/common/codes/USE_YN', { method: 'GET' }),
   });
 
-  const classQueryParams = useMemo<CommonCodeMasterListParams>(
+  const classQueryParams = useMemo<LkupMasterListParams>(
     () => ({
       lkupClssCd: masterFilters.lkupClssCd.trim() || undefined,
       lkupClssName: masterFilters.lkupClssName.trim() || undefined,
@@ -123,13 +123,13 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
     data: classList = [],
     refetch: refetchClassList,
     dataUpdatedAt: classDataUpdatedAt,
-  } = useCommonCodeMasterListQuery(classQueryParams);
+  } = useLkupMasterListQuery(classQueryParams);
 
-  const masterRows = useMemo<CommonCodeMasterGridRow[]>(
+  const masterRows = useMemo<LkupMasterGridRow[]>(
     () =>
       classList.map((item) => ({
         ...item,
-        _rowId: toCommonCodeMasterRowId(item),
+        _rowId: toLkupMasterRowId(item),
       })),
     [classList]
   );
@@ -142,7 +142,7 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
     setSelectedClassRowIds([]);
   }, [masterRows, selectedClassCode]);
 
-  const itemQueryParams = useMemo<CommonCodeDetailListParams>(
+  const itemQueryParams = useMemo<LkupDetailListParams>(
     () => ({
       sort: 'sort_order asc,lkup_cd asc',
     }),
@@ -153,13 +153,13 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
     data: itemList = [],
     refetch: refetchItemList,
     dataUpdatedAt: itemDataUpdatedAt,
-  } = useCommonCodeDetailListQuery(selectedClassCode, itemQueryParams, Boolean(selectedClassCode));
+  } = useLkupDetailListQuery(selectedClassCode, itemQueryParams, Boolean(selectedClassCode));
 
-  const itemRows = useMemo<CommonCodeDetailGridRow[]>(
+  const itemRows = useMemo<LkupDetailGridRow[]>(
     () =>
       itemList.map((item) => ({
         ...item,
-        _rowId: toCommonCodeDetailRowId(item),
+        _rowId: toLkupDetailRowId(item),
       })),
     [itemList]
   );
@@ -201,20 +201,20 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
 
     setmasterFilters(draftMasterFilters);
     if (same) {
-      void queryClient.invalidateQueries({ queryKey: commonCodeKeys.classList(classQueryParams) });
+      void queryClient.invalidateQueries({ queryKey: LkupKeys.classList(classQueryParams) });
       void refetchClassList();
     }
   };
 
   const refreshClassList = async () => {
-    await queryClient.invalidateQueries({ queryKey: commonCodeKeys.classList(classQueryParams) });
+    await queryClient.invalidateQueries({ queryKey: LkupKeys.classList(classQueryParams) });
     await refetchClassList();
   };
 
   const refreshItemList = async () => {
     if (!selectedClassCode) return;
     await queryClient.invalidateQueries({
-      queryKey: commonCodeKeys.itemList(selectedClassCode, itemQueryParams),
+      queryKey: LkupKeys.itemList(selectedClassCode, itemQueryParams),
     });
     await refetchItemList();
   };
@@ -248,7 +248,7 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
                 />
               </div>
               <div className={styles.gridPane}>
-                <GenGridCrud<CommonCodeMasterGridRow>
+                <GenGridCrud<LkupMasterGridRow>
                   key={`class-${classDataUpdatedAt}`}
                   title="Code Class List"
                   data={masterRows}
@@ -268,7 +268,7 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
                     _rowId: `tmp:class:${Date.now()}:${classTempSeqRef.current++}`,
                   })}
                   makePatch={({ columnId, value }) =>
-                    ({ [columnId]: value } as Partial<CommonCodeMasterGridRow>)
+                    ({ [columnId]: value } as Partial<LkupMasterGridRow>)
                   }
                   deleteMode="selected"
                   actionBar={{
@@ -290,14 +290,14 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
                     ],
                   }}
                   beforeCommit={({ changes }) => {
-                    if (hasMissingCommonCodeMasterRequired(changes)) {
+                    if (hasMissingLkupMasterRequired(changes)) {
                       void openAlert({ title: 'Class Code and Class Name are required.' });
                       return false;
                     }
                     return openConfirm({ title: 'Do you want to save?' });
                   }}
                   onCommit={async ({ changes, ctx }) => {
-                    await commitCommonCodeMasterChanges(changes, ctx.viewData);
+                    await commitLkupMasterChanges(changes, ctx.viewData);
                     await refreshClassList();
                     await openAlert({ title: 'Saved successfully.' });
                     return { ok: true };
@@ -336,7 +336,7 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
           right={
             <div className={styles.pane}>
               <div className={styles.gridPane}>
-                <GenGridCrud<CommonCodeDetailGridRow>
+                <GenGridCrud<LkupDetailGridRow>
                   key={`${selectedClassCode ?? 'none'}-${itemDataUpdatedAt}`}
                   title="Code Detail List"
                   data={selectedClassCode ? itemRows : []}
@@ -348,7 +348,7 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
                     _rowId: `tmp:item:${Date.now()}:${itemTempSeqRef.current++}`,
                   })}
                   makePatch={({ columnId, value }) =>
-                    ({ [columnId]: value } as Partial<CommonCodeDetailGridRow>)
+                    ({ [columnId]: value } as Partial<LkupDetailGridRow>)
                   }
                   deleteMode="selected"
                   actionBar={{
@@ -374,7 +374,7 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
                       void openAlert({ title: 'Select a code class first.' });
                       return false;
                     }
-                    if (hasMissingCommonCodeDetailRequired(changes)) {
+                    if (hasMissingLkupDetailRequired(changes)) {
                       void openAlert({ title: 'Code and Name are required.' });
                       return false;
                     }
@@ -387,7 +387,7 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
                       return { ok: false, error };
                     }
 
-                    await commitCommonCodeDetailChanges(changes, ctx.viewData, selectedClassCode);
+                    await commitLkupDetailChanges(changes, ctx.viewData, selectedClassCode);
                     await refreshItemList();
                     await openAlert({ title: 'Saved successfully.' });
                     return { ok: true };

@@ -10,7 +10,7 @@ const componentNameByMenuId: Record<string, string> = {
   '900300': 'RoleManagementPage',
   '900400': 'NoticeManagementPage',
   '900500': 'MessageManagementPage',
-  '900600': 'CommonCodeManagementPage',
+  '900600': 'LkupManagementPage',
   '900700': 'UserRoleManagementPage',
   '990100': 'PrimitivesPage',
   '990200': 'ComboboxDemoPage',

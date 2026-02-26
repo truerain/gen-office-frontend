@@ -1,18 +1,15 @@
 import type { CrudChange, CrudRowId } from '@gen-office/gen-grid-crud';
-import { userApi } from '@/entities/system/user/api/user';
-import type { User, UserRequest } from '@/entities/system/user/model/types';
+import { userApi } from '@/pages/admin/user/api/user';
+import type { User, UserRequest } from '@/pages/admin/user/model/types';
 
 const toUserRequest = (input: Partial<User>): UserRequest => ({
   empNo: input.empNo,
   empName: input.empName,
   empNameEng: input.empNameEng,
-  password: input.password,
   email: input.email,
   orgId: input.orgId,
-  title: input.title,
+  titleCd: input.titleCd,
   langCd: input.langCd,
-  createdBy: input.createdBy,
-  lastUpdatedBy: input.lastUpdatedBy,
 });
 
 function findUserById(rows: readonly User[], rowId: CrudRowId) {

@@ -4,13 +4,10 @@ export interface UserRequest {
   empNo?: string;
   empName?: string;
   empNameEng?: string;
-  password?: string;
   email?: string;
   orgId?: string;
-  title?: string;
+  titleCd?: string;
   langCd?: string;
-  createdBy?: string;
-  lastUpdatedBy?: string;
 }
 
 export interface User {
@@ -20,13 +17,13 @@ export interface User {
   empNameEng?: string;
   email?: string;
   orgId?: string;
-  title?: string;
+  titleCd?: string;
+  titleName?: string;
   langCd?: string;
-  createdBy?: string;
-  creationDate?: string;
-  lastUpdatedBy?: string;
-  lastUpdatedDate?: string;
   password?: string;
+  lastUpdatedDate?: string;
+  lastUpdatedBy?: string;
+  lastUpdatedByName?: string;
 }
 
 export type UserListParams = {

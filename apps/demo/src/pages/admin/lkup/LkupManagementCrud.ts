@@ -1,21 +1,21 @@
 import type { CrudChange, CrudRowId } from '@gen-office/gen-grid-crud';
-import { commonCodeApi } from '@/entities/system/common-code/api/commonCode';
+import { LkupApi } from '@/pages/admin/lkup/api/lkup';
 import type {
-  CommonCodeMaster,
-  CommonCodeMasterCreateRequest,
-  CommonCodeMasterKey,
-  CommonCodeMasterUpdateRequest,
-  CommonCodeDetail,
-  CommonCodeDetailCreateRequest,
-  CommonCodeDetailKey,
-  CommonCodeDetailUpdateRequest,
-} from '@/entities/system/common-code/model/types';
+  LkupMaster,
+  LkupMasterCreateRequest,
+  LkupMasterKey,
+  LkupMasterUpdateRequest,
+  LkupDetail,
+  LkupDetailCreateRequest,
+  LkupDetailKey,
+  LkupDetailUpdateRequest,
+} from '@/pages/admin/lkup/model/types';
 
-export type CommonCodeMasterGridRow = CommonCodeMaster & {
+export type LkupMasterGridRow = LkupMaster & {
   _rowId: string;
 };
 
-export type CommonCodeDetailGridRow = CommonCodeDetail & {
+export type LkupDetailGridRow = LkupDetail & {
   _rowId: string;
 };
 
@@ -46,14 +46,14 @@ function validateUppercaseCode(value: string, field: string) {
   }
 }
 
-function toCommonCodeMasterKey(input: Partial<CommonCodeMaster>): CommonCodeMasterKey | null {
+function toLkupMasterKey(input: Partial<LkupMaster>): LkupMasterKey | null {
   const lkupClssCd = normalize(input.lkupClssCd);
   if (!lkupClssCd) return null;
   return { lkupClssCd };
 }
 
-function toCommonCodeMasterCreateRequest(input: Partial<CommonCodeMaster>): CommonCodeMasterCreateRequest {
-  const key = toCommonCodeMasterKey(input);
+function toLkupMasterCreateRequest(input: Partial<LkupMaster>): LkupMasterCreateRequest {
+  const key = toLkupMasterKey(input);
   if (!key) throw new Error('lkupClssCd is required.');
   validateNoWhitespace(key.lkupClssCd, 'lkupClssCd');
   validateUppercaseCode(key.lkupClssCd, 'lkupClssCd');
@@ -79,7 +79,7 @@ function toCommonCodeMasterCreateRequest(input: Partial<CommonCodeMaster>): Comm
   };
 }
 
-function toCommonCodeMasterUpdateRequest(input: Partial<CommonCodeMaster>): CommonCodeMasterUpdateRequest {
+function toLkupMasterUpdateRequest(input: Partial<LkupMaster>): LkupMasterUpdateRequest {
   const lkupClssName = normalize(input.lkupClssName);
   if (!lkupClssName) throw new Error('lkupClssName is required.');
 
@@ -100,7 +100,7 @@ function toCommonCodeMasterUpdateRequest(input: Partial<CommonCodeMaster>): Comm
   };
 }
 
-function toCommonCodeDetailKey(input: Partial<CommonCodeDetail>): CommonCodeDetailKey | null {
+function toLkupDetailKey(input: Partial<LkupDetail>): LkupDetailKey | null {
   const lkupClssCd = normalize(input.lkupClssCd);
   const lkupCd = normalize(input.lkupCd);
   if (!lkupClssCd || !lkupCd) return null;
@@ -115,8 +115,8 @@ function normalizeSortOrder(value: unknown) {
   return Math.trunc(num);
 }
 
-function toCommonCodeDetailCreateRequest(input: Partial<CommonCodeDetail>): CommonCodeDetailCreateRequest {
-  const key = toCommonCodeDetailKey(input);
+function toLkupDetailCreateRequest(input: Partial<LkupDetail>): LkupDetailCreateRequest {
+  const key = toLkupDetailKey(input);
   if (!key) throw new Error('lkupClssCd and lkupCd are required.');
   validateNoWhitespace(key.lkupClssCd, 'lkupClssCd');
   validateNoWhitespace(key.lkupCd, 'lkupCd');
@@ -145,7 +145,7 @@ function toCommonCodeDetailCreateRequest(input: Partial<CommonCodeDetail>): Comm
   };
 }
 
-function toCommonCodeDetailUpdateRequest(input: Partial<CommonCodeDetail>): CommonCodeDetailUpdateRequest {
+function toLkupDetailUpdateRequest(input: Partial<LkupDetail>): LkupDetailUpdateRequest {
   const lkupName = normalize(input.lkupName);
   if (!lkupName) throw new Error('lkupName is required.');
 
@@ -172,30 +172,30 @@ function findByRowId<T extends { _rowId: string }>(rows: readonly T[], rowId: Cr
   return rows.find((row) => row._rowId === id);
 }
 
-function isSameMasterKey(a: CommonCodeMasterKey, b: CommonCodeMasterKey) {
+function isSameMasterKey(a: LkupMasterKey, b: LkupMasterKey) {
   return a.lkupClssCd === b.lkupClssCd;
 }
 
-function isSameDetailKey(a: CommonCodeDetailKey, b: CommonCodeDetailKey) {
+function isSameDetailKey(a: LkupDetailKey, b: LkupDetailKey) {
   return a.lkupClssCd === b.lkupClssCd && a.lkupCd === b.lkupCd;
 }
 
-export function toCommonCodeMasterRowId(row: Pick<CommonCodeMaster, 'lkupClssCd'>) {
+export function toLkupMasterRowId(row: Pick<LkupMaster, 'lkupClssCd'>) {
   return `master:${encodeURIComponent(normalize(row.lkupClssCd))}`;
 }
 
-export function toCommonCodeDetailRowId(row: Pick<CommonCodeDetail, 'lkupClssCd' | 'lkupCd'>) {
+export function toLkupDetailRowId(row: Pick<LkupDetail, 'lkupClssCd' | 'lkupCd'>) {
   const lkupClssCd = encodeURIComponent(normalize(row.lkupClssCd));
   const lkupCd = encodeURIComponent(normalize(row.lkupCd));
   return `detail:${lkupClssCd}|${lkupCd}`;
 }
 
-export async function commitCommonCodeMasterChanges(
-  changes: readonly CrudChange<CommonCodeMasterGridRow>[],
-  ctxRows: readonly CommonCodeMasterGridRow[]
+export async function commitLkupMasterChanges(
+  changes: readonly CrudChange<LkupMasterGridRow>[],
+  ctxRows: readonly LkupMasterGridRow[]
 ) {
-  const created = new Map<CrudRowId, CommonCodeMasterGridRow>();
-  const updated = new Map<CrudRowId, Partial<CommonCodeMasterGridRow>>();
+  const created = new Map<CrudRowId, LkupMasterGridRow>();
+  const updated = new Map<CrudRowId, Partial<LkupMasterGridRow>>();
   const deleted = new Set<CrudRowId>();
 
   for (const change of changes) {
@@ -219,7 +219,7 @@ export async function commitCommonCodeMasterChanges(
     if (deleted.has(tempId)) continue;
     const patch = updated.get(tempId);
     const merged = patch ? { ...row, ...patch } : row;
-    await commonCodeApi.createMaster(toCommonCodeMasterCreateRequest(merged));
+    await LkupApi.createMaster(toLkupMasterCreateRequest(merged));
   }
 
   for (const [rowId, patch] of updated.entries()) {
@@ -230,38 +230,38 @@ export async function commitCommonCodeMasterChanges(
     if (!base) continue;
 
     const merged = { ...base, ...patch };
-    const baseKey = toCommonCodeMasterKey(base);
-    const nextKey = toCommonCodeMasterKey(merged);
+    const baseKey = toLkupMasterKey(base);
+    const nextKey = toLkupMasterKey(merged);
     if (!baseKey || !nextKey) throw new Error('lkupClssCd is required.');
 
     if (!isSameMasterKey(baseKey, nextKey)) {
       throw new Error('lkupClssCd cannot be changed for existing rows.');
     }
 
-    await commonCodeApi.updateMaster(baseKey, toCommonCodeMasterUpdateRequest(merged));
+    await LkupApi.updateMaster(baseKey, toLkupMasterUpdateRequest(merged));
   }
 
   for (const rowId of deleted) {
     if (created.has(rowId)) continue;
     const row = findByRowId(ctxRows, rowId);
     if (!row) continue;
-    const key = toCommonCodeMasterKey(row);
+    const key = toLkupMasterKey(row);
     if (!key) continue;
     if (normalizeUseYn(row.useYn ?? 'Y') === 'N') continue;
-    await commonCodeApi.updateMaster(key, toCommonCodeMasterUpdateRequest({ ...row, useYn: 'N' }));
+    await LkupApi.updateMaster(key, toLkupMasterUpdateRequest({ ...row, useYn: 'N' }));
   }
 }
 
-export async function commitCommonCodeDetailChanges(
-  changes: readonly CrudChange<CommonCodeDetailGridRow>[],
-  ctxRows: readonly CommonCodeDetailGridRow[],
+export async function commitLkupDetailChanges(
+  changes: readonly CrudChange<LkupDetailGridRow>[],
+  ctxRows: readonly LkupDetailGridRow[],
   selectedMasterCode: string
 ) {
   const lkupClssCd = normalize(selectedMasterCode);
   if (!lkupClssCd) throw new Error('Select a code class first.');
 
-  const created = new Map<CrudRowId, CommonCodeDetailGridRow>();
-  const updated = new Map<CrudRowId, Partial<CommonCodeDetailGridRow>>();
+  const created = new Map<CrudRowId, LkupDetailGridRow>();
+  const updated = new Map<CrudRowId, Partial<LkupDetailGridRow>>();
   const deleted = new Set<CrudRowId>();
 
   for (const change of changes) {
@@ -285,7 +285,7 @@ export async function commitCommonCodeDetailChanges(
     if (deleted.has(tempId)) continue;
     const patch = updated.get(tempId);
     const merged = { ...(patch ? { ...row, ...patch } : row), lkupClssCd };
-    await commonCodeApi.createDetail(lkupClssCd, toCommonCodeDetailCreateRequest(merged));
+    await LkupApi.createDetail(lkupClssCd, toLkupDetailCreateRequest(merged));
   }
 
   for (const [rowId, patch] of updated.entries()) {
@@ -296,33 +296,33 @@ export async function commitCommonCodeDetailChanges(
     if (!base) continue;
 
     const merged = { ...base, ...patch };
-    const baseKey = toCommonCodeDetailKey(base);
-    const nextKey = toCommonCodeDetailKey(merged);
+    const baseKey = toLkupDetailKey(base);
+    const nextKey = toLkupDetailKey(merged);
     if (!baseKey || !nextKey) throw new Error('lkupClssCd and lkupCd are required.');
 
     if (!isSameDetailKey(baseKey, nextKey)) {
       throw new Error('lkupCd cannot be changed for existing rows.');
     }
 
-    await commonCodeApi.updateDetail(baseKey, toCommonCodeDetailUpdateRequest(merged));
+    await LkupApi.updateDetail(baseKey, toLkupDetailUpdateRequest(merged));
   }
 
   for (const rowId of deleted) {
     if (created.has(rowId)) continue;
     const row = findByRowId(ctxRows, rowId);
     if (!row) continue;
-    const key = toCommonCodeDetailKey(row);
+    const key = toLkupDetailKey(row);
     if (!key) continue;
     if (normalizeUseYn(row.useYn ?? 'Y') === 'N') continue;
-    await commonCodeApi.updateDetail(key, toCommonCodeDetailUpdateRequest({ ...row, useYn: 'N' }));
+    await LkupApi.updateDetail(key, toLkupDetailUpdateRequest({ ...row, useYn: 'N' }));
   }
 }
 
-export function hasMissingCommonCodeMasterRequired(
-  changes: readonly CrudChange<CommonCodeMasterGridRow>[]
+export function hasMissingLkupMasterRequired(
+  changes: readonly CrudChange<LkupMasterGridRow>[]
 ) {
-  const created = new Map<CrudRowId, CommonCodeMasterGridRow>();
-  const patches = new Map<CrudRowId, Partial<CommonCodeMasterGridRow>>();
+  const created = new Map<CrudRowId, LkupMasterGridRow>();
+  const patches = new Map<CrudRowId, Partial<LkupMasterGridRow>>();
 
   for (const change of changes) {
     if (change.type === 'create') {
@@ -340,11 +340,11 @@ export function hasMissingCommonCodeMasterRequired(
   });
 }
 
-export function hasMissingCommonCodeDetailRequired(
-  changes: readonly CrudChange<CommonCodeDetailGridRow>[]
+export function hasMissingLkupDetailRequired(
+  changes: readonly CrudChange<LkupDetailGridRow>[]
 ) {
-  const created = new Map<CrudRowId, CommonCodeDetailGridRow>();
-  const patches = new Map<CrudRowId, Partial<CommonCodeDetailGridRow>>();
+  const created = new Map<CrudRowId, LkupDetailGridRow>();
+  const patches = new Map<CrudRowId, Partial<LkupDetailGridRow>>();
 
   for (const change of changes) {
     if (change.type === 'create') {

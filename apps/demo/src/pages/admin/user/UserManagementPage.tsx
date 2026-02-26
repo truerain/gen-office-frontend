@@ -7,17 +7,18 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshCcw, Users } from 'lucide-react';
 
-import { GenGridCrud } from '@gen-office/gen-grid-crud';
+import { GenGridCrud, type CrudChange, type CrudRowId } from '@gen-office/gen-grid-crud';
 import { SimpleFilterBar, type FilterField } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
-import { useUserListQuery } from '@/entities/system/user/api/user';
-import type { User, UserListParams } from '@/entities/system/user/model/types';
+import { useUserListQuery } from '@/pages/admin/user/api/user';
+import type { User, UserListParams } from '@/pages/admin/user/model/types';
 import { useAppStore } from '@/app/store/appStore';
 
 import styles from './UserManagementPage.module.css';
 import { createUserManagementColumns } from './UserManagementColumns';
 import { commitUserChanges } from './UserManagementCrud';
+import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
 
 const createUserId = () => (Date.now() + Math.floor(Math.random() * 1000));
 
@@ -25,6 +26,7 @@ const createUserId = () => (Date.now() + Math.floor(Math.random() * 1000));
 export default function UserManagementPage(_props: PageComponentProps) {
   const { t } = useTranslation('common');
   const addNotification = useAppStore((state) => state.addNotification);
+  const { openAlert, openConfirm } = useAlertDialog();
 
   const [gridDirty, setGridDirty] = useState(false);
 
@@ -86,6 +88,7 @@ export default function UserManagementPage(_props: PageComponentProps) {
       </div>
       <div className={styles.workarea}>
         <GenGridCrud<User>
+          key={`user-${dataUpdatedAt}`}
           title={"사용자목록"}
           data={userList}
           columns={columns}
@@ -123,9 +126,17 @@ export default function UserManagementPage(_props: PageComponentProps) {
               },
             ],
           }}
+          beforeCommit={({ changes }) => {
+            if (hasMissingUserRequired(changes)) {
+              void openAlert({ title: 'Class Code and Class Name are required.' });
+              return false;
+            }
+            return openConfirm({ title: 'Do you want to save?' });
+          }}
           onCommit={async ({ changes, ctx }) => {
             await commitUserChanges(changes, ctx.viewData);
             await refetch();
+            await openAlert({ title: 'Saved successfully.' });
             return { ok: true };
           }}
           onCommitError={({ error }) => {
@@ -164,4 +175,31 @@ export default function UserManagementPage(_props: PageComponentProps) {
       </div>
     </div>
   );
+}
+
+
+function normalize(value: unknown) {
+  return String(value ?? '').trim();
+}
+
+export function hasMissingUserRequired(
+  changes: readonly CrudChange<User>[]
+) {
+  const created = new Map<CrudRowId, User>();
+  const patches = new Map<CrudRowId, Partial<User>>();
+
+  for (const change of changes) {
+    if (change.type === 'create') {
+      created.set(change.tempId, change.row);
+      continue;
+    }
+    if (change.type === 'update') {
+      patches.set(change.rowId, { ...(patches.get(change.rowId) ?? {}), ...change.patch });
+    }
+  }
+
+  return Array.from(created.entries()).some(([tempId, row]) => {
+    const merged = { ...row, ...(patches.get(tempId) ?? {}) };
+    return !normalize(merged.userId) || !normalize(merged.empName);
+  });
 }
