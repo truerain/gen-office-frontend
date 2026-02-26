@@ -1,7 +1,7 @@
 // apps/demo/src/entities/system/menu/api/menu.ts
 import { useQuery } from '@tanstack/react-query';
 import { http } from '@/shared/api/http';
-import type { Menu, MenuListParams } from '@/entities/system/menu/model/types';
+import type { Menu, MenuListParams } from '@/pages/admin/menu/model/types';
 
 function buildQuery(params?: Record<string, string | undefined>) {
   if (!params) return '';

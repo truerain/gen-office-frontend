@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { http } from '@/shared/api/http';
-import type { RoleMenu } from '@/entities/system/role-menu/model/types';
+import type { RoleMenu } from '@/pages/admin/role/model/roleMenuTypes';
 
 export type RoleMenuSaveRequest = {
   roleId: number;

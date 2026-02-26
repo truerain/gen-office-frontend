@@ -107,17 +107,22 @@ export function Tree<TItem>(props: TreeProps<TItem>) {
         style={itemStyle}
       >
         <div className={styles.row}>
-          <button
-            type="button"
-            className={cn(styles.toggle, !hasChildren && styles.togglePlaceholder)}
-            aria-expanded={hasChildren ? isExpanded : undefined}
-            onClick={() => hasChildren && toggle(id)}
-            tabIndex={hasChildren ? 0 : -1}
-          >
-            <ChevronRight
-              className={cn(styles.chevron, isExpanded && styles.chevronExpanded)}
-            />
-          </button>
+          {hasChildren ? (
+            <button
+              type="button"
+              className={styles.toggle}
+              aria-expanded={isExpanded}
+              onClick={() => toggle(id)}
+            >
+              <ChevronRight
+                className={cn(styles.chevron, isExpanded && styles.chevronExpanded)}
+              />
+            </button>
+          ) : (
+            <span className={styles.leafBullet} aria-hidden="true">
+              &bull;
+            </span>
+          )}
           <button
             type="button"
             className={cn(styles.label, isSelected && styles.labelSelected)}

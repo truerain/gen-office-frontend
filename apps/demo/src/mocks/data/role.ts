@@ -1,5 +1,5 @@
 // apps/demo/src/mocks/data/role.ts
-import type { Role } from '@/entities/system/role/model/types';
+import type { Role } from '@/pages/admin/role/model/types';
 
 export const mockRoles: Role[] = [
   {

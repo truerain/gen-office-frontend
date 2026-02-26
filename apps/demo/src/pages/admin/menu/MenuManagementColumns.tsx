@@ -1,6 +1,6 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
-import type { Menu } from '@/entities/system/menu/model/types';
+import type { Menu } from '@/pages/admin/menu/model/types';
 
 import { Switch } from '@gen-office/ui';
 
@@ -19,21 +19,13 @@ export const createMenuManagementColumns = (
   t: TFunction,
   options: MenuManagementColumnOptions = {}
 ): ColumnDef<Menu>[] => [
-  {
-    id: 'treeItem',
-    header: 'Menu',
-    accessorKey: 'menuName',
-    size: 220,
-    meta: {
-      editable: false,
-    },
-  },
  {
     id: 'menuId',
     header: t('menu.id'),
     accessorKey: 'menuId',
     size: 140,
     meta: {
+      pinned: 'left',
       align: 'center',
       editable: true,
       editType: 'number',
@@ -47,6 +39,7 @@ export const createMenuManagementColumns = (
     accessorKey: 'menuName',
     size: 220,
     meta: {
+      pinned: 'left',
       editable: true,
       editType: 'text',
       editPlaceholder: 'Menu name',
@@ -181,6 +174,24 @@ export const createMenuManagementColumns = (
       align: 'center',
       editable: true,
       editType: 'number',
+    },
+  },
+  {
+    id: 'lastUpdatedBy',
+    header: 'Last Updated By',
+    accessorKey: 'lastUpdatedByName',
+    size: 180,
+    meta: {
+      align: 'center',
+    },
+  },
+  {
+    id: 'lastUpdatedDate',
+    header: 'Last Updated At',
+    accessorKey: 'lastUpdatedDate',
+    size: 180,
+    meta: {
+      align: 'center',
     },
   },
 ];

@@ -1,6 +1,6 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
-import type { Role } from '@/entities/system/role/model/types';
+import type { Role } from '@/pages/admin/role/model/types';
 
 export type SelectOption = { label: string; value: string };
 
@@ -107,14 +107,20 @@ export const createRoleManagementColumns = (
   },
   {
     id: 'lastUpdatedBy',
-    header: t('common.updatedBy', { defaultValue: 'Updated By' }),
-    accessorKey: 'lastUpdatedBy',
-    size: 140,
+    header: 'Last Updated By',
+    accessorKey: 'lastUpdatedByName',
+    size: 180,
+    meta: {
+      align: 'center',
+    },
   },
   {
     id: 'lastUpdatedDate',
-    header: t('common.updatedAt', { defaultValue: 'Updated At' }),
+    header: 'Last Updated At',
     accessorKey: 'lastUpdatedDate',
     size: 180,
+    meta: {
+      align: 'center',
+    },
   },
 ];

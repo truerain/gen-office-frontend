@@ -1,16 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { http } from '@/shared/api/http';
 import type {
-  CommonCodeClass,
-  CommonCodeClassCreateRequest,
-  CommonCodeClassKey,
-  CommonCodeClassListParams,
-  CommonCodeClassUpdateRequest,
-  CommonCodeItem,
-  CommonCodeItemCreateRequest,
-  CommonCodeItemKey,
-  CommonCodeItemListParams,
-  CommonCodeItemUpdateRequest,
+  CommonCodeMaster,
+  CommonCodeMasterCreateRequest,
+  CommonCodeMasterKey,
+  CommonCodeMasterListParams,
+  CommonCodeMasterUpdateRequest,
+  CommonCodeDetail,
+  CommonCodeDetailCreateRequest,
+  CommonCodeDetailKey,
+  CommonCodeDetailListParams,
+  CommonCodeDetailUpdateRequest,
   ListResponse,
 } from '@/entities/system/common-code/model/types';
 
@@ -28,17 +28,17 @@ const toEncoded = (value: string) => encodeURIComponent(value);
 
 export const commonCodeKeys = {
   all: () => ['common-code'] as const,
-  classList: (params: CommonCodeClassListParams) => ['common-code', 'classes', params] as const,
-  classDetail: (lkupClssCd: string) => ['common-code', 'class', lkupClssCd] as const,
-  itemList: (lkupClssCd: string, params: CommonCodeItemListParams) =>
+  classList: (params: CommonCodeMasterListParams) => ['common-code', 'masters', params] as const,
+  classDetail: (lkupClssCd: string) => ['common-code', 'master', lkupClssCd] as const,
+  itemList: (lkupClssCd: string, params: CommonCodeDetailListParams) =>
     ['common-code', 'items', lkupClssCd, params] as const,
-  itemDetail: (key: CommonCodeItemKey) =>
+  itemDetail: (key: CommonCodeDetailKey) =>
     ['common-code', 'item', key.lkupClssCd, key.lkupCd] as const,
 };
 
 export const commonCodeApi = {
-  listClasses: (params: CommonCodeClassListParams = {}) => {
-    const url = `/api/mis/admin/lookups/classes${buildQuery({
+  listMasters: (params: CommonCodeMasterListParams = {}) => {
+    const url = `/api/mis/admin/lookups/masters${buildQuery({
       lkupClssCd: params.lkupClssCd,
       lkupClssName: params.lkupClssName,
       useYn: params.useYn,
@@ -48,30 +48,30 @@ export const commonCodeApi = {
       sort: params.sort,
     })}`;
 
-    return http<CommonCodeClass[] | ListResponse<CommonCodeClass> | { items: CommonCodeClass[] }>(url, {
+    return http<CommonCodeMaster[] | ListResponse<CommonCodeMaster> | { items: CommonCodeMaster[] }>(url, {
       method: 'GET',
     }).then((res) => (Array.isArray(res) ? res : res.items ?? []));
   },
 
-  getClass: (key: CommonCodeClassKey) =>
-    http<CommonCodeClass>(`/api/mis/admin/lookups/classes/${toEncoded(key.lkupClssCd)}`, {
+  getMaster: (key: CommonCodeMasterKey) =>
+    http<CommonCodeMaster>(`/api/mis/admin/lookups/masters/${toEncoded(key.lkupClssCd)}`, {
       method: 'GET',
     }),
 
-  createClass: (input: CommonCodeClassCreateRequest) =>
-    http<CommonCodeClass>('/api/mis/admin/lookups/classes', {
+  createMaster: (input: CommonCodeMasterCreateRequest) =>
+    http<CommonCodeMaster>('/api/mis/admin/lookups/masters', {
       method: 'POST',
       body: JSON.stringify(input),
     }),
 
-  updateClass: (key: CommonCodeClassKey, input: CommonCodeClassUpdateRequest) =>
-    http<CommonCodeClass>(`/api/mis/admin/lookups/classes/${toEncoded(key.lkupClssCd)}`, {
+  updateMaster: (key: CommonCodeMasterKey, input: CommonCodeMasterUpdateRequest) =>
+    http<CommonCodeMaster>(`/api/mis/admin/lookups/masters/${toEncoded(key.lkupClssCd)}`, {
       method: 'PUT',
       body: JSON.stringify(input),
     }),
 
-  listItems: (lkupClssCd: string, params: CommonCodeItemListParams = {}) => {
-    const url = `/api/mis/admin/lookups/${toEncoded(lkupClssCd)}/items${buildQuery({
+  listDetails: (lkupClssCd: string, params: CommonCodeDetailListParams = {}) => {
+    const url = `/api/mis/admin/lookups/${toEncoded(lkupClssCd)}/details${buildQuery({
       lkupCd: params.lkupCd,
       lkupName: params.lkupName,
       useYn: params.useYn,
@@ -81,60 +81,60 @@ export const commonCodeApi = {
       sort: params.sort,
     })}`;
 
-    return http<CommonCodeItem[] | ListResponse<CommonCodeItem> | { items: CommonCodeItem[] }>(url, {
+    return http<CommonCodeDetail[] | ListResponse<CommonCodeDetail> | { items: CommonCodeDetail[] }>(url, {
       method: 'GET',
     }).then((res) => (Array.isArray(res) ? res : res.items ?? []));
   },
 
-  getItem: (key: CommonCodeItemKey) =>
-    http<CommonCodeItem>(`/api/mis/admin/lookups/${toEncoded(key.lkupClssCd)}/items/${toEncoded(key.lkupCd)}`, {
+  getDetail: (key: CommonCodeDetailKey) =>
+    http<CommonCodeDetail>(`/api/mis/admin/lookups/${toEncoded(key.lkupClssCd)}/details/${toEncoded(key.lkupCd)}`, {
       method: 'GET',
     }),
 
-  createItem: (lkupClssCd: string, input: CommonCodeItemCreateRequest) =>
-    http<CommonCodeItem>(`/api/mis/admin/lookups/${toEncoded(lkupClssCd)}/items`, {
+  createDetail: (lkupClssCd: string, input: CommonCodeDetailCreateRequest) =>
+    http<CommonCodeDetail>(`/api/mis/admin/lookups/${toEncoded(lkupClssCd)}/details`, {
       method: 'POST',
       body: JSON.stringify(input),
     }),
 
-  updateItem: (key: CommonCodeItemKey, input: CommonCodeItemUpdateRequest) =>
-    http<CommonCodeItem>(`/api/mis/admin/lookups/${toEncoded(key.lkupClssCd)}/items/${toEncoded(key.lkupCd)}`, {
+  updateDetail: (key: CommonCodeDetailKey, input: CommonCodeDetailUpdateRequest) =>
+    http<CommonCodeDetail>(`/api/mis/admin/lookups/${toEncoded(key.lkupClssCd)}/details/${toEncoded(key.lkupCd)}`, {
       method: 'PUT',
       body: JSON.stringify(input),
     }),
 };
 
-export function useCommonCodeClassListQuery(params: CommonCodeClassListParams) {
+export function useCommonCodeMasterListQuery(params: CommonCodeMasterListParams) {
   return useQuery({
     queryKey: commonCodeKeys.classList(params),
-    queryFn: () => commonCodeApi.listClasses(params),
+    queryFn: () => commonCodeApi.listMasters(params),
   });
 }
 
-export function useCommonCodeClassQuery(lkupClssCd: string, enabled = true) {
+export function useCommonCodeMasterQuery(lkupClssCd: string, enabled = true) {
   return useQuery({
     queryKey: commonCodeKeys.classDetail(lkupClssCd),
-    queryFn: () => commonCodeApi.getClass({ lkupClssCd }),
+    queryFn: () => commonCodeApi.getMaster({ lkupClssCd }),
     enabled,
   });
 }
 
-export function useCommonCodeItemListQuery(
+export function useCommonCodeDetailListQuery(
   lkupClssCd: string | undefined,
-  params: CommonCodeItemListParams,
+  params: CommonCodeDetailListParams,
   enabled = true
 ) {
   return useQuery({
     queryKey: commonCodeKeys.itemList(lkupClssCd ?? '', params),
-    queryFn: () => commonCodeApi.listItems(lkupClssCd ?? '', params),
+    queryFn: () => commonCodeApi.listDetails(lkupClssCd ?? '', params),
     enabled: enabled && Boolean(lkupClssCd),
   });
 }
 
-export function useCommonCodeItemQuery(key: CommonCodeItemKey, enabled = true) {
+export function useCommonCodeDetailQuery(key: CommonCodeDetailKey, enabled = true) {
   return useQuery({
     queryKey: commonCodeKeys.itemDetail(key),
-    queryFn: () => commonCodeApi.getItem(key),
+    queryFn: () => commonCodeApi.getDetail(key),
     enabled,
   });
 }

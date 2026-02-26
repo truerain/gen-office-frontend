@@ -3,7 +3,7 @@ import type { TFunction } from 'i18next';
 
 import { Switch } from '@gen-office/ui';
 
-import type { RoleMenu } from '@/entities/system/role-menu/model/types';
+import type { RoleMenu } from '@/pages/admin/role/model/roleMenuTypes';
 
 
 export const createRoleMenuColumns = (

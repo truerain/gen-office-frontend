@@ -11,7 +11,7 @@
  * -
  */
 
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshCcw, Shield } from 'lucide-react';
 
@@ -20,10 +20,10 @@ import type { CrudChange, CrudRowId } from '@gen-office/gen-grid-crud';
 import { SplitLayout } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
-import { useRoleListQuery } from '@/entities/system/role/api/role';
-import { roleMenuApi, useRoleMenuViewQuery } from '@/entities/system/role-menu/api/roleMenu';
-import type { RoleMenu } from '@/entities/system/role-menu/model/types';
-import type { Role, RoleListParams } from '@/entities/system/role/model/types';
+import { useRoleListQuery } from '@/pages/admin/role/api/role';
+import { roleMenuApi, useRoleMenuViewQuery } from '@/pages/admin/role/api/roleMenu';
+import type { RoleMenu } from '@/pages/admin/role/model/roleMenuTypes';
+import type { Role, RoleListParams } from '@/pages/admin/role/model/types';
 import { useAppStore } from '@/app/store/appStore';
 import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
 
@@ -129,6 +129,7 @@ export default function RoleManagementPage(_props: PageComponentProps) {
   const [gridDirty, setGridDirty] = useState(false);
   const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null);
   const [selectedRoleRowIds, setSelectedRoleRowIds] = useState<readonly CrudRowId[]>([]);
+  const [activeRoleCell, setActiveRoleCell] = useState<{ rowId: CrudRowId; columnId: string } | null>(null);
   const [roleMenuDirty, setRoleMenuDirty] = useState(false);
   const roleMenuChangesRef = useRef<readonly CrudChange<RoleMenu>[]>([]);
   const roleMenuViewRowsRef = useRef<readonly RoleMenu[]>([]);
@@ -151,7 +152,7 @@ export default function RoleManagementPage(_props: PageComponentProps) {
     [roleList, selectedRoleId]
   );
 
-  const applyRoleSelection = (
+  const applyRoleSelection = useCallback((
     nextRoleId: number | null,
     nextRowIds: readonly CrudRowId[] = selectedRoleRowIds
   ) => {
@@ -160,7 +161,31 @@ export default function RoleManagementPage(_props: PageComponentProps) {
     setRoleMenuDirty(false);
     roleMenuChangesRef.current = [];
     roleMenuViewRowsRef.current = [];
-  };
+  }, [selectedRoleRowIds]);
+
+  useEffect(() => {
+    if (roleList.length === 0) {
+      if (selectedRoleId != null || selectedRoleRowIds.length > 0) {
+        applyRoleSelection(null, []);
+      }
+      if (activeRoleCell != null) setActiveRoleCell(null);
+      return;
+    }
+
+    const hasSelectedRole =
+      selectedRoleId != null && roleList.some((role) => role.roleId === selectedRoleId);
+    if (hasSelectedRole) {
+      const activeRowId = Number(activeRoleCell?.rowId);
+      if (!Number.isFinite(activeRowId) || activeRowId !== selectedRoleId) {
+        setActiveRoleCell({ rowId: selectedRoleId, columnId: 'roleId' });
+      }
+      return;
+    }
+
+    const firstRoleId = roleList[0].roleId;
+    applyRoleSelection(firstRoleId);
+    setActiveRoleCell({ rowId: firstRoleId, columnId: 'roleId' });
+  }, [activeRoleCell?.rowId, applyRoleSelection, roleList, selectedRoleId, selectedRoleRowIds]);
 
   const handleRoleSelectionChange = async (
     nextRowIds: readonly CrudRowId[],
@@ -230,6 +255,7 @@ export default function RoleManagementPage(_props: PageComponentProps) {
         <SplitLayout
           className={styles.splitLayout}
           leftWidth="60%"
+          resizable={true}
           left={
             <div className={styles.pane}>
               <GenGridCrud<Role>
@@ -240,6 +266,12 @@ export default function RoleManagementPage(_props: PageComponentProps) {
                 rowSelection={selectedRoleRowIds}
                 onRowSelectionChange={(rowIds) => {
                   void handleRoleSelectionChange(rowIds);
+                }}
+                activeCell={activeRoleCell}
+                onActiveCellChange={setActiveRoleCell}
+                onActiveRowChange={({ rowId }) => {
+                  if (rowId == null) return;
+                  void handleRoleSelectionChange([rowId], false);
                 }}
                 createRow={() => ({
                   roleId: tempRoleIdRef.current--,
@@ -291,11 +323,8 @@ export default function RoleManagementPage(_props: PageComponentProps) {
                   const message = error instanceof Error ? error.message : 'Commit failed (see console).';
                   addNotification(message, 'error');
                 }}
-                onStateChange={({ dirty, activeRowId }) => {
+                onStateChange={({ dirty }) => {
                   setGridDirty(dirty);
-                  const nextRoleId = parseRoleId(activeRowId);
-                  if (nextRoleId == null || nextRoleId === selectedRoleId) return;
-                  void handleRoleSelectionChange([activeRowId as CrudRowId], false);
                 }}
                 gridProps={{
                   dataVersion: dataUpdatedAt,
@@ -333,7 +362,7 @@ export default function RoleManagementPage(_props: PageComponentProps) {
                 actionBar={{
                   position: 'top',
                   defaultStyle: 'icon',
-                  includeBuiltIns: ['save', 'filter'],
+                  includeBuiltIns: ['save'],
                 }}
                 onCommit={async ({ changes, ctx }) => {
                   if (selectedRoleId == null) {
@@ -410,5 +439,3 @@ export default function RoleManagementPage(_props: PageComponentProps) {
     </div>
   );
 }
-
-

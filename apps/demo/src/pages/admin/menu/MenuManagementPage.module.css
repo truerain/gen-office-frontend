@@ -27,9 +27,10 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  padding: var(--spacing-sm) 0;
 }
 
 .wrapTreeView {
   height: 100%;
-  padding: var(--spacing-sm) 0;
+  padding: var(--spacing-sm);
 }

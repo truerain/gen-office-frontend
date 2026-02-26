@@ -11,7 +11,7 @@
  * - [주의사항/제약/기능]
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Home, MonitorCog, SquareMenu } from 'lucide-react';
 
@@ -24,8 +24,8 @@ import { usePageContext } from '@/contexts/PageContext';
 import { SplitLayout, TreeView } from '@gen-office/ui';
 import { GenGridCrud } from '@gen-office/gen-grid-crud';
 import type { CrudChange } from '@gen-office/gen-grid-crud';
-import type { Menu, MenuListParams } from '@/entities/system/menu/model/types';
-import { menuApi, useMenuListQuery } from '@/entities/system/menu/api/menu';
+import type { Menu, MenuListParams } from '@/pages/admin/menu/model/types';
+import { menuApi, useMenuListQuery } from '@/pages/admin/menu/api/menu';
 import { useAppStore } from '@/app/store/appStore';
 import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
 
@@ -92,42 +92,48 @@ function MenuManagementPage(props: PageComponentProps) {
   const loadingParentsRef = useRef(new Set<string>());
   const { openAlert, openConfirm } = useAlertDialog();
 
-  const mergeMenus = (nextMenus: Menu[]) => {
+  const mergeMenus = useCallback((nextMenus: Menu[]) => {
     if (nextMenus.length === 0) return;
     setMenuData((prev) => {
       const map = new Map(prev.map((item) => [item.menuId, item]));
       nextMenus.forEach((item) => map.set(item.menuId, item));
       return Array.from(map.values());
     });
-  };
+  }, []);
 
   useEffect(() => {
     if (didInit.current) return;
     if (menuList.length === 0) return;
     setMenuData(menuList);
-    setChildMenus(menuList);
     didInit.current = true;
   }, [menuList]);
 
-  const fetchChildren = async (nodeId: number) => {
-    const parentId = nodeId === ROOT_ID ? 0 : nodeId;
-    const parentKey = String(parentId);
-    if (loadingParentsRef.current.has(parentKey)) return;
-    loadingParentsRef.current.add(parentKey);
-    try {
-      const children = await menuApi.children(parentId);
-      setChildMenus(children);
-      mergeMenus(children);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-      const message = error instanceof Error ? error.message : 'Failed to load menu children.';
-      addNotification(message, 'error');
-    } finally {
-      loadingParentsRef.current.delete(parentKey);
-    }
-  };
-  void fetchChildren;
+  const fetchChildren = useCallback(
+    async (nodeId: number) => {
+      const parentId = nodeId === ROOT_ID ? 0 : nodeId;
+      const parentKey = String(parentId);
+      if (loadingParentsRef.current.has(parentKey)) return;
+      loadingParentsRef.current.add(parentKey);
+      try {
+        const children = await menuApi.children(parentId);
+        console.log(children);
+        setChildMenus(children);
+        mergeMenus(children);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(error);
+        const message = error instanceof Error ? error.message : 'Failed to load menu children.';
+        addNotification(message, 'error');
+      } finally {
+        loadingParentsRef.current.delete(parentKey);
+      }
+    },
+    [addNotification, mergeMenus]
+  );
+
+  useEffect(() => {
+    void fetchChildren(ROOT_ID);
+  }, [fetchChildren]);
 
   const treeData = useMemo<MenuNode[]>(
     () => [
@@ -172,12 +178,18 @@ function MenuManagementPage(props: PageComponentProps) {
       <div className={styles.content}>
         <SplitLayout
           className={styles.splitLayout}
+          resizable={true}
           left={
             <div className={styles.wrapTreeView}>
               <TreeView
                 title=" "
                 data={treeData}
-                onSelect={(node) => setSelectedNodeId(node?.id ?? ROOT_ID)}
+                selectedId={selectedNodeId}
+                onSelect={(node) => {
+                  const nextId = node?.id ?? ROOT_ID;
+                  setSelectedNodeId(nextId);
+                  void fetchChildren(nextId);
+                }}
                 defaultExpandedIds={rootIds}
               />
             </div>
@@ -202,10 +214,9 @@ function MenuManagementPage(props: PageComponentProps) {
                   displayYn: 'Y',
                   useYn: 'Y',
                   sortOrder: 0,
-                  creationDate: createNowIso(),
-                  createdBy: 'admin',
                   lastUpdatedDate: createNowIso(),
-                  lastUpdatedBy: 'admin',
+                  lastUpdatedBy: '',
+                  lastUpdatedByName: '',
                 })}
                 makePatch={({ columnId, value }) => ({ [columnId]: value } as Partial<Menu>)}
                 deleteMode="selected"
@@ -247,20 +258,6 @@ function MenuManagementPage(props: PageComponentProps) {
                   enablePagination: false,
                   editOnActiveCell: true,
                   keepEditingOnNavigate: false,
-                  tree: {
-                    enabled: true,
-                    idKey: 'menuId',
-                    parentIdKey: 'parentMenuId',
-                    treeColumnId: 'treeItem',
-                    rootParentValue: 0,
-                    indentPx: 14,
-                    showOrphanWarning: true,
-                    onOrphanRowsChange: (rowIds) => {
-                      if (!rowIds.length) return;
-                      // eslint-disable-next-line no-console
-                      console.warn('[MenuManagementPage] orphan menu rows detected:', rowIds);
-                    },
-                  },
                 }}
               />
             </div>

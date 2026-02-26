@@ -1,7 +1,7 @@
 // apps/demo/src/mocks/handlers/role.handlers.ts
 import { http, HttpResponse } from 'msw';
 import { mockRoles } from '@/mocks/data/role';
-import type { Role, RoleRequest } from '@/entities/system/role/model/types';
+import type { Role, RoleRequest } from '@/pages/admin/role/model/types';
 
 function parseRoleId(value: string) {
   const id = Number(value);

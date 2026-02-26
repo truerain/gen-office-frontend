@@ -1,6 +1,6 @@
 import type { CrudChange, CrudRowId } from '@gen-office/gen-grid-crud';
-import { roleApi } from '@/entities/system/role/api/role';
-import type { Role, RoleRequest } from '@/entities/system/role/model/types';
+import { roleApi } from '@/pages/admin/role/api/role';
+import type { Role, RoleRequest } from '@/pages/admin/role/model/types';
 
 const toRoleRequest = (input: Partial<Role>): RoleRequest => ({
   roleCd: input.roleCd,
@@ -9,18 +9,6 @@ const toRoleRequest = (input: Partial<Role>): RoleRequest => ({
   roleDesc: input.roleDesc,
   sortOrder: input.sortOrder,
   useYn: input.useYn,
-  attribute1: input.attribute1 ?? '',
-  attribute2: input.attribute2 ?? '',
-  attribute3: input.attribute3 ?? '',
-  attribute4: input.attribute4 ?? '',
-  attribute5: input.attribute5 ?? '',
-  attribute6: input.attribute6 ?? '',
-  attribute7: input.attribute7 ?? '',
-  attribute8: input.attribute8 ?? '',
-  attribute9: input.attribute9 ?? '',
-  attribute10: input.attribute10 ?? '',
-  createdBy: input.createdBy,
-  lastUpdatedBy: input.lastUpdatedBy,
 });
 
 function findRoleById(rows: readonly Role[], rowId: CrudRowId) {

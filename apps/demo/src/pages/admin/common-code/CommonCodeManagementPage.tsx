@@ -1,52 +1,52 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ListTree, RefreshCcw } from 'lucide-react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { GenGridCrud } from '@gen-office/gen-grid-crud';
 import type { CrudRowId } from '@gen-office/gen-grid-crud';
 import { SimpleFilterBar, SplitLayout, type FilterField } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
-import { HttpError } from '@/shared/api/http';
+import { http, HttpError } from '@/shared/api/http';
 import {
   commonCodeKeys,
-  useCommonCodeClassListQuery,
-  useCommonCodeItemListQuery,
+  useCommonCodeMasterListQuery,
+  useCommonCodeDetailListQuery,
 } from '@/entities/system/common-code/api/commonCode';
 import type {
-  CommonCodeClassListParams,
-  CommonCodeItemListParams,
+  CommonCodeMasterListParams,
+  CommonCodeDetailListParams,
 } from '@/entities/system/common-code/model/types';
 import { useAppStore } from '@/app/store/appStore';
 import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
 
 import styles from './CommonCodeManagementPage.module.css';
-import {
-  createCommonCodeClassColumns,
-  createCommonCodeItemColumns,
-} from './CommonCodeManagementColumns';
-import {
-  commitCommonCodeClassChanges,
-  commitCommonCodeItemChanges,
-  hasMissingCommonCodeClassRequired,
-  hasMissingCommonCodeItemRequired,
-  toCommonCodeClassRowId,
-  toCommonCodeItemRowId,
-  type CommonCodeClassGridRow,
-  type CommonCodeItemGridRow,
-} from './CommonCodeManagementCrud';
 
-type ClassFilters = {
+import {
+  commitCommonCodeMasterChanges,
+  commitCommonCodeDetailChanges,
+  hasMissingCommonCodeMasterRequired,
+  hasMissingCommonCodeDetailRequired,
+  toCommonCodeMasterRowId,
+  toCommonCodeDetailRowId,
+  type CommonCodeMasterGridRow,
+  type CommonCodeDetailGridRow,
+} from './CommonCodeManagementCrud';
+import { createDetailColumns, createMasterColumns } from './CommonCodeManagementColumns';
+
+type masterFilters = {
   lkupClssCd: string;
   lkupClssName: string;
   useYn: string;
   q: string;
 };
 
-const defaultClassFilters: ClassFilters = {
+const ALL_USE_YN = 'ALL';
+
+const defaultmasterFilters: masterFilters = {
   lkupClssCd: '',
   lkupClssName: '',
-  useYn: '',
+  useYn: ALL_USE_YN,
   q: '',
 };
 
@@ -55,8 +55,9 @@ const defaultClassCreateRow = {
   lkupClssName: '',
   lkupClssDesc: '',
   useYn: 'Y',
-  createdAt: '',
-  updatedAt: '',
+  lastUpdatedBy: '',
+  lastUpdatedByName: '',
+  lastUpdatedAt: '',
 };
 
 const defaultItemCreateRow = {
@@ -66,8 +67,17 @@ const defaultItemCreateRow = {
   lkupNameEng: '',
   sortOrder: 0,
   useYn: 'Y',
-  createdAt: '',
-  updatedAt: '',
+  lastUpdatedBy: '',
+  lastUpdatedByName: '',
+  lastUpdatedAt: '',
+};
+
+type CommonCodeOption = {
+  lkupClssCd: string;
+  code: string;
+  name: string;
+  sortOrder: number;
+  useYn: string;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -76,11 +86,11 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
   const { openAlert, openConfirm } = useAlertDialog();
   const queryClient = useQueryClient();
 
-  const [classGridDirty, setClassGridDirty] = useState(false);
-  const [itemGridDirty, setItemGridDirty] = useState(false);
+  const [masterGridDirty, setmasterGridDirty] = useState(false);
+  const [detailGridDirty, setdetailGridDirty] = useState(false);
 
-  const [draftClassFilters, setDraftClassFilters] = useState<ClassFilters>(defaultClassFilters);
-  const [classFilters, setClassFilters] = useState<ClassFilters>(defaultClassFilters);
+  const [draftMasterFilters, setdraftMasterFilters] = useState<masterFilters>(defaultmasterFilters);
+  const [masterFilters, setmasterFilters] = useState<masterFilters>(defaultmasterFilters);
 
   const [selectedClassRowIds, setSelectedClassRowIds] = useState<readonly CrudRowId[]>([]);
   const [selectedClassCode, setSelectedClassCode] = useState<string | undefined>(undefined);
@@ -88,47 +98,53 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
   const classTempSeqRef = useRef(1);
   const itemTempSeqRef = useRef(1);
 
-  const classQueryParams = useMemo<CommonCodeClassListParams>(
+  const { data: useYnCodes = [] } = useQuery({
+    queryKey: ['common-codes', 'USE_YN'],
+    queryFn: () => http<CommonCodeOption[]>('/api/common/codes/USE_YN', { method: 'GET' }),
+  });
+
+  const classQueryParams = useMemo<CommonCodeMasterListParams>(
     () => ({
-      lkupClssCd: classFilters.lkupClssCd.trim() || undefined,
-      lkupClssName: classFilters.lkupClssName.trim() || undefined,
-      useYn: classFilters.useYn.trim().toUpperCase() || undefined,
-      q: classFilters.q.trim() || undefined,
+      lkupClssCd: masterFilters.lkupClssCd.trim() || undefined,
+      lkupClssName: masterFilters.lkupClssName.trim() || undefined,
+      useYn:
+        masterFilters.useYn.trim().toUpperCase() === ALL_USE_YN
+          ? undefined
+          : masterFilters.useYn.trim().toUpperCase() || undefined,
+      q: masterFilters.q.trim() || undefined,
       page: 0,
       size: 200,
       sort: 'lkup_clss_cd asc',
     }),
-    [classFilters]
+    [masterFilters]
   );
 
   const {
     data: classList = [],
     refetch: refetchClassList,
     dataUpdatedAt: classDataUpdatedAt,
-  } = useCommonCodeClassListQuery(classQueryParams);
+  } = useCommonCodeMasterListQuery(classQueryParams);
 
-  const classRows = useMemo<CommonCodeClassGridRow[]>(
+  const masterRows = useMemo<CommonCodeMasterGridRow[]>(
     () =>
       classList.map((item) => ({
         ...item,
-        _rowId: toCommonCodeClassRowId(item),
+        _rowId: toCommonCodeMasterRowId(item),
       })),
     [classList]
   );
 
   useEffect(() => {
     if (!selectedClassCode) return;
-    const exists = classRows.some((row) => row.lkupClssCd === selectedClassCode);
+    const exists = masterRows.some((row) => row.lkupClssCd === selectedClassCode);
     if (exists) return;
     setSelectedClassCode(undefined);
     setSelectedClassRowIds([]);
-  }, [classRows, selectedClassCode]);
+  }, [masterRows, selectedClassCode]);
 
-  const itemQueryParams = useMemo<CommonCodeItemListParams>(
+  const itemQueryParams = useMemo<CommonCodeDetailListParams>(
     () => ({
-      page: 0,
-      size: 200,
-      sort: 'sort_order asc, lkup_cd asc',
+      sort: 'sort_order asc,lkup_cd asc',
     }),
     []
   );
@@ -137,38 +153,53 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
     data: itemList = [],
     refetch: refetchItemList,
     dataUpdatedAt: itemDataUpdatedAt,
-  } = useCommonCodeItemListQuery(selectedClassCode, itemQueryParams, Boolean(selectedClassCode));
+  } = useCommonCodeDetailListQuery(selectedClassCode, itemQueryParams, Boolean(selectedClassCode));
 
-  const itemRows = useMemo<CommonCodeItemGridRow[]>(
+  const itemRows = useMemo<CommonCodeDetailGridRow[]>(
     () =>
       itemList.map((item) => ({
         ...item,
-        _rowId: toCommonCodeItemRowId(item),
+        _rowId: toCommonCodeDetailRowId(item),
       })),
     [itemList]
   );
 
-  const classColumns = useMemo(() => createCommonCodeClassColumns(), []);
-  const itemColumns = useMemo(() => createCommonCodeItemColumns(), []);
+  const masterColumns = useMemo(() => createMasterColumns(), []);
+  const itemColumns = useMemo(() => createDetailColumns(), []);
 
-  const classFilterFields = useMemo<FilterField<ClassFilters>[]>(
+  const filterFields = useMemo<FilterField<masterFilters>[]>(
     () => [
       { key: 'lkupClssCd', title: 'Class Code', type: 'text', placeholder: '', flex: 0 },
       { key: 'lkupClssName', title: 'Class Name', type: 'text', placeholder: '', flex: 0 },
-      { key: 'useYn', title: 'Use(Y/N)', type: 'text', placeholder: 'Y | N', flex: 0 },
-      { key: 'q', title: 'Search', type: 'text', placeholder: 'Name/Desc', flex: 1 },
+      {
+        key: 'useYn',
+        title: 'Use(Y/N)',
+        type: 'select',
+        placeholder: 'All',
+        options: [
+          { label: 'All', value: ALL_USE_YN },
+          ...useYnCodes
+            .filter((item) => String(item.useYn ?? '').toUpperCase() === 'Y')
+            .sort((a, b) => Number(a.sortOrder ?? 0) - Number(b.sortOrder ?? 0))
+            .map((item) => ({
+              label: item.name,
+              value: item.code,
+            })),
+        ],
+        flex: 0,
+      },
     ],
-    []
+    [useYnCodes]
   );
 
   const handleClassSearch = () => {
     const same =
-      draftClassFilters.lkupClssCd.trim() === classFilters.lkupClssCd.trim() &&
-      draftClassFilters.lkupClssName.trim() === classFilters.lkupClssName.trim() &&
-      draftClassFilters.useYn.trim().toUpperCase() === classFilters.useYn.trim().toUpperCase() &&
-      draftClassFilters.q.trim() === classFilters.q.trim();
+      draftMasterFilters.lkupClssCd.trim() === masterFilters.lkupClssCd.trim() &&
+      draftMasterFilters.lkupClssName.trim() === masterFilters.lkupClssName.trim() &&
+      draftMasterFilters.useYn.trim().toUpperCase() === masterFilters.useYn.trim().toUpperCase() &&
+      draftMasterFilters.q.trim() === masterFilters.q.trim();
 
-    setClassFilters(draftClassFilters);
+    setmasterFilters(draftMasterFilters);
     if (same) {
       void queryClient.invalidateQueries({ queryKey: commonCodeKeys.classList(classQueryParams) });
       void refetchClassList();
@@ -189,7 +220,7 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
   };
 
   return (
-    <div className={styles.page} data-grid-dirty={classGridDirty || itemGridDirty ? 'true' : 'false'}>
+    <div className={styles.page} data-grid-dirty={masterGridDirty || detailGridDirty ? 'true' : 'false'}>
       <PageHeader
         title="Common Code Management"
         description="Manage lookup classes and detail codes."
@@ -201,7 +232,7 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
       <div className={styles.content}>
         <SplitLayout
           className={styles.splitLayout}
-          leftWidth="60%"
+          leftWidth="55%"
           direction='vertical'
           resizable
           showResizeLine
@@ -209,19 +240,19 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
             <div className={styles.pane}>
               <div className={styles.filter}>
                 <SimpleFilterBar
-                  value={draftClassFilters}
-                  fields={classFilterFields}
-                  onChange={setDraftClassFilters}
+                  value={draftMasterFilters}
+                  fields={filterFields}
+                  onChange={setdraftMasterFilters}
                   onSearch={handleClassSearch}
                   searchLabel="검색"
                 />
               </div>
               <div className={styles.gridPane}>
-                <GenGridCrud<CommonCodeClassGridRow>
+                <GenGridCrud<CommonCodeMasterGridRow>
                   key={`class-${classDataUpdatedAt}`}
                   title="Code Class List"
-                  data={classRows}
-                  columns={classColumns}
+                  data={masterRows}
+                  columns={masterColumns}
                   getRowId={(row) => row._rowId}
                   rowSelection={selectedClassRowIds}
                   onRowSelectionChange={(rowIds) => {
@@ -229,7 +260,7 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
                   }}
                   onActiveRowChange={({ rowId }) => {
                     const activeRowId = String(rowId ?? '');
-                    const activeRow = classRows.find((row) => row._rowId === activeRowId);
+                    const activeRow = masterRows.find((row) => row._rowId === activeRowId);
                     setSelectedClassCode(activeRow?.lkupClssCd?.trim() || undefined);
                   }}
                   createRow={() => ({
@@ -237,7 +268,7 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
                     _rowId: `tmp:class:${Date.now()}:${classTempSeqRef.current++}`,
                   })}
                   makePatch={({ columnId, value }) =>
-                    ({ [columnId]: value } as Partial<CommonCodeClassGridRow>)
+                    ({ [columnId]: value } as Partial<CommonCodeMasterGridRow>)
                   }
                   deleteMode="selected"
                   actionBar={{
@@ -259,14 +290,14 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
                     ],
                   }}
                   beforeCommit={({ changes }) => {
-                    if (hasMissingCommonCodeClassRequired(changes)) {
+                    if (hasMissingCommonCodeMasterRequired(changes)) {
                       void openAlert({ title: 'Class Code and Class Name are required.' });
                       return false;
                     }
                     return openConfirm({ title: 'Do you want to save?' });
                   }}
                   onCommit={async ({ changes, ctx }) => {
-                    await commitCommonCodeClassChanges(changes, ctx.viewData);
+                    await commitCommonCodeMasterChanges(changes, ctx.viewData);
                     await refreshClassList();
                     await openAlert({ title: 'Saved successfully.' });
                     return { ok: true };
@@ -281,7 +312,7 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
                     addNotification(message, 'error');
                   }}
                   onStateChange={({ dirty }) => {
-                    setClassGridDirty(dirty);
+                    setmasterGridDirty(dirty);
                   }}
                   gridProps={{
                     dataVersion: classDataUpdatedAt,
@@ -305,7 +336,7 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
           right={
             <div className={styles.pane}>
               <div className={styles.gridPane}>
-                <GenGridCrud<CommonCodeItemGridRow>
+                <GenGridCrud<CommonCodeDetailGridRow>
                   key={`${selectedClassCode ?? 'none'}-${itemDataUpdatedAt}`}
                   title="Code Detail List"
                   data={selectedClassCode ? itemRows : []}
@@ -317,7 +348,7 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
                     _rowId: `tmp:item:${Date.now()}:${itemTempSeqRef.current++}`,
                   })}
                   makePatch={({ columnId, value }) =>
-                    ({ [columnId]: value } as Partial<CommonCodeItemGridRow>)
+                    ({ [columnId]: value } as Partial<CommonCodeDetailGridRow>)
                   }
                   deleteMode="selected"
                   actionBar={{
@@ -343,7 +374,7 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
                       void openAlert({ title: 'Select a code class first.' });
                       return false;
                     }
-                    if (hasMissingCommonCodeItemRequired(changes)) {
+                    if (hasMissingCommonCodeDetailRequired(changes)) {
                       void openAlert({ title: 'Code and Name are required.' });
                       return false;
                     }
@@ -356,7 +387,7 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
                       return { ok: false, error };
                     }
 
-                    await commitCommonCodeItemChanges(changes, ctx.viewData, selectedClassCode);
+                    await commitCommonCodeDetailChanges(changes, ctx.viewData, selectedClassCode);
                     await refreshItemList();
                     await openAlert({ title: 'Saved successfully.' });
                     return { ok: true };
@@ -371,7 +402,7 @@ export default function CommonCodeManagementPage(_props: PageComponentProps) {
                     addNotification(message, 'error');
                   }}
                   onStateChange={({ dirty }) => {
-                    setItemGridDirty(dirty);
+                    setdetailGridDirty(dirty);
                   }}
                   gridProps={{
                     dataVersion: `${selectedClassCode ?? 'none'}-${itemDataUpdatedAt}`,

@@ -4,8 +4,8 @@
  */
 
 import type { CrudChange, CrudRowId } from '@gen-office/gen-grid-crud';
-import type { Menu } from '@/entities/system/menu/model/types';
-import { menuApi } from '@/entities/system/menu/api/menu';
+import type { Menu } from '@/pages/admin/menu/model/types';
+import { menuApi } from '@/pages/admin/menu/api/menu';
 
 const buildChildrenMap = (items: readonly Menu[]) => {
   const map = new Map<number, number[]>();

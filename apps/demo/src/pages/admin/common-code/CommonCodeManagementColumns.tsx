@@ -1,7 +1,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import type {
-  CommonCodeClassGridRow,
-  CommonCodeItemGridRow,
+  CommonCodeMasterGridRow,
+  CommonCodeDetailGridRow,
 } from './CommonCodeManagementCrud';
 
 const useYnOptions = [
@@ -14,7 +14,7 @@ const normalizeUpperCode = (value: unknown) =>
     .toUpperCase()
     .replace(/[^A-Z0-9_]/g, '');
 
-export const createCommonCodeClassColumns = (): ColumnDef<CommonCodeClassGridRow>[] => [
+export const createMasterColumns = (): ColumnDef<CommonCodeMasterGridRow>[] => [
   {
     id: 'lkupClssCd',
     header: 'Class Code',
@@ -132,9 +132,18 @@ export const createCommonCodeClassColumns = (): ColumnDef<CommonCodeClassGridRow
     meta: { editable: true, editType: 'text' },
   },
   {
-    id: 'updatedAt',
-    header: 'Updated At',
-    accessorKey: 'updatedAt',
+    id: 'lastUpdatedBy',
+    header: 'Last Updated By',
+    accessorKey: 'lastUpdatedByName',
+    size: 180,
+    meta: {
+      align: 'center',
+    },
+  },
+  {
+    id: 'lastUpdatedAt',
+    header: 'Last Updated At',
+    accessorKey: 'lastUpdatedAt',
     size: 180,
     meta: {
       align: 'center',
@@ -142,7 +151,7 @@ export const createCommonCodeClassColumns = (): ColumnDef<CommonCodeClassGridRow
   },
 ];
 
-export const createCommonCodeItemColumns = (): ColumnDef<CommonCodeItemGridRow>[] => [
+export const createDetailColumns = (): ColumnDef<CommonCodeDetailGridRow>[] => [
   {
     id: 'lkupCd',
     header: 'Code',
@@ -271,9 +280,18 @@ export const createCommonCodeItemColumns = (): ColumnDef<CommonCodeItemGridRow>[
     meta: { editable: true, editType: 'text' },
   },
   {
-    id: 'updatedAt',
-    header: 'Updated At',
-    accessorKey: 'updatedAt',
+    id: 'lastUpdatedBy',
+    header: 'Last Updated By',
+    accessorKey: 'lastUpdatedByName',
+    size: 180,
+    meta: {
+      align: 'center',
+    },
+  },
+  {
+    id: 'lastUpdatedAt',
+    header: 'Last Updated At',
+    accessorKey: 'lastUpdatedAt',
     size: 180,
     meta: {
       align: 'center',

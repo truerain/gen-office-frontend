@@ -1,7 +1,6 @@
-// apps/demo/src/entities/system/role/api/role.ts
 import { useQuery } from '@tanstack/react-query';
 import { http } from '@/shared/api/http';
-import type { Role, RoleListParams, RoleRequest } from '@/entities/system/role/model/types';
+import type { Role, RoleListParams, RoleRequest } from '@/pages/admin/role/model/types';
 
 function buildQuery(params?: Record<string, string | undefined>) {
   if (!params) return '';

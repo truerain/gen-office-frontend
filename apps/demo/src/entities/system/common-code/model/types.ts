@@ -1,8 +1,8 @@
-export interface CommonCodeClassKey {
+export interface CommonCodeMasterKey {
   lkupClssCd: string;
 }
 
-export interface CommonCodeClass extends CommonCodeClassKey {
+export interface CommonCodeMaster extends CommonCodeMasterKey {
   lkupClssName: string;
   lkupClssDesc?: string | null;
   useYn: string;
@@ -16,15 +16,16 @@ export interface CommonCodeClass extends CommonCodeClassKey {
   attribute8?: string | null;
   attribute9?: string | null;
   attribute10?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
+  lastUpdatedBy?: string | null;
+  lastUpdatedByName?: string | null;
+  lastUpdatedAt?: string | null;
 }
 
-export interface CommonCodeItemKey extends CommonCodeClassKey {
+export interface CommonCodeDetailKey extends CommonCodeMasterKey {
   lkupCd: string;
 }
 
-export interface CommonCodeItem extends CommonCodeItemKey {
+export interface CommonCodeDetail extends CommonCodeDetailKey {
   lkupName: string;
   lkupNameEng?: string | null;
   sortOrder?: number | null;
@@ -39,18 +40,9 @@ export interface CommonCodeItem extends CommonCodeItemKey {
   attribute8?: string | null;
   attribute9?: string | null;
   attribute10?: string | null;
-  attribute11?: string | null;
-  attribute12?: string | null;
-  attribute13?: string | null;
-  attribute14?: string | null;
-  attribute15?: string | null;
-  attribute16?: string | null;
-  attribute17?: string | null;
-  attribute18?: string | null;
-  attribute19?: string | null;
-  attribute20?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
+  lastUpdatedBy?: string | null;
+  lastUpdatedByName?: string | null;
+  lastUpdatedAt?: string | null;
 }
 
 export interface ListResponse<T> {
@@ -60,7 +52,7 @@ export interface ListResponse<T> {
   total: number;
 }
 
-export type CommonCodeClassListParams = {
+export type CommonCodeMasterListParams = {
   lkupClssCd?: string;
   lkupClssName?: string;
   useYn?: string;
@@ -70,7 +62,7 @@ export type CommonCodeClassListParams = {
   sort?: string;
 };
 
-export type CommonCodeItemListParams = {
+export type CommonCodeDetailListParams = {
   lkupCd?: string;
   lkupName?: string;
   useYn?: string;
@@ -80,7 +72,7 @@ export type CommonCodeItemListParams = {
   sort?: string;
 };
 
-export interface CommonCodeClassCreateRequest {
+export interface CommonCodeMasterCreateRequest {
   lkupClssCd: string;
   lkupClssName: string;
   lkupClssDesc?: string | null;
@@ -97,7 +89,7 @@ export interface CommonCodeClassCreateRequest {
   attribute10?: string | null;
 }
 
-export interface CommonCodeClassUpdateRequest {
+export interface CommonCodeMasterUpdateRequest {
   lkupClssName: string;
   lkupClssDesc?: string | null;
   useYn: string;
@@ -113,7 +105,7 @@ export interface CommonCodeClassUpdateRequest {
   attribute10?: string | null;
 }
 
-export interface CommonCodeItemCreateRequest {
+export interface CommonCodeDetailCreateRequest {
   lkupCd: string;
   lkupName: string;
   lkupNameEng?: string | null;
@@ -129,19 +121,9 @@ export interface CommonCodeItemCreateRequest {
   attribute8?: string | null;
   attribute9?: string | null;
   attribute10?: string | null;
-  attribute11?: string | null;
-  attribute12?: string | null;
-  attribute13?: string | null;
-  attribute14?: string | null;
-  attribute15?: string | null;
-  attribute16?: string | null;
-  attribute17?: string | null;
-  attribute18?: string | null;
-  attribute19?: string | null;
-  attribute20?: string | null;
 }
 
-export interface CommonCodeItemUpdateRequest {
+export interface CommonCodeDetailUpdateRequest {
   lkupName: string;
   lkupNameEng?: string | null;
   sortOrder?: number | null;
@@ -156,14 +138,4 @@ export interface CommonCodeItemUpdateRequest {
   attribute8?: string | null;
   attribute9?: string | null;
   attribute10?: string | null;
-  attribute11?: string | null;
-  attribute12?: string | null;
-  attribute13?: string | null;
-  attribute14?: string | null;
-  attribute15?: string | null;
-  attribute16?: string | null;
-  attribute17?: string | null;
-  attribute18?: string | null;
-  attribute19?: string | null;
-  attribute20?: string | null;
 }
