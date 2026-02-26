@@ -6,8 +6,8 @@ import { PopupInput, SimpleFilterBar, type FilterField } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 import { HttpError } from '@/shared/api/http';
-import { useUserRoleListQuery } from '@/entities/system/user-role/api/userRole';
-import type { UserRoleListParams } from '@/entities/system/user-role/model/types';
+import { useUserRoleListQuery, useUserRoleOptionsQuery } from '@/pages/admin/user-role/api/userRole';
+import type { UserRoleListParams } from '@/pages/admin/user-role/model/types';
 import { useAppStore } from '@/app/store/appStore';
 import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
 import {
@@ -30,9 +30,11 @@ type UserRoleFilters = {
   useYn: string;
 };
 
+const ALL_ROLE_ID = 'ALL';
+
 const defaultFilters: UserRoleFilters = {
   userId: '',
-  roleId: '',
+  roleId: ALL_ROLE_ID,
   useYn: '',
 };
 
@@ -84,7 +86,10 @@ export default function UserRoleManagementPage(_props: PageComponentProps) {
   const queryParams = useMemo<UserRoleListParams>(
     () => ({
       userId: toPositiveIntOrUndefined(filters.userId.trim()),
-      roleId: toPositiveIntOrUndefined(filters.roleId.trim()),
+      roleId:
+        filters.roleId.trim().toUpperCase() === ALL_ROLE_ID
+          ? undefined
+          : toPositiveIntOrUndefined(filters.roleId.trim()),
       useYn: filters.useYn.trim().toUpperCase() || undefined,
       page: 0,
       size: 200,
@@ -94,6 +99,7 @@ export default function UserRoleManagementPage(_props: PageComponentProps) {
   );
 
   const { data: userRoleList = [], refetch, dataUpdatedAt } = useUserRoleListQuery(queryParams);
+  const { data: roleOptions = [] } = useUserRoleOptionsQuery();
   const rows = useMemo<UserRoleGridRow[]>(
     () =>
       userRoleList.map((item) => ({
@@ -103,7 +109,7 @@ export default function UserRoleManagementPage(_props: PageComponentProps) {
     [userRoleList]
   );
 
-  const columns = useMemo(() => createUserRoleManagementColumns(), []);
+  const columns = useMemo(() => createUserRoleManagementColumns(roleOptions), [roleOptions]);
 
   const filterFields = useMemo<FilterField<UserRoleFilters>[]>(() => {
     return [
@@ -138,10 +144,23 @@ export default function UserRoleManagementPage(_props: PageComponentProps) {
           />
         ),
       },
-      { key: 'roleId', title: 'Role ID', type: 'text', placeholder: '', flex: 0 },
+      {
+        key: 'roleId',
+        title: 'Role ID',
+        type: 'select',
+        placeholder: 'All',
+        options: [
+          { label: 'All', value: ALL_ROLE_ID },
+          ...roleOptions.map((option) => ({
+            label: option.label,
+            value: String(option.value),
+          })),
+        ],
+        flex: 0,
+      },
       { key: 'useYn', title: 'Use(Y/N)', type: 'text', placeholder: 'Y | N', flex: 0 },
     ];
-  }, []);
+  }, [roleOptions]);
 
   const handleSearch = () => {
     const same =
@@ -175,6 +194,7 @@ export default function UserRoleManagementPage(_props: PageComponentProps) {
       <div className={styles.workarea}>
         <GenGridCrud<UserRoleGridRow>
           title="User Role List"
+          key={`userRole-${dataUpdatedAt}`}
           data={rows}
           columns={columns}
           getRowId={(row) => row._rowId}
@@ -186,13 +206,22 @@ export default function UserRoleManagementPage(_props: PageComponentProps) {
             if (columnId === 'empNo' && isRecord(value)) {
               return value as Partial<UserRoleGridRow>;
             }
+            if (columnId === 'roleName') {
+              const nextRoleId = toPositiveIntOrUndefined(String(value ?? ''));
+              if (!nextRoleId) return {};
+              const selected = roleOptions.find((option) => option.value === nextRoleId);
+              return {
+                roleId: nextRoleId,
+                roleName: selected?.label ?? '',
+              } satisfies Partial<UserRoleGridRow>;
+            }
             return { [columnId]: value } as Partial<UserRoleGridRow>;
           }}
           deleteMode="selected"
           actionBar={{
             position: 'top',
             defaultStyle: 'icon',
-            includeBuiltIns: ['add', 'delete', 'save', 'filter', 'reset'],
+            includeBuiltIns: ['add', 'delete', 'save', 'filter'],
             customActions: [
               {
                 key: 'refresh',

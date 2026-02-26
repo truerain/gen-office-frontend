@@ -1,6 +1,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { PopupEditor } from '@gen-office/gen-grid';
 import type { CommonUser } from '@/shared/api/commonUser';
+import type { UserRoleOption } from '@/pages/admin/user-role/model/types';
 import {
   UserSearchPopup,
   USER_SEARCH_POPUP_CONTENT_CLASS_NAME,
@@ -17,14 +18,17 @@ const ynOptions = [
   { label: 'N', value: 'N' },
 ];
 
-export const createUserRoleManagementColumns = (): ColumnDef<UserRoleGridRow>[] => [
+export const createUserRoleManagementColumns = (
+  roleOptions: UserRoleOption[] = []
+): ColumnDef<UserRoleGridRow>[] => [
   {
     id: 'empNo',
     header: 'Emp No',
     accessorKey: 'empNo',
     size: 120,
     meta: {
-      editable: true,
+      editable: ({ row, rowId }) =>
+        rowId.startsWith('tmp_') || String(row?._rowId ?? '').startsWith('tmp:'),
       pinned: 'left',
       renderEditor: (editorProps) => (
         <PopupEditor<UserRoleGridRow, CommonUser>
@@ -35,6 +39,7 @@ export const createUserRoleManagementColumns = (): ColumnDef<UserRoleGridRow>[] 
           mapSelectionToValue={(selection) => {
             if (!selection?.data) return selection?.value ?? '';
             return {
+              userId: selection.data.userId ?? 0,
               empNo: selection.data.empNo ?? '',
               empName: selection.data.empName ?? '',
               orgName: selection.data.orgName ?? '',
@@ -72,8 +77,23 @@ export const createUserRoleManagementColumns = (): ColumnDef<UserRoleGridRow>[] 
   {
     id: 'roleName',
     header: 'Role Name',
-    accessorKey: 'roleName',
+    accessorFn: (row) => String(row.roleId ?? ''),
     size: 160,
+    meta: {
+      editable: ({ row, rowId }) =>
+        rowId.startsWith('tmp_') || String(row?._rowId ?? '').startsWith('tmp:'),
+      editType: 'select',
+      getEditOptions: () =>
+        roleOptions.map((option) => ({
+          label: option.label,
+          value: String(option.value),
+        })),
+      renderCell: ({ row }) => {
+        const roleId = Number(row.roleId ?? 0);
+        const label = roleOptions.find((option) => option.value === roleId)?.label;
+        return label ?? String(row.roleName ?? '');
+      },
+    },
   },
   {
     id: 'primaryYn',
@@ -99,83 +119,16 @@ export const createUserRoleManagementColumns = (): ColumnDef<UserRoleGridRow>[] 
       getEditOptions: () => useYnOptions,
     },
   },
-  {
-    id: 'attribute1',
-    header: 'Attribute 1',
-    accessorKey: 'attribute1',
-    size: 160,
-    meta: { editable: true, editType: 'text' },
+   {
+    id: 'lastUpdatedBy',
+    header: 'Updated By',
+    accessorKey: 'lastUpdatedByName',
+    size: 140,
   },
   {
-    id: 'attribute2',
-    header: 'Attribute 2',
-    accessorKey: 'attribute2',
-    size: 160,
-    meta: { editable: true, editType: 'text' },
-  },
-  {
-    id: 'attribute3',
-    header: 'Attribute 3',
-    accessorKey: 'attribute3',
-    size: 160,
-    meta: { editable: true, editType: 'text' },
-  },
-  {
-    id: 'attribute4',
-    header: 'Attribute 4',
-    accessorKey: 'attribute4',
-    size: 160,
-    meta: { editable: true, editType: 'text' },
-  },
-  {
-    id: 'attribute5',
-    header: 'Attribute 5',
-    accessorKey: 'attribute5',
-    size: 160,
-    meta: { editable: true, editType: 'text' },
-  },
-  {
-    id: 'attribute6',
-    header: 'Attribute 6',
-    accessorKey: 'attribute6',
-    size: 160,
-    meta: { editable: true, editType: 'text' },
-  },
-  {
-    id: 'attribute7',
-    header: 'Attribute 7',
-    accessorKey: 'attribute7',
-    size: 160,
-    meta: { editable: true, editType: 'text' },
-  },
-  {
-    id: 'attribute8',
-    header: 'Attribute 8',
-    accessorKey: 'attribute8',
-    size: 160,
-    meta: { editable: true, editType: 'text' },
-  },
-  {
-    id: 'attribute9',
-    header: 'Attribute 9',
-    accessorKey: 'attribute9',
-    size: 160,
-    meta: { editable: true, editType: 'text' },
-  },
-  {
-    id: 'attribute10',
-    header: 'Attribute 10',
-    accessorKey: 'attribute10',
-    size: 160,
-    meta: { editable: true, editType: 'text' },
-  },
-  {
-    id: 'updatedAt',
+    id: 'lastUpdatedDate',
     header: 'Updated At',
-    accessorKey: 'updatedAt',
-    size: 180,
-    meta: {
-      align: 'center',
-    },
+    accessorKey: 'lastUpdatedDate',
+    size: 160,
   },
 ];

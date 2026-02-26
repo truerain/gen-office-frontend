@@ -19,7 +19,9 @@ declare module '@tanstack/react-table' {
     trueLabel?: string;
     falseLabel?: string;
     emptyLabel?: string;
-    editable?: boolean;
+    editable?:
+      | boolean
+      | ((args: { row: TData; rowId: string; columnId: string }) => boolean);
     editType?: 'text' | 'number' | 'date' | 'select' | 'textarea' | 'checkbox';
     editOptions?: { label: string; value: string | number }[];
     getEditOptions?: (row: TData) => { label: string; value: string | number }[];

@@ -5,8 +5,9 @@ import type {
   UserRoleCreateRequest,
   UserRoleKey,
   UserRoleListParams,
+  UserRoleOption,
   UserRoleUpdateRequest,
-} from '@/entities/system/user-role/model/types';
+} from '@/pages/admin/user-role/model/types';
 
 function buildQuery(params?: Record<string, string | undefined>) {
   if (!params) return '';
@@ -26,6 +27,7 @@ export const userRoleKeys = {
   all: () => ['user-role'] as const,
   list: (params: UserRoleListParams) => ['user-role', 'list', params] as const,
   detail: (key: UserRoleKey) => ['user-role', 'detail', key.userId, key.roleId] as const,
+  roleOptions: () => ['role', 'options'] as const,
 };
 
 export const userRoleApi = {
@@ -65,6 +67,11 @@ export const userRoleApi = {
     http<void>(`/api/mis/admin/user-roles/${toPathKey(key)}`, {
       method: 'DELETE',
     }),
+
+  roleOptions: () =>
+    http<UserRoleOption[]>('/api/roles/options', {
+      method: 'GET',
+    }),
 };
 
 export function useUserRoleListQuery(params: UserRoleListParams) {
@@ -79,5 +86,12 @@ export function useUserRoleQuery(key: UserRoleKey, enabled = true) {
     queryKey: userRoleKeys.detail(key),
     queryFn: () => userRoleApi.get(key),
     enabled,
+  });
+}
+
+export function useUserRoleOptionsQuery() {
+  return useQuery({
+    queryKey: userRoleKeys.roleOptions(),
+    queryFn: () => userRoleApi.roleOptions(),
   });
 }

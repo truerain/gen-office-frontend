@@ -58,6 +58,13 @@ export function useCellEditing<TData>(args: {
 
       const col = table.getColumn(columnId);
       const meta = col?.columnDef.meta as any;
+      const row =
+        table.getRowModel().rowsById?.[rowId]?.original ??
+        table.getRowModel().rows.find((item) => item.id === rowId)?.original;
+      if (typeof meta?.editable === 'function' && !meta.editable({ row, rowId, columnId })) {
+        return false;
+      }
+      if (meta?.editable === false) return false;
       if (!meta?.editable && !meta?.renderEditor && !meta?.editType) return false;
 
       return true;

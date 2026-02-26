@@ -2,6 +2,9 @@
 import type * as React from 'react';
 
 export type GenGridColumnMeta = {
+  editable?:
+    | boolean
+    | ((args: { row: unknown; rowId: string; columnId: string }) => boolean);
   align?: 'left' | 'center' | 'right';
   mono?: boolean;
 

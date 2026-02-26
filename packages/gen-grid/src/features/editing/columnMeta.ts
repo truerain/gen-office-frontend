@@ -18,7 +18,9 @@ export type CellEditorRenderArgs<TData> = {
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData, TValue> {
-    editable?: boolean;
+    editable?:
+      | boolean
+      | ((args: { row: TData; rowId: string; columnId: string }) => boolean);
     getEditOptions?: (row: TData) => { label: string; value: string | number }[];
     renderEditor?: (props: CellEditorRenderArgs<TData>) => React.ReactNode;
   }

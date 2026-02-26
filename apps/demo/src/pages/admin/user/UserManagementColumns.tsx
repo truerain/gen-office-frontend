@@ -91,16 +91,9 @@ export const createUserManagementColumns = (
     },
   },
   {
-    id: 'password',
-    header: 'Password',
-    accessorKey: 'password',
-    size: 160,
-    meta: { editable: true, editType: 'text' },
-  },
-  {
     id: 'lastUpdatedBy',
     header: 'Updated By',
-    accessorKey: 'lastUpdatedBy',
+    accessorKey: 'lastUpdatedByName',
     size: 140,
   },
   {

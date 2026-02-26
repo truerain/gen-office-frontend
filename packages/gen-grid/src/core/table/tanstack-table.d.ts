@@ -5,6 +5,9 @@ import type * as React from 'react';
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData, TValue> {
+    editable?:
+      | boolean
+      | ((args: { row: TData; rowId: string; columnId: string }) => boolean);
     align?: 'left' | 'center' | 'right';
     mono?: boolean;
     format?: 'text' | 'number' | 'currency' | 'percent' | 'date' | 'datetime' | 'boolean';

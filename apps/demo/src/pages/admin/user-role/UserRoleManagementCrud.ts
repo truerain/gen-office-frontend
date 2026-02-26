@@ -1,11 +1,11 @@
 import type { CrudChange, CrudRowId } from '@gen-office/gen-grid-crud';
-import { userRoleApi } from '@/entities/system/user-role/api/userRole';
+import { userRoleApi } from '@/pages/admin/user-role/api/userRole';
 import type {
   UserRole,
   UserRoleCreateRequest,
   UserRoleKey,
   UserRoleUpdateRequest,
-} from '@/entities/system/user-role/model/types';
+} from '@/pages/admin/user-role/model/types';
 
 export type UserRoleGridRow = UserRole & {
   _rowId: string;
@@ -54,16 +54,6 @@ function toCreateRequest(input: Partial<UserRole>): UserRoleCreateRequest {
     ...key,
     primaryYn,
     useYn,
-    attribute1: input.attribute1 ?? null,
-    attribute2: input.attribute2 ?? null,
-    attribute3: input.attribute3 ?? null,
-    attribute4: input.attribute4 ?? null,
-    attribute5: input.attribute5 ?? null,
-    attribute6: input.attribute6 ?? null,
-    attribute7: input.attribute7 ?? null,
-    attribute8: input.attribute8 ?? null,
-    attribute9: input.attribute9 ?? null,
-    attribute10: input.attribute10 ?? null,
   };
 }
 
@@ -80,16 +70,6 @@ function toUpdateRequest(input: Partial<UserRole>): UserRoleUpdateRequest {
   return {
     primaryYn,
     useYn,
-    attribute1: input.attribute1 ?? null,
-    attribute2: input.attribute2 ?? null,
-    attribute3: input.attribute3 ?? null,
-    attribute4: input.attribute4 ?? null,
-    attribute5: input.attribute5 ?? null,
-    attribute6: input.attribute6 ?? null,
-    attribute7: input.attribute7 ?? null,
-    attribute8: input.attribute8 ?? null,
-    attribute9: input.attribute9 ?? null,
-    attribute10: input.attribute10 ?? null,
   };
 }
 
@@ -177,6 +157,7 @@ export function hasMissingUserRoleRequired(changes: readonly CrudChange<UserRole
   const patches = new Map<CrudRowId, Partial<UserRoleGridRow>>();
 
   for (const change of changes) {
+    console.log(change);
     if (change.type === 'create') {
       created.set(change.tempId, change.row);
       continue;
