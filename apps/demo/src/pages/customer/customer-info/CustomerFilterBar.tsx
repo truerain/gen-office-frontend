@@ -2,7 +2,7 @@
 import { SimpleFilterBar } from '@gen-office/ui';
 import type { FilterField } from '@gen-office/ui';
 import { useTranslation } from 'react-i18next';
-import type { CustomerFilter } from '../../../entities/customer/model/types';
+import type { CustomerFilter } from './model/types';
 
 interface CustomerFilterBarProps {
   filters: CustomerFilter;

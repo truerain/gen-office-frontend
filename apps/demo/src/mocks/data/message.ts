@@ -1,4 +1,4 @@
-import type { Message } from '@/entities/system/message/model/types';
+import type { Message } from '@/pages/admin/message/model/types';
 
 export const mockMessages: Message[] = [
   {

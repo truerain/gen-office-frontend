@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { http } from '@/shared/api/http';
-import type { Notice, NoticeListParams, NoticeRequest } from '@/entities/system/notice/model/types';
+import type { Notice, NoticeListParams, NoticeRequest } from '@/pages/admin/notice/model/types';
 
 function buildQuery(params?: Record<string, string | undefined>) {
   if (!params) return '';

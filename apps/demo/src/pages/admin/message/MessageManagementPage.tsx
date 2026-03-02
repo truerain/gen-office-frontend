@@ -6,8 +6,8 @@ import { SimpleFilterBar, type FilterField } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 import { HttpError } from '@/shared/api/http';
-import { useMessageListQuery } from '@/entities/system/message/api/message';
-import type { MessageListParams } from '@/entities/system/message/model/types';
+import { useMessageListQuery } from '@/pages/admin/message/api/message';
+import type { MessageListParams } from '@/pages/admin/message/model/types';
 import { useAppStore } from '@/app/store/appStore';
 import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
 

@@ -1,5 +1,5 @@
 // apps/demo/src/features/customer/mocks/customerData.ts
-import type { Customer } from '@/entities/customer/model/types';
+import type { Customer } from '@/pages/customer/customer-info/model/types';
 
 const baseCustomers: Customer[] = [
   {

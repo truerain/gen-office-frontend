@@ -1,6 +1,6 @@
 import type { CrudChange, CrudRowId } from '@gen-office/gen-grid-crud';
-import { noticeApi } from '@/entities/system/notice/api/notice';
-import type { Notice, NoticeRequest } from '@/entities/system/notice/model/types';
+import { noticeApi } from '@/pages/admin/notice/api/notice';
+import type { Notice, NoticeRequest } from '@/pages/admin/notice/model/types';
 
 const toNoticeRequest = (input: Partial<Notice>, rowId?: CrudRowId): NoticeRequest => {
   const requestId = Number(rowId ?? input.noticeId);

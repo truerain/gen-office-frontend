@@ -4,7 +4,7 @@ import type {
   Message,
   MessageCreateRequest,
   MessageUpdateRequest,
-} from '@/entities/system/message/model/types';
+} from '@/pages/admin/message/model/types';
 
 function normalize(input: unknown) {
   return String(input ?? '').trim();

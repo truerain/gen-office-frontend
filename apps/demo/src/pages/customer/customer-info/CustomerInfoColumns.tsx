@@ -1,5 +1,5 @@
 import type { ColumnDef } from '@tanstack/react-table';
-import type { Customer } from '../../../entities/customer/model/types';
+import type { Customer } from './model/types';
 
 import { Badge, Button } from '@gen-office/ui';
 

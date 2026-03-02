@@ -9,8 +9,8 @@ import { GenGridCrud } from '@gen-office/gen-grid-crud';
 import type { CrudRowId, GenGridCrudProps } from '@gen-office/gen-grid-crud';
 import { SplitLayout } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
-import { noticeApi, useNoticeDetailQuery, useNoticeListQuery } from '@/entities/system/notice/api/notice';
-import type { Notice, NoticeListParams, NoticeRequest } from '@/entities/system/notice/model/types';
+import { noticeApi, useNoticeDetailQuery, useNoticeListQuery } from '@/pages/admin/notice/api/notice';
+import type { Notice, NoticeListParams, NoticeRequest } from '@/pages/admin/notice/model/types';
 import { useAppStore } from '@/app/store/appStore';
 import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
 

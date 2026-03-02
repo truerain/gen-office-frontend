@@ -1,6 +1,6 @@
 import type { CrudChange, CrudRowId } from '@gen-office/gen-grid-crud';
-import { messageApi } from '@/entities/system/message/api/message';
-import type { Message, MessageCreateRequest, MessageKey } from '@/entities/system/message/model/types';
+import { messageApi } from '@/pages/admin/message/api/message';
+import type { Message, MessageCreateRequest, MessageKey } from '@/pages/admin/message/model/types';
 
 export type MessageGridRow = Message & {
   _rowId: string;

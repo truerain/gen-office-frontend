@@ -1,8 +1,8 @@
 // apps/demo/src/mocks/handlers/customer.handlers.ts
 import { http, HttpResponse } from 'msw';
-import type { Customer } from '@/entities/customer/model/types';
+import type { Customer } from '@/pages/customer/customer-info/model/types';
 import { mockCustomers } from '@/mocks/data/customer';
-import type { CreateCustomerInput, UpdateCustomerInput } from '@/entities/customer/model/types';
+import type { CreateCustomerInput, UpdateCustomerInput } from '@/pages/customer/customer-info/model/types';
 
 function uid() {
   return `c_${Math.random().toString(16).slice(2)}_${Date.now()}`;

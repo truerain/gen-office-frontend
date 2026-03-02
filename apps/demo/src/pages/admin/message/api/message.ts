@@ -7,7 +7,7 @@ import type {
   MessageListParams,
   MessageListResponse,
   MessageUpdateRequest,
-} from '@/entities/system/message/model/types';
+} from '@/pages/admin/message/model/types';
 
 function buildQuery(params?: Record<string, string | undefined>) {
   if (!params) return '';

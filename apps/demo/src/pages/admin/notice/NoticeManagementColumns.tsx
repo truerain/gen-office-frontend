@@ -1,7 +1,8 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
-import type { Notice } from '@/entities/system/notice/model/types';
-import { Switch } from '@gen-office/ui';
+import type { Notice } from '@/pages/admin/notice/model/types';
+import { GridYnSwitchCell } from '@/shared/ui/grid/GridYnSwitchCell';
+import { handleGridYnSwitchSpace } from '@/shared/ui/grid/GridYnSwitchCell.utils';
 
 export const createNoticeManagementColumns = (t: TFunction): ColumnDef<Notice>[] => [
   {
@@ -39,12 +40,11 @@ export const createNoticeManagementColumns = (t: TFunction): ColumnDef<Notice>[]
     size: 100,
     meta: {
       align: 'center',
-      renderCell: ({ value }) => (
-        <Switch
-          checked={value === 'Y'}
-        />
+      renderCell: ({ value, commitValue }) => (
+        <GridYnSwitchCell value={value} commitValue={commitValue} />
       ),
-    },
+      onSpace: handleGridYnSwitchSpace,
+     },
   },
   {
     id: 'useYn',
@@ -53,11 +53,10 @@ export const createNoticeManagementColumns = (t: TFunction): ColumnDef<Notice>[]
     size: 100,
     meta: {
       align: 'center',
-      renderCell: ({ value }) => (
-        <Switch
-          checked={value === 'Y'}
-        />
+      renderCell: ({ value, commitValue }) => (
+        <GridYnSwitchCell value={value} commitValue={commitValue} />
       ),
+      onSpace: handleGridYnSwitchSpace,
     },
   },
   {

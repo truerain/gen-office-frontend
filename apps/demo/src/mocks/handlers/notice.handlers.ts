@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { mockNotices } from '@/mocks/data/notice';
-import type { Notice, NoticeRequest } from '@/entities/system/notice/model/types';
+import type { Notice, NoticeRequest } from '@/pages/admin/notice/model/types';
 
 function parseNoticeId(value: string) {
   const noticeId = Number(value);

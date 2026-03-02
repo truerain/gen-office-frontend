@@ -1,9 +1,9 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
 
-import { Switch } from '@gen-office/ui';
-
 import type { RoleMenu } from '@/pages/admin/role/model/roleMenuTypes';
+import { GridYnSwitchCell } from '@/shared/ui/grid/GridYnSwitchCell';
+import { handleGridYnSwitchSpace } from '@/shared/ui/grid/GridYnSwitchCell.utils';
 
 
 export const createRoleMenuColumns = (
@@ -34,22 +34,9 @@ export const createRoleMenuColumns = (
     meta: {
       align: 'center',
       renderCell: ({ value, commitValue }) => (
-        <Switch
-          checked={value === 'Y'}
-          onCheckedChange={(next) => commitValue?.(next ? 'Y' : 'N')}
-          style={{
-            ['--switch-width' as any]: '2.25rem',
-            ['--switch-height' as any]: '1.25rem',
-            ['--switch-thumb-size' as any]: '1rem',
-            ['--switch-thumb-x' as any]: '0.125rem',
-            ['--switch-thumb-checked-x' as any]: '1.125rem',
-          }}
-        />
+        <GridYnSwitchCell value={value} commitValue={commitValue} />
       ),
-      onSpace: ({ value, commitValue }) => {
-        const next = value === 'Y' ? 'N' : 'Y';
-        commitValue?.(next);
-      },
+      onSpace: handleGridYnSwitchSpace,
     },
   },
 

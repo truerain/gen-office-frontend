@@ -2,21 +2,14 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { PopupEditor } from '@gen-office/gen-grid';
 import type { CommonUser } from '@/shared/api/commonUser';
 import type { UserRoleOption } from '@/pages/admin/user-role/model/types';
+
 import {
   UserSearchPopup,
   USER_SEARCH_POPUP_CONTENT_CLASS_NAME,
 } from '@/shared/ui/popup/UserSearchPopup';
+import { GridYnSwitchCell } from '@/shared/ui/grid/GridYnSwitchCell';
+import { handleGridYnSwitchSpace } from '@/shared/ui/grid/GridYnSwitchCell.utils';
 import type { UserRoleGridRow } from './UserRoleManagementCrud';
-
-const useYnOptions = [
-  { label: 'Y', value: 'Y' },
-  { label: 'N', value: 'N' },
-];
-
-const ynOptions = [
-  { label: 'Y', value: 'Y' },
-  { label: 'N', value: 'N' },
-];
 
 export const createUserRoleManagementColumns = (
   roleOptions: UserRoleOption[] = []
@@ -101,10 +94,11 @@ export const createUserRoleManagementColumns = (
     accessorKey: 'primaryYn',
     size: 100,
     meta: {
-      editable: true,
-      editType: 'select',
       align: 'center',
-      getEditOptions: () => ynOptions,
+      renderCell: ({ value, commitValue }) => (
+        <GridYnSwitchCell value={value} commitValue={commitValue} />
+      ),
+      onSpace: handleGridYnSwitchSpace,
     },
   },
   {
@@ -113,10 +107,11 @@ export const createUserRoleManagementColumns = (
     accessorKey: 'useYn',
     size: 90,
     meta: {
-      editable: true,
-      editType: 'select',
       align: 'center',
-      getEditOptions: () => useYnOptions,
+      renderCell: ({ value, commitValue }) => (
+        <GridYnSwitchCell value={value} commitValue={commitValue} />
+      ),
+      onSpace: handleGridYnSwitchSpace,
     },
   },
    {

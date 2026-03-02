@@ -49,7 +49,6 @@ export const roleHandlers = [
       return new HttpResponse('roleName is required', { status: 400 });
     }
 
-    const now = new Date().toISOString();
     const created: Role = {
       roleId: nextRoleId(),
       roleCd: String(body.roleCd ?? '').trim(),
@@ -58,20 +57,6 @@ export const roleHandlers = [
       roleDesc: String(body.roleDesc ?? '').trim(),
       sortOrder: Number(body.sortOrder ?? 0),
       useYn: String(body.useYn ?? 'Y'),
-      attribute1: String(body.attribute1 ?? ''),
-      attribute2: String(body.attribute2 ?? ''),
-      attribute3: String(body.attribute3 ?? ''),
-      attribute4: String(body.attribute4 ?? ''),
-      attribute5: String(body.attribute5 ?? ''),
-      attribute6: String(body.attribute6 ?? ''),
-      attribute7: String(body.attribute7 ?? ''),
-      attribute8: String(body.attribute8 ?? ''),
-      attribute9: String(body.attribute9 ?? ''),
-      attribute10: String(body.attribute10 ?? ''),
-      createdBy: String(body.createdBy ?? 'admin'),
-      creationDate: now,
-      lastUpdatedBy: String(body.lastUpdatedBy ?? body.createdBy ?? 'admin'),
-      lastUpdatedDate: now,
     };
 
     mockRoles.unshift(created);
@@ -112,38 +97,6 @@ export const roleHandlers = [
       useYn: Object.prototype.hasOwnProperty.call(body, 'useYn')
         ? String(body.useYn ?? 'Y')
         : mockRoles[idx].useYn,
-      attribute1: Object.prototype.hasOwnProperty.call(body, 'attribute1')
-        ? String(body.attribute1 ?? '')
-        : mockRoles[idx].attribute1,
-      attribute2: Object.prototype.hasOwnProperty.call(body, 'attribute2')
-        ? String(body.attribute2 ?? '')
-        : mockRoles[idx].attribute2,
-      attribute3: Object.prototype.hasOwnProperty.call(body, 'attribute3')
-        ? String(body.attribute3 ?? '')
-        : mockRoles[idx].attribute3,
-      attribute4: Object.prototype.hasOwnProperty.call(body, 'attribute4')
-        ? String(body.attribute4 ?? '')
-        : mockRoles[idx].attribute4,
-      attribute5: Object.prototype.hasOwnProperty.call(body, 'attribute5')
-        ? String(body.attribute5 ?? '')
-        : mockRoles[idx].attribute5,
-      attribute6: Object.prototype.hasOwnProperty.call(body, 'attribute6')
-        ? String(body.attribute6 ?? '')
-        : mockRoles[idx].attribute6,
-      attribute7: Object.prototype.hasOwnProperty.call(body, 'attribute7')
-        ? String(body.attribute7 ?? '')
-        : mockRoles[idx].attribute7,
-      attribute8: Object.prototype.hasOwnProperty.call(body, 'attribute8')
-        ? String(body.attribute8 ?? '')
-        : mockRoles[idx].attribute8,
-      attribute9: Object.prototype.hasOwnProperty.call(body, 'attribute9')
-        ? String(body.attribute9 ?? '')
-        : mockRoles[idx].attribute9,
-      attribute10: Object.prototype.hasOwnProperty.call(body, 'attribute10')
-        ? String(body.attribute10 ?? '')
-        : mockRoles[idx].attribute10,
-      lastUpdatedBy: String(body.lastUpdatedBy ?? 'admin'),
-      lastUpdatedDate: new Date().toISOString(),
     };
 
     return HttpResponse.json(mockRoles[idx]);

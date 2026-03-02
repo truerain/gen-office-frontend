@@ -51,6 +51,7 @@ export function NoticeDraftPanel({
   onRemoveAttachment,
   onSave,
 }: NoticeDraftPanelProps) {
+  console.log(isDetailLoading);
   return (
     <div className={styles.pane}>
       <div className={styles.actions}>

@@ -1,4 +1,4 @@
-import type { Notice } from '@/entities/system/notice/model/types';
+import type { Notice } from '@/pages/admin/notice/model/types';
 
 export const mockNotices: Notice[] = [
   {

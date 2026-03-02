@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ListTree, RefreshCcw } from 'lucide-react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { GenGridCrud } from '@gen-office/gen-grid-crud';
 import type { CrudRowId } from '@gen-office/gen-grid-crud';
 import { SimpleFilterBar, SplitLayout, type FilterField } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
-import { http, HttpError } from '@/shared/api/http';
+import { HttpError } from '@/shared/api/http';
+import { useCommonCodesQuery } from '@/shared/api/commonCode';
 import {
   LkupKeys,
   useLkupMasterListQuery,
@@ -72,14 +73,6 @@ const defaultItemCreateRow = {
   lastUpdatedAt: '',
 };
 
-type LkupOption = {
-  lkupClssCd: string;
-  code: string;
-  name: string;
-  sortOrder: number;
-  useYn: string;
-};
-
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function LkupManagementPage(_props: PageComponentProps) {
   const addNotification = useAppStore((state) => state.addNotification);
@@ -98,10 +91,7 @@ export default function LkupManagementPage(_props: PageComponentProps) {
   const classTempSeqRef = useRef(1);
   const itemTempSeqRef = useRef(1);
 
-  const { data: useYnCodes = [] } = useQuery({
-    queryKey: ['common-codes', 'USE_YN'],
-    queryFn: () => http<LkupOption[]>('/api/common/codes/USE_YN', { method: 'GET' }),
-  });
+  const { data: useYnCodes = [] } = useCommonCodesQuery('USE_YN');
 
   const classQueryParams = useMemo<LkupMasterListParams>(
     () => ({

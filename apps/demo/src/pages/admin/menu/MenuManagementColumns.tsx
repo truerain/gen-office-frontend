@@ -2,7 +2,8 @@ import type { ColumnDef } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
 import type { Menu } from '@/pages/admin/menu/model/types';
 
-import { Switch } from '@gen-office/ui';
+import { GridYnSwitchCell } from '@/shared/ui/grid/GridYnSwitchCell';
+import { handleGridYnSwitchSpace } from '@/shared/ui/grid/GridYnSwitchCell.utils';
 
 export type SelectOption = { label: string; value: string };
 
@@ -125,22 +126,9 @@ export const createMenuManagementColumns = (
     meta: {
       align: 'center',
       renderCell: ({ value, commitValue }) => (
-        <Switch
-          checked={value === 'Y'}
-          onCheckedChange={(next) => commitValue?.(next ? 'Y' : 'N')}
-          style={{
-            ['--switch-width' as any]: '2.25rem',
-            ['--switch-height' as any]: '1.25rem',
-            ['--switch-thumb-size' as any]: '1rem',
-            ['--switch-thumb-x' as any]: '0.125rem',
-            ['--switch-thumb-checked-x' as any]: '1.125rem',
-          }}
-        />
+        <GridYnSwitchCell value={value} commitValue={commitValue} />
       ),
-      onSpace: ({ value, commitValue }) => {
-        const next = value === 'Y' ? 'N' : 'Y';
-        commitValue?.(next);
-      },
+      onSpace: handleGridYnSwitchSpace,
     },
   },
   {

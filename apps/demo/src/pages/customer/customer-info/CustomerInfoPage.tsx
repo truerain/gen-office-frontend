@@ -7,7 +7,7 @@ import { DataPanel } from '@/components/DataPanel';
 //import { usePageContext } from '@/contexts';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 
-import type { Customer } from '../../../entities/customer/model/types';
+import type { Customer } from './model/types';
 import type { CrudChange } from '@gen-office/gen-grid-crud';
 import CustomerFilterBar from './CustomerFilterBar';
 //import CustomerActionBar from '@/shared/ui/list/CustomerActionBar';
@@ -17,13 +17,13 @@ import { type PendingDiff } from '@/shared/models/pendingDiff';
 
 import styles from './CustomerInfoPage.module.css';
 
-import type { CustomerFilter, CustomerStatus } from '@/entities/customer/model/types';
+import type { CustomerFilter, CustomerStatus } from '@/pages/customer/customer-info/model/types';
 import {
   useCustomerListQuery,
   //useCreateCustomerMutation,
   //useUpdateCustomerMutation,
   //useDeleteCustomerMutation,
-} from '@/entities/customer/api/customer';
+} from '@/pages/customer/customer-info/api/customer';
 
 
 interface CustomerInfoPageProps extends PageComponentProps {

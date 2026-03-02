@@ -6,6 +6,7 @@ import { PopupInput, SimpleFilterBar, type FilterField } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 import { HttpError } from '@/shared/api/http';
+import { useCommonCodesQuery } from '@/shared/api/commonCode';
 import { useUserRoleListQuery, useUserRoleOptionsQuery } from '@/pages/admin/user-role/api/userRole';
 import type { UserRoleListParams } from '@/pages/admin/user-role/model/types';
 import { useAppStore } from '@/app/store/appStore';
@@ -31,11 +32,12 @@ type UserRoleFilters = {
 };
 
 const ALL_ROLE_ID = 'ALL';
+const ALL_USE_YN = 'ALL';
 
 const defaultFilters: UserRoleFilters = {
   userId: '',
   roleId: ALL_ROLE_ID,
-  useYn: '',
+  useYn: ALL_USE_YN,
 };
 
 const defaultCreateRow = {
@@ -90,7 +92,10 @@ export default function UserRoleManagementPage(_props: PageComponentProps) {
         filters.roleId.trim().toUpperCase() === ALL_ROLE_ID
           ? undefined
           : toPositiveIntOrUndefined(filters.roleId.trim()),
-      useYn: filters.useYn.trim().toUpperCase() || undefined,
+      useYn:
+        filters.useYn.trim().toUpperCase() === ALL_USE_YN
+          ? undefined
+          : filters.useYn.trim().toUpperCase() || undefined,
       page: 0,
       size: 200,
       sort: 'user_id asc, role_id asc',
@@ -100,6 +105,7 @@ export default function UserRoleManagementPage(_props: PageComponentProps) {
 
   const { data: userRoleList = [], refetch, dataUpdatedAt } = useUserRoleListQuery(queryParams);
   const { data: roleOptions = [] } = useUserRoleOptionsQuery();
+  const { data: useYnCodes = [] } = useCommonCodesQuery('USE_YN');
   const rows = useMemo<UserRoleGridRow[]>(
     () =>
       userRoleList.map((item) => ({
@@ -158,9 +164,25 @@ export default function UserRoleManagementPage(_props: PageComponentProps) {
         ],
         flex: 0,
       },
-      { key: 'useYn', title: 'Use(Y/N)', type: 'text', placeholder: 'Y | N', flex: 0 },
+      {
+        key: 'useYn',
+        title: 'Use(Y/N)',
+        type: 'select',
+        placeholder: 'All',
+        options: [
+          { label: 'All', value: ALL_USE_YN },
+          ...useYnCodes
+            .filter((item) => String(item.useYn ?? '').toUpperCase() === 'Y')
+            .sort((a, b) => Number(a.sortOrder ?? 0) - Number(b.sortOrder ?? 0))
+            .map((item) => ({
+              label: item.name,
+              value: item.code,
+            })),
+        ],
+        flex: 0,
+      },
     ];
-  }, [roleOptions]);
+  }, [roleOptions, useYnCodes]);
 
   const handleSearch = () => {
     const same =

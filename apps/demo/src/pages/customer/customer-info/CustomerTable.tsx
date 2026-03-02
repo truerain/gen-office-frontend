@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { GenGridCrud } from '@gen-office/gen-grid-crud';
 import type { CrudChange } from '@gen-office/gen-grid-crud';
 
-import type { Customer } from '../../../entities/customer/model/types';
+import type { Customer } from './model/types';
 import { createCustomerColumns } from './CustomerInfoColumns';
 import type { PendingDiff } from '@/shared/models/pendingDiff';
 import { useAppStore } from '@/app/store/appStore';
