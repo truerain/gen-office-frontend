@@ -1,5 +1,5 @@
 // apps/demo/src/pages/customer/CustomerInfoPage/CustomerInfoPage.tsx
-import { useMemo, useState} from 'react';
+import { useMemo, useState } from 'react';
 import { Home, Users } from 'lucide-react';
 
 import { PageHeader } from '@/components/PageHeader/PageHeader';
@@ -25,7 +25,6 @@ import {
   //useDeleteCustomerMutation,
 } from '@/pages/customer/customer-info/api/customer';
 
-
 interface CustomerInfoPageProps extends PageComponentProps {
   /** 초기 필터 파라미터 */
   initialParams?: {
@@ -44,16 +43,13 @@ function CustomerInfoPage({
   //const { menuId: menuIdFromContext } = usePageContext();
   //const menuId = menuIdFromContext || menuIdFromProps;
 
-
-  const [_pendingDiff, setPendingDiff] = useState<PendingDiff<Customer, string>>({
+  const [, setPendingDiff] = useState<PendingDiff<Customer, string>>({
     added: [],
     modified: [],
     deleted: [],
   });
-  
+
   //const saveDisabled = !isDiffDirty(pendingDiff);
-
-
 
   // initialParams에서 초기 필터 생성
   const getInitialFilters = (): CustomerFilter => {
@@ -94,11 +90,10 @@ function CustomerInfoPage({
   //const updateMut = useUpdateCustomerMutation();
   //const deleteMut = useDeleteCustomerMutation();
 
-  //const _total = listQuery.data?.total ?? 0;
+  //const _total = listQuery.data?.total || 0;
 
-  const rows = listQuery.data?.items ?? [];
+  const rows = listQuery.data?.items || [];
   const dataVersion = listQuery.dataUpdatedAt;
-
 
   const initialLoading = listQuery.isLoading;
   const refreshing = listQuery.isFetching && !listQuery.isLoading;
@@ -136,7 +131,7 @@ function CustomerInfoPage({
   };
 
   const handleDelete = async (id: string, name: string) => {
-    const ok = window.confirm(`정말 삭제할까요?\n- ${name}`);
+    const ok = window.confirm(`정말 삭제합니다.\n- ${name}`);
     if (!ok) return;
 
     try {
@@ -155,8 +150,7 @@ function CustomerInfoPage({
     // TODO: 서버 저장(create/update/delete) 호출로 교체
     console.log('commit changes', changes);
   };
-  
-  
+
   return (
     <div className={styles.page}>
       {/* 페이지 헤더 with Breadcrumb */}
@@ -191,13 +185,13 @@ function CustomerInfoPage({
         {refreshing && (
           <div style={{ padding: 8, opacity: 0.8, fontSize: 12 }}>갱신 중...</div>
         )}
-        
+
         {/* 에러 표시(간단) - 원하면 shared/ui/ErrorState로 승격 가능 */}
         {listQuery.isError && (
           <div style={{ padding: 12 }}>
             <div style={{ marginBottom: 8, fontWeight: 600 }}>데이터를 불러오지 못했습니다.</div>
             <div style={{ marginBottom: 8, opacity: 0.8 }}>
-              {(listQuery.error as Error)?.message ?? 'Unknown error'}
+              {(listQuery.error as Error)?.message || 'Unknown error'}
             </div>
             <button type="button" onClick={handleRefetch}>
               다시 시도
@@ -207,13 +201,13 @@ function CustomerInfoPage({
 
         {/* 데이터 패널 (액션 바 + 테이블) */}
         <DataPanel>
-          <CustomerTable 
+          <CustomerTable
             rows={rows}
             dataVersion={dataVersion}
             onDiffChange={setPendingDiff}
             onCommit={handleCommit}
             onRefetch={handleRefetch}
-            loading={initialLoading} 
+            loading={initialLoading}
           />
         </DataPanel>
       </div>
