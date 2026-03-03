@@ -13,6 +13,7 @@ import { GenGridPagination } from '../../components/pagination/GenGridPagination
 import { useActiveCellNavigation } from '../../features/active-cell/useActiveCellNavigation';
 import { SELECTION_COLUMN_ID } from '../../features/selection/selection';
 import { ROW_NUMBER_COLUMN_ID } from '../../features/row-number/useRowNumberColumn';
+import { buildRowSpanModel } from '../layout/rowSpanModel';
 
 import layout from './GenGridLayout.module.css';
 import controls from './GenGridControls.module.css';
@@ -40,6 +41,8 @@ export type GenGridBaseProps<TData> = {
   enableRowNumber?: boolean;
   enableActiveRowHighlight?: boolean;
   enableGrouping?: boolean;
+  rowSpanning?: boolean;
+  rowSpanningMode?: 'visual';
 
   enablePagination?: boolean;
   pageSizeOptions?: number[];
@@ -104,6 +107,8 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     enableRowNumber,
     enableActiveRowHighlight = false,
     enableGrouping,
+    rowSpanning,
+    rowSpanningMode,
 
     enablePagination,
     pageSizeOptions = [10, 20, 50, 100],
@@ -179,6 +184,29 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
   // ✅ activeCell을 Provider에서 관리
   const { activeCell, setActiveCell } = useGenGridContext<TData>();
 
+  const isSystemCol = React.useCallback(
+    (colId: string) => colId === SELECTION_COLUMN_ID || colId === ROW_NUMBER_COLUMN_ID,
+    []
+  );
+
+  const tableState = table.getState();
+  const hasColumnFilter = (tableState.columnFilters?.length ?? 0) > 0;
+  const hasGlobalFilter = String(tableState.globalFilter ?? '').length > 0;
+  const hasFiltering = hasColumnFilter || hasGlobalFilter;
+  const treeEnabled = Boolean((table.options.meta as any)?.genGridTree);
+  const spanRows = table.getRowModel().rows;
+  const rowSpanningEnabled =
+    Boolean(rowSpanning) &&
+    (rowSpanningMode ?? 'visual') === 'visual' &&
+    !enableVirtualization &&
+    !enableGrouping &&
+    !treeEnabled &&
+    !hasFiltering;
+  const rowSpanModel = React.useMemo(
+    () => buildRowSpanModel(table, rowSpanningEnabled),
+    [table, rowSpanningEnabled, spanRows]
+  );
+
   const handleActiveCellChange = React.useCallback(
     (next: { rowId: string; columnId: string }) => setActiveCell(next),
     [setActiveCell]
@@ -189,11 +217,6 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
       onCellValueChange?.(coord, value);
     },
     [onCellValueChange]
-  );
-
-  const isSystemCol = React.useCallback(
-    (colId: string) => colId === SELECTION_COLUMN_ID || colId === ROW_NUMBER_COLUMN_ID,
-    []
   );
 
   const nav = useActiveCellNavigation({
@@ -371,6 +394,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
               getCellClassName={props.getCellClassName}
               getCellStyle={props.getCellStyle}
               footerSpacerHeight={footerSpacerHeight}
+              rowSpanModel={rowSpanModel}
             />
           ) : (
             <GenGridBody<TData>
@@ -390,6 +414,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
               getCellClassName={props.getCellClassName}
               getCellStyle={props.getCellStyle}
               footerSpacerHeight={footerSpacerHeight}
+              rowSpanModel={rowSpanModel}
             />
           )}
 

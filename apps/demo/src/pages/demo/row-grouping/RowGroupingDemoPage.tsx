@@ -1,159 +1,151 @@
 import { useMemo, useState } from 'react';
-import type { ColumnDef, ExpandedState, GroupingState } from '@tanstack/react-table';
+import type { ColumnDef } from '@tanstack/react-table';
+import { Table2 } from 'lucide-react';
 
 import { GenGrid } from '@gen-office/gen-grid';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
+import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 
 import styles from './RowGroupingDemoPage.module.css';
 
-type DemoRow = {
+type GridRow = {
   id: string;
-  department: string;
-  team: string;
-  name: string;
-  role: string;
-  headcount: number;
-  budget: number;
-  score: number;
+  category: '매출액' | '변동비' | '고정비' | '영역이익';
+  item: string;
+  jan: number;
+  feb: number;
+  mar: number;
+  apr: number;
+  may: number;
+  jun: number;
+  jul: number;
+  aug: number;
+  sep: number;
+  oct: number;
+  nov: number;
+  dec: number;
 };
 
-const seedData: DemoRow[] = [
-  { id: '1', department: 'Engineering', team: 'Platform', name: 'Jin Park', role: 'Staff Engineer', headcount: 1, budget: 220000, score: 92 },
-  { id: '2', department: 'Engineering', team: 'Platform', name: 'Sora Kim', role: 'Engineer', headcount: 1, budget: 140000, score: 81 },
-  { id: '3', department: 'Engineering', team: 'Platform', name: 'Min Lee', role: 'Engineer', headcount: 1, budget: 135000, score: 78 },
-  { id: '4', department: 'Engineering', team: 'Frontend', name: 'Ari Cho', role: 'Lead', headcount: 1, budget: 175000, score: 88 },
-  { id: '5', department: 'Engineering', team: 'Frontend', name: 'Hyeon Jang', role: 'Engineer', headcount: 1, budget: 120000, score: 74 },
-  { id: '6', department: 'Engineering', team: 'Frontend', name: 'Noah Seo', role: 'Engineer', headcount: 1, budget: 115000, score: 77 },
-  { id: '7', department: 'Sales', team: 'Enterprise', name: 'Mina Yoo', role: 'Manager', headcount: 1, budget: 190000, score: 86 },
-  { id: '8', department: 'Sales', team: 'Enterprise', name: 'Ryan Choi', role: 'AE', headcount: 1, budget: 150000, score: 82 },
-  { id: '9', department: 'Sales', team: 'SMB', name: 'Eun Park', role: 'AE', headcount: 1, budget: 110000, score: 69 },
-  { id: '10', department: 'Sales', team: 'SMB', name: 'Jae Han', role: 'AE', headcount: 1, budget: 105000, score: 71 },
-  { id: '11', department: 'HR', team: 'People Ops', name: 'Yuna Oh', role: 'Partner', headcount: 1, budget: 98000, score: 84 },
-  { id: '12', department: 'HR', team: 'Talent', name: 'Ji Moon', role: 'Recruiter', headcount: 1, budget: 90000, score: 79 },
-  { id: '13', department: 'Finance', team: 'FP&A', name: 'Kyle Lim', role: 'Analyst', headcount: 1, budget: 125000, score: 83 },
-  { id: '14', department: 'Finance', team: 'Accounting', name: 'Sally Bae', role: 'Accountant', headcount: 1, budget: 118000, score: 76 },
-];
+const CATEGORIES: GridRow['category'][] = ['매출액', '변동비', '고정비', '영역이익'];
 
-export default function RowGroupingDemoPage() {
-  const [data, setData] = useState<DemoRow[]>(seedData);
-  const [grouping, setGrouping] = useState<GroupingState>(['department', 'team']);
-  const [expanded, setExpanded] = useState<ExpandedState>({});
+const ITEM_BY_CATEGORY: Record<GridRow['category'], string[]> = {
+  매출액: ['국내매출', '해외매출', '온라인매출', '오프라인매출', '기타매출'],
+  변동비: ['재료비', '포장비', '물류비', '판매수수료', '외주가공비'],
+  고정비: ['급여', '임차료', '감가상각비', '복리후생비', '보험료'],
+  영역이익: ['국내영역이익', '해외영역이익', '온라인영역이익', '오프라인영역이익', '기타영역이익'],
+};
 
-  const columns = useMemo<ColumnDef<DemoRow, any>[]>(
+function buildSampleData(rowCount = 100): GridRow[] {
+  const rowsPerCategory = Math.floor(rowCount / CATEGORIES.length);
+  const result: GridRow[] = [];
+  let seq = 1;
+
+  for (const category of CATEGORIES) {
+    const items = ITEM_BY_CATEGORY[category];
+    for (let i = 0; i < rowsPerCategory; i += 1) {
+      const item = `${items[i % items.length]}-${String(Math.floor(i / items.length) + 1).padStart(2, '0')}`;
+      const categoryBase = category === '매출액' ? 180000 : category === '영역이익' ? 75000 : 50000;
+      const itemDrift = (i + 1) * 1900;
+      const s = seq;
+
+      result.push({
+        id: String(seq),
+        category,
+        item,
+        jan: categoryBase + itemDrift + s * 120,
+        feb: categoryBase + itemDrift + s * 150,
+        mar: categoryBase + itemDrift + s * 180,
+        apr: categoryBase + itemDrift + s * 210,
+        may: categoryBase + itemDrift + s * 240,
+        jun: categoryBase + itemDrift + s * 270,
+        jul: categoryBase + itemDrift + s * 300,
+        aug: categoryBase + itemDrift + s * 330,
+        sep: categoryBase + itemDrift + s * 360,
+        oct: categoryBase + itemDrift + s * 390,
+        nov: categoryBase + itemDrift + s * 420,
+        dec: categoryBase + itemDrift + s * 450,
+      });
+      seq += 1;
+    }
+  }
+
+  return result;
+}
+
+const seedData = buildSampleData(100);
+
+export default function GridRowGroupingPage(_props: PageComponentProps) {
+  const [data, setData] = useState<GridRow[]>(seedData);
+
+  const formatter = useMemo(() => new Intl.NumberFormat('ko-KR'), []);
+  const asAmount = (value: unknown) => {
+    const n = Number(value);
+    return Number.isFinite(n) ? formatter.format(n) : '';
+  };
+
+  const columns = useMemo<ColumnDef<GridRow, any>[]>(
     () => [
       {
-        accessorKey: 'department',
-        header: 'Department',
-        cell: (info) => info.getValue(),
-        enableGrouping: true,
-      },
-      {
-        accessorKey: 'team',
-        header: 'Team',
-        cell: (info) => info.getValue(),
-        enableGrouping: true,
-      },
-      {
-        accessorKey: 'name',
-        header: 'Name',
-        cell: (info) => info.getValue(),
-      },
-      {
-        accessorKey: 'role',
-        header: 'Role',
-        cell: (info) => info.getValue(),
-      },
-      {
-        accessorKey: 'headcount',
-        header: 'HC',
-        aggregationFn: 'sum',
-        aggregatedCell: (info) => info.getValue<number>(),
-        meta: { align: 'right', mono: true },
-      },
-      {
-        accessorKey: 'budget',
-        header: 'Budget',
-        aggregationFn: 'sum',
-        aggregatedCell: (info) => {
-          const value = info.getValue<number>() ?? 0;
-          return value.toLocaleString();
+        accessorKey: 'category',
+        header: '구분',
+        size: 130,
+        meta: {
+          pinned: 'left',
+          align: 'center',
+          mono: true,
+          rowSpan: true,
         },
-        cell: (info) => Number(info.getValue<number>()).toLocaleString(),
-        meta: { align: 'right', mono: true, editType: 'number'},
       },
       {
-        accessorKey: 'score',
-        header: 'Score',
-        aggregationFn: 'mean',
-        aggregatedCell: (info) => {
-          const value = info.getValue<number>() ?? 0;
-          return value.toFixed(1);
-        },
-        cell: (info) => Number(info.getValue<number>()).toFixed(1),
-        meta: { align: 'right', mono: true },
+        accessorKey: 'item',
+        header: '하위항목',
+        size: 220,
+        meta: { pinned: 'left' },
       },
+      { accessorKey: 'jan', header: '1월', size: 100, meta: { align: 'right', mono: true }, cell: ({ getValue }) => asAmount(getValue()) },
+      { accessorKey: 'feb', header: '2월', size: 100, meta: { align: 'right', mono: true }, cell: ({ getValue }) => asAmount(getValue()) },
+      { accessorKey: 'mar', header: '3월', size: 100, meta: { align: 'right', mono: true }, cell: ({ getValue }) => asAmount(getValue()) },
+      { accessorKey: 'apr', header: '4월', size: 100, meta: { align: 'right', mono: true }, cell: ({ getValue }) => asAmount(getValue()) },
+      { accessorKey: 'may', header: '5월', size: 100, meta: { align: 'right', mono: true }, cell: ({ getValue }) => asAmount(getValue()) },
+      { accessorKey: 'jun', header: '6월', size: 100, meta: { align: 'right', mono: true }, cell: ({ getValue }) => asAmount(getValue()) },
+      { accessorKey: 'jul', header: '7월', size: 100, meta: { align: 'right', mono: true }, cell: ({ getValue }) => asAmount(getValue()) },
+      { accessorKey: 'aug', header: '8월', size: 100, meta: { align: 'right', mono: true }, cell: ({ getValue }) => asAmount(getValue()) },
+      { accessorKey: 'sep', header: '9월', size: 100, meta: { align: 'right', mono: true }, cell: ({ getValue }) => asAmount(getValue()) },
+      { accessorKey: 'oct', header: '10월', size: 100, meta: { align: 'right', mono: true }, cell: ({ getValue }) => asAmount(getValue()) },
+      { accessorKey: 'nov', header: '11월', size: 100, meta: { align: 'right', mono: true }, cell: ({ getValue }) => asAmount(getValue()) },
+      { accessorKey: 'dec', header: '12월', size: 100, meta: { align: 'right', mono: true }, cell: ({ getValue }) => asAmount(getValue()) },
     ],
-    []
+    [formatter]
   );
 
   return (
     <div className={styles.page}>
       <PageHeader
-        title="Row Grouping Demo"
-        description="TanStack grouping + GenGrid group header row"
+        title="Grid Row Grouping Demo"
+        description="Row merge + monthly amount sample (100 rows)"
+        breadcrumbItems={[
+          { label: 'UI Demo', icon: <Table2 size={16} /> },
+          { label: 'Grid Row Grouping Demo', icon: <Table2 size={16} /> },
+        ]}
       />
 
       <div className={styles.toolbar}>
-        <div className={styles.groupingLabel}>Grouping</div>
-        <button
-          type="button"
-          className={grouping.length === 0 ? styles.activeBtn : styles.btn}
-          onClick={() => setGrouping([])}
-        >
-          None
-        </button>
-        <button
-          type="button"
-          className={grouping.join(',') === 'department' ? styles.activeBtn : styles.btn}
-          onClick={() => setGrouping(['department'])}
-        >
-          Department
-        </button>
-        <button
-          type="button"
-          className={grouping.join(',') === 'department,team' ? styles.activeBtn : styles.btn}
-          onClick={() => setGrouping(['department', 'team'])}
-        >
-          Department �� Team
-        </button>
-
-        <div className={styles.spacer} />
-
-        <button type="button" className={styles.btn} onClick={() => setExpanded({})}>
-          Collapse All
-        </button>
-        <button type="button" className={styles.btn} onClick={() => setExpanded(true)}>
-          Expand All
-        </button>
+        <div className={styles.groupingLabel}>샘플 데이터</div>
+        <span className={styles.hint}>구분(매출액/변동비/고정비/영역이익) row merge + 하위항목 + 월별 금액</span>
       </div>
 
       <div className={styles.grid}>
-        <GenGrid<DemoRow>
+        <GenGrid<GridRow>
           data={data}
           onDataChange={setData}
           dataVersion={data.length}
           columns={columns}
           getRowId={(row) => row.id}
-          enableGrouping
-          grouping={grouping}
-          onGroupingChange={setGrouping}
-          expanded={expanded}
-          onExpandedChange={setExpanded}
+          rowSpanning
+          rowSpanningMode="visual"
           enablePinning
-          enableRowStatus={true}
           enableColumnSizing
-          //enableVirtualization
-          enableActiveRowHighlight={true}
+          enableActiveRowHighlight
           rowHeight={34}
           overscan={8}
         />

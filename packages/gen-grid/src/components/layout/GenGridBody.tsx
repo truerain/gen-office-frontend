@@ -14,6 +14,7 @@ import { GenGridCell } from './GenGridCell';
 import { getCellStyle } from './cellStyles';
 import { getMeta } from './utils';
 import type { CellCoord } from './types';
+import type { RowSpanModel } from './rowSpanModel';
 
 import bodyStyles from './GenGridBody.module.css';
 import pinningStyles from './GenGridPinning.module.css';
@@ -65,6 +66,7 @@ type GenGridBodyProps<TData> = {
   }) => React.CSSProperties | undefined;
 
   footerSpacerHeight?: number;
+  rowSpanModel?: RowSpanModel;
 };
 
 function pickRowStyleForCell(style?: React.CSSProperties): React.CSSProperties | undefined {
@@ -103,6 +105,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
     getCellClassName,
     getCellStyle: getCellStyleByRule,
     footerSpacerHeight = 0,
+    rowSpanModel,
   } = props;
 
   const { editMode, setEditMode } = useGenGridContext<TData>();
@@ -333,7 +336,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
             const editProps = editing.getCellEditProps(row.id, colId);
 
             // 媛숈? ?대깽???ㅺ? 寃뱀튌 ???덉뼱??merge
-            const mergedProps: React.HTMLAttributes<HTMLTableCellElement> = {
+            const mergedProps: React.TdHTMLAttributes<HTMLTableCellElement> = {
               ...(navProps as any),
               ...(editProps as any),
               onMouseDownCapture:
@@ -396,6 +399,8 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
             };
             
             const dirty = isCellDirty?.(row.id, colId) ?? false;
+            const isRowSpanCovered =
+              Boolean(rowSpanModel?.enabled) && rowSpanModel!.isCovered(row.id, colId);
             return (
               <GenGridCell
                 key={cell.id}
@@ -410,6 +415,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
                 getCellClassName={getCellClassName}
                 getCellStyle={getCellStyleByRule}
                 cellProps={mergedProps}
+                isRowSpanCovered={isRowSpanCovered}
                 onCommitValue={(nextValue) => editing.commitValue({ rowId: row.id, columnId: colId }, nextValue)}
                 onCommitEdit={() => editing.commitEditing()}
                 onApplyValue={(nextValue) => editing.applyValue({ rowId: row.id, columnId: colId }, nextValue)}

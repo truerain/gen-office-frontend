@@ -70,6 +70,10 @@ type CommonGridOptions<TData> = {
   enableRowNumber?: boolean;
   enableActiveRowHighlight?: boolean;
   enableGrouping?: boolean;
+  /** enable body row spanning (row merge) */
+  rowSpanning?: boolean;
+  /** rowSpanning mode (currently visual-only) */
+  rowSpanningMode?: 'visual';
 
   enablePagination?: boolean;
   pageSizeOptions?: number[];
@@ -162,4 +166,3 @@ export type GenGridProps<TData> = CommonGridOptions<TData> &
       value: unknown;
     }) => void;
   };
-

@@ -177,3 +177,22 @@
   font-weight: 700;
   line-height: 1;
 }
+
+.rowSpanCovered {
+  position: relative;
+}
+
+.rowSpanCovered::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 1px;
+  background: inherit;
+  pointer-events: none;
+}
+
+.rowSpanCoveredContent {
+  visibility: hidden;
+}

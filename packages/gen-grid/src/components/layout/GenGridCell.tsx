@@ -42,7 +42,8 @@ export type GenGridCellProps<TData> = {
     value: unknown;
   }) => React.CSSProperties | undefined;
 
-  cellProps: React.HTMLAttributes<HTMLTableCellElement>;
+  cellProps: React.TdHTMLAttributes<HTMLTableCellElement>;
+  isRowSpanCovered?: boolean;
 
   onCommitValue: (nextValue: unknown) => void;
   onCommitEdit: () => void;
@@ -298,6 +299,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     getCellClassName,
     getCellStyle: getCellStyleByRule,
     cellProps,
+    isRowSpanCovered,
     onCommitValue,
     onCommitEdit,
     onApplyValue,
@@ -663,6 +665,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
         pinned ? pinningStyles.pinned : '',
         pinned === 'left' ? pinningStyles.pinnedLeft : '',
         pinned === 'right' ? pinningStyles.pinnedRight : '',
+        isRowSpanCovered ? bodyStyles.rowSpanCovered : '',
         getCellClassName?.({
           row: cell.row.original,
           rowId,
@@ -730,7 +733,11 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
           >
             {editor}
           </div>) 
-        : nonEditingContent}
+        : (
+          <span className={isRowSpanCovered ? bodyStyles.rowSpanCoveredContent : undefined}>
+            {nonEditingContent}
+          </span>
+        )}
     </td>
   );
 }

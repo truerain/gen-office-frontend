@@ -6,6 +6,7 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import type { ActiveCell } from '../../features/active-cell/useActiveCellNavigation';
 import type { CellCoord } from './types';
+import type { RowSpanModel } from './rowSpanModel';
 
 import { useActiveCellNavigation } from '../../features/active-cell/useActiveCellNavigation';
 import { useCellEditing } from '../../features/editing/useCellEditing';
@@ -72,6 +73,7 @@ type GenGridVirtualBodyProps<TData> = {
   }) => React.CSSProperties | undefined;
 
   footerSpacerHeight?: number;
+  rowSpanModel?: RowSpanModel;
 };
 
 function pickRowStyleForCell(style?: React.CSSProperties): React.CSSProperties | undefined {
@@ -112,6 +114,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
     getCellClassName,
     getCellStyle: getCellStyleByRule,
     footerSpacerHeight = 0,
+    rowSpanModel,
   } = props;
 
   const { editMode, setEditMode } = useGenGridContext<TData>();
@@ -389,7 +392,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
               const editProps = editing.getCellEditProps(row.id, colId);
 
               // merge handlers
-              const mergedProps: React.HTMLAttributes<HTMLTableCellElement> = {
+              const mergedProps: React.TdHTMLAttributes<HTMLTableCellElement> = {
                 ...(navProps as any),
                 ...(editProps as any),
                 onMouseDownCapture:
@@ -464,6 +467,9 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
                   getCellClassName={getCellClassName}
                   getCellStyle={getCellStyleByRule}
                   cellProps={mergedProps}
+                  isRowSpanCovered={
+                    Boolean(rowSpanModel?.enabled) && rowSpanModel!.isCovered(row.id, colId)
+                  }
                   onCommitValue={(nextValue) => editing.commitValue({ rowId: row.id, columnId: colId }, nextValue)}
                   onCommitEdit={() => editing.commitEditing()}
                   onApplyValue={(nextValue) => editing.applyValue({ rowId: row.id, columnId: colId }, nextValue)}

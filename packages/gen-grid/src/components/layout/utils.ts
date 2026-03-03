@@ -48,6 +48,16 @@ export type GenGridColumnMeta = {
   editOptions?: { label: string; value: string | number }[];
   getEditOptions?: (row: unknown) => { label: string; value: string | number }[];
   editPlaceholder?: string;
+
+  // body row spanning (row merge)
+  rowSpan?: boolean | ((args: { row: unknown; rowId: string; columnId: string }) => boolean);
+  rowSpanValueGetter?: (args: {
+    row: unknown;
+    rowId: string;
+    columnId: string;
+    value: unknown;
+  }) => unknown;
+  rowSpanComparator?: (a: unknown, b: unknown, args: { columnId: string }) => boolean;
 };
 
 // Step2: columnDef meta getter
