@@ -230,7 +230,7 @@ export default function GridStyleDemoPage(_props: PageComponentProps) {
   const renderByFormat = (format: unknown, value: unknown) => {
     if (typeof value !== 'number' || Number.isNaN(value)) return String(value ?? '');
     const absText = numberFormatter.format(Math.abs(value));
-    if (format === 'triangleNumber') return value < 0 ? `▲${absText}` : absText;
+    if (format === 'triangleNumber') return value < 0 ? `△${absText}` : absText;
     if (format === 'number') return numberFormatter.format(value);
     return numberFormatter.format(value);
   };
@@ -265,7 +265,7 @@ export default function GridStyleDemoPage(_props: PageComponentProps) {
           return <span style={{ paddingLeft: `${level - 1}ch` }}>{String(getValue() ?? '')}</span>;
         },
       },
-      {
+            {
         id: 'perfPlan',
         header: '실적/계획',
         columns: [

@@ -236,7 +236,7 @@ function resolveExcelNumFmt<TData>(meta?: ExportMeta<TData>): string | undefined
     case 'number':
       return '#,##0';
     case 'triangleNumber':
-      return '#,##0;▲#,##0';
+      return '#,##0;△#,##0';
     case 'percent':
       return '0.00%';
     case 'currency':
