@@ -328,6 +328,19 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
               : undefined
           }
         >
+          <colgroup>
+            {table.getVisibleLeafColumns().map((column) => (
+              <col
+                key={column.id}
+                style={
+                  columnSizingEnabled
+                    ? { width: column.getSize(), minWidth: column.getSize() }
+                    : undefined
+                }
+              />
+            ))}
+          </colgroup>
+
           <GenGridHeader
             table={table}
             enablePinning={enablePinning}
