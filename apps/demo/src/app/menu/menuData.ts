@@ -16,7 +16,7 @@ const componentNameByMenuId: Record<string, string> = {
   '990200': 'ComboboxDemoPage',
   '990300': 'SliderDemoPage',
   '990400': 'DatePickerDemoPage',
-  '990500': 'RowGroupingDemoPage',
+  '990500': 'RowSpanningDemoPage',
 };
 
 const iconByMenuId: Record<string, string> = {

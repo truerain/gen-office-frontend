@@ -6,7 +6,7 @@ import { GenGrid } from '@gen-office/gen-grid';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 
-import styles from './RowGroupingDemoPage.module.css';
+import styles from './RowSpanningDemoPage.module.css';
 
 type GridRow = {
   id: string;
@@ -74,7 +74,7 @@ function buildSampleData(rowCount = 100): GridRow[] {
 
 const seedData = buildSampleData(100);
 
-export default function GridRowGroupingPage(_props: PageComponentProps) {
+export default function GridRowSpanningPage(_props: PageComponentProps) {
   const [data, setData] = useState<GridRow[]>(seedData);
 
   const formatter = useMemo(() => new Intl.NumberFormat('ko-KR'), []);
@@ -121,11 +121,11 @@ export default function GridRowGroupingPage(_props: PageComponentProps) {
   return (
     <div className={styles.page}>
       <PageHeader
-        title="Grid Row Grouping Demo"
-        description="Row merge + monthly amount sample (100 rows)"
+        title="Grid Row Spanning Demo"
+        description="Row spanning + monthly amount sample (100 rows)"
         breadcrumbItems={[
           { label: 'UI Demo', icon: <Table2 size={16} /> },
-          { label: 'Grid Row Grouping Demo', icon: <Table2 size={16} /> },
+          { label: 'Grid Row Spanning Demo', icon: <Table2 size={16} /> },
         ]}
       />
 

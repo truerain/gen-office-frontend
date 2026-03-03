@@ -154,14 +154,14 @@ const menus: AppMenu[] = [
   },
   {
     menuId: 990500,
-    menuName: 'RowGrouping',
-    menuNameEng: 'RowGrouping',
+    menuName: 'RowSpanning',
+    menuNameEng: 'RowSpanning',
     menuIcon: 'Table2',
     parentMenuId: 990000,
     displayYn: 'Y',
     useYn: 'Y',
     sortOrder: 5,
-    execComponent: 'RowGroupingDemoPage',
+    execComponent: 'RowSpanningDemoPage',
   },
   {
     menuId: 990600,

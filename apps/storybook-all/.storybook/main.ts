@@ -30,6 +30,13 @@ const config: StorybookConfig = {
             if (warning.code === "MODULE_LEVEL_DIRECTIVE") {
               return;
             }
+            const isStorybookRuntimeEvalWarning =
+              warning.code === "EVAL" &&
+              (warning.id?.includes("@storybook/core/dist/preview/runtime.js") ||
+                warning.message?.includes("@storybook/core/dist/preview/runtime.js"));
+            if (isStorybookRuntimeEvalWarning) {
+              return;
+            }
             warn(warning);
           },
         },
