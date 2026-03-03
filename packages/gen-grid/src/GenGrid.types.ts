@@ -107,6 +107,30 @@ type CommonGridOptions<TData> = {
   /** tanstack table meta */
   tableMeta?: Record<string, any>;
 
+  /** row style hooks */
+  getRowClassName?: (args: { row: TData; rowId: string; rowIndex: number }) => string | undefined;
+  getRowStyle?: (args: {
+    row: TData;
+    rowId: string;
+    rowIndex: number;
+  }) => React.CSSProperties | undefined;
+
+  /** cell style hooks */
+  getCellClassName?: (args: {
+    row: TData;
+    rowId: string;
+    rowIndex: number;
+    columnId: string;
+    value: unknown;
+  }) => string | undefined;
+  getCellStyle?: (args: {
+    row: TData;
+    rowId: string;
+    rowIndex: number;
+    columnId: string;
+    value: unknown;
+  }) => React.CSSProperties | undefined;
+
   /** flat parent-child tree options */
   tree?: GenGridTreeOptions<TData>;
 };
@@ -138,5 +162,4 @@ export type GenGridProps<TData> = CommonGridOptions<TData> &
       value: unknown;
     }) => void;
   };
-
 

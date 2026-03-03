@@ -57,7 +57,33 @@ export type CrudActiveRowChangeEvent<TData> = {
 
 export type CrudActionButtonStyle = 'text' | 'icon';
 export type CrudActionSide = 'left' | 'right';
-export type CrudBuiltInActionKey = 'add' | 'delete' | 'save' | 'filter' | 'reset';
+export type CrudBuiltInActionKey = 'add' | 'delete' | 'save' | 'filter' | 'reset' | 'excel';
+
+export type ExcelExportMode = 'frontend' | 'backend';
+
+export type ExcelExportBackendOptions<TData> = {
+  endpoint: string;
+  method?: 'GET' | 'POST';
+  headers?: Record<string, string>;
+  credentials?: RequestCredentials;
+  buildPayload?: (ctx: {
+    state: CrudUiState<TData>;
+    columns: readonly ColumnDef<TData, any>[];
+    title?: string;
+  }) => Record<string, unknown> | undefined;
+};
+
+export type ExcelExportFrontendOptions = {
+  onlySelected?: boolean;
+};
+
+export type ExcelExportOptions<TData> = {
+  mode: ExcelExportMode;
+  fileName?: string;
+  sheetName?: string;
+  backend?: ExcelExportBackendOptions<TData>;
+  frontend?: ExcelExportFrontendOptions;
+};
 
 export type CrudActionApi = {
   add?: () => void;
@@ -65,6 +91,7 @@ export type CrudActionApi = {
   save?: () => Promise<void>;
   reset: () => void;
   toggleFilter?: () => void;
+  exportExcel?: () => Promise<void>;
 };
 
 export type CrudActionContext<TData> = {
@@ -143,6 +170,7 @@ export type GenGridCrudProps<TData> = {
   /** UI hooks */
   onStateChange?: (state: CrudUiState<TData>) => void;
   onCellEdit?: (event: CrudCellEditEvent<TData>) => void | readonly CrudCellPatch<TData>[];
+  excelExport?: ExcelExportOptions<TData>;
 
   /** pass-through (GenGrid props except controlled fields) */
   gridProps?: Omit<

@@ -264,7 +264,7 @@ export default function LkupManagementPage(_props: PageComponentProps) {
                   actionBar={{
                     position: 'top',
                     defaultStyle: 'icon',
-                    includeBuiltIns: ['add', 'delete', 'save', 'filter'],
+                    includeBuiltIns: ['add', 'delete', 'save', 'filter', 'excel'],
                     customActions: [
                       {
                         key: 'refresh-class',
@@ -303,6 +303,10 @@ export default function LkupManagementPage(_props: PageComponentProps) {
                   }}
                   onStateChange={({ dirty }) => {
                     setmasterGridDirty(dirty);
+                  }}
+                  excelExport={{
+                    mode: 'frontend',
+                    frontend: { onlySelected: false },
                   }}
                   gridProps={{
                     dataVersion: classDataUpdatedAt,
@@ -344,7 +348,7 @@ export default function LkupManagementPage(_props: PageComponentProps) {
                   actionBar={{
                     position: 'top',
                     defaultStyle: 'icon',
-                    includeBuiltIns: ['add', 'delete', 'save', 'filter'],
+                    includeBuiltIns: ['add', 'delete', 'save', 'filter', 'excel'],
                     customActions: [
                       {
                         key: 'refresh-item',
@@ -393,6 +397,10 @@ export default function LkupManagementPage(_props: PageComponentProps) {
                   }}
                   onStateChange={({ dirty }) => {
                     setdetailGridDirty(dirty);
+                  }}
+                  excelExport={{
+                    mode: 'frontend',
+                    frontend: { onlySelected: false },
                   }}
                   gridProps={{
                     dataVersion: `${selectedClassCode ?? 'none'}-${itemDataUpdatedAt}`,

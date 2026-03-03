@@ -17,6 +17,7 @@ import { focusGridCell } from '../../features/active-cell/cellDom';
 export type GenGridCellProps<TData> = {
   cell: Cell<TData, unknown>;
   rowId: string;
+  rowStyle?: React.CSSProperties;
 
   isActive: boolean;
   isEditing: boolean;
@@ -26,6 +27,20 @@ export type GenGridCellProps<TData> = {
 
   enablePinning?: boolean;
   enableColumnSizing?: boolean;
+  getCellClassName?: (args: {
+    row: TData;
+    rowId: string;
+    rowIndex: number;
+    columnId: string;
+    value: unknown;
+  }) => string | undefined;
+  getCellStyle?: (args: {
+    row: TData;
+    rowId: string;
+    rowIndex: number;
+    columnId: string;
+    value: unknown;
+  }) => React.CSSProperties | undefined;
 
   cellProps: React.HTMLAttributes<HTMLTableCellElement>;
 
@@ -37,6 +52,23 @@ export type GenGridCellProps<TData> = {
   /** ✅ Tab / Shift+Tab 편집 이동 */
   onTab?: (dir: 1 | -1) => void;
 };
+
+function pickRowStyleForCell(style?: React.CSSProperties): React.CSSProperties | undefined {
+  if (!style) return undefined;
+  return {
+    background: style.background,
+    backgroundColor: style.backgroundColor,
+    color: style.color,
+    fontWeight: style.fontWeight,
+    fontStyle: style.fontStyle,
+    textDecoration: style.textDecoration,
+    border: style.border,
+    borderTop: style.borderTop,
+    borderRight: style.borderRight,
+    borderBottom: style.borderBottom,
+    borderLeft: style.borderLeft,
+  };
+}
 
 type GenGridTreeMeta = {
   treeColumnId?: string;
@@ -257,11 +289,14 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
   const {
     cell,
     rowId,
+    rowStyle,
     isActive,
     isEditing,
     isDirty,
     enablePinning,
     enableColumnSizing,
+    getCellClassName,
+    getCellStyle: getCellStyleByRule,
     cellProps,
     onCommitValue,
     onCommitEdit,
@@ -271,6 +306,8 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
   } = props;
 
   const colId = cell.column.id;
+  const rowIndex = cell.row.index;
+  const cellValue = cell.getValue();
   const table = cell.getContext().table;
   const pinned = cell.column.getIsPinned();
   const meta = getMeta(cell.column.columnDef) as any;
@@ -623,14 +660,31 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
         pinned ? pinningStyles.pinned : '',
         pinned === 'left' ? pinningStyles.pinnedLeft : '',
         pinned === 'right' ? pinningStyles.pinnedRight : '',
+        getCellClassName?.({
+          row: cell.row.original,
+          rowId,
+          rowIndex,
+          columnId: colId,
+          value: cellValue,
+        }) ?? '',
       ]
         .filter(Boolean)
         .join(' ')}
-      style={getCellStyle(cell.column, {
-        enablePinning,
-        enableColumnSizing,
-        isHeader: false,
-      })}
+      style={{
+        ...getCellStyle(cell.column, {
+          enablePinning,
+          enableColumnSizing,
+          isHeader: false,
+        }),
+        ...(pickRowStyleForCell(rowStyle) ?? {}),
+        ...(getCellStyleByRule?.({
+          row: cell.row.original,
+          rowId,
+          rowIndex,
+          columnId: colId,
+          value: cellValue,
+        }) ?? {}),
+      }}
       data-rowid={rowId}
       data-colid={colId}
       data-active-cell={isActive && !isEditing ? 'true' : undefined}

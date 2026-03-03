@@ -36,6 +36,12 @@ export type GenGridColumnMeta = {
     commitValue: (nextValue: unknown) => void;
     applyValue: (nextValue: unknown) => void;
   }) => React.ReactNode;
+  exportValue?: (args: {
+    value: unknown;
+    row: unknown;
+    rowId: string;
+    columnId: string;
+  }) => unknown;
 
   // editor
   editType?: 'text' | 'number' | 'date' | 'select' | 'textarea' | 'checkbox';

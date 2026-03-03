@@ -31,7 +31,7 @@ type GenGridBodyProps<TData> = {
   enableColumnSizing?: boolean;
   enableActiveRowHighlight?: boolean;
 
-  tableClassName?: string; // (?�택) bodyStyles.table 같�? �??�달?�서 cell?�서 focus selector???�용 가??
+  tableClassName?: string; // (?좏깮) bodyStyles.table 媛숈? 嫄??꾨떖?댁꽌 cell?먯꽌 focus selector???쒖슜 媛??
 
   activeCell: ActiveCell;
   onCellClick?: (rowId: string, columnId: string) => void;
@@ -39,13 +39,50 @@ type GenGridBodyProps<TData> = {
   editOnActiveCell?: boolean;
   keepEditingOnNavigate?: boolean;
   
-  /** (?�택) ?�제 ?�이???�데?�트???�위?�서 처리 */
+  /** (?좏깮) ?ㅼ젣 ?곗씠???낅뜲?댄듃???곸쐞?먯꽌 泥섎━ */
   onCellValueChange?: (coord: CellCoord, nextValue: unknown) => void;
   isRowDirty?: (rowId: string) => boolean;
   isCellDirty?: (rowId: string, columnId: string) => boolean;
+  getRowClassName?: (args: { row: TData; rowId: string; rowIndex: number }) => string | undefined;
+  getRowStyle?: (args: {
+    row: TData;
+    rowId: string;
+    rowIndex: number;
+  }) => React.CSSProperties | undefined;
+  getCellClassName?: (args: {
+    row: TData;
+    rowId: string;
+    rowIndex: number;
+    columnId: string;
+    value: unknown;
+  }) => string | undefined;
+  getCellStyle?: (args: {
+    row: TData;
+    rowId: string;
+    rowIndex: number;
+    columnId: string;
+    value: unknown;
+  }) => React.CSSProperties | undefined;
 
   footerSpacerHeight?: number;
 };
+
+function pickRowStyleForCell(style?: React.CSSProperties): React.CSSProperties | undefined {
+  if (!style) return undefined;
+  return {
+    background: style.background,
+    backgroundColor: style.backgroundColor,
+    color: style.color,
+    fontWeight: style.fontWeight,
+    fontStyle: style.fontStyle,
+    textDecoration: style.textDecoration,
+    border: style.border,
+    borderTop: style.borderTop,
+    borderRight: style.borderRight,
+    borderBottom: style.borderBottom,
+    borderLeft: style.borderLeft,
+  };
+}
 
 export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
   const {
@@ -61,6 +98,10 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
     keepEditingOnNavigate,
     onCellValueChange,
     isCellDirty,
+    getRowClassName,
+    getRowStyle,
+    getCellClassName,
+    getCellStyle: getCellStyleByRule,
     footerSpacerHeight = 0,
   } = props;
 
@@ -88,10 +129,10 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
     editMode,
     setEditMode,
     isCellEditable: (rowId, columnId) => {
-      // system column ?�외
+      // system column ?쒖쇅
       if (isSystemCol(columnId)) return false;
 
-      // ?�이지�??�책
+      // ?섏씠吏蹂??뺤콉
       if (pageMode === 'readonly') return false;
 
       return true;
@@ -104,6 +145,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
 
   const renderGroupedRow = React.useCallback(
     (row: any) => {
+      const rowStyle = getRowStyle?.({ row: row.original, rowId: row.id, rowIndex: row.index });
       const onRowMouseDown = (e: React.MouseEvent) => {
         const target = e.target as HTMLElement | null;
         if (
@@ -126,7 +168,9 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
               ? bodyStyles.activeRow
               : '',
             props.isRowDirty?.(row.id) ? bodyStyles.rowDirty : '',
+            getRowClassName?.({ row: row.original, rowId: row.id, rowIndex: row.index }) ?? '',
           ].filter(Boolean).join(' ')}
+          style={rowStyle}
           data-active-row={
             enableActiveRowHighlight && !!activeCell && activeCell.rowId === row.id
               ? 'true'
@@ -147,6 +191,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
 
             const isActive =
               !!activeCell && activeCell.rowId === row.id && activeCell.columnId === colId;
+            const cellValue = cell.getValue?.();
 
             let content: React.ReactNode = null;
             if (cell.getIsGrouped()) {
@@ -197,12 +242,29 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
                   pinned ? pinningStyles.pinned : '',
                   pinned === 'left' ? pinningStyles.pinnedLeft : '',
                   pinned === 'right' ? pinningStyles.pinnedRight : '',
+                  getCellClassName?.({
+                    row: row.original,
+                    rowId: row.id,
+                    rowIndex: row.index,
+                    columnId: colId,
+                    value: cellValue,
+                  }) ?? '',
                 ].filter(Boolean).join(' ')}
-                style={getCellStyle(cell.column, {
-                  enablePinning,
-                  enableColumnSizing,
-                  isHeader: false,
-                })}
+                style={{
+                  ...getCellStyle(cell.column, {
+                    enablePinning,
+                    enableColumnSizing,
+                    isHeader: false,
+                  }),
+                  ...(pickRowStyleForCell(rowStyle) ?? {}),
+                  ...(getCellStyleByRule?.({
+                    row: row.original,
+                    rowId: row.id,
+                    rowIndex: row.index,
+                    columnId: colId,
+                    value: cellValue,
+                  }) ?? {}),
+                }}
                 data-row-id={row.id}
                 data-col-id={colId}
                 data-rowid={row.id}
@@ -218,24 +280,38 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
         </tr>
       );
     },
-    [activeCell, enableActiveRowHighlight, enableColumnSizing, enablePinning, nav, props.isRowDirty]
+    [
+      activeCell,
+      enableActiveRowHighlight,
+      enableColumnSizing,
+      enablePinning,
+      nav,
+      props.isRowDirty,
+      getRowClassName,
+      getRowStyle,
+      getCellClassName,
+      getCellStyleByRule,
+    ]
   );
 
   return (
     <tbody className={bodyStyles.tbody}>
-      {rows.map((row) => (
-        !!row.getCanExpand?.() ? (
-          renderGroupedRow(row)
-        ) :
-        <tr 
-          key={row.id} 
+      {rows.map((row) => {
+        if (!!row.getCanExpand?.()) return renderGroupedRow(row);
+
+        const rowStyle = getRowStyle?.({ row: row.original, rowId: row.id, rowIndex: row.index });
+        return (
+        <tr
+          key={row.id}
           className={[
             bodyStyles.tr,
             enableActiveRowHighlight && !!activeCell && activeCell.rowId === row.id
               ? bodyStyles.activeRow
               : '',
             props.isRowDirty?.(row.id) ? bodyStyles.rowDirty : '',
+            getRowClassName?.({ row: row.original, rowId: row.id, rowIndex: row.index }) ?? '',
           ].filter(Boolean).join(' ')}
+          style={rowStyle}
           data-active-row={
             enableActiveRowHighlight && !!activeCell && activeCell.rowId === row.id
               ? 'true'
@@ -256,7 +332,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
             const navProps = nav.getCellProps(row.id, colId, isActive);
             const editProps = editing.getCellEditProps(row.id, colId);
 
-            // 같�? ?�벤???��? 겹칠 ???�어??merge
+            // 媛숈? ?대깽???ㅺ? 寃뱀튌 ???덉뼱??merge
             const mergedProps: React.HTMLAttributes<HTMLTableCellElement> = {
               ...(navProps as any),
               ...(editProps as any),
@@ -325,11 +401,14 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
                 key={cell.id}
                 cell={cell as any}
                 rowId={row.id}
+                rowStyle={rowStyle}
                 isActive={isActive}
                 isEditing={isEditing}
                 isDirty={dirty}
                 enablePinning={enablePinning}
                 enableColumnSizing={enableColumnSizing}
+                getCellClassName={getCellClassName}
+                getCellStyle={getCellStyleByRule}
                 cellProps={mergedProps}
                 onCommitValue={(nextValue) => editing.commitValue({ rowId: row.id, columnId: colId }, nextValue)}
                 onCommitEdit={() => editing.commitEditing()}
@@ -340,7 +419,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
             );
           })}
         </tr>
-      ))}
+      )})}
       {footerSpacerHeight > 0 ? (
         <tr className={bodyStyles.tr} data-footer-spacer="true">
           <td

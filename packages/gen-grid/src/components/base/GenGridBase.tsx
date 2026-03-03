@@ -57,6 +57,26 @@ export type GenGridBaseProps<TData> = {
   onCellValueChange?: (coord: { rowId: string; columnId: string }, value: unknown) => void;
   isRowDirty?: (rowId: string) => boolean;
   isCellDirty?: (rowId: string, columnId: string) => boolean;
+  getRowClassName?: (args: { row: TData; rowId: string; rowIndex: number }) => string | undefined;
+  getRowStyle?: (args: {
+    row: TData;
+    rowId: string;
+    rowIndex: number;
+  }) => React.CSSProperties | undefined;
+  getCellClassName?: (args: {
+    row: TData;
+    rowId: string;
+    rowIndex: number;
+    columnId: string;
+    value: unknown;
+  }) => string | undefined;
+  getCellStyle?: (args: {
+    row: TData;
+    rowId: string;
+    rowIndex: number;
+    columnId: string;
+    value: unknown;
+  }) => React.CSSProperties | undefined;
 };
 
 export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
@@ -326,6 +346,10 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
               onCellValueChange={handleCellValueChange}
               isRowDirty={props.isRowDirty}
               isCellDirty={isCellDirty}
+              getRowClassName={props.getRowClassName}
+              getRowStyle={props.getRowStyle}
+              getCellClassName={props.getCellClassName}
+              getCellStyle={props.getCellStyle}
               footerSpacerHeight={footerSpacerHeight}
             />
           ) : (
@@ -341,6 +365,10 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
               onCellValueChange={handleCellValueChange}
               isRowDirty={props.isRowDirty}
               isCellDirty={isCellDirty}
+              getRowClassName={props.getRowClassName}
+              getRowStyle={props.getRowStyle}
+              getCellClassName={props.getCellClassName}
+              getCellStyle={props.getCellStyle}
               footerSpacerHeight={footerSpacerHeight}
             />
           )}

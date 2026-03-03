@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { CircleDot, ListFilter, ListPlus, ListX, RotateCcw, Save } from 'lucide-react';
+import { CircleDot, FileSpreadsheet, ListFilter, ListPlus, ListX, RotateCcw, Save } from 'lucide-react';
 
 import { Button } from '@gen-office/ui';
 import type {
@@ -56,6 +56,8 @@ export function CrudActionBar<TData>(props: {
   const labelDelete = t('crud.delete');
   const labelSave = t('crud.save');
   const labelFilter = t('crud.filter');
+  const translatedExcel = t('crud.excel');
+  const labelExcel = translatedExcel === 'crud.excel' ? 'Excel' : translatedExcel;
   const translatedReset = t('crud.reset');
   const labelReset = translatedReset === 'crud.reset' ? 'Reset' : translatedReset;
 
@@ -119,6 +121,16 @@ export function CrudActionBar<TData>(props: {
         disabled: (c) => !c.state.dirty || c.state.isCommitting,
         onClick: (c) => c.api.reset(),
       },
+      excel: {
+        key: 'excel',
+        label: labelExcel,
+        icon: <FileSpreadsheet aria-hidden size={16} />,
+        side: 'right',
+        order: 30,
+        variant: actionButtonStyle === 'icon' ? 'ghost' : 'secondary',
+        disabled: (c) => !c.api.exportExcel || c.state.isCommitting,
+        onClick: (c) => c.api.exportExcel?.(),
+      },
     };
 
     return builtIns.map((key) => byKey[key]).filter(Boolean);
@@ -128,6 +140,7 @@ export function CrudActionBar<TData>(props: {
     filterEnabled,
     labelAdd,
     labelDelete,
+    labelExcel,
     labelFilter,
     labelReset,
     labelSave,

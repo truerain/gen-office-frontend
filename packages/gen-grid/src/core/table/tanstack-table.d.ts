@@ -44,6 +44,12 @@ declare module '@tanstack/react-table' {
       columnId: string;
       commitValue?: (nextValue: unknown) => void;
     }) => void;
+    exportValue?: (args: {
+      value: unknown;
+      row: TData;
+      rowId: string;
+      columnId: string;
+    }) => unknown;
     editType?: 'text' | 'number' | 'date' | 'select' | 'textarea' | 'checkbox';
     editOptions?: { label: string; value: string | number }[];
     getEditOptions?: (row: TData) => { label: string; value: string | number }[];

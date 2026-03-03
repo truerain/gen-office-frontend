@@ -197,6 +197,7 @@ function MenuManagementPage(props: PageComponentProps) {
           right={
             <div className={styles.detailPane}>
               <GenGridCrud<Menu>
+                title="Menu List"
                 key={selectedNodeId ?? 'none'}
                 data={childMenus}
                 columns={columns}
@@ -244,7 +245,11 @@ function MenuManagementPage(props: PageComponentProps) {
                 actionBar={{
                   position: 'top',
                   defaultStyle: 'icon',
-                  includeBuiltIns: ['add', 'delete', 'save', 'filter'],
+                  includeBuiltIns: ['add', 'delete', 'save', 'filter', 'excel'],
+                }}
+                excelExport={{
+                  mode: 'frontend',
+                  frontend: { onlySelected: false },
                 }}
                 gridProps={{
                   dataVersion,
@@ -256,8 +261,8 @@ function MenuManagementPage(props: PageComponentProps) {
                   enableRowStatus: true,
                   checkboxSelection: true,
                   enablePagination: false,
-                  editOnActiveCell: true,
-                  keepEditingOnNavigate: false,
+                  editOnActiveCell: false,
+                  keepEditingOnNavigate: true,
                 }}
               />
             </div>
