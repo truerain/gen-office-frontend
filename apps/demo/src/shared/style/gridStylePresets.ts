@@ -27,9 +27,9 @@ export const defaultGridStylePreset: GridStylePreset = {
     if (typeof value === 'number' && value < 0) {
       return {
         color: '#b42318',
-        backgroundColor: '#fef3f2',
-        borderBottom: '1px solid #fecdca',
-        fontWeight: 600,
+        //backgroundColor: '#fef3f2',
+        //borderBottom: '1px solid #fecdca',
+        //fontWeight: 600,
       };
     }
     return undefined;

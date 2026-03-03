@@ -171,6 +171,11 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     void columnId;
   }, []);
 
+  const toCssSize = React.useCallback((value?: number | string): string | undefined => {
+    if (value == null) return undefined;
+    return typeof value === 'number' ? `${value}px` : value;
+  }, []);
+
   // ✅ activeCell을 Provider에서 관리
   const { activeCell, setActiveCell } = useGenGridContext<TData>();
 
@@ -299,6 +304,8 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
       style={{
         ['--gen-grid-header-height' as any]: `${headerHeight ?? 40}px`,
         ['--gen-grid-row-height' as any]: `${rowHeight ?? 36}px`,
+        ...(toCssSize(height) ? { height: toCssSize(height) } : {}),
+        ...(toCssSize(maxHeight) ? { maxHeight: toCssSize(maxHeight) } : {}),
       }}
     >
       <div

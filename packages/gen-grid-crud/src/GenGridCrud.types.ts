@@ -81,6 +81,10 @@ export type ExcelExportOptions<TData> = {
   mode: ExcelExportMode;
   fileName?: string;
   sheetName?: string;
+  /** apply default thin border to all exported header/data cells */
+  defaultBorder?: boolean;
+  /** Excel row height in px (applies to both header and body rows in frontend mode) */
+  rowHeight?: number;
   backend?: ExcelExportBackendOptions<TData>;
   frontend?: ExcelExportFrontendOptions;
 };

@@ -33,6 +33,33 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
 
   const headerGroups = table.getHeaderGroups();
   const leafHeaderGroup = headerGroups[headerGroups.length - 1];
+  const totalHeaderRows = headerGroups.length;
+  const renderedLeafColumnIds = new Set<string>();
+
+  const getHeaderCellStyle = (header: any) => {
+    const col = header.column;
+    const baseStyle = getCellStyle(col, {
+      enablePinning,
+      enableColumnSizing,
+      isHeader: true,
+    });
+
+    if (!enableColumnSizing || header.colSpan <= 1) {
+      return baseStyle;
+    }
+
+    const leafHeaders: any[] = typeof header.getLeafHeaders === 'function' ? header.getLeafHeaders() : [];
+    if (!leafHeaders.length) return baseStyle;
+
+    const width = leafHeaders.reduce((sum, leafHeader) => sum + (leafHeader?.column?.getSize?.() ?? 0), 0);
+    if (!Number.isFinite(width) || width <= 0) return baseStyle;
+
+    return {
+      ...(baseStyle ?? {}),
+      width,
+      minWidth: width,
+    } as React.CSSProperties;
+  };
 
   return (
     <thead className={styles.thead}>
@@ -47,10 +74,28 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
         >
           {hg.headers.map((header) => {
             const col = header.column;
+            const isLeafBySpan = header.colSpan === 1;
+            const subHeaders: any[] = Array.isArray((header as any).subHeaders)
+              ? (header as any).subHeaders
+              : [];
+            const isLeafHeader = isLeafBySpan || subHeaders.length === 0;
+            const hasParentColumn = Boolean((col as any).parent);
+            const shouldRenderLeafPlaceholder =
+              header.isPlaceholder && isLeafBySpan && !hasParentColumn;
+
+            if (isLeafBySpan) {
+              if (header.isPlaceholder && !shouldRenderLeafPlaceholder) return null;
+              if (renderedLeafColumnIds.has(col.id)) return null;
+              renderedLeafColumnIds.add(col.id);
+            } else if (header.isPlaceholder) {
+              return null;
+            }
+
             const resizing = col.getIsResizing?.() ?? false;
             const isSelectCol = header.column.id === '__select__';
             const canSort = col.getCanSort();
             const sortState = col.getIsSorted();
+            const rowSpan = isLeafHeader ? Math.max(1, totalHeaderRows - idx) : 1;
             
             return (
               <th
@@ -61,20 +106,15 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
                   canSort ? styles.sortable : '',
                   sortState ? styles.sorted : '',
                 ].filter(Boolean).join(' ')}
-                style={getCellStyle(col, {
-                  enablePinning,
-                  enableColumnSizing,
-                  isHeader: true
-                })}
+                style={getHeaderCellStyle(header)}
                 colSpan={header.colSpan}
+                rowSpan={rowSpan > 1 ? rowSpan : undefined}
               >
                 <div
                   className={styles.thInner}
                   onClick={canSort ? col.getToggleSortingHandler() : undefined}
                 >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(col.columnDef.header, header.getContext())}
+                  {flexRender(col.columnDef.header, header.getContext())}
                   {sortState ? (
                     <span className={styles.sortIcon}>
                       {sortState === 'asc' ? '▲' : '▼'}

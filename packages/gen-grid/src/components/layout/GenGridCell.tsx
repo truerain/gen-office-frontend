@@ -598,6 +598,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     }) ??
     renderDefaultEditor();
 
+  const hasColumnCellRenderer = cell.column.columnDef.cell != null;
   const displayContent = meta?.renderCell
     ? meta.renderCell({
         value: cell.getValue(),
@@ -606,9 +607,11 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
         columnId: colId,
         commitValue: onCommitValue,
       })
-    : meta?.format
-      ? (formatCellValue(cell.getValue(), meta) as any)
-      : flexRender(cell.column.columnDef.cell, cell.getContext());
+    : hasColumnCellRenderer
+      ? flexRender(cell.column.columnDef.cell, cell.getContext())
+      : meta?.format
+        ? (formatCellValue(cell.getValue(), meta) as any)
+        : flexRender(cell.column.columnDef.cell, cell.getContext());
 
   const nonEditingContent =
     !isTreeColumn

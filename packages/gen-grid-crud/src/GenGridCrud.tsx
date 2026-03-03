@@ -22,7 +22,7 @@ const CRUD_TEMP_ID_KEY = '__crud_temp_id__';
 const SYSTEM_COLUMN_IDS = new Set(['__select__', '__rowNumber__', '__row_status__']);
 
 type ExportMeta<TData> = {
-  format?: 'text' | 'number' | 'currency' | 'percent' | 'date' | 'datetime' | 'boolean';
+  format?: 'text' | 'number' | 'currency' | 'percent' | 'date' | 'datetime' | 'boolean' | 'triangleNumber';
   trueLabel?: string;
   falseLabel?: string;
   emptyLabel?: string;
@@ -44,10 +44,30 @@ type ExportLeafColumn<TData> = {
   align?: 'left' | 'center' | 'right';
 };
 
+type ExportHeaderNode = {
+  label: string;
+  columnId?: string;
+  children?: ExportHeaderNode[];
+};
+
+type ExportHeaderCell = {
+  row: number;
+  colStart: number;
+  colEnd: number;
+  rowSpan: number;
+  colSpan: number;
+  label: string;
+};
+
 type ExcelBorderSide = {
   style?: ExcelJS.BorderStyle;
   color?: ExcelJS.Color;
 };
+
+const EXCEL_DEFAULT_ROW_HEIGHT_PX = 20;
+const EXCEL_DEFAULT_ROW_HEIGHT_PT = Math.round(EXCEL_DEFAULT_ROW_HEIGHT_PX * 0.75 * 100) / 100;
+const EXCEL_GRID_BORDER_COLOR = { argb: 'FFD0D5DD' } as unknown as ExcelJS.Color;
+const EXCEL_GRID_BORDER: ExcelBorderSide = { style: 'thin', color: EXCEL_GRID_BORDER_COLOR };
 
 const CSS_BORDER_STYLE_TO_EXCEL: Record<string, ExcelJS.BorderStyle | undefined> = {
   solid: 'thin',
@@ -132,6 +152,13 @@ function collectLeafColumns<TData>(columns: readonly ColumnDef<TData, any>[]): A
   return leaves;
 }
 
+function getColumnIdForExport<TData>(column: ColumnDef<TData, any>): string {
+  const col = column as any;
+  if (typeof col.id === 'string' && col.id) return col.id;
+  if (typeof col.accessorKey === 'string' && col.accessorKey) return col.accessorKey;
+  return '';
+}
+
 function getHeaderLabel(column: any): string {
   if (typeof column.header === 'string') return column.header;
   if (typeof column.header === 'number') return String(column.header);
@@ -194,6 +221,29 @@ function toExcelColumnWidth(size?: number, header?: string): number {
   }
   const base = header ? Math.ceil(header.length * 1.6) : 12;
   return Math.max(8, Math.min(40, base));
+}
+
+function toExcelRowHeightPt(rowHeightPx?: number): number {
+  if (typeof rowHeightPx !== 'number' || !Number.isFinite(rowHeightPx) || rowHeightPx <= 0) {
+    return EXCEL_DEFAULT_ROW_HEIGHT_PT;
+  }
+  return Math.round(rowHeightPx * 0.75 * 100) / 100;
+}
+
+function resolveExcelNumFmt<TData>(meta?: ExportMeta<TData>): string | undefined {
+  if (!meta?.format) return undefined;
+  switch (meta.format) {
+    case 'number':
+      return '#,##0';
+    case 'triangleNumber':
+      return '#,##0;▲#,##0';
+    case 'percent':
+      return '0.00%';
+    case 'currency':
+      return '"₩"#,##0';
+    default:
+      return undefined;
+  }
 }
 
 function toHexByte(value: number): string {
@@ -360,15 +410,59 @@ function applyExcelCellStyle(
   }
 }
 
+function applyExcelOuterBorder(worksheet: ExcelJS.Worksheet, totalRows: number, totalCols: number) {
+  if (totalRows <= 0 || totalCols <= 0) return;
+
+  for (let rowIndex = 1; rowIndex <= totalRows; rowIndex++) {
+    for (let colIndex = 1; colIndex <= totalCols; colIndex++) {
+      if (
+        rowIndex !== 1 &&
+        rowIndex !== totalRows &&
+        colIndex !== 1 &&
+        colIndex !== totalCols
+      ) {
+        continue;
+      }
+
+      const cell = worksheet.getRow(rowIndex).getCell(colIndex);
+      const prev = cell.border ?? {};
+      cell.border = {
+        ...prev,
+        ...(rowIndex === 1 ? { top: prev.top ?? EXCEL_GRID_BORDER } : {}),
+        ...(rowIndex === totalRows ? { bottom: prev.bottom ?? EXCEL_GRID_BORDER } : {}),
+        ...(colIndex === 1 ? { left: prev.left ?? EXCEL_GRID_BORDER } : {}),
+        ...(colIndex === totalCols ? { right: prev.right ?? EXCEL_GRID_BORDER } : {}),
+      };
+    }
+  }
+}
+
+function applyExcelDefaultGridBorder(
+  worksheet: ExcelJS.Worksheet,
+  totalRows: number,
+  totalCols: number
+) {
+  if (totalRows <= 0 || totalCols <= 0) return;
+
+  for (let rowIndex = 1; rowIndex <= totalRows; rowIndex++) {
+    for (let colIndex = 1; colIndex <= totalCols; colIndex++) {
+      const cell = worksheet.getRow(rowIndex).getCell(colIndex);
+      const prev = cell.border ?? {};
+      cell.border = {
+        top: prev.top ?? EXCEL_GRID_BORDER,
+        right: prev.right ?? EXCEL_GRID_BORDER,
+        bottom: prev.bottom ?? EXCEL_GRID_BORDER,
+        left: prev.left ?? EXCEL_GRID_BORDER,
+      };
+    }
+  }
+}
+
 function buildExportColumns<TData>(columns: readonly ColumnDef<TData, any>[]): ExportLeafColumn<TData>[] {
   const leaves = collectLeafColumns(columns);
   const exportColumns: ExportLeafColumn<TData>[] = [];
   for (const col of leaves as any[]) {
-    const id = typeof col.id === 'string'
-      ? col.id
-      : typeof col.accessorKey === 'string'
-        ? col.accessorKey
-        : '';
+    const id = getColumnIdForExport(col);
     if (!id || SYSTEM_COLUMN_IDS.has(id)) continue;
     exportColumns.push({
       id,
@@ -381,6 +475,99 @@ function buildExportColumns<TData>(columns: readonly ColumnDef<TData, any>[]): E
     });
   }
   return exportColumns;
+}
+
+function buildExportHeaderTree<TData>(
+  columns: readonly ColumnDef<TData, any>[],
+  exportColumnIds: ReadonlySet<string>
+): ExportHeaderNode[] {
+  const walk = (defs: readonly ColumnDef<TData, any>[]): ExportHeaderNode[] => {
+    const nodes: ExportHeaderNode[] = [];
+    for (const def of defs as any[]) {
+      const children = def.columns as readonly ColumnDef<TData, any>[] | undefined;
+      if (Array.isArray(children) && children.length > 0) {
+        const childNodes = walk(children);
+        if (childNodes.length === 0) continue;
+        nodes.push({
+          label: getHeaderLabel(def),
+          children: childNodes,
+        });
+        continue;
+      }
+
+      const columnId = getColumnIdForExport(def);
+      if (!columnId || !exportColumnIds.has(columnId)) continue;
+      nodes.push({
+        label: getHeaderLabel(def),
+        columnId,
+      });
+    }
+    return nodes;
+  };
+
+  return walk(columns);
+}
+
+function getExportHeaderDepth(nodes: readonly ExportHeaderNode[]): number {
+  if (nodes.length === 0) return 1;
+  let maxDepth = 1;
+  for (const node of nodes) {
+    if (node.children && node.children.length > 0) {
+      maxDepth = Math.max(maxDepth, 1 + getExportHeaderDepth(node.children));
+    }
+  }
+  return maxDepth;
+}
+
+function buildExportHeaderCells(
+  nodes: readonly ExportHeaderNode[],
+  maxDepth: number
+): { cellsByRow: ExportHeaderCell[][]; leafColumnIds: string[] } {
+  const cellsByRow: ExportHeaderCell[][] = Array.from({ length: maxDepth }, () => []);
+  const leafColumnIds: string[] = [];
+
+  const walk = (node: ExportHeaderNode, row: number, colStart: number): number => {
+    if (!node.children || node.children.length === 0) {
+      const colEnd = colStart;
+      const rowSpan = Math.max(1, maxDepth - row + 1);
+      cellsByRow[row - 1]!.push({
+        row,
+        colStart,
+        colEnd,
+        rowSpan,
+        colSpan: 1,
+        label: node.label,
+      });
+      if (node.columnId) leafColumnIds.push(node.columnId);
+      return colStart + 1;
+    }
+
+    let nextCol = colStart;
+    for (const child of node.children) {
+      nextCol = walk(child, row + 1, nextCol);
+    }
+    const colEnd = Math.max(colStart, nextCol - 1);
+    cellsByRow[row - 1]!.push({
+      row,
+      colStart,
+      colEnd,
+      rowSpan: 1,
+      colSpan: Math.max(1, colEnd - colStart + 1),
+      label: node.label,
+    });
+    return nextCol;
+  };
+
+  let start = 1;
+  for (const node of nodes) {
+    start = walk(node, 1, start);
+  }
+
+  for (const row of cellsByRow) {
+    row.sort((a, b) => a.colStart - b.colStart);
+  }
+
+  return { cellsByRow, leafColumnIds };
 }
 
 function withTempId<TData>(row: TData, tempId: CrudRowId): TData {
@@ -882,6 +1069,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       }
 
       const onlySelected = Boolean(excelExport.frontend?.onlySelected);
+      const defaultBorder = Boolean(excelExport.defaultBorder);
+      const excelRowHeightPt = toExcelRowHeightPt(excelExport.rowHeight);
       const selectedIds = new Set(rowSelectionIds.map((id) => String(id)));
       const sourceRows = onlySelected
         ? diff.viewData.filter((row) => selectedIds.has(String(getPendingRowId(row))))
@@ -889,12 +1078,24 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
 
       const exportColumns = buildExportColumns(columns);
       const headerSeen = new Map<string, number>();
-      const resolvedColumns = exportColumns.map((col) => {
+      const resolvedColumnsRaw = exportColumns.map((col) => {
         const seq = (headerSeen.get(col.header) ?? 0) + 1;
         headerSeen.set(col.header, seq);
         const headerKey = seq === 1 ? col.header : `${col.header}_${seq}`;
         return { ...col, headerKey };
       });
+      const exportColumnIdSet = new Set(exportColumns.map((col) => col.id));
+      const headerTree = buildExportHeaderTree(columns, exportColumnIdSet);
+      const headerDepth = getExportHeaderDepth(headerTree);
+      const { cellsByRow: headerCellsByRow, leafColumnIds } = buildExportHeaderCells(
+        headerTree,
+        headerDepth
+      );
+      const resolvedById = new Map(resolvedColumnsRaw.map((col) => [col.id, col] as const));
+      const resolvedColumns =
+        leafColumnIds.length === resolvedColumnsRaw.length
+          ? leafColumnIds.map((id) => resolvedById.get(id)).filter((col): col is typeof resolvedColumnsRaw[number] => Boolean(col))
+          : resolvedColumnsRaw;
 
       const preparedRows = sourceRows.map((row, rowIndex) => {
         const out: Record<string, string | number | boolean | null> = {};
@@ -929,10 +1130,48 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       const worksheet = workbook.addWorksheet(sheetName);
 
       worksheet.columns = resolvedColumns.map((col) => ({
-        header: col.header,
         key: col.headerKey,
         width: toExcelColumnWidth(col.size, col.header),
       }));
+
+      worksheet.properties.defaultRowHeight = excelRowHeightPt;
+
+      for (let rowIndex = 1; rowIndex <= headerDepth; rowIndex++) {
+        worksheet.getRow(rowIndex).height = excelRowHeightPt;
+      }
+
+      const totalHeaderCols = resolvedColumns.length;
+      for (const rowCells of headerCellsByRow) {
+        for (const cellDef of rowCells) {
+          const cell = worksheet.getCell(cellDef.row, cellDef.colStart);
+          cell.value = cellDef.label;
+          if (cellDef.colSpan > 1 || cellDef.rowSpan > 1) {
+            worksheet.mergeCells(
+              cellDef.row,
+              cellDef.colStart,
+              cellDef.row + cellDef.rowSpan - 1,
+              cellDef.colEnd
+            );
+          }
+        }
+      }
+
+      for (let r = 1; r <= headerDepth; r++) {
+        for (let c = 1; c <= totalHeaderCols; c++) {
+          const cell = worksheet.getCell(r, c);
+          cell.font = { ...(cell.font ?? {}), bold: true };
+          cell.alignment = {
+            ...(cell.alignment ?? {}),
+            vertical: 'middle',
+            horizontal: 'center',
+          };
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFE0E0E0' },
+          };
+        }
+      }
 
       for (const row of preparedRows) {
         worksheet.addRow(row.out);
@@ -943,23 +1182,38 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
         if (col.align) {
           worksheetColumn.alignment = { horizontal: col.align };
         }
+        const numFmt = resolveExcelNumFmt(col.meta);
+        if (numFmt) {
+          worksheetColumn.numFmt = numFmt;
+        }
       }
 
-      const headerRow = worksheet.getRow(1);
-      headerRow.font = { bold: true };
-      headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
-      headerRow.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFE0E0E0' },
-      };
+      // Keep header alignment fixed regardless of per-column alignment.
+      for (let r = 1; r <= headerDepth; r++) {
+        for (let c = 1; c <= totalHeaderCols; c++) {
+          const cell = worksheet.getCell(r, c);
+          cell.alignment = {
+            ...(cell.alignment ?? {}),
+            vertical: 'middle',
+            horizontal: 'center',
+          };
+        }
+      }
+
+      if (defaultBorder) {
+        applyExcelDefaultGridBorder(
+          worksheet,
+          preparedRows.length + headerDepth,
+          resolvedColumns.length
+        );
+      }
 
       if (gridProps?.getRowStyle || gridProps?.getCellStyle) {
         for (let rowIndex = 0; rowIndex < preparedRows.length; rowIndex++) {
           const row = sourceRows[rowIndex]!;
           const rowId = String(getPendingRowId(row));
           const rowStyle = gridProps.getRowStyle?.({ row, rowId, rowIndex });
-          const worksheetRow = worksheet.getRow(rowIndex + 2);
+          const worksheetRow = worksheet.getRow(rowIndex + headerDepth + 1);
 
           for (let colIndex = 0; colIndex < resolvedColumns.length; colIndex++) {
             const col = resolvedColumns[colIndex]!;
@@ -974,6 +1228,10 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
             applyExcelCellStyle(cell, rowStyle, cellStyle);
           }
         }
+      }
+
+      if (!defaultBorder) {
+        applyExcelOuterBorder(worksheet, preparedRows.length + headerDepth, resolvedColumns.length);
       }
 
       const buffer = await workbook.xlsx.writeBuffer();

@@ -17,6 +17,8 @@ type ExcelExportOptions<TData> = {
   mode: ExcelExportMode;
   fileName?: string;
   sheetName?: string;
+  defaultBorder?: boolean; // mode와 무관하게 헤더+데이터 전체 셀 기본 thin border 적용
+  rowHeight?: number; // mode와 무관한 옵션 (frontend 모드에서 헤더/데이터 row 높이(px) 반영)
   backend?: {
     endpoint: string;
     method?: 'GET' | 'POST';
