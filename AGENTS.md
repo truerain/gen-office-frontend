@@ -16,3 +16,16 @@
   - UTF-8 BOM
   - invalid UTF-8 / replacement character (`�`)
   - suspicious mojibake patterns in Hangul lines
+
+## GenGrid Layout Guard
+
+- If touching `packages/gen-grid` or `packages/gen-grid-crud`, verify layout stability in demo pages using `GenGridCrud`.
+- Keep `GenGridCrud` height chain intact:
+  - Do not force `mergedGridProps.height` default in `GenGridCrud`; consumer/page should set `gridProps.height` when needed.
+  - Keep `.gridArea > *` with `flex: 1 1 auto` and `min-height: 0` (avoid unconditional `height: 100%`).
+- Keep ActionBar single-line behavior:
+  - no wrapping in action groups
+  - horizontal overflow should scroll, not clip/wrap controls.
+- Reference before/after changes:
+  - `docs/gen-grid/layout-contract.md`
+  - `docs/gen-grid/layout-regression-playbook.md`

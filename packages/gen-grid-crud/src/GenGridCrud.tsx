@@ -32,6 +32,14 @@ type ExportMeta<TData> = {
     rowId: string;
     columnId: string;
   }) => unknown;
+  rowSpan?: boolean | ((args: { row: TData; rowId: string; columnId: string }) => boolean);
+  rowSpanValueGetter?: (args: {
+    row: TData;
+    rowId: string;
+    columnId: string;
+    value: unknown;
+  }) => unknown;
+  rowSpanComparator?: (a: unknown, b: unknown, args: { columnId: string }) => boolean;
 };
 
 type ExportLeafColumn<TData> = {
@@ -42,6 +50,12 @@ type ExportLeafColumn<TData> = {
   meta?: ExportMeta<TData>;
   size?: number;
   align?: 'left' | 'center' | 'right';
+};
+
+type ExportRowSpanModel = {
+  isCovered: (rowIndex: number, columnId: string) => boolean;
+  getRowSpan: (rowIndex: number, columnId: string) => number;
+  getAnchorRowIndex: (rowIndex: number, columnId: string) => number | undefined;
 };
 
 type ExportHeaderNode = {
@@ -475,6 +489,93 @@ function buildExportColumns<TData>(columns: readonly ColumnDef<TData, any>[]): E
     });
   }
   return exportColumns;
+}
+
+const ROW_SPAN_KEY_SEP = '\u0000';
+
+function toRowSpanCellKey(rowIndex: number, columnId: string): string {
+  return `${rowIndex}${ROW_SPAN_KEY_SEP}${columnId}`;
+}
+
+function buildExportRowSpanModel<TData>(
+  rows: readonly TData[],
+  rowIds: readonly string[],
+  columns: readonly ExportLeafColumn<TData>[]
+): ExportRowSpanModel {
+  const anchorSpanByKey = new Map<string, number>();
+  const coveredKeys = new Set<string>();
+  const coveredToAnchorIndex = new Map<string, number>();
+  const runByColumn = new Map<
+    string,
+    {
+      anchorRowIndex: number;
+      value: unknown;
+      comparator: (a: unknown, b: unknown, args: { columnId: string }) => boolean;
+    }
+  >();
+
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+    const row = rows[rowIndex]!;
+    const rowId = rowIds[rowIndex]!;
+
+    for (const col of columns) {
+      const columnId = col.id;
+      const key = toRowSpanCellKey(rowIndex, columnId);
+      const meta = col.meta;
+      const rowSpanRule = meta?.rowSpan;
+      const canSpan =
+        rowSpanRule === true
+          ? true
+          : typeof rowSpanRule === 'function'
+            ? Boolean(rowSpanRule({ row, rowId, columnId }))
+            : false;
+
+      if (!canSpan) {
+        runByColumn.delete(columnId);
+        continue;
+      }
+
+      let baseValue: unknown;
+      if (col.accessorKey) {
+        baseValue = getValueByAccessorKey(row, col.accessorKey);
+      } else if (col.accessorFn) {
+        baseValue = col.accessorFn(row, rowIndex);
+      } else {
+        baseValue = (row as any)?.[columnId];
+      }
+
+      const mergeValue = meta?.rowSpanValueGetter
+        ? meta.rowSpanValueGetter({ row, rowId, columnId, value: baseValue })
+        : baseValue;
+      const comparator = meta?.rowSpanComparator ?? ((a: unknown, b: unknown) => Object.is(a, b));
+
+      const prev = runByColumn.get(columnId);
+      if (prev && prev.comparator(prev.value, mergeValue, { columnId })) {
+        coveredKeys.add(key);
+        coveredToAnchorIndex.set(key, prev.anchorRowIndex);
+        const anchorKey = toRowSpanCellKey(prev.anchorRowIndex, columnId);
+        anchorSpanByKey.set(anchorKey, (anchorSpanByKey.get(anchorKey) ?? 1) + 1);
+        runByColumn.set(columnId, { ...prev, value: mergeValue });
+        continue;
+      }
+
+      anchorSpanByKey.set(key, 1);
+      runByColumn.set(columnId, {
+        anchorRowIndex: rowIndex,
+        value: mergeValue,
+        comparator,
+      });
+    }
+  }
+
+  return {
+    isCovered: (rowIndex: number, columnId: string) =>
+      coveredKeys.has(toRowSpanCellKey(rowIndex, columnId)),
+    getRowSpan: (rowIndex: number, columnId: string) =>
+      anchorSpanByKey.get(toRowSpanCellKey(rowIndex, columnId)) ?? 1,
+    getAnchorRowIndex: (rowIndex: number, columnId: string) =>
+      coveredToAnchorIndex.get(toRowSpanCellKey(rowIndex, columnId)),
+  };
 }
 
 function buildExportHeaderTree<TData>(
@@ -1075,6 +1176,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       const sourceRows = onlySelected
         ? diff.viewData.filter((row) => selectedIds.has(String(getPendingRowId(row))))
         : diff.viewData;
+      const sourceRowIds = sourceRows.map((row) => String(getPendingRowId(row)));
 
       const exportColumns = buildExportColumns(columns);
       const headerSeen = new Map<string, number>();
@@ -1096,11 +1198,16 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
         leafColumnIds.length === resolvedColumnsRaw.length
           ? leafColumnIds.map((id) => resolvedById.get(id)).filter((col): col is typeof resolvedColumnsRaw[number] => Boolean(col))
           : resolvedColumnsRaw;
+      const rowSpanningEnabled = Boolean(gridProps?.rowSpanning);
+      const rowSpanningMode = gridProps?.rowSpanningMode ?? 'real';
+      const rowSpanModel = rowSpanningEnabled
+        ? buildExportRowSpanModel(sourceRows, sourceRowIds, resolvedColumns)
+        : null;
 
       const preparedRows = sourceRows.map((row, rowIndex) => {
         const out: Record<string, string | number | boolean | null> = {};
         const styleValueByColumnId: Record<string, unknown> = {};
-        const rowId = String(getPendingRowId(row));
+        const rowId = sourceRowIds[rowIndex]!;
         for (const col of resolvedColumns) {
           let baseValue: unknown;
           if (col.accessorKey) {
@@ -1120,7 +1227,10 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
             customValue === undefined ? baseValue : customValue,
             col.meta
           );
-          out[col.headerKey] = coerceExportCellValue(normalized);
+          const isCovered =
+            Boolean(rowSpanModel) && rowSpanModel!.isCovered(rowIndex, col.id);
+          out[col.headerKey] =
+            isCovered ? '' : coerceExportCellValue(normalized);
           styleValueByColumnId[col.id] = baseValue;
         }
         return { out, styleValueByColumnId };
@@ -1177,6 +1287,20 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
         worksheet.addRow(row.out);
       }
 
+      if (rowSpanModel && rowSpanningMode === 'real') {
+        for (let rowIndex = 0; rowIndex < preparedRows.length; rowIndex++) {
+          for (let colIndex = 0; colIndex < resolvedColumns.length; colIndex++) {
+            const col = resolvedColumns[colIndex]!;
+            const span = rowSpanModel.getRowSpan(rowIndex, col.id);
+            if (span <= 1) continue;
+            const startRow = headerDepth + rowIndex + 1;
+            const endRow = startRow + span - 1;
+            const excelCol = colIndex + 1;
+            worksheet.mergeCells(startRow, excelCol, endRow, excelCol);
+          }
+        }
+      }
+
       for (const col of resolvedColumns) {
         const worksheetColumn = worksheet.getColumn(col.headerKey);
         if (col.align) {
@@ -1208,24 +1332,58 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
         );
       }
 
-      if (gridProps?.getRowStyle || gridProps?.getCellStyle) {
+      if (
+        gridProps?.getRowStyle ||
+        gridProps?.getCellStyle ||
+        (rowSpanModel && rowSpanningMode === 'visual')
+      ) {
         for (let rowIndex = 0; rowIndex < preparedRows.length; rowIndex++) {
-          const row = sourceRows[rowIndex]!;
-          const rowId = String(getPendingRowId(row));
-          const rowStyle = gridProps.getRowStyle?.({ row, rowId, rowIndex });
           const worksheetRow = worksheet.getRow(rowIndex + headerDepth + 1);
 
           for (let colIndex = 0; colIndex < resolvedColumns.length; colIndex++) {
             const col = resolvedColumns[colIndex]!;
-            const cellStyle = gridProps.getCellStyle?.({
-              row,
-              rowId,
-              rowIndex,
+            const isCovered =
+              Boolean(rowSpanModel) && rowSpanModel!.isCovered(rowIndex, col.id);
+            const anchorRowIndex =
+              isCovered ? rowSpanModel!.getAnchorRowIndex(rowIndex, col.id) : undefined;
+            const styleRowIndex =
+              rowSpanningMode === 'visual' && anchorRowIndex != null ? anchorRowIndex : rowIndex;
+            const styleRow = sourceRows[styleRowIndex]!;
+            const styleRowId = sourceRowIds[styleRowIndex]!;
+            const rowStyle = gridProps?.getRowStyle?.({
+              row: styleRow,
+              rowId: styleRowId,
+              rowIndex: styleRowIndex,
+            });
+            const cellStyle = gridProps?.getCellStyle?.({
+              row: styleRow,
+              rowId: styleRowId,
+              rowIndex: styleRowIndex,
               columnId: col.id,
               value: preparedRows[rowIndex]!.styleValueByColumnId[col.id],
             });
             const cell = worksheetRow.getCell(colIndex + 1);
             applyExcelCellStyle(cell, rowStyle, cellStyle);
+
+            if (rowSpanModel && rowSpanningMode === 'visual') {
+              const span = rowSpanModel.getRowSpan(rowIndex, col.id);
+              if (!isCovered && span > 1) {
+                const prev = cell.border ?? {};
+                cell.border = {
+                  ...prev,
+                  bottom: undefined,
+                };
+              } else if (isCovered && anchorRowIndex != null) {
+                const anchorSpan = rowSpanModel.getRowSpan(anchorRowIndex, col.id);
+                const isLastInSpan = rowIndex === anchorRowIndex + anchorSpan - 1;
+                const prev = cell.border ?? {};
+                cell.border = {
+                  ...prev,
+                  top: undefined,
+                  ...(isLastInSpan ? {} : { bottom: undefined }),
+                };
+              }
+            }
           }
         }
       }

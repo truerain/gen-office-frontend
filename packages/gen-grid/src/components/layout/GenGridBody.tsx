@@ -112,6 +112,13 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
 
   const { editMode, setEditMode } = useGenGridContext<TData>();
   const rows = table.getRowModel().rows;
+  const rowStyleById = React.useMemo(() => {
+    const map = new Map<string, React.CSSProperties | undefined>();
+    rows.forEach((r) => {
+      map.set(r.id, getRowStyle?.({ row: r.original, rowId: r.id, rowIndex: r.index }));
+    });
+    return map;
+  }, [rows, getRowStyle]);
   const rowIndexById = React.useMemo(() => {
     const map = new Map<string, number>();
     rows.forEach((r) => map.set(r.id, r.index));
@@ -309,7 +316,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
       {rows.map((row) => {
         if (!!row.getCanExpand?.()) return renderGroupedRow(row);
 
-        const rowStyle = getRowStyle?.({ row: row.original, rowId: row.id, rowIndex: row.index });
+        const rowStyle = rowStyleById.get(row.id);
         return (
         <tr
           key={row.id}
@@ -340,6 +347,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
               !isVisualMode && rowSpanModel?.enabled
                 ? rowSpanModel.getRowSpan(row.id, colId)
                 : undefined;
+            let cellRowStyle = rowStyle;
             let hideBottomBorder = false;
             if (isVisualMode && rowSpanModel?.enabled) {
               const span = rowSpanModel.getRowSpan(row.id, colId);
@@ -348,6 +356,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
               } else if (rowSpanCovered) {
                 const anchorRowId = rowSpanModel.getAnchorRowId(row.id, colId);
                 if (anchorRowId) {
+                  cellRowStyle = rowStyleById.get(anchorRowId) ?? rowStyle;
                   const anchorIndex = rowIndexById.get(anchorRowId);
                   const anchorSpan = rowSpanModel.getRowSpan(anchorRowId, colId);
                   const isLastCovered =
@@ -437,7 +446,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
                 key={cell.id}
                 cell={cell as any}
                 rowId={row.id}
-                rowStyle={rowStyle}
+                rowStyle={cellRowStyle}
                 isActive={isActive}
                 isEditing={isEditing}
                 isDirty={dirty}

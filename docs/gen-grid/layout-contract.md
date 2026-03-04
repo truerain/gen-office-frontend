@@ -1,5 +1,8 @@
 # GenGrid Layout Contract
 
+관련 트러블슈팅:
+- `docs/gen-grid/layout-regression-playbook.md`
+
 ## 목적
 - `GenGrid` 내부 스크롤이 사라지고 페이지 전체가 스크롤되는 문제를 방지한다.
 - `ActionBar`가 줄바꿈/깨짐 없이 안정적으로 보이도록 한다.

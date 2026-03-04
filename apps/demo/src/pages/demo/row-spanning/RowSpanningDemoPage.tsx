@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Table2 } from 'lucide-react';
 
-import { GenGrid } from '@gen-office/gen-grid';
+import { GenGridCrud } from '@gen-office/gen-grid-crud';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 
@@ -116,6 +116,23 @@ export default function GridRowSpanningPage(_props: PageComponentProps) {
     ],
     [formatter]
   );
+  const firstRowByCategory = useMemo(() => {
+    const first = new Set<string>();
+    const seen = new Set<GridRow['category']>();
+    for (const row of data) {
+      if (seen.has(row.category)) continue;
+      seen.add(row.category);
+      first.add(row.id);
+    }
+    return first;
+  }, [data]);
+
+  const getRowStyle = ({ rowId }: { row: GridRow; rowId: string; rowIndex: number }) => {
+    if (!firstRowByCategory.has(rowId)) return undefined;
+    return {
+      backgroundColor: 'rgb(252, 228, 214)',
+    };
+  };
 
   return (
     <div className={styles.page}>
@@ -134,19 +151,39 @@ export default function GridRowSpanningPage(_props: PageComponentProps) {
       </div>
 
       <div className={styles.grid}>
-        <GenGrid<GridRow>
+        <GenGridCrud<GridRow>
           data={data}
-          onDataChange={setData}
-          dataVersion={data.length}
           columns={columns}
           getRowId={(row) => row.id}
-          rowSpanning
-          rowSpanningMode="visual"
-          enablePinning
-          enableColumnSizing
-          enableActiveRowHighlight
-          rowHeight={34}
-          overscan={8}
+          onCommit={async () => ({ ok: true, nextData: data })}
+          onCommitSuccess={(result) => {
+            if (result.nextData) setData(result.nextData as GridRow[]);
+          }}
+          actionBar={{
+            enabled: true,
+            position: 'top',
+            defaultStyle: 'icon',
+            includeBuiltIns: ['excel'],
+          }}
+          excelExport={{
+            mode: 'frontend',
+            fileName: 'RowSpanningDemo',
+            sheetName: 'RowSpanningDemo',
+            defaultBorder: true,
+            rowHeight: 34,
+          }}
+          gridProps={{
+            height: '100%',
+            dataVersion: data.length,
+            getRowStyle,
+            rowSpanning: true,
+            rowSpanningMode: 'visual',
+            enablePinning: true,
+            enableColumnSizing: true,
+            enableActiveRowHighlight: true,
+            rowHeight: 34,
+            overscan: 8,
+          }}
         />
       </div>
     </div>

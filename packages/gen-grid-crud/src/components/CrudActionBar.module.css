@@ -69,3 +69,7 @@
   flex: 0 0 auto;
   white-space: nowrap;
 }
+
+.root :global(button) {
+  white-space: nowrap;
+}
