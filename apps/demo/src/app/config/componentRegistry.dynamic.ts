@@ -64,6 +64,7 @@ const componentPaths: Record<string, ComponentLoader> = {
   DatePickerDemoPage: () => import('@/pages/demo/datepicker/DatePickerDemoPage'),
   RowSpanningDemoPage: () => import('@/pages/demo/row-spanning'),
   GridStyleDemoPage: () => import('@/pages/demo/grid-style'),
+  DashboardDemoPage: () => import('@/pages/demo/dashboard'),
   SliderDemoPage: () => import('@/pages/demo/slider'),
   ComboboxDemoPage: () => import('@/pages/demo/combobox'),
 };

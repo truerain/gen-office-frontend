@@ -174,6 +174,17 @@ const menus: AppMenu[] = [
     sortOrder: 6,
     execComponent: 'GridStyleDemoPage',
   },
+  {
+    menuId: 990700,
+    menuName: 'Dashboard Demo',
+    menuNameEng: 'Dashboard Demo',
+    menuIcon: 'LayoutDashboard',
+    parentMenuId: 990000,
+    displayYn: 'Y',
+    useYn: 'Y',
+    sortOrder: 7,
+    execComponent: 'DashboardDemoPage',
+  },
 ];
 
 export function loadAppMenuData() {
