@@ -36,6 +36,7 @@ export type GenGridBaseProps<TData> = {
   enableFiltering?: boolean;
   enablePinning?: boolean;
   enableColumnSizing?: boolean;
+  fitColumns?: 'none' | 'fill';
 
   checkboxSelection?: boolean;
   enableRowNumber?: boolean;
@@ -102,6 +103,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     enableFiltering,
     enablePinning,
     enableColumnSizing,
+    fitColumns,
 
     checkboxSelection,
     enableRowNumber,
@@ -131,6 +133,8 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
   const stickyHeaderEnabled =  enableStickyHeader !== undefined ? enableStickyHeader : true;
   const headerRowCount = table.getHeaderGroups().length + (enableFiltering ? 1 : 0);
   const columnSizingEnabled = enableColumnSizing !== undefined ? enableColumnSizing : true;
+  const fitColumnsMode = fitColumns ?? 'none';
+  const shouldFillColumns = columnSizingEnabled && fitColumnsMode === 'fill';
   const footerContent = renderFooter ? renderFooter(table) : footer;
   const footerEnabled = enableFooter !== undefined ? enableFooter : false;
   const showFooter = footerEnabled && footerContent !== null && footerContent !== undefined;
@@ -347,7 +351,9 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
           className={layout.table}
           style={
             columnSizingEnabled
-              ? { width: table.getTotalSize(), minWidth: table.getTotalSize() }
+              ? shouldFillColumns
+                ? { width: '100%', minWidth: table.getTotalSize() }
+                : { width: table.getTotalSize(), minWidth: table.getTotalSize() }
               : undefined
           }
         >

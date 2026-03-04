@@ -153,6 +153,7 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
                 gridProps={{
                   height: '100%',
                   enableColumnSizing: true,
+                  fitColumns: 'fill',
                   enableActiveRowHighlight: true,
                   rowHeight: 34,
                   rowSpanning: true,
@@ -198,8 +199,15 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
                 gridProps={{
                   height: '100%',
                   enableColumnSizing: true,
+                  fitColumns: 'fill',
                   enableActiveRowHighlight: true,
                   rowHeight: 34,
+                  getCellStyle: ({ columnId, row, rowIndex }) => {
+                    return {
+                      borderLeft: 'none',
+                      borderRight: 'none',
+                    };
+                  }
                 }}
               />
             </div>
@@ -217,6 +225,7 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
                 gridProps={{
                   height: '100%',
                   enableColumnSizing: true,
+                  fitColumns: 'fill',
                   enableActiveRowHighlight: true,
                   rowHeight: 34,
                 }}
@@ -238,6 +247,7 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
                 gridProps={{
                   height: '100%',
                   enableColumnSizing: true,
+                  fitColumns: 'fill',
                   enableActiveRowHighlight: true,
                   rowHeight: 34,
                 }}
@@ -257,6 +267,7 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
                 gridProps={{
                   height: '100%',
                   enableColumnSizing: true,
+                  fitColumns: 'fill',
                   enableActiveRowHighlight: true,
                   rowHeight: 34,
                 }}

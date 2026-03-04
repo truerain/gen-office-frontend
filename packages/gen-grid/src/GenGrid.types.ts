@@ -63,6 +63,8 @@ type CommonGridOptions<TData> = {
   enableFiltering?: boolean;
   enablePinning?: boolean;
   enableColumnSizing?: boolean;
+  /** when 'fill', stretch table width to container when total column width is smaller */
+  fitColumns?: 'none' | 'fill';
 
   enableRowStatus?: boolean;
   rowStatusResolver?: (rowId: string) => 'clean' | 'created' | 'updated' | 'deleted';

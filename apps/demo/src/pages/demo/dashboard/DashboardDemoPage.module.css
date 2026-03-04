@@ -62,7 +62,7 @@
   border-right: none;
 }
 
-.managementPanel :global([data-sticky-header]) {
+.page :global([data-sticky-header]) {
   border-left: none;
   border-right: none;
 }
