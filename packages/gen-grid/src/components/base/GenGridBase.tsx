@@ -42,7 +42,7 @@ export type GenGridBaseProps<TData> = {
   enableActiveRowHighlight?: boolean;
   enableGrouping?: boolean;
   rowSpanning?: boolean;
-  rowSpanningMode?: 'visual';
+  rowSpanningMode?: 'real' | 'visual';
 
   enablePagination?: boolean;
   pageSizeOptions?: number[];
@@ -195,9 +195,9 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
   const hasFiltering = hasColumnFilter || hasGlobalFilter;
   const treeEnabled = Boolean((table.options.meta as any)?.genGridTree);
   const spanRows = table.getRowModel().rows;
+  const resolvedRowSpanningMode = rowSpanningMode ?? 'real';
   const rowSpanningEnabled =
     Boolean(rowSpanning) &&
-    (rowSpanningMode ?? 'visual') === 'visual' &&
     !enableVirtualization &&
     !enableGrouping &&
     !treeEnabled &&
@@ -395,6 +395,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
               getCellStyle={props.getCellStyle}
               footerSpacerHeight={footerSpacerHeight}
               rowSpanModel={rowSpanModel}
+              rowSpanningMode={resolvedRowSpanningMode}
             />
           ) : (
             <GenGridBody<TData>
@@ -415,6 +416,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
               getCellStyle={props.getCellStyle}
               footerSpacerHeight={footerSpacerHeight}
               rowSpanModel={rowSpanModel}
+              rowSpanningMode={resolvedRowSpanningMode}
             />
           )}
 

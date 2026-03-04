@@ -44,6 +44,8 @@ export type GenGridCellProps<TData> = {
 
   cellProps: React.TdHTMLAttributes<HTMLTableCellElement>;
   isRowSpanCovered?: boolean;
+  cellRowSpan?: number;
+  hideBottomBorder?: boolean;
 
   onCommitValue: (nextValue: unknown) => void;
   onCommitEdit: () => void;
@@ -300,6 +302,8 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     getCellStyle: getCellStyleByRule,
     cellProps,
     isRowSpanCovered,
+    cellRowSpan,
+    hideBottomBorder,
     onCommitValue,
     onCommitEdit,
     onApplyValue,
@@ -683,6 +687,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
           isHeader: false,
         }),
         ...(pickRowStyleForCell(rowStyle) ?? {}),
+        ...(hideBottomBorder ? { borderBottomColor: 'transparent' } : {}),
         ...(getCellStyleByRule?.({
           row: cell.row.original,
           rowId,
@@ -699,6 +704,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
       data-pinned={pinned ? 'true' : undefined}
       data-tree-depth={isTreeColumn ? String(treeDepth) : undefined}
       data-tree-orphan={isTreeColumn && treeIsOrphan ? 'true' : undefined}
+      rowSpan={cellRowSpan && cellRowSpan > 1 ? cellRowSpan : undefined}
       {...cellProps}
       onKeyDown={(e) => {
         if (

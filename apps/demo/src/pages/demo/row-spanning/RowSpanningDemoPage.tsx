@@ -92,7 +92,6 @@ export default function GridRowSpanningPage(_props: PageComponentProps) {
         meta: {
           pinned: 'left',
           align: 'center',
-          mono: true,
           rowSpan: true,
         },
       },

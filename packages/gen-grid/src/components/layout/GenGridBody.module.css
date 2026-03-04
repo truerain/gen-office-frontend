@@ -10,6 +10,7 @@
   border-bottom: 1px solid var(--grid-cell-border);
   border-right: 1px solid var(--grid-cell-border);
 
+  font-family: var(--grid-font-family, var(--font-family-primary, sans-serif));
   font-size: var(--grid-cell-font-size);
   white-space: nowrap;
   overflow: hidden;

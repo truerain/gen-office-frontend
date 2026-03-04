@@ -1,5 +1,19 @@
 # GenGrid Body Row Spanning (Row Merge) Proposal
 
+## 용어 정리: Row Grouping vs Row Spanning
+
+- `row grouping`
+  - 데이터를 특정 컬럼 값으로 묶어 트리/그룹 구조로 보여주는 기능
+  - 그룹 헤더, 펼침/접힘, 집계(sum/count)와 함께 사용하는 데이터 구조/탐색 UX 중심 기능
+- `row spanning`
+  - 같은 값을 가진 인접 행의 셀을 세로로 병합해서 보이게 하는 기능
+  - 셀 표현(레이아웃) 중심 기능
+
+정리:
+- grouping은 "행을 그룹으로 조직"하는 기능
+- spanning은 "셀을 세로 병합 표현"하는 기능
+- 이름이 비슷하지만 서로 대체 관계가 아니라 독립 기능이다
+
 ## 1) 목적
 
 - 바디 영역에서 **연속된 동일 값**을 하나의 셀처럼 보이게 병합한다.
@@ -23,8 +37,13 @@
 type CommonGridOptions<TData> = {
   // ...
   rowSpanning?: boolean; // default: false
+  rowSpanningMode?: 'real' | 'visual'; // default: 'real'
 };
 ```
+
+모드 정책:
+- 기본값은 `real`이며, 실제 `<td rowSpan>`를 사용한다.
+- `visual`은 실제 `<td rowSpan>`를 사용하지 않고, covered 셀의 border/콘텐츠 처리로 병합처럼 보이게 한다.
 
 ### 2.2 Column 메타 옵션
 
@@ -103,8 +122,14 @@ const columns: ColumnDef<OrderRow>[] = [
 4. 값이 같으면 현재 셀을 covered로 표시, 앵커 span 증가
 5. 값이 다르면 새 앵커 시작
 
-### 4.2 Body 렌더 반영 (Visual-only)
+### 4.2 Body 렌더 반영 (Mode별)
 
+#### real (default)
+- anchor 셀에 실제 `rowSpan` 값을 부여한다.
+- covered 셀은 DOM 렌더에서 제외한다.
+- 결과적으로 실제 테이블 rowspan 동작을 따른다.
+
+#### visual (option)
 - `covered` 셀도 렌더는 유지한다. (DOM 구조는 동일)
 - `covered` 셀은 텍스트를 숨기고, 경계선만 시각적으로 제거해 병합처럼 보이게 한다.
 - 실제 `<td rowSpan>`은 사용하지 않는다.
@@ -149,7 +174,8 @@ const columns: ColumnDef<OrderRow>[] = [
 - Row merge 사용 시 정렬은 지원하지 않는다. (정렬 UI/동작 비활성 권장)
 - 필터가 1개 이상 적용되면 row merge는 임시 해제한다. (필터 해제 시 다시 활성화)
 - merge 대상 컬럼이 pinned일 때도 동일 규칙으로 동작해야 한다.
-- visual-only 방식이므로 covered 셀 DOM은 유지되며, 포커스/편집은 일반 셀과 동일하게 동작한다.
+- `real` 모드에서는 covered 셀이 DOM에 없으므로 active cell/키보드 이동 시 anchor 기준 정합성 검토가 필요하다.
+- `visual` 모드에서는 covered 셀 DOM이 유지되므로 포커스/편집이 일반 셀과 유사하게 동작한다.
 - virtualization에서는 화면 밖 run과 연결되는 경우를 고려해야 한다.
 
 ---

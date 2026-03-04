@@ -72,8 +72,8 @@ type CommonGridOptions<TData> = {
   enableGrouping?: boolean;
   /** enable body row spanning (row merge) */
   rowSpanning?: boolean;
-  /** rowSpanning mode (currently visual-only) */
-  rowSpanningMode?: 'visual';
+  /** rowSpanning render mode */
+  rowSpanningMode?: 'real' | 'visual';
 
   enablePagination?: boolean;
   pageSizeOptions?: number[];

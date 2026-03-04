@@ -67,6 +67,7 @@ type GenGridBodyProps<TData> = {
 
   footerSpacerHeight?: number;
   rowSpanModel?: RowSpanModel;
+  rowSpanningMode?: 'real' | 'visual';
 };
 
 function pickRowStyleForCell(style?: React.CSSProperties): React.CSSProperties | undefined {
@@ -106,10 +107,16 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
     getCellStyle: getCellStyleByRule,
     footerSpacerHeight = 0,
     rowSpanModel,
+    rowSpanningMode = 'real',
   } = props;
 
   const { editMode, setEditMode } = useGenGridContext<TData>();
   const rows = table.getRowModel().rows;
+  const rowIndexById = React.useMemo(() => {
+    const map = new Map<string, number>();
+    rows.forEach((r) => map.set(r.id, r.index));
+    return map;
+  }, [rows]);
 
   const isSystemCol = React.useCallback(
     (colId: string) => colId === SELECTION_COLUMN_ID || colId === ROW_NUMBER_COLUMN_ID,
@@ -323,6 +330,32 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
           >
           {row.getVisibleCells().map((cell) => {
             const colId = cell.column.id;
+            const rowSpanCovered =
+              Boolean(rowSpanModel?.enabled) && rowSpanModel!.isCovered(row.id, colId);
+            const isVisualMode = rowSpanningMode === 'visual';
+            if (rowSpanCovered && !isVisualMode) {
+              return null;
+            }
+            const cellRowSpan =
+              !isVisualMode && rowSpanModel?.enabled
+                ? rowSpanModel.getRowSpan(row.id, colId)
+                : undefined;
+            let hideBottomBorder = false;
+            if (isVisualMode && rowSpanModel?.enabled) {
+              const span = rowSpanModel.getRowSpan(row.id, colId);
+              if (!rowSpanCovered && span > 1) {
+                hideBottomBorder = true;
+              } else if (rowSpanCovered) {
+                const anchorRowId = rowSpanModel.getAnchorRowId(row.id, colId);
+                if (anchorRowId) {
+                  const anchorIndex = rowIndexById.get(anchorRowId);
+                  const anchorSpan = rowSpanModel.getRowSpan(anchorRowId, colId);
+                  const isLastCovered =
+                    anchorIndex != null && row.index === anchorIndex + anchorSpan - 1;
+                  hideBottomBorder = !isLastCovered;
+                }
+              }
+            }
 
             const isActive =
               !!activeCell && activeCell.rowId === row.id && activeCell.columnId === colId;
@@ -399,8 +432,6 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
             };
             
             const dirty = isCellDirty?.(row.id, colId) ?? false;
-            const isRowSpanCovered =
-              Boolean(rowSpanModel?.enabled) && rowSpanModel!.isCovered(row.id, colId);
             return (
               <GenGridCell
                 key={cell.id}
@@ -415,7 +446,9 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
                 getCellClassName={getCellClassName}
                 getCellStyle={getCellStyleByRule}
                 cellProps={mergedProps}
-                isRowSpanCovered={isRowSpanCovered}
+                isRowSpanCovered={rowSpanCovered && isVisualMode}
+                cellRowSpan={cellRowSpan}
+                hideBottomBorder={hideBottomBorder}
                 onCommitValue={(nextValue) => editing.commitValue({ rowId: row.id, columnId: colId }, nextValue)}
                 onCommitEdit={() => editing.commitEditing()}
                 onApplyValue={(nextValue) => editing.applyValue({ rowId: row.id, columnId: colId }, nextValue)}
