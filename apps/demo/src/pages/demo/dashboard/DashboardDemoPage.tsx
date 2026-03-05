@@ -52,6 +52,7 @@ const managementResultRows: SummaryRow[] = [
 ];
 
 const salesAchievementRows: SummaryRow[] = [
+  { id: 's0', metric: '합계', value: 12100, target: 12100, rate: 100.0 },
   { id: 's1', metric: '목표 매출(백만)', value: 12100, target: 12100, rate: 100.0 },
   { id: 's2', metric: '실적 매출(백만)', value: 12840, target: 12100, rate: 106.1 },
   { id: 's3', metric: '달성률(%)', value: 106.1, target: 100.0, rate: 106.1 },
@@ -63,6 +64,9 @@ const majorKpiRows: SummaryRow[] = [
   { id: 'k2', metric: '재구매율(%)', value: 41.2, target: 39.0, rate: 105.6 },
   { id: 'k3', metric: '평균 객단가(천원)', value: 182, target: 175, rate: 104.0 },
   { id: 'k4', metric: '생산성 지수', value: 103.4, target: 100.0, rate: 103.4 },
+  { id: 'k5', metric: '생산성 지수', value: 103.4, target: 100.0, rate: 103.4 },
+  { id: 'k6', metric: '생산성 지수', value: 103.4, target: 100.0, rate: 103.4 },
+  { id: 'k7', metric: '생산성 지수', value: 103.4, target: 100.0, rate: 103.4 },
 ];
 
 const salesTrendRows: SalesTrendRow[] = [
@@ -135,6 +139,62 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
     [numberFormatter, percentFormatter]
   );
 
+  const summaryColumns2 = useMemo<ColumnDef<SummaryRow, any>[]>(
+    () => [
+      { accessorKey: 'metric', header: '구분', size: 150, meta: { pinned: 'left', rowSpan: true } },
+      {
+        accessorKey: 'value',
+        header: '매출',
+        size: 110,
+        meta: { align: 'right', mono: true },
+        cell: ({ getValue }) => numberFormatter.format(Number(getValue() ?? 0)),
+      },
+      {
+        accessorKey: 'target',
+        header: '구성비',
+        size: 110,
+        meta: { align: 'right', mono: true },
+        cell: ({ getValue }) => numberFormatter.format(Number(getValue() ?? 0)),
+      },
+      {
+        accessorKey: 'rate',
+        header: '달성도(%)',
+        size: 110,
+        meta: { align: 'right', mono: true },
+        cell: ({ getValue }) => percentFormatter.format(Number(getValue() ?? 0)),
+      },
+    ],
+    [numberFormatter, percentFormatter]
+  );
+
+  const summaryColumns3 = useMemo<ColumnDef<SummaryRow, any>[]>(
+    () => [
+      { accessorKey: 'metric', header: '구분', size: 150, meta: { pinned: 'left', rowSpan: true } },
+      {
+        accessorKey: 'value',
+        header: '전년',
+        size: 110,
+        meta: { align: 'right', mono: true },
+        cell: ({ getValue }) => numberFormatter.format(Number(getValue() ?? 0)),
+      },
+      {
+        accessorKey: 'target',
+        header: '실적',
+        size: 110,
+        meta: { align: 'right', mono: true },
+        cell: ({ getValue }) => numberFormatter.format(Number(getValue() ?? 0)),
+      },
+      {
+        accessorKey: 'rate',
+        header: '전년비(%)',
+        size: 110,
+        meta: { align: 'right', mono: true },
+        cell: ({ getValue }) => percentFormatter.format(Number(getValue() ?? 0)),
+      },
+    ],
+    [numberFormatter, percentFormatter]
+  );
+
   const salesPlanMax = useMemo(() => Math.max(...salesTrendRows.map((row) => row.plan)), []);
   const salesActualMax = useMemo(() => Math.max(...salesTrendRows.map((row) => row.actual)), []);
   const profitPlanMax = useMemo(() => Math.max(...operatingProfitTrendRows.map((row) => row.plan)), []);
@@ -170,30 +230,10 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
                   rowHeight: 34,
                   rowSpanning: true,
                   rowSpanningMode: 'visual',
-                  getCellStyle: ({ columnId, row, rowIndex }) => {
-                    if (columnId === 'value') {
-                      return {
-                        borderLeft: 'none',
-                        borderRight: 'none',
-                        backgroundColor: '#f5f5f5',
-                      };
-                    }
-
-                    if (columnId !== 'metric') {
-                      return {
-                        borderLeft: 'none',
-                        borderRight: 'none',
-                      };
-                    }
-
-                    const prevMetric = rowIndex > 0 ? managementResultRows[rowIndex - 1]?.metric : undefined;
-                    const isFirstRowInGroup = rowIndex === 0 || prevMetric !== row.metric;
-
-                    return {
-                      borderLeft: 'none',
-                      borderRight: isFirstRowInGroup ? 'none' : '1px solid var(--grid-cell-border)',
-                    };
-                  },
+                  getCellStyle: ({ columnId }) => ({
+                    borderRight: columnId == 'metric' ? '' : 'none',
+                    backgroundColor: columnId === 'value' ? '#d5d5d5' : undefined,
+                  }),
                 }}
               />
             </div>
@@ -204,7 +244,7 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
             <div className={styles.gridWrap}>
               <GenGridCrud<SummaryRow>
                 data={salesAchievementRows}
-                columns={summaryColumns}
+                columns={summaryColumns2}
                 getRowId={(row) => row.id}
                 onCommit={async () => ({ ok: true, nextData: salesAchievementRows })}
                 actionBar={{ enabled: false }}
@@ -214,21 +254,21 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
                   fitColumns: 'fill',
                   enableActiveRowHighlight: true,
                   rowHeight: 34,
-                  getCellStyle: () => ({
-                    borderLeft: 'none',
-                    borderRight: 'none',
+                  getCellStyle: ({ row }) => ({
+                    border: 'none',
+                  backgroundColor: row.id === 's0' ? '#d5d5d5' : undefined,   
                   }),
                 }}
               />
             </div>
           </section>
 
-          <section className={styles.panel}>
+          <section className={`${styles.panel} ${styles.managementPanel3}`}>
             <h3 className={styles.panelTitle}>3월 주요지표</h3>
             <div className={styles.gridWrap}>
               <GenGridCrud<SummaryRow>
                 data={majorKpiRows}
-                columns={summaryColumns}
+                columns={summaryColumns3}
                 getRowId={(row) => row.id}
                 onCommit={async () => ({ ok: true, nextData: majorKpiRows })}
                 actionBar={{ enabled: false }}
@@ -238,6 +278,12 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
                   fitColumns: 'fill',
                   enableActiveRowHighlight: true,
                   rowHeight: 34,
+                  getCellStyle: ({columnId }) => ({
+                    border: 'none',
+                    borderRight:
+                      columnId === 'metric' ? '1px solid var(--grid-cell-border)' : 'none',
+                    backgroundColor: columnId === 'target' ? '#d5d5d5' : undefined,
+                  }),
                 }}
               />
             </div>
