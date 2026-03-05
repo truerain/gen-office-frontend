@@ -16,7 +16,7 @@ export const lightChartTokens: ChartTokens = {
     seriesPalette: ['#2563eb', '#16a34a', '#f59e0b', '#db2777', '#7c3aed', '#0891b2'],
   },
   typography: {
-    fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif',
+    fontFamily: 'var(--font-family, system-ui, -apple-system, Segoe UI, sans-serif)',
     axisTickFontSize: 11,
     legendFontSize: 11,
     tooltipFontSize: 11,
@@ -62,7 +62,7 @@ export const darkChartTokens: ChartTokens = {
     seriesPalette: ['#60a5fa', '#34d399', '#fbbf24', '#f472b6', '#a78bfa', '#22d3ee'],
   },
   typography: {
-    fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif',
+    fontFamily: 'var(--font-family, system-ui, -apple-system, Segoe UI, sans-serif)',
     axisTickFontSize: 11,
     legendFontSize: 11,
     tooltipFontSize: 11,
@@ -91,4 +91,3 @@ export const darkChartTokens: ChartTokens = {
     easing: 'easeOut',
   },
 };
-

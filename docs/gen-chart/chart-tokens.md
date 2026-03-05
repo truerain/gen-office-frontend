@@ -88,7 +88,7 @@ export const lightChartTokens: ChartTokens = {
     seriesPalette: ['#2563eb', '#16a34a', '#f59e0b', '#db2777', '#7c3aed', '#0891b2'],
   },
   typography: {
-    fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif',
+    fontFamily: 'var(--font-family, system-ui, -apple-system, Segoe UI, sans-serif)',
     axisTickFontSize: 11,
     legendFontSize: 11,
     tooltipFontSize: 11,

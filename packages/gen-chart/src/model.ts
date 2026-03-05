@@ -55,6 +55,31 @@ export function getVisibleSeries<TDatum>(
   });
 }
 
+export function applySeriesPolicy<TDatum>(series: ChartSeries<TDatum>[]) {
+  const uniqueSeries: ChartSeries<TDatum>[] = [];
+  const duplicateSeriesIds = new Set<string>();
+  const invalidNoFiniteYIds = new Set<string>();
+  const seen = new Set<string>();
+
+  for (const item of series) {
+    if (seen.has(item.id)) {
+      duplicateSeriesIds.add(item.id);
+      continue;
+    }
+    seen.add(item.id);
+    uniqueSeries.push(item);
+
+    if (!isCartesianSeries(item)) continue;
+    if (isAllNullY(item)) invalidNoFiniteYIds.add(item.id);
+  }
+
+  return {
+    uniqueSeries,
+    duplicateSeriesIds,
+    invalidNoFiniteYIds,
+  };
+}
+
 function inferXKind<TDatum>(series: CartesianSeries<TDatum>[]): ChartXKind {
   for (const s of series) {
     for (let i = 0; i < s.data.length; i += 1) {
@@ -143,7 +168,24 @@ export function buildYDomain<TDatum>(
   if (typeof axisMax === 'number') max = axisMax;
   if (max === min) max = min + 1;
 
+  if (typeof axisMin !== 'number') {
+    min = 0;
+  }
+  if (typeof axisMax !== 'number') {
+    const intervals = Math.max(2, options.yAxis?.tickCount ?? 5);
+    const rawStep = (max - min) / intervals;
+    const step = ceilStepByPower(rawStep);
+    max = min + step * intervals;
+  }
+  if (max <= min) max = min + 10;
+
   return [min, max];
+}
+
+function ceilStepByPower(value: number): number {
+  if (!Number.isFinite(value) || value <= 0) return 10;
+  const magnitude = 10 ** Math.floor(Math.log10(value));
+  return Math.ceil(value / magnitude) * magnitude;
 }
 
 export function buildXDomainFromMeta(meta: ChartXMeta): [unknown, unknown] {
@@ -186,7 +228,10 @@ export function createGenChartModel<TDatum>(
 ): GenChartModel<TDatum> {
   warnChartDevIssues(options);
   const visibilityMap = createInitialVisibilityMap(options.series);
-  const visibleSeries = getVisibleSeries(options.series, visibilityMap);
+  const policy = applySeriesPolicy(options.series);
+  const visibleSeries = policy.uniqueSeries.filter(
+    (item) => visibilityMap[item.id] !== false && !policy.invalidNoFiniteYIds.has(item.id)
+  );
   const visibleCartesian = visibleSeries.filter(isCartesianSeries);
   const xMeta = buildXMeta(visibleCartesian);
   const xDomain = buildXDomainFromMeta(xMeta);

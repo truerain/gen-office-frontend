@@ -41,18 +41,26 @@ export interface ChartSeriesBase<TDatum> {
   x: Accessor<TDatum, string | number | Date>;
   y: Accessor<TDatum, number | null | undefined>;
   hidden?: boolean;
+  showValueLabel?: boolean;
+  valueLabelPredicate?: (value: number, datum: TDatum, index: number) => boolean;
+  valueLabelFormatter?: (value: number, datum: TDatum, index: number) => string;
+  valueLabelPosition?: 'top' | 'inside';
+  valueLabelColor?: string;
 }
 
 export interface LineSeriesDef<TDatum> extends ChartSeriesBase<TDatum> {
   type: 'line';
   curve?: 'linear' | 'monotoneX' | 'step';
   connectNulls?: boolean;
+  strokeDasharray?: string;
 }
 
 export interface BarSeriesDef<TDatum> extends ChartSeriesBase<TDatum> {
   type: 'bar';
   stackId?: string;
   maxBarWidth?: number;
+  layout?: 'grouped' | 'overlay';
+  opacity?: number;
 }
 
 export interface AreaSeriesDef<TDatum> extends ChartSeriesBase<TDatum> {
@@ -64,6 +72,8 @@ export interface ComposedSeriesDef<TDatum> extends ChartSeriesBase<TDatum> {
   type: 'composed';
   renderAs?: 'line' | 'bar';
   maxBarWidth?: number;
+  layout?: 'grouped' | 'overlay';
+  opacity?: number;
 }
 
 export interface PieSeriesDef<TDatum> {
@@ -77,6 +87,11 @@ export interface PieSeriesDef<TDatum> {
   innerRadius?: number;
   outerRadius?: number;
   hidden?: boolean;
+  showValueLabel?: boolean;
+  valueLabelPredicate?: (value: number, datum: TDatum, index: number) => boolean;
+  valueLabelFormatter?: (value: number, datum: TDatum, index: number) => string;
+  valueLabelPosition?: 'top' | 'inside';
+  valueLabelColor?: string;
 }
 
 export type ChartSeries<TDatum> =
@@ -89,6 +104,7 @@ export type ChartSeries<TDatum> =
 export interface ChartAxisOptions {
   show?: boolean;
   tickCount?: number;
+  showAllTicks?: boolean;
   tickFormat?: (value: unknown) => string;
   min?: number | 'auto' | 'dataMin';
   max?: number | 'auto' | 'dataMax';
@@ -124,8 +140,23 @@ export interface ChartLegendOptions {
   reserveSpace?: boolean;
 }
 
+export interface ChartTooltipFormatterContext<TDatum = unknown> {
+  seriesId: string;
+  seriesLabel?: string;
+  seriesType: ChartType;
+  datum: TDatum;
+  x?: string | number | Date;
+  value: number | null;
+}
+
+export interface ChartTooltipOptions<TDatum = unknown> {
+  enabled?: boolean;
+  titleFormatter?: (ctx: ChartTooltipFormatterContext<TDatum>) => string;
+  valueFormatter?: (ctx: ChartTooltipFormatterContext<TDatum>) => string;
+}
+
 export interface ChartInteractiveOptions {
-  tooltip?: boolean;
+  tooltip?: boolean | ChartTooltipOptions;
   legend?: boolean | ChartLegendOptions;
   crosshair?: boolean;
 }
@@ -210,6 +241,7 @@ export function ChartGrid(): JSX.Element;
 export function ChartXAxis(): JSX.Element;
 export function ChartYAxis(): JSX.Element;
 export function ChartTooltip(): JSX.Element;
+export function ChartCrosshair(): JSX.Element;
 export function ChartLegend(): JSX.Element;
 
 export function LineSeries<TDatum>(props: { seriesId: string }): JSX.Element;
@@ -299,6 +331,7 @@ const channelData: ChannelPoint[] = [
 - `ResponsiveChartContainer`를 제공하여 `ResizeObserver`를 캡슐화한다.
 - 좁은 폭에서의 정책:
 - X축 tick 자동 간소화
+- 필요 시 `xAxis.showAllTicks: true`로 카테고리 tick 전체 표시
 - 범례 overflow는 wrap이 아니라 horizontal scroll 우선
 
 ## Legend Layout 정책
@@ -361,8 +394,25 @@ const channelData: ChannelPoint[] = [
 - Implemented:
 - package scaffold (`@gen-office/gen-chart`), `types`, `model`, `useGenChart`, `CartesianChart`
 - `ResponsiveChartContainer` (ResizeObserver-based responsive sizing wrapper)
-- primitives: `ChartGrid`, `ChartXAxis`, `ChartYAxis`, `ChartTooltip`, `ChartLegend`
+- primitives: `ChartGrid`, `ChartXAxis`, `ChartYAxis`, `ChartTooltip`, `ChartCrosshair`, `ChartLegend`
 - series: `LineSeries`, `BarSeries`, `AreaSeries`, `ComposedSeries`, `PieSeries`, `DonutSeries`
 - `composed` uses `renderAs: 'line' | 'bar'` to render line/bar in a unified series type.
 - Not implemented yet:
 - motion runtime behavior (only option type is defined)
+
+## Phase 1 Closeout: Pending Item
+
+Status legend:
+- `pending`: not decided yet
+
+### D1. Headless model runtime behavior (`createGenChartModel`)
+- Status: `pending`
+- Current gap:
+  - `getNearestDatum` always returns `null`
+  - `toggleSeries` / `setSeriesVisibility` do not recompute derived state (`visibleSeries`, domains)
+- Decision options:
+  - Option A (recommended): make model stateful and fully functional (headless-first contract)
+  - Option B: explicitly mark model as static snapshot API and move runtime behavior to hook-only
+- Impact:
+  - A keeps API contract strong and future renderer-friendly
+  - B reduces immediate scope but weakens headless story

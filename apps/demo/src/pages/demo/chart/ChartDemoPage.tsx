@@ -47,6 +47,11 @@ const channelData: ChannelPoint[] = [
   { channel: 'Store', value: 20 },
 ];
 
+const maxRevenue = Math.max(...monthlyData.map((d) => d.revenue));
+const maxCost = Math.max(...monthlyData.map((d) => d.cost));
+const maxProfit = Math.max(...monthlyData.map((d) => d.profit));
+const maxChannelValue = Math.max(...channelData.map((d) => d.value));
+
 export default function ChartDemoPage(_props: PageComponentProps) {
   return (
     <div className={styles.page}>
@@ -76,6 +81,8 @@ export default function ChartDemoPage(_props: PageComponentProps) {
                       data: monthlyData,
                       x: (d) => d.month,
                       y: (d) => d.revenue,
+                      showValueLabel: true,
+                      valueLabelPredicate: (value) => value === maxRevenue,
                     },
                     {
                       id: 'cost',
@@ -84,6 +91,8 @@ export default function ChartDemoPage(_props: PageComponentProps) {
                       data: monthlyData,
                       x: (d) => d.month,
                       y: (d) => d.cost,
+                      showValueLabel: true,
+                      valueLabelPredicate: (value) => value === maxCost,
                     },
                   ]}
                   interactive={{ tooltip: true, legend: true }}
@@ -117,6 +126,8 @@ export default function ChartDemoPage(_props: PageComponentProps) {
                       data: monthlyData,
                       x: (d) => d.month,
                       y: (d) => d.revenue,
+                      showValueLabel: true,
+                      valueLabelPredicate: (value) => value === maxRevenue,
                     },
                     {
                       id: 'cost',
@@ -125,6 +136,8 @@ export default function ChartDemoPage(_props: PageComponentProps) {
                       data: monthlyData,
                       x: (d) => d.month,
                       y: (d) => d.cost,
+                      showValueLabel: true,
+                      valueLabelPredicate: (value) => value === maxCost,
                     },
                   ]}
                   interactive={{ tooltip: true, legend: true }}
@@ -158,6 +171,8 @@ export default function ChartDemoPage(_props: PageComponentProps) {
                       data: monthlyData,
                       x: (d) => d.month,
                       y: (d) => d.profit,
+                      showValueLabel: true,
+                      valueLabelPredicate: (value) => value === maxProfit,
                     },
                   ]}
                   interactive={{ tooltip: true, legend: true }}
@@ -191,6 +206,8 @@ export default function ChartDemoPage(_props: PageComponentProps) {
                       data: monthlyData,
                       x: (d) => d.month,
                       y: (d) => d.revenue,
+                      showValueLabel: true,
+                      valueLabelPredicate: (value) => value === maxRevenue,
                     },
                     {
                       id: 'profit-line',
@@ -200,6 +217,8 @@ export default function ChartDemoPage(_props: PageComponentProps) {
                       data: monthlyData,
                       x: (d) => d.month,
                       y: (d) => d.profit,
+                      showValueLabel: true,
+                      valueLabelPredicate: (value) => value === maxProfit,
                     },
                   ]}
                   interactive={{ tooltip: true, legend: true }}
@@ -234,6 +253,9 @@ export default function ChartDemoPage(_props: PageComponentProps) {
                       data: channelData,
                       category: (d) => d.channel,
                       value: (d) => d.value,
+                      showValueLabel: true,
+                      valueLabelPosition: 'inside',
+                      valueLabelFormatter: (value, datum) => `${datum.channel}: ${value}`,
                     },
                   ]}
                   interactive={{ tooltip: true, legend: true }}
@@ -272,6 +294,10 @@ export default function ChartDemoPage(_props: PageComponentProps) {
                       value: (d) => d.value,
                       innerRadius: 72,
                       outerRadius: 118,
+                      showValueLabel: true,
+                      valueLabelPredicate: (value) => value === maxChannelValue,
+                      valueLabelPosition: 'top',
+                      valueLabelFormatter: (value, datum) => `${datum.channel}: ${value}`,
                     },
                   ]}
                   interactive={{ tooltip: true, legend: true }}

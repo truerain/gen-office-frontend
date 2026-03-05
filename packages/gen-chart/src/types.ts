@@ -12,6 +12,11 @@ export interface ChartSeriesBase<TDatum> {
   x: Accessor<TDatum, string | number | Date>;
   y: Accessor<TDatum, number | null | undefined>;
   hidden?: boolean;
+  showValueLabel?: boolean;
+  valueLabelPredicate?: (value: number, datum: TDatum, index: number) => boolean;
+  valueLabelFormatter?: (value: number, datum: TDatum, index: number) => string;
+  valueLabelPosition?: 'top' | 'inside';
+  valueLabelColor?: string;
 }
 
 export interface LineSeriesDef<TDatum> extends ChartSeriesBase<TDatum> {
@@ -53,6 +58,11 @@ export interface PieSeriesDef<TDatum> {
   innerRadius?: number;
   outerRadius?: number;
   hidden?: boolean;
+  showValueLabel?: boolean;
+  valueLabelPredicate?: (value: number, datum: TDatum, index: number) => boolean;
+  valueLabelFormatter?: (value: number, datum: TDatum, index: number) => string;
+  valueLabelPosition?: 'top' | 'inside';
+  valueLabelColor?: string;
 }
 
 export type ChartSeries<TDatum> =
@@ -65,6 +75,7 @@ export type ChartSeries<TDatum> =
 export interface ChartAxisOptions {
   show?: boolean;
   tickCount?: number;
+  showAllTicks?: boolean;
   tickFormat?: (value: unknown) => string;
   min?: number | 'auto' | 'dataMin';
   max?: number | 'auto' | 'dataMax';
@@ -103,8 +114,23 @@ export interface ChartLegendOptions {
   reserveSpace?: boolean;
 }
 
+export interface ChartTooltipFormatterContext<TDatum = unknown> {
+  seriesId: string;
+  seriesLabel?: string;
+  seriesType: ChartType;
+  datum: TDatum;
+  x?: string | number | Date;
+  value: number | null;
+}
+
+export interface ChartTooltipOptions<TDatum = unknown> {
+  enabled?: boolean;
+  titleFormatter?: (ctx: ChartTooltipFormatterContext<TDatum>) => string;
+  valueFormatter?: (ctx: ChartTooltipFormatterContext<TDatum>) => string;
+}
+
 export interface ChartInteractiveOptions {
-  tooltip?: boolean;
+  tooltip?: boolean | ChartTooltipOptions;
   legend?: boolean | ChartLegendOptions;
   crosshair?: boolean;
 }
@@ -169,5 +195,10 @@ export interface UseGenChartResult<TDatum> extends GenChartModel<TDatum> {
     align: ChartLegendAlign;
     reserveSpace: boolean;
     bandSize: number;
+  };
+  seriesMeta: {
+    uniqueSeries: ChartSeries<TDatum>[];
+    duplicateSeriesIds: Set<string>;
+    invalidNoFiniteYIds: Set<string>;
   };
 }

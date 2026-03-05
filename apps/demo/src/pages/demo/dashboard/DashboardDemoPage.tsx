@@ -135,6 +135,11 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
     [numberFormatter, percentFormatter]
   );
 
+  const salesPlanMax = useMemo(() => Math.max(...salesTrendRows.map((row) => row.plan)), []);
+  const salesActualMax = useMemo(() => Math.max(...salesTrendRows.map((row) => row.actual)), []);
+  const profitPlanMax = useMemo(() => Math.max(...operatingProfitTrendRows.map((row) => row.plan)), []);
+  const profitActualMax = useMemo(() => Math.max(...operatingProfitTrendRows.map((row) => row.actual)), []);
+
   return (
     <div className={styles.page}>
       <PageHeader
@@ -248,6 +253,7 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
                   <CartesianChart<SalesTrendRow>
                     width={width}
                     height={height}
+                    xAxis={{ showAllTicks: true }}
                     series={[
                       {
                         id: 'sales-plan',
@@ -258,6 +264,8 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
                         y: (d) => d.plan,
                         color: '#9ca3af',
                         strokeDasharray: '6 4',
+                        showValueLabel: true,
+                        valueLabelPredicate: (value) => value === salesPlanMax,
                       },
                       {
                         id: 'sales-actual',
@@ -267,6 +275,8 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
                         x: (d) => d.month,
                         y: (d) => d.actual,
                         color: '#86efac',
+                        showValueLabel: false,
+                        valueLabelPredicate: (value) => value === salesActualMax,
                       },
                     ]}
                     interactive={{ tooltip: true, legend: { enabled: true, position: 'bottom', align: 'center' } }}
@@ -292,6 +302,7 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
                   <CartesianChart<ProfitTrendRow>
                     width={width}
                     height={height}
+                    xAxis={{ showAllTicks: true }}
                     series={[
                       {
                         id: 'operating-profit-actual',
@@ -303,6 +314,9 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
                         color: '#86efac',
                         layout: 'overlay',
                         maxBarWidth: 18,
+                        showValueLabel: true,
+                        valueLabelPosition: 'top',
+                        valueLabelPredicate: (value) => value === profitActualMax,
                       },
                       {
                         id: 'operating-profit-plan',
@@ -315,6 +329,9 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
                         layout: 'overlay',
                         maxBarWidth: 34,
                         opacity: 0.45,
+                        showValueLabel: false,
+                        valueLabelPosition: 'inside',
+                        valueLabelPredicate: (value) => value === profitPlanMax,
                       },
                     ]}
                     interactive={{ tooltip: true, legend: { enabled: true, position: 'bottom', align: 'center' } }}

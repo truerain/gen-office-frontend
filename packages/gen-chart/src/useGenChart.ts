@@ -9,9 +9,9 @@ import {
   buildXDomainFromMeta,
   buildXMeta,
   buildYDomain,
+  applySeriesPolicy,
   createInitialVisibilityMap,
   getNearestPoint,
-  getVisibleSeries,
   isCartesianSeries,
   warnChartDevIssues,
 } from './model';
@@ -102,9 +102,17 @@ export function useGenChart<TDatum>(options: UseGenChartOptions<TDatum>): UseGen
   const innerWidth = Math.max(0, width - adjustedPadding.left - adjustedPadding.right);
   const innerHeight = Math.max(0, height - adjustedPadding.top - adjustedPadding.bottom);
 
+  const seriesPolicy = React.useMemo(
+    () => applySeriesPolicy(options.series),
+    [options.series]
+  );
+
   const visibleSeries = React.useMemo(
-    () => getVisibleSeries(options.series, visibilityMap),
-    [options.series, visibilityMap]
+    () =>
+      seriesPolicy.uniqueSeries.filter(
+        (item) => visibilityMap[item.id] !== false && !seriesPolicy.invalidNoFiniteYIds.has(item.id)
+      ),
+    [seriesPolicy, visibilityMap]
   );
 
   const visibleCartesian = React.useMemo(
@@ -204,6 +212,11 @@ export function useGenChart<TDatum>(options: UseGenChartOptions<TDatum>): UseGen
       align: legend.align,
       reserveSpace: legend.reserveSpace,
       bandSize: legendBandSize,
+    },
+    seriesMeta: {
+      uniqueSeries: seriesPolicy.uniqueSeries,
+      duplicateSeriesIds: seriesPolicy.duplicateSeriesIds,
+      invalidNoFiniteYIds: seriesPolicy.invalidNoFiniteYIds,
     },
   };
 }
