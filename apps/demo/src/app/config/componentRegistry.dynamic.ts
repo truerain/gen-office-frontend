@@ -65,6 +65,7 @@ const componentPaths: Record<string, ComponentLoader> = {
   RowSpanningDemoPage: () => import('@/pages/demo/row-spanning'),
   GridStyleDemoPage: () => import('@/pages/demo/grid-style'),
   DashboardDemoPage: () => import('@/pages/demo/dashboard'),
+  ChartDemoPage: () => import('@/pages/demo/chart'),
   SliderDemoPage: () => import('@/pages/demo/slider'),
   ComboboxDemoPage: () => import('@/pages/demo/combobox'),
 };

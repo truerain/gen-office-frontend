@@ -185,6 +185,17 @@ const menus: AppMenu[] = [
     sortOrder: 7,
     execComponent: 'DashboardDemoPage',
   },
+  {
+    menuId: 990800,
+    menuName: 'Chart Demo',
+    menuNameEng: 'Chart Demo',
+    menuIcon: 'BarChart3',
+    parentMenuId: 990000,
+    displayYn: 'Y',
+    useYn: 'Y',
+    sortOrder: 8,
+    execComponent: 'ChartDemoPage',
+  },
 ];
 
 export function loadAppMenuData() {

@@ -1,0 +1,94 @@
+import type { ChartTokens } from '../types/chart.tokens';
+
+export const lightChartTokens: ChartTokens = {
+  color: {
+    background: '#ffffff',
+    textPrimary: '#111827',
+    textMuted: '#6b7280',
+    axis: '#6b7280',
+    grid: '#e5e7eb',
+    crosshair: '#9ca3af',
+    tooltipBg: '#ffffff',
+    tooltipBorder: '#d1d5db',
+    tooltipText: '#111827',
+    legendText: '#111827',
+    legendTextMuted: '#9ca3af',
+    seriesPalette: ['#2563eb', '#16a34a', '#f59e0b', '#db2777', '#7c3aed', '#0891b2'],
+  },
+  typography: {
+    fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif',
+    axisTickFontSize: 11,
+    legendFontSize: 11,
+    tooltipFontSize: 11,
+  },
+  spacing: {
+    paddingTop: 12,
+    paddingRight: 16,
+    paddingBottom: 30,
+    paddingLeft: 42,
+    axisTickGap: 4,
+    legendItemGap: 12,
+    legendMarkerSize: 10,
+    tooltipPaddingX: 8,
+    tooltipPaddingY: 6,
+  },
+  border: {
+    tooltipRadius: 6,
+    tooltipBorderWidth: 1,
+    seriesStrokeWidth: 2,
+    gridWidth: 1,
+    axisWidth: 1,
+  },
+  motion: {
+    enabled: true,
+    durationMs: 240,
+    easing: 'easeOut',
+  },
+};
+
+export const darkChartTokens: ChartTokens = {
+  color: {
+    background: '#1f2937',
+    textPrimary: '#f9fafb',
+    textMuted: '#d1d5db',
+    axis: '#9ca3af',
+    grid: '#374151',
+    crosshair: '#9ca3af',
+    tooltipBg: '#111827',
+    tooltipBorder: '#4b5563',
+    tooltipText: '#f9fafb',
+    legendText: '#f9fafb',
+    legendTextMuted: '#9ca3af',
+    seriesPalette: ['#60a5fa', '#34d399', '#fbbf24', '#f472b6', '#a78bfa', '#22d3ee'],
+  },
+  typography: {
+    fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif',
+    axisTickFontSize: 11,
+    legendFontSize: 11,
+    tooltipFontSize: 11,
+  },
+  spacing: {
+    paddingTop: 12,
+    paddingRight: 16,
+    paddingBottom: 30,
+    paddingLeft: 42,
+    axisTickGap: 4,
+    legendItemGap: 12,
+    legendMarkerSize: 10,
+    tooltipPaddingX: 8,
+    tooltipPaddingY: 6,
+  },
+  border: {
+    tooltipRadius: 6,
+    tooltipBorderWidth: 1,
+    seriesStrokeWidth: 2,
+    gridWidth: 1,
+    axisWidth: 1,
+  },
+  motion: {
+    enabled: true,
+    durationMs: 240,
+    easing: 'easeOut',
+  },
+};
+

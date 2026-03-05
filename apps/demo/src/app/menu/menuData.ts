@@ -18,6 +18,7 @@ const componentNameByMenuId: Record<string, string> = {
   '990400': 'DatePickerDemoPage',
   '990500': 'RowSpanningDemoPage',
   '990700': 'DashboardDemoPage',
+  '990800': 'ChartDemoPage',
 };
 
 const iconByMenuId: Record<string, string> = {
@@ -38,6 +39,7 @@ const iconByMenuId: Record<string, string> = {
   '990400': 'CalendarDays',
   '990500': 'Table2',
   '990700': 'LayoutDashboard',
+  '990800': 'BarChart3',
 };
 
 export type SystemMenuData = {
