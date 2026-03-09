@@ -269,6 +269,7 @@ function MenuManagementPage(props: PageComponentProps) {
                   enablePagination: false,
                   editOnActiveCell: false,
                   keepEditingOnNavigate: true,
+                  enableActiveRowHighlight: true,
                 }}
               />
             </div>

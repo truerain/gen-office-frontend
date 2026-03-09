@@ -2,7 +2,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
 import type { Role } from '@/pages/admin/role/model/types';
 
-export type SelectOption = { label: string; value: string };
+type SelectOption = { label: string; value: string };
 
 const fallbackUseFlags: SelectOption[] = [
   { label: 'Y', value: 'Y' },

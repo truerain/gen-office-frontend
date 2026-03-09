@@ -21,7 +21,7 @@ import { SplitLayout } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 import { useRoleListQuery } from '@/pages/admin/role/api/role';
-import { roleMenuApi, useRoleMenuViewQuery } from '@/pages/admin/role/api/roleMenu';
+import { useRoleMenuViewQuery } from '@/pages/admin/role/api/roleMenu';
 import type { RoleMenu } from '@/pages/admin/role/model/roleMenuTypes';
 import type { Role, RoleListParams } from '@/pages/admin/role/model/types';
 import { useAppStore } from '@/app/store/appStore';
@@ -30,23 +30,22 @@ import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
 import styles from './RoleManagementPage.module.css';
 import { createRoleMenuColumns } from './RoleMenuColumns';
 import { createRoleManagementColumns } from './RoleManagementColumns';
-import { commitRoleChanges, hasMissingRoleName } from './RoleManagementCrud';
-
-const defaultRoleAttributes = {
-  attribute1: '',
-  attribute2: '',
-  attribute3: '',
-  attribute4: '',
-  attribute5: '',
-  attribute6: '',
-  attribute7: '',
-  attribute8: '',
-  attribute9: '',
-  attribute10: '',
-} as const;
+import {
+  commitRoleChanges,
+  commitRoleMenuChanges,
+  createRoleRow,
+  getRoleValidationMessage,
+  validateRoleChanges,
+} from './RoleManagementCrud';
 
 function parseRoleId(rowId: CrudRowId | undefined): number | null {
   const parsed = Number(rowId);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  return parsed;
+}
+
+function normalizeRoleId(value: unknown): number | null {
+  const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed <= 0) return null;
   return parsed;
 }
@@ -66,62 +65,6 @@ function collectDescendantMenuIds(
   return result;
 }
 
-async function commitRoleMenuChanges(
-  roleId: number,
-  changes: readonly CrudChange<RoleMenu>[],
-  viewRows: readonly RoleMenu[]
-) {
-  const changedMenuIds = new Set<number>();
-  const deletedMenuIds = new Set<number>();
-
-  const rowByMenuId = new Map<number, RoleMenu>();
-  for (const row of viewRows) {
-    rowByMenuId.set(row.menuId, row);
-  }
-
-  for (const change of changes) {
-    if (change.type === 'update') {
-      const menuId = Number(change.rowId);
-      if (Number.isFinite(menuId)) changedMenuIds.add(menuId);
-      continue;
-    }
-
-    if (change.type === 'create') {
-      const menuId = Number(change.tempId);
-      if (Number.isFinite(menuId)) changedMenuIds.add(menuId);
-      continue;
-    }
-
-    if (change.type === 'delete') {
-      const menuId = Number(change.rowId);
-      if (Number.isFinite(menuId)) {
-        deletedMenuIds.add(menuId);
-        changedMenuIds.delete(menuId);
-      }
-      continue;
-    }
-
-    if (change.type === 'undelete') {
-      const menuId = Number(change.rowId);
-      if (Number.isFinite(menuId)) deletedMenuIds.delete(menuId);
-    }
-  }
-
-  const items: Array<{ roleId: number; menuId: number; useYn: string }> = [];
-  for (const menuId of changedMenuIds) {
-    if (deletedMenuIds.has(menuId)) continue;
-    const row = rowByMenuId.get(menuId);
-    if (!row) continue;
-    items.push({
-      roleId,
-      menuId,
-      useYn: String(row.useYn ?? 'N'),
-    });
-  }
-
-  await roleMenuApi.bulk({ items });
-}
-
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function RoleManagementPage(_props: PageComponentProps) {
   const { t, i18n } = useTranslation('common');
@@ -131,11 +74,12 @@ export default function RoleManagementPage(_props: PageComponentProps) {
   const [gridDirty, setGridDirty] = useState(false);
   const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null);
   const [selectedRoleRowIds, setSelectedRoleRowIds] = useState<readonly CrudRowId[]>([]);
-  const [activeRoleCell, setActiveRoleCell] = useState<{ rowId: CrudRowId; columnId: string } | null>(null);
   const [roleMenuDirty, setRoleMenuDirty] = useState(false);
   const roleMenuChangesRef = useRef<readonly CrudChange<RoleMenu>[]>([]);
   const roleMenuViewRowsRef = useRef<readonly RoleMenu[]>([]);
   const selectionTransitionRef = useRef(false);
+  const selectedRoleIdRef = useRef<number | null>(null);
+  const suppressAutoSelectRef = useRef(false);
   const tempRoleIdRef = useRef(-1);
 
   const queryParams = useMemo<RoleListParams>(() => ({}), []);
@@ -150,57 +94,53 @@ export default function RoleManagementPage(_props: PageComponentProps) {
   const columns = useMemo(() => createRoleManagementColumns(t), [t]);
   const roleMenuColumns = useMemo(() => createRoleMenuColumns(t, i18n.language), [t, i18n.language]);
   const selectedRole = useMemo(
-    () => roleList.find((role) => role.roleId === selectedRoleId) ?? null,
+    () => roleList.find((role) => normalizeRoleId(role.roleId) === selectedRoleId) ?? null,
     [roleList, selectedRoleId]
   );
 
-  const applyRoleSelection = useCallback((
-    nextRoleId: number | null,
-    nextRowIds: readonly CrudRowId[] = selectedRoleRowIds
-  ) => {
+  const applyActiveRole = useCallback((nextRoleId: number | null) => {
+    suppressAutoSelectRef.current = nextRoleId == null;
     setSelectedRoleId(nextRoleId);
-    setSelectedRoleRowIds(nextRowIds);
+    selectedRoleIdRef.current = nextRoleId;
     setRoleMenuDirty(false);
     roleMenuChangesRef.current = [];
     roleMenuViewRowsRef.current = [];
-  }, [selectedRoleRowIds]);
+  }, []);
+
+  useEffect(() => {
+    selectedRoleIdRef.current = selectedRoleId;
+  }, [selectedRoleId]);
 
   useEffect(() => {
     if (roleList.length === 0) {
       if (selectedRoleId != null || selectedRoleRowIds.length > 0) {
-        applyRoleSelection(null, []);
+        applyActiveRole(null);
+        setSelectedRoleRowIds([]);
       }
-      if (activeRoleCell != null) setActiveRoleCell(null);
+      suppressAutoSelectRef.current = false;
       return;
     }
 
     const hasSelectedRole =
-      selectedRoleId != null && roleList.some((role) => role.roleId === selectedRoleId);
-    if (hasSelectedRole) {
-      const activeRowId = Number(activeRoleCell?.rowId);
-      if (!Number.isFinite(activeRowId) || activeRowId !== selectedRoleId) {
-        setActiveRoleCell({ rowId: selectedRoleId, columnId: 'roleId' });
-      }
+      selectedRoleId != null &&
+      roleList.some((role) => normalizeRoleId(role.roleId) === selectedRoleId);
+    if (hasSelectedRole) return;
+    if (suppressAutoSelectRef.current) return;
+
+    const firstRoleId = normalizeRoleId(roleList[0]?.roleId);
+    if (firstRoleId == null) return;
+    applyActiveRole(firstRoleId);
+  }, [applyActiveRole, roleList, selectedRoleId, selectedRoleRowIds]);
+
+  const handleActiveRoleChange = async (nextRoleId: number | null) => {
+    const currentRoleId = selectedRoleIdRef.current;
+
+    if (nextRoleId === currentRoleId) {
       return;
     }
 
-    const firstRoleId = roleList[0].roleId;
-    applyRoleSelection(firstRoleId);
-    setActiveRoleCell({ rowId: firstRoleId, columnId: 'roleId' });
-  }, [activeRoleCell?.rowId, applyRoleSelection, roleList, selectedRoleId, selectedRoleRowIds]);
-
-  const handleRoleSelectionChange = async (
-    nextRowIds: readonly CrudRowId[],
-    syncSelection = true
-  ) => {
-    const nextRoleId = parseRoleId(nextRowIds[0]);
-    if (nextRoleId === selectedRoleId) {
-      if (syncSelection) setSelectedRoleRowIds(nextRowIds);
-      return;
-    }
-
-    if (!roleMenuDirty || selectedRoleId == null) {
-      applyRoleSelection(nextRoleId, syncSelection ? nextRowIds : selectedRoleRowIds);
+    if (!roleMenuDirty || currentRoleId == null) {
+      applyActiveRole(nextRoleId);
       return;
     }
 
@@ -209,34 +149,43 @@ export default function RoleManagementPage(_props: PageComponentProps) {
 
     try {
       const saveFirst = await openConfirm({
-        title: 'Role Menu has unsaved changes. Save before switching role?',
-        confirmText: 'Save',
-        cancelText: 'More',
+        title: t('admin.role.role_menu.unsaved_confirm_save', {
+          defaultValue: 'Role Menu has unsaved changes. Save before switching role?',
+        }),
+        confirmText: t('common.save', { defaultValue: 'Save' }),
+        cancelText: t('common.more', { defaultValue: 'More' }),
       });
 
       if (saveFirst) {
         const pendingChanges = roleMenuChangesRef.current;
         if (pendingChanges.length > 0) {
-          await commitRoleMenuChanges(selectedRoleId, pendingChanges, roleMenuViewRowsRef.current);
+          await commitRoleMenuChanges(currentRoleId, pendingChanges, roleMenuViewRowsRef.current);
           await refetchRoleMenu();
-          await openAlert({ title: 'Saved successfully.' });
+          await openAlert({
+            title: t('common.saved', { defaultValue: 'Saved successfully.' }),
+          });
         }
-        applyRoleSelection(nextRoleId, syncSelection ? nextRowIds : selectedRoleRowIds);
+        applyActiveRole(nextRoleId);
         return;
       }
 
       const discardAndMove = await openConfirm({
-        title: 'Discard unsaved changes and switch role?',
-        confirmText: 'Discard',
-        cancelText: 'Stay',
+        title: t('admin.role.role_menu.unsaved_confirm_discard', {
+          defaultValue: 'Discard unsaved changes and switch role?',
+        }),
+        confirmText: t('common.discard', { defaultValue: 'Discard' }),
+        cancelText: t('common.stay', { defaultValue: 'Stay' }),
       });
 
       if (discardAndMove) {
-        applyRoleSelection(nextRoleId, syncSelection ? nextRowIds : selectedRoleRowIds);
+        applyActiveRole(nextRoleId);
       }
     } catch (error) {
       console.error(error);
-      const message = error instanceof Error ? error.message : 'Failed to switch role.';
+      const message =
+        error instanceof Error
+          ? error.message
+          : t('admin.role.error.switch_failed', { defaultValue: 'Failed to switch role.' });
       addNotification(message, 'error');
     } finally {
       selectionTransitionRef.current = false;
@@ -246,11 +195,11 @@ export default function RoleManagementPage(_props: PageComponentProps) {
   return (
     <div className={styles.page} data-grid-dirty={gridDirty ? 'true' : 'false'}>
       <PageHeader
-        title="Role Management"
-        description="Manage system roles."
+        title={t('admin.role.title', { defaultValue: 'Role Management' })}
+        description={t('admin.role.description', { defaultValue: 'Manage system roles.' })}
         breadcrumbItems={[
-          { label: 'System', icon: <Shield size={16} /> },
-          { label: 'Role Management', icon: <Shield size={16} /> },
+          { label: t('admin.system.title', { defaultValue: 'System' }), icon: <Shield size={16} /> },
+          { label: t('admin.role.title', { defaultValue: 'Role Management' }), icon: <Shield size={16} /> },
         ]}
       />
       <div className={styles.content}>
@@ -261,32 +210,18 @@ export default function RoleManagementPage(_props: PageComponentProps) {
           left={
             <div className={styles.pane}>
               <GenGridCrud<Role>
-                title="Role List"
+                title={t('admin.role.grid.role_list', { defaultValue: 'Role List' })}
                 data={roleList}
                 columns={columns}
                 getRowId={(row) => row.roleId}
                 rowSelection={selectedRoleRowIds}
                 onRowSelectionChange={(rowIds) => {
-                  void handleRoleSelectionChange(rowIds);
+                  setSelectedRoleRowIds(rowIds);
                 }}
-                activeCell={activeRoleCell}
-                onActiveCellChange={setActiveRoleCell}
                 onActiveRowChange={({ rowId }) => {
-                  if (rowId == null) return;
-                  void handleRoleSelectionChange([rowId], false);
+                  void handleActiveRoleChange(parseRoleId(rowId ?? undefined));
                 }}
-                createRow={() => ({
-                  roleId: tempRoleIdRef.current--,
-                  roleCd: '',
-                  roleName: '',
-                  roleNameEng: '',
-                  roleDesc: '',
-                  sortOrder: 0,
-                  useYn: 'Y',
-                  createdBy: 'admin',
-                  lastUpdatedBy: 'admin',
-                  ...defaultRoleAttributes,
-                })}
+                createRow={() => createRoleRow(tempRoleIdRef.current--)}
                 makePatch={({ columnId, value }) => ({ [columnId]: value } as Partial<Role>)}
                 deleteMode="selected"
                 actionBar={{
@@ -296,7 +231,7 @@ export default function RoleManagementPage(_props: PageComponentProps) {
                   customActions: [
                     {
                       key: 'refresh',
-                      label: 'Refresh',
+                      label: t('common.refresh', { defaultValue: 'Refresh' }),
                       icon: <RefreshCcw aria-hidden size={16} />,
                       side: 'right',
                       style: 'icon',
@@ -310,19 +245,35 @@ export default function RoleManagementPage(_props: PageComponentProps) {
                 onCommit={async ({ changes, ctx }) => {
                   await commitRoleChanges(changes, ctx.viewData);
                   await refetch();
-                  await openAlert({ title: 'Saved successfully.' });
+                  await openAlert({
+                    title: t('common.saved', { defaultValue: 'Saved successfully.' }),
+                  });
                   return { ok: true };
                 }}
                 beforeCommit={({ changes }) => {
-                  if (hasMissingRoleName(changes)) {
-                    void openAlert({ title: 'Please enter Role Name.' });
+                  const validation = validateRoleChanges(changes);
+                  if (!validation.ok) {
+                    const code = validation.errors[0]?.code;
+                    const message = code ? getRoleValidationMessage(code) : null;
+                    const title = message
+                      ? t(message.key, { defaultValue: message.defaultValue })
+                      : t('common.validation.invalid_input', {
+                          defaultValue: 'Please check your input.',
+                        });
+                    void openAlert({ title });
                     return false;
                   }
-                  return openConfirm({ title: 'Do you want to save?' });
+                  return openConfirm({
+                    title: t('common.confirm_save', { defaultValue: 'Do you want to save?' }),
+                  });
                 }}
                 onCommitError={({ error }) => {
+                  // eslint-disable-next-line no-console
                   console.error(error);
-                  const message = error instanceof Error ? error.message : 'Commit failed (see console).';
+                  const message =
+                    error instanceof Error
+                      ? error.message
+                      : t('common.commit_failed', { defaultValue: 'Commit failed (see console)' });
                   addNotification(message, 'error');
                 }}
                 onStateChange={({ dirty }) => {
@@ -339,6 +290,7 @@ export default function RoleManagementPage(_props: PageComponentProps) {
                   checkboxSelection: true,
                   editOnActiveCell: false,
                   keepEditingOnNavigate: true,
+                  enableActiveRowHighlight: true,
                 }}
               />
             </div>
@@ -346,17 +298,19 @@ export default function RoleManagementPage(_props: PageComponentProps) {
           right={
             <div className={styles.pane}>
               <div className={styles.roleMenuHeader}>
-                <span>Role Menu</span>
+                <span>{t('admin.role.grid.role_menu', { defaultValue: 'Role Menu' })}</span>
                 <span className={styles.roleMenuMeta}>
                   {selectedRole
                     ? `${selectedRole.roleName ?? selectedRole.roleCd ?? selectedRole.roleId}`
-                    : 'Select a role'}
-                  {isRoleMenuLoading ? ' (Loading...)' : ''}
+                    : t('admin.role.role_menu.select_role', { defaultValue: 'Select a role' })}
+                  {isRoleMenuLoading
+                    ? t('common.loading_suffix', { defaultValue: ' (Loading...)' })
+                    : ''}
                 </span>
               </div>
               <GenGridCrud<RoleMenu>
                 key={`${selectedRoleId ?? 'none'}-${roleMenuUpdatedAt}`}
-                title="Role Menu List"
+                title={t('admin.role.grid.role_menu_list', { defaultValue: 'Role Menu List' })}
                 data={selectedRoleId == null ? [] : roleMenuList}
                 columns={roleMenuColumns}
                 getRowId={(row) => row.menuId}
@@ -366,20 +320,34 @@ export default function RoleManagementPage(_props: PageComponentProps) {
                   defaultStyle: 'icon',
                   includeBuiltIns: ['save'],
                 }}
+                beforeCommit={() =>
+                  openConfirm({
+                    title: t('common.confirm_save', { defaultValue: 'Do you want to save?' }),
+                  })
+                }
                 onCommit={async ({ changes, ctx }) => {
                   if (selectedRoleId == null) {
-                    await openAlert({ title: 'Select a role first.' });
-                    return { ok: false, error: new Error('Role is not selected.') };
+                    const message = t('admin.role.role_menu.select_role_first', {
+                      defaultValue: 'Select a role first.',
+                    });
+                    await openAlert({ title: message });
+                    return { ok: false, error: new Error(message) };
                   }
 
                   await commitRoleMenuChanges(selectedRoleId, changes, ctx.viewData);
                   await refetchRoleMenu();
-                  await openAlert({ title: 'Saved successfully.' });
+                  await openAlert({
+                    title: t('common.saved', { defaultValue: 'Saved successfully.' }),
+                  });
                   return { ok: true };
                 }}
                 onCommitError={({ error }) => {
+                  // eslint-disable-next-line no-console
                   console.error(error);
-                  const message = error instanceof Error ? error.message : 'Commit failed (see console).';
+                  const message =
+                    error instanceof Error
+                      ? error.message
+                      : t('common.commit_failed', { defaultValue: 'Commit failed (see console)' });
                   addNotification(message, 'error');
                 }}
                 onStateChange={({ dirty, changes, viewData }) => {
@@ -413,10 +381,11 @@ export default function RoleManagementPage(_props: PageComponentProps) {
                   enablePinning: true,
                   enableColumnSizing: true,
                   enableVirtualization: true,
-                  enableRowStatus: false,
+                  enableRowStatus: true,
                   checkboxSelection: false,
                   editOnActiveCell: false,
                   keepEditingOnNavigate: true,
+                  enableActiveRowHighlight: true,
                   tree: {
                     enabled: true,
                     idKey: 'menuId',

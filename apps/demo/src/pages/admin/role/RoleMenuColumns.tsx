@@ -39,5 +39,23 @@ export const createRoleMenuColumns = (
       onSpace: handleGridYnSwitchSpace,
     },
   },
+  {
+    id: 'lastUpdatedBy',
+    header: 'Last Updated By',
+    accessorKey: 'lastUpdatedByName',
+    size: 180,
+    meta: {
+      align: 'center',
+    },
+  },
+  {
+    id: 'lastUpdatedDate',
+    header: 'Last Updated At',
+    accessorKey: 'lastUpdatedDate',
+    size: 180,
+    meta: {
+      align: 'center',
+    },
+  },
 
 ];

@@ -13,9 +13,7 @@ function buildQuery(params?: Record<string, string | undefined>) {
 }
 
 export const roleKeys = {
-  all: () => ['role'] as const,
   list: (params: RoleListParams) => ['role', 'list', params] as const,
-  detail: (id: number) => ['role', 'detail', id] as const,
 };
 
 export const roleApi = {
@@ -31,31 +29,9 @@ export const roleApi = {
     );
   },
 
-  get: (id: number) =>
-    http<Role>(`/api/roles/${encodeURIComponent(String(id))}`, {
-      method: 'GET',
-    }),
-
-  create: (input: RoleRequest) =>
-    http<Role>('/api/roles', {
-      method: 'POST',
-      body: JSON.stringify(input),
-    }),
-
-  update: (id: number, input: RoleRequest) =>
-    http<Role>(`/api/roles/${encodeURIComponent(String(id))}`, {
-      method: 'PUT',
-      body: JSON.stringify(input),
-    }),
-
-  remove: (id: number) =>
-    http<{ ok: true }>(`/api/roles/${encodeURIComponent(String(id))}`, {
-      method: 'DELETE',
-    }),
-
   bulkCommit: (input: {
     creates: RoleRequest[];
-    updates: Array<{ id: number; input: RoleRequest }>;
+    updates: RoleRequest[];
     deletes: number[];
   }) =>
     http<{ created: number; updated: number; deleted: number }>('/api/roles/bulk', {
@@ -68,13 +44,5 @@ export function useRoleListQuery(params: RoleListParams) {
   return useQuery({
     queryKey: roleKeys.list(params),
     queryFn: () => roleApi.list(params),
-  });
-}
-
-export function useRoleQuery(id: number, enabled = true) {
-  return useQuery({
-    queryKey: roleKeys.detail(id),
-    queryFn: () => roleApi.get(id),
-    enabled,
   });
 }

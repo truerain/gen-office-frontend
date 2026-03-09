@@ -1,4 +1,5 @@
 export interface RoleRequest {
+  roleId?: number;
   roleCd?: string;
   roleName?: string;
   roleNameEng?: string;

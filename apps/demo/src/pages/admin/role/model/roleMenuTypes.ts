@@ -11,4 +11,7 @@ export interface RoleMenu {
   displayYn: string;
   sortOrder: number;
   useYn: string;
+  lastUpdatedDate?: string;
+  lastUpdatedBy?: string;
+  lastUpdatedByName?: string;
 }
