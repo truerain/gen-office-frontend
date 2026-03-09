@@ -1,7 +1,7 @@
 // apps/demo/src/entities/system/menu/api/menu.ts
 import { useQuery } from '@tanstack/react-query';
 import { http } from '@/shared/api/http';
-import type { Menu, MenuListParams } from '@/pages/admin/menu/model/types';
+import type { Menu, MenuListParams, MenuRequest } from '@/pages/admin/menu/model/types';
 
 function buildQuery(params?: Record<string, string | undefined>) {
   if (!params) return '';
@@ -38,12 +38,12 @@ export const menuApi = {
       Array.isArray(res) ? res : res.items ?? []
     );
   },
-  create: (input: Partial<Menu>) =>
+  create: (input: MenuRequest) =>
     http<Menu>('/api/menus', {
       method: 'POST',
       body: JSON.stringify(input),
     }),
-  update: (id: number, input: Partial<Menu>) =>
+  update: (id: number, input: MenuRequest) =>
     http<Menu>(`/api/menus/${encodeURIComponent(String(id))}`, {
       method: 'PUT',
       body: JSON.stringify(input),
@@ -54,14 +54,17 @@ export const menuApi = {
     }),
 
   bulkCommit: (input: {
-    creates: Array<Partial<Menu>>;
-    updates: Array<{ id: number; input: Partial<Menu> }>;
-    deletes: number[];
+    creates: MenuRequest[];
+    updates: MenuRequest[];
+    deletes: MenuRequest[];
   }) =>
-    http<{ created: number; updated: number; deleted: number }>('/api/menus/bulk', {
-      method: 'POST',
-      body: JSON.stringify(input),
-    }),
+    http<{ created: number; updated: number; deleted: number }>(
+      '/api/menus/bulk',
+      {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }
+    ),
 };
 
 // -------- Queries --------

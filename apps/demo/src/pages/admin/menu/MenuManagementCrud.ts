@@ -4,7 +4,7 @@
  */
 
 import { prepareCommitChanges, type CrudChange, type CrudRowId } from '@gen-office/gen-grid-crud';
-import type { Menu } from '@/pages/admin/menu/model/types';
+import type { Menu, MenuRequest } from '@/pages/admin/menu/model/types';
 import { menuApi } from '@/pages/admin/menu/api/menu';
 
 const buildChildrenMap = (items: readonly Menu[]) => {
@@ -84,7 +84,7 @@ export const applyMenuChanges = (prev: readonly Menu[], changes: readonly CrudCh
   return next.filter((row) => !deleted.has(row.menuId));
 };
 
-export const toMenuRequest = (input: Partial<Menu>) => ({
+export const toMenuRequest = (input: Partial<Menu>): MenuRequest => ({
   menuId: input.menuId,
   menuName: input.menuName,
   menuNameEng: input.menuNameEng,
@@ -99,6 +99,26 @@ export const toMenuRequest = (input: Partial<Menu>) => ({
   sortOrder: input.sortOrder,
 });
 
+export function createMenuRow(parent: Pick<Menu, 'menuId' | 'menuLevel'> | null): Menu {
+  return {
+    menuId: 0,
+    menuName: '',
+    menuNameEng: '',
+    menuDesc: '',
+    menuDescEng: '',
+    menuLevel: parent ? Number(parent.menuLevel || 0) + 1 : 1,
+    parentMenuId: parent?.menuId ?? 0,
+    execComponent: '',
+    menuIcon: '',
+    displayYn: 'Y',
+    useYn: 'Y',
+    sortOrder: 0,
+    lastUpdatedDate: new Date().toISOString(),
+    lastUpdatedBy: '',
+    lastUpdatedByName: '',
+  };
+}
+
 export async function commitMenuChanges(
   changes: readonly CrudChange<Menu>[],
   ctxRows: readonly Menu[]
@@ -108,9 +128,9 @@ export async function commitMenuChanges(
     getRowId: (row: Menu) => row.menuId,
   });
 
-  const createPayload: Array<Partial<Menu>> = [];
-  const updatesPayload: Array<{ id: number; input: Partial<Menu> }> = [];
-  const deletePayload: number[] = [];
+  const createPayload: MenuRequest[] = [];
+  const updatesPayload: MenuRequest[] = [];
+  const deletePayload: MenuRequest[] = [];
 
   for (const row of creates) {
     createPayload.push(toMenuRequest(row));
@@ -119,21 +139,45 @@ export async function commitMenuChanges(
   for (const row of updates) {
     const id = Number(row.menuId);
     if (!Number.isFinite(id)) continue;
-    updatesPayload.push({ id, input: toMenuRequest(row) });
+    updatesPayload.push(toMenuRequest(row));
   }
 
   for (const row of deletes) {
     const id = Number(row.menuId);
     if (!Number.isFinite(id)) continue;
-    deletePayload.push(id);
+    deletePayload.push(toMenuRequest(row));
   }
 
   await menuApi.bulkCommit({ creates: createPayload, updates: updatesPayload, deletes: deletePayload });
 }
 
-export function hasMissingMenuId(changes: readonly CrudChange<Menu>[]) {
-  const created = new Map<CrudRowId, Menu>();
-  const patches = new Map<CrudRowId, Partial<Menu>>();
+type ValidationError = {
+  code: string;
+  message: string;
+};
+
+type ValidationResult = {
+  ok: boolean;
+  errors: ValidationError[];
+};
+
+type ChangeValidationContext<T> = {
+  created: ReadonlyMap<CrudRowId, T>;
+  patches: ReadonlyMap<CrudRowId, Partial<T>>;
+};
+
+type ChangeValidator<T> = (ctx: ChangeValidationContext<T>) => ValidationError[];
+
+export function validateMenuChanges(changes: readonly CrudChange<Menu>[]): ValidationResult {
+  return validateChanges(changes, [validateRequiredMenuId]);
+}
+
+export function validateChanges<T>(
+  changes: readonly CrudChange<T>[],
+  validators: readonly ChangeValidator<T>[]
+): ValidationResult {
+  const created = new Map<CrudRowId, T>();
+  const patches = new Map<CrudRowId, Partial<T>>();
 
   for (const change of changes) {
     if (change.type === 'create') {
@@ -146,11 +190,21 @@ export function hasMissingMenuId(changes: readonly CrudChange<Menu>[]) {
     }
   }
 
-  return Array.from(created.entries()).some(([tempId, row]) => {
+  const ctx: ChangeValidationContext<T> = { created, patches };
+  const errors = validators.flatMap((validator) => validator(ctx));
+  return { ok: errors.length === 0, errors };
+}
+
+const validateRequiredMenuId: ChangeValidator<Menu> = ({ created, patches }) => {
+  const hasMissing = Array.from(created.entries()).some(([tempId, row]) => {
     const merged = { ...row, ...(patches.get(tempId) ?? {}) } as Menu;
     const value = merged.menuId;
     if (value == null) return true;
     if (String(value).trim() === '') return true;
     return !Number.isFinite(Number(value)) || Number(value) <= 0;
   });
-}
+
+  if (!hasMissing) return [];
+  return [{ code: 'MENU_ID_REQUIRED', message: 'Menu ID를 입력하세요.' }];
+};
+

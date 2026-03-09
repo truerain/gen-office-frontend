@@ -1,16 +1,3 @@
-/**
- * @file [MenuManagementPage.tsx]
- * @path apps/demo/src/pages/system/menu/MenuManagementPage.tsx
- * @summary [메뉴 관리 페이지 컴포넌트]
- * @details
- * - [메뉴 관리 기능 구현]
- * - [메뉴 트리 표시 및 편집 기능 제공]
- * @usage
- * - [시스템관리메뉴 진입 위치]
- * @notes
- * - [주의사항/제약/기능]
- */
-
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Home, MonitorCog, SquareMenu } from 'lucide-react';
@@ -23,14 +10,13 @@ import { PageHeader } from '@/components/PageHeader/PageHeader';
 import { usePageContext } from '@/contexts/PageContext';
 import { SplitLayout, TreeView } from '@gen-office/ui';
 import { GenGridCrud } from '@gen-office/gen-grid-crud';
-import type { CrudChange } from '@gen-office/gen-grid-crud';
 import type { Menu, MenuListParams } from '@/pages/admin/menu/model/types';
 import { menuApi, useMenuListQuery } from '@/pages/admin/menu/api/menu';
 import { useAppStore } from '@/app/store/appStore';
 import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
 
 import { createMenuManagementColumns } from './MenuManagementColumns';
-import { applyMenuChanges, commitMenuChanges, hasMissingMenuId } from './MenuManagementCrud';
+import { commitMenuChanges, createMenuRow, validateMenuChanges } from './MenuManagementCrud';
 import styles from './MenuManagementPage.module.css';
 
 type MenuNode = {
@@ -48,7 +34,7 @@ function MenuManagementPage(props: PageComponentProps) {
   const { menuId: contextMenuId } = usePageContext();
 
   const queryParams = useMemo<MenuListParams>(() => ({}), []);
-  const { data: menuList = [] } = useMenuListQuery(queryParams);
+  const { data: menuList = [], refetch: refetchMenuList } = useMenuListQuery(queryParams);
 
   const { data: appMenuList = [] } = useAppMenuListQuery();
   const systemMenuData = useMemo(() => buildSystemMenuData(appMenuList), [appMenuList]);
@@ -59,21 +45,25 @@ function MenuManagementPage(props: PageComponentProps) {
     [systemMenuData.byId, currentMenuId]
   );
 
+  const pageTitle = t('admin.menu.title', { defaultValue: 'Menu Management' });
+  const sectionTitle = t('admin.system.title', { defaultValue: 'System Management' });
+  const homeLabel = t('common.home', { defaultValue: 'Home' });
+
   const breadcrumbItems = useMemo(() => {
     if (!currentMenuId) {
       return [
-        { label: 'Home', icon: <Home size={16} /> },
-        { label: '시스템 관리', icon: <MonitorCog size={16} /> },
-        { label: '메뉴 관리', icon: <SquareMenu size={16} /> },
+        { label: homeLabel, icon: <Home size={16} /> },
+        { label: sectionTitle, icon: <MonitorCog size={16} /> },
+        { label: pageTitle, icon: <SquareMenu size={16} /> },
       ];
     }
 
     const path = systemMenuData.breadcrumbById.get(currentMenuId);
     if (!path || path.length === 0) {
       return [
-        { label: 'Home', icon: <Home size={16} /> },
-        { label: '시스템 관리', icon: <MonitorCog size={16} /> },
-        { label: '메뉴 관리', icon: <SquareMenu size={16} /> },
+        { label: homeLabel, icon: <Home size={16} /> },
+        { label: sectionTitle, icon: <MonitorCog size={16} /> },
+        { label: pageTitle, icon: <SquareMenu size={16} /> },
       ];
     }
 
@@ -81,7 +71,7 @@ function MenuManagementPage(props: PageComponentProps) {
       label: item.label,
       icon: getIconComponent(item.icon, 16),
     }));
-  }, [currentMenuId, systemMenuData.breadcrumbById]);
+  }, [currentMenuId, systemMenuData.breadcrumbById, homeLabel, pageTitle, sectionTitle]);
 
   const [menuData, setMenuData] = useState<Menu[]>([]);
   const [childMenus, setChildMenus] = useState<Menu[]>([]);
@@ -116,19 +106,23 @@ function MenuManagementPage(props: PageComponentProps) {
       loadingParentsRef.current.add(parentKey);
       try {
         const children = await menuApi.children(parentId);
-        console.log(children);
         setChildMenus(children);
         mergeMenus(children);
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error(error);
-        const message = error instanceof Error ? error.message : 'Failed to load menu children.';
+        const message =
+          error instanceof Error
+            ? error.message
+            : t('admin.menu.error.load_children_failed', {
+                defaultValue: 'Failed to load menu children.',
+              });
         addNotification(message, 'error');
       } finally {
         loadingParentsRef.current.delete(parentKey);
       }
     },
-    [addNotification, mergeMenus]
+    [addNotification, mergeMenus, t]
   );
 
   useEffect(() => {
@@ -137,14 +131,18 @@ function MenuManagementPage(props: PageComponentProps) {
 
   const treeData = useMemo<MenuNode[]>(
     () => [
-      { id: ROOT_ID, parent_id: 0, label: 'GenOffice' },
+      {
+        id: ROOT_ID,
+        parent_id: 0,
+        label: t('admin.menu.tree.root', { defaultValue: 'GenOffice' }),
+      },
       ...menuData.map((item) => ({
         id: item.menuId,
         parent_id: isRootMenu(item) ? ROOT_ID : item.parentMenuId,
         label: item.menuName || item.menuNameEng || String(item.menuId),
       })),
     ],
-    [menuData]
+    [menuData, t]
   );
 
   const rootIds = useMemo(() => [ROOT_ID], []);
@@ -161,16 +159,20 @@ function MenuManagementPage(props: PageComponentProps) {
     [selectedNodeId, menuVersion]
   );
 
-  const createNowIso = () => new Date().toISOString();
-
   return (
     <div className={styles.page}>
       <PageHeader
-        title={currentAppMenu?.label || '메뉴 관리'}
+        title={currentAppMenu?.label || pageTitle}
         description={
           currentAppMenu
-            ? `선택된 메뉴의 관리 화면입니다. (Menu ID: ${currentAppMenu.menuId})`
-            : `시스템 메뉴를 관리하는 페이지입니다. (Menu ID: ${currentMenuId ?? '-'})`
+            ? t('admin.menu.description.selected', {
+                defaultValue: 'Manage selected menu. (Menu ID: {{menuId}})',
+                menuId: currentAppMenu.menuId,
+              })
+            : t('admin.menu.description.default', {
+                defaultValue: 'Manage system menus. (Menu ID: {{menuId}})',
+                menuId: currentMenuId ?? '-',
+              })
         }
         breadcrumbItems={breadcrumbItems}
       />
@@ -197,49 +199,53 @@ function MenuManagementPage(props: PageComponentProps) {
           right={
             <div className={styles.detailPane}>
               <GenGridCrud<Menu>
-                title="Menu List"
+                title={t('admin.menu.grid.title', { defaultValue: 'Menu List' })}
                 key={selectedNodeId ?? 'none'}
                 data={childMenus}
                 columns={columns}
                 getRowId={(row) => row.menuId}
-                createRow={() => ({
-                  menuId: 0,
-                  menuName: '',
-                  menuNameEng: '',
-                  menuDesc: '',
-                  menuDescEng: '',
-                  menuLevel: selectedNode ? Number(selectedNode.menuLevel || 0) + 1 : 1,
-                  parentMenuId: selectedNode?.menuId ?? 0,
-                  execComponent: '',
-                  menuIcon: '',
-                  displayYn: 'Y',
-                  useYn: 'Y',
-                  sortOrder: 0,
-                  lastUpdatedDate: createNowIso(),
-                  lastUpdatedBy: '',
-                  lastUpdatedByName: '',
-                })}
+                createRow={() => createMenuRow(selectedNode)}
                 makePatch={({ columnId, value }) => ({ [columnId]: value } as Partial<Menu>)}
                 deleteMode="selected"
                 onCommit={async ({ changes, ctx }) => {
                   await commitMenuChanges(changes, ctx.viewData);
-                  setChildMenus((prev) => applyMenuChanges(prev, changes as CrudChange<Menu>[]));
-                  setMenuData((prev) => applyMenuChanges(prev, changes as CrudChange<Menu>[]));
+                  const refreshed = await refetchMenuList();
+                  if (refreshed.data) {
+                    setMenuData(refreshed.data);
+                  }
+                  await fetchChildren(selectedNodeId);
                   setMenuVersion((v) => v + 1);
-                  await openAlert({ title: '저장되었습니다.' });
+                  await openAlert({
+                    title: t('common.saved', { defaultValue: 'Saved successfully.' }),
+                  });
                   return { ok: true };
                 }}
                 beforeCommit={({ changes }) => {
-                  if (hasMissingMenuId(changes)) {
-                    void openAlert({ title: 'Menu ID를 입력하세요.' });
+                  const validation = validateMenuChanges(changes);
+                  if (!validation.ok) {
+                    const code = validation.errors[0]?.code;
+                    const title =
+                      code === 'MENU_ID_REQUIRED'
+                        ? t('admin.menu.validation.menu_id_required', {
+                            defaultValue: 'Please enter Menu ID.',
+                          })
+                        : t('common.validation.invalid_input', {
+                            defaultValue: 'Please check your input.',
+                          });
+                    void openAlert({ title });
                     return false;
                   }
-                  return openConfirm({ title: '저장하시겠습니까?' });
+                  return openConfirm({
+                    title: t('common.confirm_save', { defaultValue: 'Do you want to save?' }),
+                  });
                 }}
                 onCommitError={({ error }) => {
                   // eslint-disable-next-line no-console
                   console.error(error);
-                  const message = error instanceof Error ? error.message : 'Commit failed (see console)';
+                  const message =
+                    error instanceof Error
+                      ? error.message
+                      : t('common.commit_failed', { defaultValue: 'Commit failed (see console)' });
                   addNotification(message, 'error');
                 }}
                 actionBar={{
