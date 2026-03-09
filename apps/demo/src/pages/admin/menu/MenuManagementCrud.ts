@@ -3,7 +3,7 @@
  * @path apps/demo/src/pages/system/menu/MenuManagementPageCrud.ts
  */
 
-import type { CrudChange, CrudRowId } from '@gen-office/gen-grid-crud';
+import { prepareCommitChanges, type CrudChange, type CrudRowId } from '@gen-office/gen-grid-crud';
 import type { Menu } from '@/pages/admin/menu/model/types';
 import { menuApi } from '@/pages/admin/menu/api/menu';
 
@@ -99,59 +99,36 @@ export const toMenuRequest = (input: Partial<Menu>) => ({
   sortOrder: input.sortOrder,
 });
 
-function findMenuById(rows: readonly Menu[], rowId: CrudRowId) {
-  const id = Number(rowId);
-  if (!Number.isFinite(id)) return undefined;
-  return rows.find((row) => row.menuId === id);
-}
-
 export async function commitMenuChanges(
   changes: readonly CrudChange<Menu>[],
   ctxRows: readonly Menu[]
 ) {
-  const created = new Map<CrudRowId, Menu>();
-  const updated = new Map<CrudRowId, Partial<Menu>>();
-  const deleted = new Set<CrudRowId>();
+  const { creates, updates, deletes } = prepareCommitChanges(changes, {
+    viewData: ctxRows,
+    getRowId: (row: Menu) => row.menuId,
+  });
 
-  for (const change of changes) {
-    switch (change.type) {
-      case 'create':
-        created.set(change.tempId, change.row);
-        break;
-      case 'update':
-        updated.set(change.rowId, { ...(updated.get(change.rowId) ?? {}), ...change.patch });
-        break;
-      case 'delete':
-        deleted.add(change.rowId);
-        break;
-      case 'undelete':
-      default:
-        break;
-    }
+  const createPayload: Array<Partial<Menu>> = [];
+  const updatesPayload: Array<{ id: number; input: Partial<Menu> }> = [];
+  const deletePayload: number[] = [];
+
+  for (const row of creates) {
+    createPayload.push(toMenuRequest(row));
   }
 
-  for (const [tempId, row] of created.entries()) {
-    if (deleted.has(tempId)) continue;
-    const patch = updated.get(tempId);
-    const merged = patch ? { ...row, ...patch } : row;
-    await menuApi.create(toMenuRequest(merged));
-  }
-
-  for (const [rowId, patch] of updated.entries()) {
-    if (created.has(rowId)) continue;
-    if (deleted.has(rowId)) continue;
-    const baseRow = findMenuById(ctxRows, rowId);
-    const merged = baseRow ? { ...baseRow, ...patch } : patch;
-    const id = Number(rowId);
+  for (const row of updates) {
+    const id = Number(row.menuId);
     if (!Number.isFinite(id)) continue;
-    await menuApi.update(id, toMenuRequest(merged));
+    updatesPayload.push({ id, input: toMenuRequest(row) });
   }
 
-  for (const rowId of deleted) {
-    const id = Number(rowId);
+  for (const row of deletes) {
+    const id = Number(row.menuId);
     if (!Number.isFinite(id)) continue;
-    await menuApi.remove(id);
+    deletePayload.push(id);
   }
+
+  await menuApi.bulkCommit({ creates: createPayload, updates: updatesPayload, deletes: deletePayload });
 }
 
 export function hasMissingMenuId(changes: readonly CrudChange<Menu>[]) {

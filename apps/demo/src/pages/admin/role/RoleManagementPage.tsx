@@ -107,17 +107,19 @@ async function commitRoleMenuChanges(
     }
   }
 
+  const items: Array<{ roleId: number; menuId: number; useYn: string }> = [];
   for (const menuId of changedMenuIds) {
     if (deletedMenuIds.has(menuId)) continue;
     const row = rowByMenuId.get(menuId);
     if (!row) continue;
-
-    await roleMenuApi.save({
+    items.push({
       roleId,
       menuId,
       useYn: String(row.useYn ?? 'N'),
     });
   }
+
+  await roleMenuApi.bulk({ items });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

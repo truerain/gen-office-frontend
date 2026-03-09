@@ -70,6 +70,16 @@ export const LkupApi = {
       body: JSON.stringify(input),
     }),
 
+  bulkCommitMasters: (input: {
+    creates: LkupMasterCreateRequest[];
+    updates: Array<{ lkupClssCd: string; input: LkupMasterUpdateRequest }>;
+    deletes: string[];
+  }) =>
+    http<{ created: number; updated: number; deleted: number }>('/api/mis/admin/lookups/masters/bulk', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+
   listDetails: (lkupClssCd: string, params: LkupDetailListParams = {}) => {
     const url = `/api/mis/admin/lookups/${toEncoded(lkupClssCd)}/details${buildQuery({
       lkupCd: params.lkupCd,
@@ -102,6 +112,22 @@ export const LkupApi = {
       method: 'PUT',
       body: JSON.stringify(input),
     }),
+
+  bulkCommitDetails: (
+    lkupClssCd: string,
+    input: {
+      creates: LkupDetailCreateRequest[];
+      updates: Array<{ lkupCd: string; input: LkupDetailUpdateRequest }>;
+      deletes: string[];
+    }
+  ) =>
+    http<{ created: number; updated: number; deleted: number }>(
+      `/api/mis/admin/lookups/${toEncoded(lkupClssCd)}/details/bulk`,
+      {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }
+    ),
 };
 
 export function useLkupMasterListQuery(params: LkupMasterListParams) {

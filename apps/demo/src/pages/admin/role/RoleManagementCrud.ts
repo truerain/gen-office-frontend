@@ -1,4 +1,4 @@
-import type { CrudChange, CrudRowId } from '@gen-office/gen-grid-crud';
+import { prepareCommitChanges, type CrudChange, type CrudRowId } from '@gen-office/gen-grid-crud';
 import { roleApi } from '@/pages/admin/role/api/role';
 import type { Role, RoleRequest } from '@/pages/admin/role/model/types';
 
@@ -11,59 +11,36 @@ const toRoleRequest = (input: Partial<Role>): RoleRequest => ({
   useYn: input.useYn,
 });
 
-function findRoleById(rows: readonly Role[], rowId: CrudRowId) {
-  const id = Number(rowId);
-  if (!Number.isFinite(id)) return undefined;
-  return rows.find((row) => row.roleId === id);
-}
-
 export async function commitRoleChanges(
   changes: readonly CrudChange<Role>[],
   ctxRows: readonly Role[]
 ) {
-  const created = new Map<CrudRowId, Role>();
-  const updated = new Map<CrudRowId, Partial<Role>>();
-  const deleted = new Set<CrudRowId>();
+  const { creates, updates, deletes } = prepareCommitChanges(changes, {
+    viewData: ctxRows,
+    getRowId: (row: Role) => row.roleId,
+  });
 
-  for (const change of changes) {
-    switch (change.type) {
-      case 'create':
-        created.set(change.tempId, change.row);
-        break;
-      case 'update':
-        updated.set(change.rowId, { ...(updated.get(change.rowId) ?? {}), ...change.patch });
-        break;
-      case 'delete':
-        deleted.add(change.rowId);
-        break;
-      case 'undelete':
-      default:
-        break;
-    }
+  const createPayload: RoleRequest[] = [];
+  const updatesPayload: Array<{ id: number; input: RoleRequest }> = [];
+  const deletePayload: number[] = [];
+
+  for (const row of creates) {
+    createPayload.push(toRoleRequest(row));
   }
 
-  for (const [tempId, row] of created.entries()) {
-    if (deleted.has(tempId)) continue;
-    const patch = updated.get(tempId);
-    const merged = patch ? { ...row, ...patch } : row;
-    await roleApi.create(toRoleRequest(merged));
-  }
-
-  for (const [rowId, patch] of updated.entries()) {
-    if (created.has(rowId)) continue;
-    if (deleted.has(rowId)) continue;
-    const baseRow = findRoleById(ctxRows, rowId);
-    const merged = baseRow ? { ...baseRow, ...patch } : patch;
-    const id = Number(rowId);
+  for (const row of updates) {
+    const id = Number(row.roleId);
     if (!Number.isFinite(id)) continue;
-    await roleApi.update(id, toRoleRequest(merged));
+    updatesPayload.push({ id, input: toRoleRequest(row) });
   }
 
-  for (const rowId of deleted) {
-    const id = Number(rowId);
+  for (const row of deletes) {
+    const id = Number(row.roleId);
     if (!Number.isFinite(id)) continue;
-    await roleApi.remove(id);
+    deletePayload.push(id);
   }
+
+  await roleApi.bulkCommit({ creates: createPayload, updates: updatesPayload, deletes: deletePayload });
 }
 
 export function hasMissingRoleName(changes: readonly CrudChange<Role>[]) {

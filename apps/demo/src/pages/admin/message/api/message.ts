@@ -2,7 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { http } from '@/shared/api/http';
 import type {
   Message,
-  MessageCreateRequest,
+  MessageRequest,
+  MessageBulkCommitRequest,
   MessageKey,
   MessageListParams,
   MessageListResponse,
@@ -52,7 +53,7 @@ export const messageApi = {
       method: 'GET',
     }),
 
-  create: (input: MessageCreateRequest) =>
+  create: (input: MessageRequest) =>
     http<Message>('/api/mis/admin/messages', {
       method: 'POST',
       body: JSON.stringify(input),
@@ -67,6 +68,12 @@ export const messageApi = {
   remove: (key: MessageKey) =>
     http<void>(`/api/mis/admin/messages/${toPathKey(key)}`, {
       method: 'DELETE',
+    }),
+
+  bulkCommit: (input: MessageBulkCommitRequest) =>
+    http<{ created: number; updated: number; deleted: number }>('/api/mis/admin/messages/bulk', {
+      method: 'POST',
+      body: JSON.stringify(input),
     }),
 };
 

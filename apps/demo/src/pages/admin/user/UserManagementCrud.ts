@@ -1,4 +1,4 @@
-import type { CrudChange, CrudRowId } from '@gen-office/gen-grid-crud';
+import { prepareCommitChanges, type CrudChange } from '@gen-office/gen-grid-crud';
 import { userApi } from '@/pages/admin/user/api/user';
 import type { User, UserRequest } from '@/pages/admin/user/model/types';
 
@@ -12,57 +12,34 @@ const toUserRequest = (input: Partial<User>): UserRequest => ({
   langCd: input.langCd,
 });
 
-function findUserById(rows: readonly User[], rowId: CrudRowId) {
-  const id = Number(rowId);
-  if (!Number.isFinite(id)) return undefined;
-  return rows.find((row) => row.userId === id);
-}
-
 export async function commitUserChanges(
   changes: readonly CrudChange<User>[],
   ctxRows: readonly User[]
 ) {
-  const created = new Map<CrudRowId, User>();
-  const updated = new Map<CrudRowId, Partial<User>>();
-  const deleted = new Set<CrudRowId>();
+  const { creates, updates, deletes } = prepareCommitChanges(changes, {
+    viewData: ctxRows,
+    getRowId: (row: User) => row.userId,
+  });
 
-  for (const change of changes) {
-    switch (change.type) {
-      case 'create':
-        created.set(change.tempId, change.row);
-        break;
-      case 'update':
-        updated.set(change.rowId, { ...(updated.get(change.rowId) ?? {}), ...change.patch });
-        break;
-      case 'delete':
-        deleted.add(change.rowId);
-        break;
-      case 'undelete':
-      default:
-        break;
-    }
+  const createPayload: UserRequest[] = [];
+  const updatesPayload: Array<{ id: number; input: UserRequest }> = [];
+  const deletePayload: number[] = [];
+
+  for (const row of creates) {
+    createPayload.push(toUserRequest(row));
   }
 
-  for (const [tempId, row] of created.entries()) {
-    if (deleted.has(tempId)) continue;
-    const patch = updated.get(tempId);
-    const merged = patch ? { ...row, ...patch } : row;
-    await userApi.create(toUserRequest(merged));
-  }
-
-  for (const [rowId, patch] of updated.entries()) {
-    if (created.has(rowId)) continue;
-    if (deleted.has(rowId)) continue;
-    const baseRow = findUserById(ctxRows, rowId);
-    const merged = baseRow ? { ...baseRow, ...patch } : patch;
-    const id = Number(rowId);
+  for (const row of updates) {
+    const id = Number(row.userId);
     if (!Number.isFinite(id)) continue;
-    await userApi.update(id, toUserRequest(merged));
+    updatesPayload.push({ id, input: toUserRequest(row) });
   }
 
-  for (const rowId of deleted) {
-    const id = Number(rowId);
+  for (const row of deletes) {
+    const id = Number(row.userId);
     if (!Number.isFinite(id)) continue;
-    await userApi.remove(id);
+    deletePayload.push(id);
   }
+
+  await userApi.bulkCommit({ creates: createPayload, updates: updatesPayload, deletes: deletePayload });
 }

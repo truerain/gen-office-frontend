@@ -39,3 +39,20 @@ export interface UserRoleOption {
   value: number;
   label: string;
 }
+
+export interface UserRoleBulkUpdateItem {
+  userId: number;
+  roleId: number;
+  input: UserRoleUpdateRequest;
+}
+
+export interface UserRoleBulkKey {
+  userId: number;
+  roleId: number;
+}
+
+export interface UserRoleBulkRequest {
+  creates: UserRoleCreateRequest[];
+  updates: UserRoleBulkUpdateItem[];
+  deletes: UserRoleBulkKey[];
+}

@@ -15,6 +15,7 @@ import styles from './MessageManagementPage.module.css';
 import { createMessageManagementColumns } from './MessageManagementColumns';
 import {
   commitMessageChanges,
+  getMessageCommitValidationError,
   type MessageGridRow,
   toMessageRowId,
 } from './MessageManagementCrud';
@@ -146,10 +147,22 @@ export default function MessageManagementPage(_props: PageComponentProps) {
               },
             ],
           }}
-          beforeCommit={() => openConfirm({ title: 'Do you want to save?' })}
+          beforeCommit={({ changes, viewData }) => {
+            const validationError = getMessageCommitValidationError(changes, viewData);
+            if (validationError) {
+              void openAlert({ title: validationError });
+              return false;
+            }
+            return openConfirm({ title: 'Do you want to save?' });
+          }}
           onCommit={async ({ changes, ctx }) => {
             await commitMessageChanges(changes, ctx.viewData);
-            await refetch();
+            try {
+              await refetch();
+            } catch (error) {
+              console.error(error);
+              addNotification('Saved, but refresh failed. Please reload or try Refresh.', 'error');
+            }
             await openAlert({ title: 'Saved successfully.' });
             return { ok: true };
           }}

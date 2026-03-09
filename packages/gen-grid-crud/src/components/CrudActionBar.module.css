@@ -2,17 +2,18 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   padding: 0.5rem 0 0.125rem;
   gap: 0.5rem;
+  width: 100%;
   min-width: 0;
   flex-wrap: nowrap;
   overflow-x: auto;
+  overflow-y: hidden;
   position: relative;
   z-index: 1;
   background: inherit;
   flex: 0 0 auto;
-  min-width: 0;
 }
 
 .leftActions {
@@ -20,10 +21,10 @@
   flex-direction: row;
   align-items: center;
   gap: 0.5rem;
-  min-width: 0;
-  flex: 1 1 auto;
+  min-width: max-content;
+  flex: 0 0 auto;
   flex-wrap: nowrap;
-  overflow: hidden;
+  white-space: nowrap;
 }
 
 .rightActions{
@@ -32,6 +33,7 @@
   align-items: center;
   gap: 0.5rem;
   flex: 0 0 auto;
+  margin-left: auto;
   flex-wrap: nowrap;
   white-space: nowrap;
 }

@@ -87,6 +87,79 @@ export const noticeHandlers = [
     return HttpResponse.json(created, { status: 201 });
   }),
 
+  http.post('/api/notices/bulk', async ({ request }) => {
+    const body = (await request.json()) as {
+      creates?: NoticeRequest[];
+      updates?: Array<{ id: number; input: NoticeRequest }>;
+      deletes?: number[];
+    };
+    const creates = body.creates ?? [];
+    const updates = body.updates ?? [];
+    const deletes = body.deletes ?? [];
+    const next = mockNotices.slice();
+    let nextId = nextNoticeId();
+    const now = new Date().toISOString();
+    let created = 0;
+    let updated = 0;
+    let deleted = 0;
+
+    for (const item of creates) {
+      const title = String(item?.title ?? '').trim();
+      if (!title) return new HttpResponse('title is required', { status: 400 });
+      next.unshift({
+        noticeId: nextId++,
+        title,
+        content: String(item?.content ?? ''),
+        dispStartDate: String(item?.dispStartDate ?? ''),
+        dispEndDate: String(item?.dispEndDate ?? ''),
+        popupYn: String(item?.popupYn ?? 'N'),
+        useYn: String(item?.useYn ?? 'Y'),
+        fileSetId: String(item?.fileSetId ?? ''),
+        readCount: 0,
+        createdBy: String(item?.createdBy ?? 'admin'),
+        creationDate: now,
+        lastUpdatedBy: String(item?.lastUpdatedBy ?? item?.createdBy ?? 'admin'),
+        lastUpdatedDate: now,
+      });
+      created++;
+    }
+
+    for (const item of updates) {
+      const id = Number(item?.id);
+      if (!Number.isFinite(id)) return new HttpResponse('invalid id', { status: 400 });
+      const idx = next.findIndex((notice) => notice.noticeId === id);
+      if (idx === -1) return new HttpResponse('not found', { status: 404 });
+      const payload = item.input ?? ({} as NoticeRequest);
+      const title = String(payload.title ?? '').trim();
+      if (!title) return new HttpResponse('title is required', { status: 400 });
+      next[idx] = {
+        ...next[idx]!,
+        title,
+        content: String(payload.content ?? ''),
+        dispStartDate: String(payload.dispStartDate ?? ''),
+        dispEndDate: String(payload.dispEndDate ?? ''),
+        popupYn: String(payload.popupYn ?? 'N'),
+        useYn: String(payload.useYn ?? 'Y'),
+        fileSetId: String(payload.fileSetId ?? ''),
+        lastUpdatedBy: String(payload.lastUpdatedBy ?? 'admin'),
+        lastUpdatedDate: now,
+      };
+      updated++;
+    }
+
+    for (const rawId of deletes) {
+      const id = Number(rawId);
+      if (!Number.isFinite(id)) return new HttpResponse('invalid id', { status: 400 });
+      const idx = next.findIndex((notice) => notice.noticeId === id);
+      if (idx === -1) return new HttpResponse('not found', { status: 404 });
+      next.splice(idx, 1);
+      deleted++;
+    }
+
+    mockNotices.splice(0, mockNotices.length, ...next);
+    return HttpResponse.json({ created, updated, deleted });
+  }),
+
   http.patch('/api/notices/:id/read-count', async ({ params, request }) => {
     const noticeId = parseNoticeId(String(params.noticeId));
     if (noticeId == null) return new HttpResponse('invalid id', { status: 400 });

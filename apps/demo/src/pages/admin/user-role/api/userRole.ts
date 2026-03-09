@@ -3,6 +3,7 @@ import { http } from '@/shared/api/http';
 import type {
   UserRole,
   UserRoleCreateRequest,
+  UserRoleBulkRequest,
   UserRoleKey,
   UserRoleListParams,
   UserRoleOption,
@@ -71,6 +72,11 @@ export const userRoleApi = {
   roleOptions: () =>
     http<UserRoleOption[]>('/api/roles/options', {
       method: 'GET',
+    }),
+  bulkCommit: (input: UserRoleBulkRequest) =>
+    http<{ created: number; updated: number; deleted: number }>('/api/mis/admin/user-roles/bulk', {
+      method: 'POST',
+      body: JSON.stringify(input),
     }),
 };
 

@@ -8,6 +8,10 @@ export type RoleMenuSaveRequest = {
   useYn: string;
 };
 
+export type RoleMenuBulkRequest = {
+  items: RoleMenuSaveRequest[];
+};
+
 export const roleMenuKeys = {
   all: () => ['role-menu'] as const,
   view: (roleId: number) => ['role-menu', 'view', roleId] as const,
@@ -21,6 +25,11 @@ export const roleMenuApi = {
     ).then((res) => (Array.isArray(res) ? res : res.items ?? [])),
   save: (input: RoleMenuSaveRequest) =>
     http<RoleMenu>('/api/role-menus', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+  bulk: (input: RoleMenuBulkRequest) =>
+    http<{ upserted: number }>('/api/role-menus/bulk', {
       method: 'POST',
       body: JSON.stringify(input),
     }),

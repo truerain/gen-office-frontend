@@ -52,6 +52,16 @@ export const menuApi = {
     http<{ ok: true }>(`/api/menus/${encodeURIComponent(String(id))}`, {
       method: 'DELETE',
     }),
+
+  bulkCommit: (input: {
+    creates: Array<Partial<Menu>>;
+    updates: Array<{ id: number; input: Partial<Menu> }>;
+    deletes: number[];
+  }) =>
+    http<{ created: number; updated: number; deleted: number }>('/api/menus/bulk', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
 };
 
 // -------- Queries --------

@@ -27,10 +27,18 @@ export interface MessageListResponse {
   total: number;
 }
 
-export interface MessageCreateRequest extends MessageKey {
+export interface MessageRequest extends MessageKey {
   messageTxt: string;
 }
 
 export interface MessageUpdateRequest {
   messageTxt: string;
+}
+
+export interface MessageBulkUpdateItem extends MessageRequest {}
+
+export interface MessageBulkCommitRequest {
+  creates: MessageRequest[];
+  updates: MessageBulkUpdateItem[];
+  deletes: MessageKey[];
 }

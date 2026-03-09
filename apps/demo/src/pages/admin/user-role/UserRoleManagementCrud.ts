@@ -1,4 +1,4 @@
-import type { CrudChange, CrudRowId } from '@gen-office/gen-grid-crud';
+import { prepareCommitChanges, type CrudChange, type CrudRowId } from '@gen-office/gen-grid-crud';
 import { userRoleApi } from '@/pages/admin/user-role/api/userRole';
 import type {
   UserRole,
@@ -73,15 +73,6 @@ function toUpdateRequest(input: Partial<UserRole>): UserRoleUpdateRequest {
   };
 }
 
-function isSameKey(a: UserRoleKey, b: UserRoleKey) {
-  return a.userId === b.userId && a.roleId === b.roleId;
-}
-
-function findByRowId(rows: readonly UserRoleGridRow[], rowId: CrudRowId) {
-  const id = String(rowId);
-  return rows.find((row) => row._rowId === id);
-}
-
 export function toUserRoleRowId(row: Pick<UserRole, 'userId' | 'roleId'>) {
   return `key:${encodeURIComponent(String(row.userId))}|${encodeURIComponent(String(row.roleId))}`;
 }
@@ -90,66 +81,47 @@ export async function commitUserRoleChanges(
   changes: readonly CrudChange<UserRoleGridRow>[],
   ctxRows: readonly UserRoleGridRow[]
 ) {
-  const created = new Map<CrudRowId, UserRoleGridRow>();
-  const updated = new Map<CrudRowId, Partial<UserRoleGridRow>>();
-  const deleted = new Set<CrudRowId>();
+  const { creates, updates, deletes } = prepareCommitChanges(changes, {
+    viewData: ctxRows,
+    getRowId: (row: UserRoleGridRow) => row._rowId,
+  });
 
-  for (const change of changes) {
-    switch (change.type) {
-      case 'create':
-        created.set(change.tempId, change.row);
-        break;
-      case 'update':
-        updated.set(change.rowId, { ...(updated.get(change.rowId) ?? {}), ...change.patch });
-        break;
-      case 'delete':
-        deleted.add(change.rowId);
-        break;
-      case 'undelete':
-      default:
-        break;
-    }
+  const createPayload: Array<ReturnType<typeof toCreateRequest>> = [];
+  const updatesPayload: Array<{
+    userId: number;
+    roleId: number;
+    input: ReturnType<typeof toUpdateRequest>;
+  }> = [];
+  const deletesPayload: Array<{ userId: number; roleId: number }> = [];
+
+  for (const row of creates) {
+    createPayload.push(toCreateRequest(row));
   }
 
-  for (const [tempId, row] of created.entries()) {
-    if (deleted.has(tempId)) continue;
-    const patch = updated.get(tempId);
-    const merged = patch ? { ...row, ...patch } : row;
-    await userRoleApi.create(toCreateRequest(merged));
-  }
-
-  for (const [rowId, patch] of updated.entries()) {
-    if (created.has(rowId)) continue;
-    if (deleted.has(rowId)) continue;
-
-    const base = findByRowId(ctxRows, rowId);
-    if (!base) continue;
-
-    const merged = { ...base, ...patch };
-    const baseKey = toUserRoleKey(base);
-    const nextKey = toUserRoleKey(merged);
-    if (!baseKey || !nextKey) {
+  for (const row of updates) {
+    const key = toUserRoleKey(row);
+    if (!key) {
       throw new Error('userId and roleId must be positive integers.');
     }
 
-    const keyChanged = !isSameKey(baseKey, nextKey);
-    if (keyChanged) {
-      await userRoleApi.create(toCreateRequest(merged));
-      await userRoleApi.remove(baseKey);
-      continue;
-    }
-
-    await userRoleApi.update(baseKey, toUpdateRequest(merged));
+    updatesPayload.push({
+      userId: key.userId,
+      roleId: key.roleId,
+      input: toUpdateRequest(row),
+    });
   }
 
-  for (const rowId of deleted) {
-    if (created.has(rowId)) continue;
-    const row = findByRowId(ctxRows, rowId);
-    if (!row) continue;
+  for (const row of deletes) {
     const key = toUserRoleKey(row);
     if (!key) continue;
-    await userRoleApi.remove(key);
+    deletesPayload.push(key);
   }
+
+  await userRoleApi.bulkCommit({
+    creates: createPayload,
+    updates: updatesPayload,
+    deletes: deletesPayload,
+  });
 }
 
 export function hasMissingUserRoleRequired(changes: readonly CrudChange<UserRoleGridRow>[]) {

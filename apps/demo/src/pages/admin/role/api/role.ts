@@ -52,6 +52,16 @@ export const roleApi = {
     http<{ ok: true }>(`/api/roles/${encodeURIComponent(String(id))}`, {
       method: 'DELETE',
     }),
+
+  bulkCommit: (input: {
+    creates: RoleRequest[];
+    updates: Array<{ id: number; input: RoleRequest }>;
+    deletes: number[];
+  }) =>
+    http<{ created: number; updated: number; deleted: number }>('/api/roles/bulk', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
 };
 
 export function useRoleListQuery(params: RoleListParams) {

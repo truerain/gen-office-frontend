@@ -2,7 +2,10 @@ import { http, HttpResponse } from 'msw';
 import { mockMessages } from '@/mocks/data/message';
 import type {
   Message,
-  MessageCreateRequest,
+  MessageBulkCommitRequest,
+  MessageRequest,
+  MessageBulkUpdateItem,
+  MessageKey,
   MessageUpdateRequest,
 } from '@/pages/admin/message/model/types';
 
@@ -118,7 +121,7 @@ export const messageHandlers = [
   }),
 
   http.post('/api/mis/admin/messages', async ({ request }) => {
-    const body = (await request.json()) as MessageCreateRequest;
+    const body = (await request.json()) as MessageRequest;
     const namespace = normalize(body.namespace);
     const messageCd = normalize(body.messageCd);
     const langCd = normalize(body.langCd);
@@ -159,6 +162,76 @@ export const messageHandlers = [
     };
     mockMessages.unshift(created);
     return HttpResponse.json(created, { status: 201 });
+  }),
+
+  http.post('/api/mis/admin/messages/bulk', async ({ request }) => {
+    const body = (await request.json()) as MessageBulkCommitRequest;
+    const creates = body.creates ?? [];
+    const updates = body.updates ?? [];
+    const deletes = body.deletes ?? [];
+    const next = mockMessages.slice();
+    let created = 0;
+    let updated = 0;
+    let deleted = 0;
+
+    const localFindIndex = (key: MessageKey) =>
+      next.findIndex((item) =>
+        item.namespace === key.namespace && item.messageCd === key.messageCd && item.langCd === key.langCd
+      );
+
+    for (const item of creates) {
+      const namespace = normalize(item.namespace);
+      const messageCd = normalize(item.messageCd);
+      const langCd = normalize(item.langCd);
+      const messageTxt = normalize(item.messageTxt);
+      if (!namespace || !messageCd || !langCd || !messageTxt) {
+        return new HttpResponse('namespace, messageCd, langCd, messageTxt are required', { status: 400 });
+      }
+      if (/\s/.test(messageCd)) return new HttpResponse('messageCd cannot contain whitespace', { status: 400 });
+      if (!isValidLangCd(langCd)) return new HttpResponse('invalid langCd', { status: 400 });
+      if (localFindIndex({ namespace, messageCd, langCd }) !== -1) {
+        return new HttpResponse(
+          JSON.stringify({
+            code: 'CONFLICT',
+            messageKey: 'message.duplicate',
+            message: '이미 존재하는 메시지 키입니다',
+          }),
+          { status: 409, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      const now = new Date().toISOString();
+      next.unshift({ namespace, messageCd, langCd, messageTxt, createdAt: now, updatedAt: now });
+      created++;
+    }
+
+    for (const item of updates as MessageBulkUpdateItem[]) {
+      const namespace = normalize(item.namespace);
+      const messageCd = normalize(item.messageCd);
+      const langCd = normalize(item.langCd);
+      const idx = localFindIndex({ namespace, messageCd, langCd });
+      if (idx === -1) return new HttpResponse('not found', { status: 404 });
+      const messageTxt = normalize(item.messageTxt);
+      if (!messageTxt) return new HttpResponse('messageTxt is required', { status: 400 });
+      next[idx] = {
+        ...next[idx],
+        messageTxt,
+        updatedAt: new Date().toISOString(),
+      };
+      updated++;
+    }
+
+    for (const item of deletes) {
+      const namespace = normalize(item.namespace);
+      const messageCd = normalize(item.messageCd);
+      const langCd = normalize(item.langCd);
+      const idx = localFindIndex({ namespace, messageCd, langCd });
+      if (idx === -1) return new HttpResponse('not found', { status: 404 });
+      next.splice(idx, 1);
+      deleted++;
+    }
+
+    mockMessages.splice(0, mockMessages.length, ...next);
+    return HttpResponse.json({ created, updated, deleted });
   }),
 
   http.put('/api/mis/admin/messages/:namespace/:messageCd/:langCd', async ({ params, request }) => {

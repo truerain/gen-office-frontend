@@ -1,4 +1,4 @@
-import type { CrudChange, CrudRowId } from '@gen-office/gen-grid-crud';
+import { prepareCommitChanges, type CrudChange, type CrudRowId } from '@gen-office/gen-grid-crud';
 import { LkupApi } from '@/pages/admin/lkup/api/lkup';
 import type {
   LkupMaster,
@@ -167,19 +167,6 @@ function toLkupDetailUpdateRequest(input: Partial<LkupDetail>): LkupDetailUpdate
   };
 }
 
-function findByRowId<T extends { _rowId: string }>(rows: readonly T[], rowId: CrudRowId) {
-  const id = String(rowId);
-  return rows.find((row) => row._rowId === id);
-}
-
-function isSameMasterKey(a: LkupMasterKey, b: LkupMasterKey) {
-  return a.lkupClssCd === b.lkupClssCd;
-}
-
-function isSameDetailKey(a: LkupDetailKey, b: LkupDetailKey) {
-  return a.lkupClssCd === b.lkupClssCd && a.lkupCd === b.lkupCd;
-}
-
 export function toLkupMasterRowId(row: Pick<LkupMaster, 'lkupClssCd'>) {
   return `master:${encodeURIComponent(normalize(row.lkupClssCd))}`;
 }
@@ -194,62 +181,40 @@ export async function commitLkupMasterChanges(
   changes: readonly CrudChange<LkupMasterGridRow>[],
   ctxRows: readonly LkupMasterGridRow[]
 ) {
-  const created = new Map<CrudRowId, LkupMasterGridRow>();
-  const updated = new Map<CrudRowId, Partial<LkupMasterGridRow>>();
-  const deleted = new Set<CrudRowId>();
+  const { creates, updates, deletes } = prepareCommitChanges(changes, {
+    viewData: ctxRows,
+    getRowId: (row: LkupMasterGridRow) => row._rowId,
+  });
 
-  for (const change of changes) {
-    switch (change.type) {
-      case 'create':
-        created.set(change.tempId, change.row);
-        break;
-      case 'update':
-        updated.set(change.rowId, { ...(updated.get(change.rowId) ?? {}), ...change.patch });
-        break;
-      case 'delete':
-        deleted.add(change.rowId);
-        break;
-      case 'undelete':
-      default:
-        break;
-    }
+  const createPayload: LkupMasterCreateRequest[] = [];
+  const updatesPayload: Array<{ lkupClssCd: string; input: LkupMasterUpdateRequest }> = [];
+  const deletesPayload: string[] = [];
+
+  for (const row of creates) {
+    createPayload.push(toLkupMasterCreateRequest(row));
   }
 
-  for (const [tempId, row] of created.entries()) {
-    if (deleted.has(tempId)) continue;
-    const patch = updated.get(tempId);
-    const merged = patch ? { ...row, ...patch } : row;
-    await LkupApi.createMaster(toLkupMasterCreateRequest(merged));
+  for (const row of updates) {
+    const key = toLkupMasterKey(row);
+    if (!key) throw new Error('lkupClssCd is required.');
+
+    updatesPayload.push({
+      lkupClssCd: key.lkupClssCd,
+      input: toLkupMasterUpdateRequest(row),
+    });
   }
 
-  for (const [rowId, patch] of updated.entries()) {
-    if (created.has(rowId)) continue;
-    if (deleted.has(rowId)) continue;
-
-    const base = findByRowId(ctxRows, rowId);
-    if (!base) continue;
-
-    const merged = { ...base, ...patch };
-    const baseKey = toLkupMasterKey(base);
-    const nextKey = toLkupMasterKey(merged);
-    if (!baseKey || !nextKey) throw new Error('lkupClssCd is required.');
-
-    if (!isSameMasterKey(baseKey, nextKey)) {
-      throw new Error('lkupClssCd cannot be changed for existing rows.');
-    }
-
-    await LkupApi.updateMaster(baseKey, toLkupMasterUpdateRequest(merged));
-  }
-
-  for (const rowId of deleted) {
-    if (created.has(rowId)) continue;
-    const row = findByRowId(ctxRows, rowId);
-    if (!row) continue;
+  for (const row of deletes) {
     const key = toLkupMasterKey(row);
     if (!key) continue;
-    if (normalizeUseYn(row.useYn ?? 'Y') === 'N') continue;
-    await LkupApi.updateMaster(key, toLkupMasterUpdateRequest({ ...row, useYn: 'N' }));
+    deletesPayload.push(key.lkupClssCd);
   }
+
+  await LkupApi.bulkCommitMasters({
+    creates: createPayload,
+    updates: updatesPayload,
+    deletes: deletesPayload,
+  });
 }
 
 export async function commitLkupDetailChanges(
@@ -260,62 +225,40 @@ export async function commitLkupDetailChanges(
   const lkupClssCd = normalize(selectedMasterCode);
   if (!lkupClssCd) throw new Error('Select a code class first.');
 
-  const created = new Map<CrudRowId, LkupDetailGridRow>();
-  const updated = new Map<CrudRowId, Partial<LkupDetailGridRow>>();
-  const deleted = new Set<CrudRowId>();
+  const { creates, updates, deletes } = prepareCommitChanges(changes, {
+    viewData: ctxRows,
+    getRowId: (row: LkupDetailGridRow) => row._rowId,
+  });
 
-  for (const change of changes) {
-    switch (change.type) {
-      case 'create':
-        created.set(change.tempId, change.row);
-        break;
-      case 'update':
-        updated.set(change.rowId, { ...(updated.get(change.rowId) ?? {}), ...change.patch });
-        break;
-      case 'delete':
-        deleted.add(change.rowId);
-        break;
-      case 'undelete':
-      default:
-        break;
-    }
+  const createPayload: LkupDetailCreateRequest[] = [];
+  const updatesPayload: Array<{ lkupCd: string; input: LkupDetailUpdateRequest }> = [];
+  const deletesPayload: string[] = [];
+
+  for (const row of creates) {
+    createPayload.push(toLkupDetailCreateRequest({ ...row, lkupClssCd }));
   }
 
-  for (const [tempId, row] of created.entries()) {
-    if (deleted.has(tempId)) continue;
-    const patch = updated.get(tempId);
-    const merged = { ...(patch ? { ...row, ...patch } : row), lkupClssCd };
-    await LkupApi.createDetail(lkupClssCd, toLkupDetailCreateRequest(merged));
+  for (const row of updates) {
+    const key = toLkupDetailKey(row);
+    if (!key) throw new Error('lkupClssCd and lkupCd are required.');
+
+    updatesPayload.push({
+      lkupCd: key.lkupCd,
+      input: toLkupDetailUpdateRequest(row),
+    });
   }
 
-  for (const [rowId, patch] of updated.entries()) {
-    if (created.has(rowId)) continue;
-    if (deleted.has(rowId)) continue;
-
-    const base = findByRowId(ctxRows, rowId);
-    if (!base) continue;
-
-    const merged = { ...base, ...patch };
-    const baseKey = toLkupDetailKey(base);
-    const nextKey = toLkupDetailKey(merged);
-    if (!baseKey || !nextKey) throw new Error('lkupClssCd and lkupCd are required.');
-
-    if (!isSameDetailKey(baseKey, nextKey)) {
-      throw new Error('lkupCd cannot be changed for existing rows.');
-    }
-
-    await LkupApi.updateDetail(baseKey, toLkupDetailUpdateRequest(merged));
-  }
-
-  for (const rowId of deleted) {
-    if (created.has(rowId)) continue;
-    const row = findByRowId(ctxRows, rowId);
-    if (!row) continue;
+  for (const row of deletes) {
     const key = toLkupDetailKey(row);
     if (!key) continue;
-    if (normalizeUseYn(row.useYn ?? 'Y') === 'N') continue;
-    await LkupApi.updateDetail(key, toLkupDetailUpdateRequest({ ...row, useYn: 'N' }));
+    deletesPayload.push(key.lkupCd);
   }
+
+  await LkupApi.bulkCommitDetails(lkupClssCd, {
+    creates: createPayload,
+    updates: updatesPayload,
+    deletes: deletesPayload,
+  });
 }
 
 export function hasMissingLkupMasterRequired(

@@ -49,6 +49,16 @@ export const userApi = {
     http<{ ok: true }>(`/api/users/${encodeURIComponent(String(id))}`, {
       method: 'DELETE',
     }),
+
+  bulkCommit: (input: {
+    creates: UserRequest[];
+    updates: Array<{ id: number; input: UserRequest }>;
+    deletes: number[];
+  }) =>
+    http<{ created: number; updated: number; deleted: number }>('/api/users/bulk', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
 };
 
 // -------- Queries --------

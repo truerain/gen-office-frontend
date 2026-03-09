@@ -52,6 +52,16 @@ export const noticeApi = {
     http<void>(`/api/notices/${encodeURIComponent(String(id))}`, {
       method: 'DELETE',
     }),
+
+  bulkCommit: (input: {
+    creates: NoticeRequest[];
+    updates: Array<{ id: number; input: NoticeRequest }>;
+    deletes: number[];
+  }) =>
+    http<{ created: number; updated: number; deleted: number }>('/api/notices/bulk', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
 };
 
 export function useNoticeListQuery(params: NoticeListParams) {
