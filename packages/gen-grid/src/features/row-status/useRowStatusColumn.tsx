@@ -1,5 +1,6 @@
 import * as React from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
+import { SquareMinus, SquarePen, SquarePlus } from 'lucide-react';
 import { ROW_STATUS_COLUMN_ID, type RowStatus } from './rowStatus';
 
 export function useRowStatusColumn<TData>(args: {
@@ -28,24 +29,6 @@ export function useRowStatusColumn<TData>(args: {
           rowStatusResolver?.(row.id) ??
           (isRowDirty?.(row.id) ? 'updated' : 'clean');
 
-        const tone =
-          status === 'created'
-            ? 'var(--grid-row-status-created-bg)'
-            : status === 'updated'
-              ? 'var(--grid-row-status-updated-bg)'
-              : status === 'deleted'
-                ? 'var(--grid-row-status-deleted-bg)'
-                : 'transparent';
-
-        const symbol =
-          status === 'created'
-            ? 'C'
-            : status === 'updated'
-              ? 'M'
-              : status === 'deleted'
-                ? 'D'
-                : '';
-
         const symbolColor =
           status === 'created'
             ? 'var(--grid-row-status-created-fg)'
@@ -64,6 +47,15 @@ export function useRowStatusColumn<TData>(args: {
                 ? 'Deleted'
                 : 'Clean';
 
+        let icon: React.ReactNode = null;
+        if (status === 'created') {
+          icon = <SquarePlus size={15} strokeWidth={2} aria-hidden="true" />;
+        } else if (status === 'updated') {
+          icon = <SquarePen size={15} strokeWidth={2} aria-hidden="true" />;
+        } else if (status === 'deleted') {
+          icon = <SquareMinus size={15} strokeWidth={2} aria-hidden="true" />;
+        }
+
         return (
           <span
             title={label}
@@ -74,15 +66,13 @@ export function useRowStatusColumn<TData>(args: {
               justifyContent: 'center',
               width: 'var(--grid-row-status-badge-size)',
               height: 'var(--grid-row-status-badge-size)',
-              borderRadius: 'var(--grid-row-status-badge-radius)',
-              border: '1px solid var(--grid-row-status-border)',
-              background: tone,
               color: symbolColor,
               fontSize: 'var(--grid-row-status-font-size)',
               fontWeight: 'var(--grid-row-status-font-weight)',
+              lineHeight: 1,
             }}
           >
-            {symbol}
+            {icon}
           </span>
         );
       },
