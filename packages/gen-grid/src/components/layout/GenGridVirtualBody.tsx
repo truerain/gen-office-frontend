@@ -215,6 +215,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
     enabled: Boolean(options.enableRangeSelection),
     selectedRange,
     setSelectedRange,
+    activeCell,
   });
 
   const renderGroupedRow = React.useCallback(

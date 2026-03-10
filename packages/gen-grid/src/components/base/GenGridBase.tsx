@@ -11,12 +11,11 @@ import { GenGridBody } from '../layout/GenGridBody';
 import { GenGridVirtualBody } from '../layout/GenGridVirtualBody';
 import { GenGridPagination } from '../../components/pagination/GenGridPagination';
 import { useActiveCellNavigation } from '../../features/active-cell/useActiveCellNavigation';
-import { SELECTION_COLUMN_ID } from '../../features/row-selection/rowSelection';
-import { ROW_NUMBER_COLUMN_ID } from '../../features/row-number/useRowNumberColumn';
 import { buildRowSpanModel } from '../layout/rowSpanModel';
 
 import layout from './GenGridLayout.module.css';
-import controls from './GenGridControls.module.css';
+import { useClipboardActions } from '../../features/range-selection/useClipboardActions';
+import { GenGridContextMenu } from './GenGridContextMenu';
 
 export type GenGridBaseProps<TData> = {
   table: Table<TData>;
@@ -184,14 +183,8 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     if (value == null) return undefined;
     return typeof value === 'number' ? `${value}px` : value;
   }, []);
-
-  // ✅ activeCell을 Provider에서 관리
-  const { activeCell, setActiveCell, options, clearSelectedRange } = useGenGridContext<TData>();
-
-  const isSystemCol = React.useCallback(
-    (colId: string) => colId === SELECTION_COLUMN_ID || colId === ROW_NUMBER_COLUMN_ID,
-    []
-  );
+  // activeCell is managed by Provider
+  const { activeCell, setActiveCell, options, clearSelectedRange, selectedRange } = useGenGridContext<TData>();
 
   const tableState = table.getState();
   const hasColumnFilter = (tableState.columnFilters?.length ?? 0) > 0;
@@ -210,6 +203,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     () => buildRowSpanModel(table, rowSpanningEnabled),
     [table, rowSpanningEnabled, spanRows]
   );
+  const rows = table.getRowModel().rows;
 
   const handleActiveCellChange = React.useCallback(
     (next: { rowId: string; columnId: string }) => setActiveCell(next),
@@ -222,6 +216,47 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     },
     [onCellValueChange]
   );
+
+  const [contextMenu, setContextMenu] = React.useState<{ x: number; y: number } | null>(null);
+
+  const closeContextMenu = React.useCallback(() => {
+    setContextMenu(null);
+  }, []);
+
+  const { canCopy, canPaste, copyToClipboard, pasteFromClipboard } = useClipboardActions({
+    table,
+    rows,
+    selectedRange,
+    activeCell,
+    onCellValueChange,
+  });
+
+  React.useEffect(() => {
+    if (!contextMenu) return;
+
+    const handleMouseDown = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('[data-gen-grid-context-menu="true"]')) return;
+      closeContextMenu();
+    };
+    const handleScroll = () => closeContextMenu();
+    const handleResize = () => closeContextMenu();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeContextMenu();
+    };
+
+    document.addEventListener('mousedown', handleMouseDown, true);
+    window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleResize);
+    document.addEventListener('keydown', handleKeyDown, true);
+
+    return () => {
+      document.removeEventListener('mousedown', handleMouseDown, true);
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleResize);
+      document.removeEventListener('keydown', handleKeyDown, true);
+    };
+  }, [closeContextMenu, contextMenu]);
 
   const nav = useActiveCellNavigation({
     table,
@@ -344,11 +379,44 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.defaultPrevented) return;
+
+          const target = e.target as HTMLElement | null;
+          if (target?.closest('input,select,textarea,button,[contenteditable="true"]')) {
+            return;
+          }
+
+          const isCtrlOrMeta = e.ctrlKey || e.metaKey;
+          const key = e.key.toLowerCase();
+
+          if (isCtrlOrMeta && key === 'c' && canCopy) {
+            e.preventDefault();
+            void copyToClipboard(Boolean(e.shiftKey));
+            return;
+          }
+
+          if (isCtrlOrMeta && key === 'v' && canPaste) {
+            e.preventDefault();
+            void pasteFromClipboard();
+            return;
+          }
+
           if (options.enableRangeSelection && e.key === 'Escape') {
             clearSelectedRange();
             return;
           }
           nav.handleKeyDown(e);
+        }}
+        onContextMenu={(e) => {
+          const target = e.target as HTMLElement | null;
+          if (!target) return;
+          if (target.closest('input,select,textarea,button,[contenteditable="true"]')) {
+            return;
+          }
+          const cell = target.closest('td[data-rowid][data-colid]') as HTMLElement | null;
+          if (!cell) return;
+
+          e.preventDefault();
+          setContextMenu({ x: e.clientX, y: e.clientY });
         }}
       >
         <table
@@ -449,6 +517,17 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
       {enablePagination ? (
         <GenGridPagination table={table} pageSizeOptions={pageSizeOptions} />
       ) : null}
+
+      <GenGridContextMenu
+        contextMenu={contextMenu}
+        canCopy={canCopy}
+        canPaste={canPaste}
+        onClose={closeContextMenu}
+        onCopy={() => void copyToClipboard(false)}
+        onCopyWithHeader={() => void copyToClipboard(true)}
+        onPaste={() => void pasteFromClipboard()}
+      />
     </div>
   );
 }
+

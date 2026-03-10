@@ -1,6 +1,6 @@
 import * as React from 'react';
 import type { Table } from '@tanstack/react-table';
-import type { SelectedRange } from './types';
+import type { RangeCellCoord, SelectedRange } from './types';
 
 function toBounds(a: number, b: number) {
   return { min: Math.min(a, b), max: Math.max(a, b) };
@@ -11,8 +11,9 @@ export function useRangeSelection<TData>(args: {
   enabled: boolean;
   selectedRange: SelectedRange;
   setSelectedRange: React.Dispatch<React.SetStateAction<SelectedRange>>;
+  activeCell: RangeCellCoord | null;
 }) {
-  const { table, enabled, selectedRange, setSelectedRange } = args;
+  const { table, enabled, selectedRange, setSelectedRange, activeCell } = args;
   const draggingRef = React.useRef(false);
 
   const rows = table.getRowModel().rows;
@@ -54,6 +55,28 @@ export function useRangeSelection<TData>(args: {
       setSelectedRange(createRange(rowId, columnId));
     },
     [createRange, enabled, setSelectedRange]
+  );
+
+  const selectFromAnchor = React.useCallback(
+    (anchor: RangeCellCoord | null, rowId: string, columnId: string) => {
+      if (!enabled) return;
+      if (!rowIndexById.has(rowId) || !colIndexById.has(columnId)) return;
+
+      draggingRef.current = false;
+      const anchorIsValid =
+        !!anchor && rowIndexById.has(anchor.rowId) && colIndexById.has(anchor.columnId);
+
+      if (anchorIsValid && anchor) {
+        setSelectedRange({
+          anchor: { rowId: anchor.rowId, columnId: anchor.columnId },
+          focus: { rowId, columnId },
+        });
+        return;
+      }
+
+      setSelectedRange(createRange(rowId, columnId));
+    },
+    [colIndexById, createRange, enabled, rowIndexById, setSelectedRange]
   );
 
   const extendRange = React.useCallback(
@@ -172,6 +195,12 @@ export function useRangeSelection<TData>(args: {
           return;
         }
 
+        if (e.shiftKey) {
+          e.preventDefault();
+          selectFromAnchor(activeCell ?? selectedRange?.anchor ?? null, rowId, columnId);
+          return;
+        }
+
         beginRange(rowId, columnId);
       },
       onMouseEnter: (_e: React.MouseEvent) => {
@@ -183,7 +212,7 @@ export function useRangeSelection<TData>(args: {
         endRange();
       },
     }),
-    [beginRange, enabled, endRange, extendRange]
+    [activeCell, beginRange, enabled, endRange, extendRange, selectFromAnchor, selectedRange]
   );
 
   return {
