@@ -56,7 +56,7 @@ export const createUserManagementColumns = (
     id: 'email',
     header: 'Email',
     accessorKey: 'email',
-    size: 220,
+    size: 320,
     meta: { editable: true, editType: 'text' },
   },
   {
@@ -77,7 +77,7 @@ export const createUserManagementColumns = (
     id: 'langCd',
     header: 'Lang',
     accessorKey: 'langCd',
-    size: 80,
+    size: 280,
     meta: {
       editable: true,
       editType: 'select',

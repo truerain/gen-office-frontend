@@ -95,7 +95,11 @@ export const GenGrid = React.forwardRef(function GenGridInner<TData>(
       table={table}
       activeCell={props.activeCell}
       onActiveCellChange={props.onActiveCellChange}
-      options={{ editorFactory: props.editorFactory, keepEditingOnNavigate: props.keepEditingOnNavigate }}
+      options={{
+        editorFactory: props.editorFactory,
+        keepEditingOnNavigate: props.keepEditingOnNavigate,
+        enableRangeSelection: props.enableRangeSelection,
+      }}
     >
       <GenGridBase<TData>
         {...props} // ?뱀? ?꾩슂??寃껊쭔 ?좊퀎 ?꾨떖

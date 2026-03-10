@@ -3,32 +3,27 @@
 /* pinned */
 .pinned {
   z-index: var(--grid-z-pinned);
-  background: var(--grid-cell-bg-pinned);
+  background: var(--grid-cell-bg);
 }
 
-.tbody .tr:hover .td.pinned {
-  background: var(--grid-cell-bg-hover);
-}
-.tbody .tr.is-selected .td.pinned {
-  background: var(--grid-cell-bg-selected);
-}
+
 
 /* footer pinned */
 tfoot .pinned {
-  background: var(--grid-footer-bg, var(--grid-header-bg));
+  background: var(--grid-header-bg);
 }
 tfoot .pinnedLeft {
-  box-shadow: var(--grid-header-shadow-pinned-left);
+  box-shadow: var(--grid-header-shadow-pinned);
 }
 tfoot .pinnedRight {
-  box-shadow: var(--grid-header-shadow-pinned-right);
+  box-shadow: var(--grid-header-shadow-pinned);
 }
 
 .pinnedLeft {
-  box-shadow: var(--grid-cell-shadow-pinned-left);
+  box-shadow: var(--grid-cell-shadow-pinned);
 }
 .pinnedRight {
-  box-shadow: var(--grid-cell-shadow-pinned-right);
+  box-shadow: var(--grid-cell-shadow-pinned);
 }
 
 /* header pinned */
@@ -36,10 +31,10 @@ tfoot .pinnedRight {
   background: var(--grid-header-bg-pinned);
 }
 [data-sticky-header] .thead th.pinnedLeft {
-  box-shadow: var(--grid-header-shadow-pinned-left);
+  box-shadow: var(--grid-header-shadow-pinned);
 }
 [data-sticky-header] .thead th.pinnedRight {
-  box-shadow: var(--grid-header-shadow-pinned-right);
+  box-shadow: var(--grid-header-shadow-pinned);
 }
 
 /* pin controls */

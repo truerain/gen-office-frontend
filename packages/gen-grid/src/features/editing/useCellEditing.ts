@@ -129,7 +129,17 @@ export function useCellEditing<TData>(args: {
       const isEditing = !!editCell && editCell.rowId === rowId && editCell.columnId === columnId;
 
       return {
-        onMouseDown: () => {
+        onMouseDown: (e: any) => {
+          // Some browsers/input flows may skip td onDoubleClick after preventDefault on mousedown.
+          // Use mouse detail as a stable fallback to enter edit on double-click.
+          if (e?.detail >= 2) {
+            onActiveCellChange({ rowId, columnId });
+            if (canEdit(rowId, columnId)) {
+              startEditing({ rowId, columnId });
+            }
+            return;
+          }
+
           if (!editMode && !editCell) return;
           if (isEditing) return;
           if (editCell && (editCell.rowId !== rowId || editCell.columnId !== columnId)) {

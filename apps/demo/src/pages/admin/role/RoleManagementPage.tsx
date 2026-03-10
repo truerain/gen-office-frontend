@@ -286,6 +286,7 @@ export default function RoleManagementPage(_props: PageComponentProps) {
                   enablePinning: true,
                   enableColumnSizing: true,
                   enableVirtualization: true,
+                  enableRowNumber: true,
                   enableRowStatus: true,
                   checkboxSelection: true,
                   editOnActiveCell: false,

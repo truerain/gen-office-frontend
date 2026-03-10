@@ -9,7 +9,7 @@ export type ActiveCell = { rowId: string; columnId: string } | null;
 
 type Direction = 'left' | 'right' | 'up' | 'down';
 
-// focusGridCell(rowId, colId, opts?) ?�태�?가??
+// focusGridCell(rowId, colId, opts?) ?�태�?가??
 type FocusOptions = Parameters<typeof focusGridCell>[2];
 
 type TreeMeta = {
@@ -30,24 +30,24 @@ export function useActiveCellNavigation<TData>(args: {
   onActiveCellChange: (next: { rowId: string; columnId: string }) => void;
 
   /**
-   * Navigable ?�???�어 (?? system column ?�외)
+   * Navigable ?�???�어 (?? system column ?�외)
    * default: true
    */
   isCellNavigable?: (rowId: string, columnId: string) => boolean;
 
   /**
-   * focusGridCell ?�출 ???�길 ?�션 (sticky/pinned 고려)
+   * focusGridCell ?�출 ???�길 ?�션 (sticky/pinned 고려)
    */
   focusOptions?: FocusOptions;
 
   /**
-   * navigable ?�닌 ?�/컬럼??만났????건너?�기
+   * navigable ?�닌 ?�/컬럼??만났????건너?�기
    * default: true
    */
   skipNonNavigable?: boolean;
 
   /**
-   * PageUp/PageDown ??번에 ?�동??row ??계산???�한 fallback
+   * PageUp/PageDown ??번에 ?�동??row ??계산???�한 fallback
    * default: 10
    */
   pageRowFallback?: number;
@@ -64,10 +64,15 @@ export function useActiveCellNavigation<TData>(args: {
 
   const rows = table.getRowModel().rows;
 
-  // row?� 무�???"보이??컬럼" ?�서
+  // row?� 무�???"보이??컬럼" ?�서
   const visibleColumnIds = React.useMemo(() => {
+    // Keep keyboard navigation order aligned with rendered cell order.
+    const firstRowCells = rows[0]?.getVisibleCells?.();
+    if (Array.isArray(firstRowCells) && firstRowCells.length > 0) {
+      return firstRowCells.map((cell) => cell.column.id);
+    }
     return table.getVisibleLeafColumns().map((c) => c.id);
-  }, [table]);
+  }, [rows, table]);
 
   // O(1) lookup cache
   const rowIndexById = React.useMemo(() => {
@@ -97,8 +102,8 @@ export function useActiveCellNavigation<TData>(args: {
   );
 
   const setActive = React.useCallback(
-    (rowId: string, columnId: string, opts?: { focus?: boolean }) => {
-      if (!canNavigate(rowId, columnId)) return;
+    (rowId: string, columnId: string, opts?: { focus?: boolean; allowNonNavigable?: boolean }) => {
+      if (!opts?.allowNonNavigable && !canNavigate(rowId, columnId)) return;
 
       onActiveCellChange({ rowId, columnId });
       if (opts?.focus) focus(rowId, columnId);
@@ -188,7 +193,7 @@ export function useActiveCellNavigation<TData>(args: {
         }
       };
 
-      // 목표 칸�???검?�하�?skip
+      // 목표 칸�???검?�하�?skip
       for (let guard = 0; guard < 5000; guard++) {
         if (r < 0 || r > maxRow || c < 0 || c > maxCol) return null;
 
@@ -207,9 +212,9 @@ export function useActiveCellNavigation<TData>(args: {
   );
 
   /**
-   * PageUp/PageDown ?�동 row delta 계산
-   * - ?�재 active cell DOM??기�??�로 컨테?�너 ?�이 / ?� ?�이�?추정
-   * - �?찾으�?fallback ?�용
+   * PageUp/PageDown ?�동 row delta 계산
+   * - ?�재 active cell DOM??기�??�로 컨테?�너 ?�이 / ?� ?�이�?추정
+   * - �?찾으�?fallback ?�용
    */
   const getPageRowDelta = React.useCallback(() => {
     if (!activeCell) return pageRowFallback;
@@ -225,7 +230,7 @@ export function useActiveCellNavigation<TData>(args: {
     const rowPx = el.getBoundingClientRect().height || 36;
     const visiblePx = container.clientHeight;
 
-    // ???�면 - 1�??�도 ?�동
+    // ???�면 - 1�??�도 ?�동
     const delta = Math.max(1, Math.floor(visiblePx / rowPx) - 1);
     return delta;
   }, [activeCell, pageRowFallback]);
@@ -430,7 +435,7 @@ export function useActiveCellNavigation<TData>(args: {
     [handleTreeArrowKey, move, moveHomeEnd, movePage]
   );
 
-  // ??GenGridBody?�서 td??그�?�?spread ?????�는 props ?�공
+  // ??GenGridBody?�서 td??그�?�?spread ?????�는 props ?�공
   const getCellProps = React.useCallback(
     (rowId: string, columnId: string, isActive: boolean) => {
       return {
@@ -440,7 +445,7 @@ export function useActiveCellNavigation<TData>(args: {
         tabIndex: isActive ? 0 : -1,
 
         onFocus: () => {
-          if (!isActive) setActive(rowId, columnId);
+          if (!isActive) setActive(rowId, columnId, { allowNonNavigable: true });
         },
 
         onMouseDown: (e: React.MouseEvent) => {
@@ -449,11 +454,11 @@ export function useActiveCellNavigation<TData>(args: {
             target &&
             target.closest('input,select,textarea,button,[contenteditable="true"]')
           ) {
+            if (!isActive) setActive(rowId, columnId);
             return;
           }
-          // 기본 ?�커???�스???�택 ??방�? + 직접 focus
           e.preventDefault();
-          setActive(rowId, columnId, { focus: true });
+          setActive(rowId, columnId, { focus: true, allowNonNavigable: true });
         },
 
         onKeyDown: (e: React.KeyboardEvent) => {
@@ -466,7 +471,7 @@ export function useActiveCellNavigation<TData>(args: {
 
   return {
     getCellProps,
-    handleKeyDown, // ?��??�서 grid wrapper??걸고 ?�을 ?�도 ?�용 가??
+    handleKeyDown, // ?��??�서 grid wrapper??걸고 ?�을 ?�도 ?�용 가??
     move,
     setActive,
     setActiveRow,

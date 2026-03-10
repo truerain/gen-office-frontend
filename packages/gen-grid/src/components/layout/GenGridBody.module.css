@@ -1,7 +1,6 @@
 /* packages/gen-grid/src/components/layout/GenGridBody.module.css */
 
-
-/* td 기본 */
+/* td ?? */
 .td {
   height: var(--gen-grid-row-height);
   padding: 0 var(--grid-cell-padding-x);
@@ -10,7 +9,7 @@
   border-bottom: 1px solid var(--grid-cell-border);
   border-right: 1px solid var(--grid-cell-border);
 
-  font-family: var(--grid-font-family, var(--font-family-primary, sans-serif));
+  font-family: var(--grid-font-family);
   font-size: var(--grid-cell-font-size);
   white-space: nowrap;
   overflow: hidden;
@@ -25,21 +24,20 @@
 }
 
 /* Row state precedence */
-.tbody .tr:hover .td {
+.tbody :where(.tr:hover) .td {
   background: var(--grid-cell-bg-hover);
 }
 
 .tbody .tr.activeRow .td {
-  background: color-mix(in srgb, var(--color-focus, #3b82f6) 8%, var(--grid-cell-bg));
-}
-.tbody .tr.activeRow .td[data-pinned="true"] {
-  background: color-mix(in srgb, var(--color-focus, #3b82f6) 8%, var(--grid-cell-bg-pinned));
-}
-.tbody .tr.activeRow {
-  --grid-cell-bg-pinned-active: color-mix(in srgb, var(--color-focus, #3b82f6) 8%, var(--grid-cell-bg-pinned));
+  background: var(--grid-cell-bg-focus);
 }
 
 .tbody .tr.is-selected .td {
+  background: var(--grid-cell-bg-selected);
+}
+
+.tbody .tr .td.selectedRange,
+.tbody .tr .td[data-selected-range="true"] {
   background: var(--grid-cell-bg-selected);
 }
 
@@ -48,15 +46,15 @@
 }
 
 /* Active cell */
-.tbody td[data-active-cell="true"] {
-  outline: 2px solid var(--color-focus, #3b82f6);
+.tbody .tr .td[data-active-cell="true"] {
+  outline: 1px solid var(--grid-selection-border);
   outline-offset: -2px;
-  background: color-mix(in srgb, var(--color-focus, #3b82f6) 10%, transparent);
+  background: var(--grid-cell-bg-focus);
 }
 
-/* 키보드 접근 */
+/* ??? ??? ?? */
 .tbody td:focus-visible {
-  outline: 2px solid var(--color-focus, #3b82f6);
+  outline: 2px solid var(--grid-selection-border);
   outline-offset: -2px;
 }
 
@@ -154,7 +152,7 @@
 }
 
 .treeToggle:hover {
-  background: color-mix(in srgb, var(--grid-cell-bg-hover) 70%, transparent);
+  background: var(--grid-cell-bg-hover);
 }
 
 .treeTogglePlaceholder {
@@ -173,7 +171,7 @@
 
 .treeOrphanBadge {
   flex: 0 0 auto;
-  color: var(--color-danger, #c0392b);
+  color: var(--grid-row-text);
   font-size: 11px;
   font-weight: 700;
   line-height: 1;

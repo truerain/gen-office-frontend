@@ -164,12 +164,13 @@ export default function UserManagementPage(_props: PageComponentProps) {
             enableColumnSizing: true,
             enableVirtualization: true,
             enableRowStatus: true,
+            enableRowNumber: true,
             checkboxSelection: true,
             editOnActiveCell: false,
+            enableRangeSelection: true,
             keepEditingOnNavigate: true,
             enableFooterRow: false,
             enableStickyFooterRow: true,
-            enableActiveRowHighlight: true,
           }}
         />
       </div>

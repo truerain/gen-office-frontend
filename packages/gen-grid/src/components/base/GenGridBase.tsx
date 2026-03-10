@@ -11,7 +11,7 @@ import { GenGridBody } from '../layout/GenGridBody';
 import { GenGridVirtualBody } from '../layout/GenGridVirtualBody';
 import { GenGridPagination } from '../../components/pagination/GenGridPagination';
 import { useActiveCellNavigation } from '../../features/active-cell/useActiveCellNavigation';
-import { SELECTION_COLUMN_ID } from '../../features/selection/selection';
+import { SELECTION_COLUMN_ID } from '../../features/row-selection/rowSelection';
 import { ROW_NUMBER_COLUMN_ID } from '../../features/row-number/useRowNumberColumn';
 import { buildRowSpanModel } from '../layout/rowSpanModel';
 
@@ -186,7 +186,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
   }, []);
 
   // ✅ activeCell을 Provider에서 관리
-  const { activeCell, setActiveCell } = useGenGridContext<TData>();
+  const { activeCell, setActiveCell, options, clearSelectedRange } = useGenGridContext<TData>();
 
   const isSystemCol = React.useCallback(
     (colId: string) => colId === SELECTION_COLUMN_ID || colId === ROW_NUMBER_COLUMN_ID,
@@ -227,7 +227,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     table,
     activeCell,
     onActiveCellChange: handleActiveCellChange,
-    isCellNavigable: (_, colId) => !isSystemCol(colId),
+    isCellNavigable: () => true,
     focusOptions: { stickyHeaderHeight: (headerHeight ?? 40) * headerRowCount },
   });
 
@@ -344,6 +344,10 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.defaultPrevented) return;
+          if (options.enableRangeSelection && e.key === 'Escape') {
+            clearSelectedRange();
+            return;
+          }
           nav.handleKeyDown(e);
         }}
       >

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import type { ColumnDef, Table } from '@tanstack/react-table';
-import { SELECTION_COLUMN_ID } from '../selection/selection';
+import { SELECTION_COLUMN_ID } from '../row-selection/rowSelection';
 
 export const ROW_NUMBER_COLUMN_ID = '__rowNumber__';
 

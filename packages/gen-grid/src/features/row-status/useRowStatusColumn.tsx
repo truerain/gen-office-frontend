@@ -20,10 +20,8 @@ export function useRowStatusColumn<TData>(args: {
       enableSorting: false,
       enableColumnFilter: false,
       meta: {
-        // system column
         align: 'center',
         mono: true,
-        // pinned는 meta로만 두지 말고 실제 pinning state에 넣는게 핵심(기존 system처럼)
       },
       cell: ({ row }) => {
         const status =
@@ -32,11 +30,11 @@ export function useRowStatusColumn<TData>(args: {
 
         const tone =
           status === 'created'
-            ? 'color-mix(in srgb, #16a34a 25%, transparent)'
+            ? 'var(--grid-row-status-created-bg)'
             : status === 'updated'
-              ? 'color-mix(in srgb, var(--color-focus, #3b82f6) 25%, transparent)'
+              ? 'var(--grid-row-status-updated-bg)'
               : status === 'deleted'
-                ? 'color-mix(in srgb, #ef4444 25%, transparent)'
+                ? 'var(--grid-row-status-deleted-bg)'
                 : 'transparent';
 
         const symbol =
@@ -50,12 +48,12 @@ export function useRowStatusColumn<TData>(args: {
 
         const symbolColor =
           status === 'created'
-            ? '#16a34a'
+            ? 'var(--grid-row-status-created-fg)'
             : status === 'updated'
-              ? 'var(--color-focus, #3b82f6)'
+              ? 'var(--grid-row-status-updated-fg)'
               : status === 'deleted'
-                ? '#ef4444'
-                : 'var(--grid-cell-text)';
+                ? 'var(--grid-row-status-deleted-fg)'
+                : 'var(--grid-row-status-clean-fg)';
 
         const label =
           status === 'created'
@@ -74,14 +72,14 @@ export function useRowStatusColumn<TData>(args: {
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: 18,
-              height: 18,
-              borderRadius: 999,
-              border: '1px solid var(--grid-border)',
+              width: 'var(--grid-row-status-badge-size)',
+              height: 'var(--grid-row-status-badge-size)',
+              borderRadius: 'var(--grid-row-status-badge-radius)',
+              border: '1px solid var(--grid-row-status-border)',
               background: tone,
               color: symbolColor,
-              fontSize: 12,
-              fontWeight: 700,
+              fontSize: 'var(--grid-row-status-font-size)',
+              fontWeight: 'var(--grid-row-status-font-weight)',
             }}
           >
             {symbol}
@@ -96,7 +94,7 @@ export function useRowStatusColumn<TData>(args: {
 
 export const withRowStatusColumn = <TData,>(
   columns: ColumnDef<TData, any>[],
-  rowStatusColumn:ColumnDef<TData, any>
+  rowStatusColumn: ColumnDef<TData, any>
 ) => {
   return [rowStatusColumn, ...columns];
-}
+};

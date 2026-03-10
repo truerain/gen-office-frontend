@@ -1,20 +1,20 @@
 /* packages/gen-grid/src/components/layout/GenGridFooter.module.css */
 
 .tfoot {
-  background: var(--grid-footer-bg, var(--grid-header-bg));
+  background: var(--grid-header-bg);
 }
 
 .td {
   height: var(--gen-grid-row-height);
   padding: 0 12px;
-  border-right: 1px solid var(--grid-footer-border, var(--grid-header-border));
+  border-right: 1px solid var(--grid-header-border);
 
   font-size: var(--grid-font-size);
   font-weight: var(--grid-header-font-weight);
   white-space: nowrap;
 
-  background: var(--grid-footer-bg, var(--grid-header-bg));
-  color: var(--grid-footer-text, var(--grid-header-text));
+  background: var(--grid-header-bg);
+  color: var(--grid-header-text);
   position: relative;
 }
 
@@ -24,7 +24,7 @@
   left: 0;
   top: 0;
   width: 100%;
-  border-top: 1px solid var(--grid-footer-border, var(--grid-header-border));
+  border-top: 1px solid var(--grid-header-border);
   z-index: 1;
 }
 

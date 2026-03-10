@@ -71,6 +71,8 @@ type CommonGridOptions<TData> = {
   checkboxSelection?: boolean;
   enableRowNumber?: boolean;
   enableActiveRowHighlight?: boolean;
+  /** enable drag cell range selection */
+  enableRangeSelection?: boolean;
   enableGrouping?: boolean;
   /** enable body row spanning (row merge) */
   rowSpanning?: boolean;

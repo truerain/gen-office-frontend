@@ -6,9 +6,10 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useActiveCellNavigation } from '../../features/active-cell/useActiveCellNavigation';
 import { useCellEditing } from '../../features/editing/useCellEditing';
 import { useGenGridContext } from '../../core/context/GenGridProvider';
+import { useRangeSelection } from '../../features/range-selection/useRangeSelection';
 
 import type { ActiveCell } from '../../features/active-cell/useActiveCellNavigation';
-import { SELECTION_COLUMN_ID } from '../../features/selection/selection';
+import { SELECTION_COLUMN_ID } from '../../features/row-selection/rowSelection';
 import { ROW_NUMBER_COLUMN_ID } from '../../features/row-number/useRowNumberColumn';
 import { GenGridCell } from './GenGridCell';
 import { getCellStyle } from './cellStyles';
@@ -110,7 +111,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
     rowSpanningMode = 'real',
   } = props;
 
-  const { editMode, setEditMode } = useGenGridContext<TData>();
+  const { editMode, setEditMode, options, selectedRange, setSelectedRange } = useGenGridContext<TData>();
   const rows = table.getRowModel().rows;
   const rowStyleById = React.useMemo(() => {
     const map = new Map<string, React.CSSProperties | undefined>();
@@ -134,7 +135,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
     table,
     activeCell,
     onActiveCellChange,
-    isCellNavigable: (_, colId) => !isSystemCol(colId),
+    isCellNavigable: () => true,
   });
 
   const editing = useCellEditing({
@@ -159,6 +160,13 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
       : undefined,
   });
 
+
+  const rangeSelection = useRangeSelection({
+    table,
+    enabled: Boolean(options.enableRangeSelection),
+    selectedRange,
+    setSelectedRange,
+  });
 
   const renderGroupedRow = React.useCallback(
     (row: any) => {
@@ -208,6 +216,8 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
 
             const isActive =
               !!activeCell && activeCell.rowId === row.id && activeCell.columnId === colId;
+            const inSelectedRange = rangeSelection.isCellInRange(row.id, colId);
+            const rangeHandlers = rangeSelection.getRangeHandlers(row.id, colId);
             const cellValue = cell.getValue?.();
 
             let content: React.ReactNode = null;
@@ -259,6 +269,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
                   pinned ? pinningStyles.pinned : '',
                   pinned === 'left' ? pinningStyles.pinnedLeft : '',
                   pinned === 'right' ? pinningStyles.pinnedRight : '',
+                  inSelectedRange ? bodyStyles.selectedRange : '',
                   getCellClassName?.({
                     row: row.original,
                     rowId: row.id,
@@ -287,8 +298,12 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
                 data-rowid={row.id}
                 data-colid={colId}
                 data-active-cell={isActive ? 'true' : undefined}
+                data-selected-range={inSelectedRange ? 'true' : undefined}
                 data-pinned={pinned ? 'true' : undefined}
                 tabIndex={isActive ? 0 : -1}
+                onMouseDown={rangeHandlers.onMouseDown}
+                onMouseEnter={rangeHandlers.onMouseEnter}
+                onMouseUp={rangeHandlers.onMouseUp}
               >
                 {content}
               </td>
@@ -308,6 +323,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
       getRowStyle,
       getCellClassName,
       getCellStyleByRule,
+      rangeSelection,
     ]
   );
 
@@ -374,6 +390,9 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
               editing.editCell.rowId === row.id &&
               editing.editCell.columnId === colId;
 
+            const inSelectedRange = rangeSelection.isCellInRange(row.id, colId);
+            const rangeHandlers = rangeSelection.getRangeHandlers(row.id, colId);
+
             const navProps = nav.getCellProps(row.id, colId, isActive);
             const editProps = editing.getCellEditProps(row.id, colId);
 
@@ -420,11 +439,25 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
                   : undefined,
               onMouseDown:
                 keepEditingOnNavigate && isEditing
-                  ? (editProps as any).onMouseDown
+                  ? (mergeHandlers(
+                      rangeHandlers.onMouseDown as any,
+                      (editProps as any).onMouseDown
+                    ) as any)
                   : (mergeHandlers(
+                      rangeHandlers.onMouseDown as any,
                       (navProps as any).onMouseDown,
                       (editProps as any).onMouseDown
                     ) as any),
+              onMouseEnter: mergeHandlers(
+                (navProps as any).onMouseEnter,
+                (editProps as any).onMouseEnter,
+                rangeHandlers.onMouseEnter as any
+              ) as any,
+              onMouseUp: mergeHandlers(
+                (navProps as any).onMouseUp,
+                (editProps as any).onMouseUp,
+                rangeHandlers.onMouseUp as any
+              ) as any,
               onFocus: mergeHandlers(
                 (navProps as any).onFocus,
                 (editProps as any).onFocus
@@ -449,6 +482,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
                 rowStyle={cellRowStyle}
                 isActive={isActive}
                 isEditing={isEditing}
+                isInSelectedRange={inSelectedRange}
                 isDirty={dirty}
                 enablePinning={enablePinning}
                 enableColumnSizing={enableColumnSizing}

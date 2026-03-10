@@ -27,6 +27,7 @@
   --base-brand-500: #a50034;
   --base-brand-700: #7d0027;
   --base-brand-900: #4d0018;
+  --base-brand: var(--base-brand-500);
 
   /* Primary Colors */
   --color-primary: oklch(0.205 0 0);

@@ -11,11 +11,12 @@ import type { RowSpanModel } from './rowSpanModel';
 import { useActiveCellNavigation } from '../../features/active-cell/useActiveCellNavigation';
 import { useCellEditing } from '../../features/editing/useCellEditing';
 import { useGenGridContext } from '../../core/context/GenGridProvider';
+import { useRangeSelection } from '../../features/range-selection/useRangeSelection';
 import { GenGridCell } from './GenGridCell';
 import { getCellStyle } from './cellStyles';
 import { getMeta } from './utils';
 
-import { SELECTION_COLUMN_ID } from '../../features/selection/selection';
+import { SELECTION_COLUMN_ID } from '../../features/row-selection/rowSelection';
 import { ROW_NUMBER_COLUMN_ID } from '../../features/row-number/useRowNumberColumn';
 
 import bodyStyles from './GenGridBody.module.css';
@@ -119,7 +120,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
     rowSpanningMode = 'real',
   } = props;
 
-  const { editMode, setEditMode } = useGenGridContext<TData>();
+  const { editMode, setEditMode, options, selectedRange, setSelectedRange } = useGenGridContext<TData>();
   const rows = table.getRowModel().rows;
   const rowStyleById = React.useMemo(() => {
     const map = new Map<string, React.CSSProperties | undefined>();
@@ -181,7 +182,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
     table,
     activeCell,
     onActiveCellChange: onActiveCellChange,
-    isCellNavigable: (_, colId) => !isSystemCol(colId),
+    isCellNavigable: () => true,
     focusOptions: { 
         stickyHeaderHeight: 40 * table.getHeaderGroups().length },
   });
@@ -206,6 +207,14 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
     updateValue: onCellValueChange
       ? (coord, v) => onCellValueChange(coord, v)
       : undefined,
+  });
+
+
+  const rangeSelection = useRangeSelection({
+    table,
+    enabled: Boolean(options.enableRangeSelection),
+    selectedRange,
+    setSelectedRange,
   });
 
   const renderGroupedRow = React.useCallback(
@@ -256,6 +265,8 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
 
             const isActive =
               !!activeCell && activeCell.rowId === row.id && activeCell.columnId === colId;
+            const inSelectedRange = rangeSelection.isCellInRange(row.id, colId);
+            const rangeHandlers = rangeSelection.getRangeHandlers(row.id, colId);
             const cellValue = cell.getValue?.();
 
             let content: React.ReactNode = null;
@@ -289,6 +300,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
                   </span>
                 </button>
               );
+
             } else if (cell.getIsAggregated()) {
               content = cell.column.columnDef.aggregatedCell ? flexRender(cell.column.columnDef.aggregatedCell, cell.getContext()) : String(cell.getValue?.() ?? '');
             } else if (cell.getIsPlaceholder()) {
@@ -307,6 +319,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
                   pinned ? pinningStyles.pinned : '',
                   pinned === 'left' ? pinningStyles.pinnedLeft : '',
                   pinned === 'right' ? pinningStyles.pinnedRight : '',
+                  inSelectedRange ? bodyStyles.selectedRange : '',
                   getCellClassName?.({
                     row: row.original,
                     rowId: row.id,
@@ -356,6 +369,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
       getRowStyle,
       getCellClassName,
       getCellStyleByRule,
+      rangeSelection,
     ]
   );
   return (
@@ -429,6 +443,8 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
                 !!editing.editCell &&
                 editing.editCell.rowId === row.id &&
                 editing.editCell.columnId === colId;
+              const inSelectedRange = rangeSelection.isCellInRange(row.id, colId);
+              const rangeHandlers = rangeSelection.getRangeHandlers(row.id, colId);
 
               const navProps = nav.getCellProps(row.id, colId, isActive);
               const editProps = editing.getCellEditProps(row.id, colId);
@@ -476,11 +492,25 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
                     : undefined,
                 onMouseDown:
                   keepEditingOnNavigate && isEditing
-                    ? (editProps as any).onMouseDown
+                    ? (mergeHandlers(
+                        rangeHandlers.onMouseDown as any,
+                        (editProps as any).onMouseDown
+                      ) as any)
                     : (mergeHandlers(
+                        rangeHandlers.onMouseDown as any,
                         (navProps as any).onMouseDown,
                         (editProps as any).onMouseDown
                       ) as any),
+                onMouseEnter: mergeHandlers(
+                  (navProps as any).onMouseEnter,
+                  (editProps as any).onMouseEnter,
+                  rangeHandlers.onMouseEnter as any
+                ) as any,
+                onMouseUp: mergeHandlers(
+                  (navProps as any).onMouseUp,
+                  (editProps as any).onMouseUp,
+                  rangeHandlers.onMouseUp as any
+                ) as any,
                 onFocus: mergeHandlers(
                   (navProps as any).onFocus,
                   (editProps as any).onFocus
@@ -504,6 +534,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
                   rowStyle={cellRowStyle}
                   isActive={isActive}
                   isEditing={isEditing}
+                  isInSelectedRange={inSelectedRange}
                   enablePinning={enablePinning}
                   enableColumnSizing={enableColumnSizing}
                   getCellClassName={getCellClassName}
@@ -520,6 +551,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
                 />
               );
             })}
+
           </tr>
         );
       })}

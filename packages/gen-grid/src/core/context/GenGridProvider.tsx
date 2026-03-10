@@ -5,12 +5,14 @@ import type { Table } from '@tanstack/react-table';
 
 import { focusGridCell } from '../../features/active-cell/cellDom';
 import { ActiveCell } from '../../features/active-cell/types';
+import type { SelectedRange } from '../../features/range-selection/types';
 import type { GenGridEditorFactory } from '../../GenGrid.types';
 
 export type GenGridOptions = {
   isCellNavigable?: (rowId: string, columnId: string) => boolean;
   editorFactory?: GenGridEditorFactory<any>;
   keepEditingOnNavigate?: boolean;
+  enableRangeSelection?: boolean;
 };
 
 type GenGridContextValue<TData> = {
@@ -20,10 +22,13 @@ type GenGridContextValue<TData> = {
   activeCell: ActiveCell;
   setActiveCell: (cell: ActiveCell) => void;
 
+  selectedRange: SelectedRange;
+  setSelectedRange: React.Dispatch<React.SetStateAction<SelectedRange>>;
+  clearSelectedRange: () => void;
+
   editMode: boolean;
   setEditMode: (next: boolean) => void;
 
-  // 편의 command (필요하면 사용)
   focusCell: (cell: { rowId: string; columnId: string }) => void;
 };
 
@@ -39,7 +44,6 @@ export function GenGridProvider<TData>(props: {
   table: Table<TData>;
   options?: GenGridOptions;
 
-  /** (선택) controlled activeCell 지원 */
   activeCell?: ActiveCell;
   onActiveCellChange?: (next: ActiveCell) => void;
 
@@ -49,6 +53,12 @@ export function GenGridProvider<TData>(props: {
 
   const [uncontrolled, setUncontrolled] = React.useState<ActiveCell>(null);
   const activeCell = controlled ?? uncontrolled;
+
+  const [selectedRange, setSelectedRange] = React.useState<SelectedRange>(null);
+  const clearSelectedRange = React.useCallback(() => {
+    setSelectedRange(null);
+  }, []);
+
   const [editMode, setEditMode] = React.useState(false);
 
   const setActiveCell = React.useCallback(
@@ -73,11 +83,23 @@ export function GenGridProvider<TData>(props: {
       options: options ?? {},
       activeCell,
       setActiveCell,
+      selectedRange,
+      setSelectedRange,
+      clearSelectedRange,
       editMode,
       setEditMode,
       focusCell,
     }),
-    [table, options, activeCell, setActiveCell, editMode, focusCell]
+    [
+      table,
+      options,
+      activeCell,
+      setActiveCell,
+      selectedRange,
+      clearSelectedRange,
+      editMode,
+      focusCell,
+    ]
   );
 
   return <GenGridContext.Provider value={value}>{children}</GenGridContext.Provider>;

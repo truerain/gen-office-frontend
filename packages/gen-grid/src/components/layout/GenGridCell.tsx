@@ -9,7 +9,7 @@ import pinningStyles from './GenGridPinning.module.css';
 import { getCellStyle } from './cellStyles';
 import { getMeta } from './utils';
 import { formatCellValue } from './cellFormat';
-import { SELECTION_COLUMN_ID } from '../../features/selection/selection';
+import { SELECTION_COLUMN_ID } from '../../features/row-selection/rowSelection';
 import { ROW_NUMBER_COLUMN_ID } from '../../features/row-number/useRowNumberColumn';
 import { useGenGridContext } from '../../core/context/GenGridProvider';
 import { focusGridCell } from '../../features/active-cell/cellDom';
@@ -21,6 +21,7 @@ export type GenGridCellProps<TData> = {
 
   isActive: boolean;
   isEditing: boolean;
+  isInSelectedRange?: boolean;
 
   /** ✅ Step11: dirty 표시 */
   isDirty?: boolean;
@@ -295,6 +296,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     rowStyle,
     isActive,
     isEditing,
+    isInSelectedRange,
     isDirty,
     enablePinning,
     enableColumnSizing,
@@ -669,6 +671,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
         pinned ? pinningStyles.pinned : '',
         pinned === 'left' ? pinningStyles.pinnedLeft : '',
         pinned === 'right' ? pinningStyles.pinnedRight : '',
+        isInSelectedRange ? bodyStyles.selectedRange : '',
         isRowSpanCovered ? bodyStyles.rowSpanCovered : '',
         getCellClassName?.({
           row: cell.row.original,
@@ -699,6 +702,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
       data-rowid={rowId}
       data-colid={colId}
       data-active-cell={isActive && !isEditing ? 'true' : undefined}
+      data-selected-range={isInSelectedRange ? 'true' : undefined}
       data-editing-cell={isEditing ? 'true' : undefined}
       data-dirty={isDirty ? 'true' : undefined}
       data-pinned={pinned ? 'true' : undefined}

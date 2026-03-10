@@ -1,64 +1,54 @@
 # GenGrid Row State Model
 
-이 문서는 `CheckedRow`, `SelectedRow`, `ActiveRow`, `ActiveCell` 개념을 분리해서 정의한다.
+이 문서는 기존 정의를 취소하고 아래 4개 상태를 기준으로 다시 정의한다.
 
 ## 용어 정의
 
-### 1) `CheckedRow`
-- 체크박스로 선택된 행 집합
+### 1) `selectedRow`
+- `row-selection` 체크박스를 클릭해서 선택된 행 집합
+- 행 단위 선택 상태
 - 다중 선택 가능
-- 보통 `rowSelection` 상태와 1:1로 매핑
 
-### 2) `SelectedRow`
-- 업무적으로 "선택된 행" 집합
-- 포커스가 없어도 유지됨
-- 다중 선택 가능
-- 체크박스 선택, 단축키 선택, 기타 선택 UX를 수용하는 상위 개념
+### 2) `selectedRange`
+- 셀을 드래그해서 선택한 범위
+- 셀 범위 선택 상태 (`start/end` 좌표 기반)
+- 단일 범위 또는 다중 범위는 구현 정책으로 결정
 
-### 3) `ActiveRow`
-- 현재 포커스된 셀(`ActiveCell`)이 속한 행
+### 3) `activeRow`
+- 현재 `activeCell`이 속한 행
 - 단일 개념
-- 실질적으로 `activeCell?.rowId`로 파생
+- `activeCell.rowId`로 파생되는 개념을 유지
 
-### 4) `ActiveCell`
+### 4) `activeCell`
 - 현재 포커스된 단일 셀
-- 키보드 내비게이션/편집 컨텍스트의 기준
+- 키보드 이동/편집의 기준점
 
 ## 상태 관계
 
-- `ActiveRow`는 독립 저장 상태가 아니라 `ActiveCell`로부터 파생되는 개념이다.
-- `SelectedRow`는 `ActiveCell`과 독립적으로 존재한다.
-- `CheckedRow`는 "체크박스 선택 UI" 관점의 집합이며, 구현 정책에 따라 `SelectedRow`와 동일 집합으로 운영할 수 있다.
+- `activeRow`는 독립 저장 상태가 아니라 `activeCell`에서 파생한다.
+- `selectedRow`와 `selectedRange`는 서로 다른 선택 모델이다.
+- `selectedRow`는 체크박스 기반의 행 선택이고, `selectedRange`는 드래그 기반의 셀 범위 선택이다.
+- `activeCell`은 포커스 상태이며 `selectedRow`/`selectedRange`와 분리해서 유지할 수 있다.
 
-## 동기화 규칙 (합의안)
+## 상호작용 규칙
 
-1. 기본 규칙
-- `SelectedRow`는 기본적으로 `ActiveCell`을 따라간다.
-- 단, `ActiveCell`이 없는 상태에서도 `SelectedRow`는 존재/유지될 수 있다.
+1. 체크박스 클릭
+- `selectedRow`를 갱신한다.
+- `selectedRange`는 변경하지 않는다.
 
-2. 멀티 선택
-- `SelectedRow`는 다른 입력 방식(체크박스, 단축키 등)으로 멀티 선택될 수 있다.
+2. 셀 드래그
+- `selectedRange`를 갱신한다.
+- `selectedRow`는 변경하지 않는다.
 
-3. 포커스 재발생
-- 다시 `ActiveCell`이 생기면 해당 row를 `SelectedRow`에 반영한다.
-- 반영 방식(`replace` 또는 `add`)은 화면 정책으로 결정한다.
+3. 셀 클릭/키보드 이동
+- `activeCell`을 갱신한다.
+- `activeRow`는 `activeCell`로부터 자동 파생된다.
 
-## 권장 UX 정책
+## 렌더링 원칙
 
-1. 단일 클릭
-- `ActiveCell`/`ActiveRow` 갱신
-- `SelectedRow` 반영 정책은 화면별로 명시 (`replace` 권장)
+- `selectedRow`: 행 단위 강조 스타일
+- `selectedRange`: 셀 범위 강조 스타일
+- `activeRow`: 현재 행 컨텍스트 스타일
+- `activeCell`: 현재 포커스 셀 스타일
 
-2. 멀티 입력(Ctrl/Shift/체크박스)
-- `SelectedRow` 집합 갱신
-- `ActiveCell`은 유지 또는 입력 위치로 갱신
-
-3. 스타일 구분
-- `ActiveRow`와 `SelectedRow`는 시각 스타일을 분리한다.
-- Active는 "현재 커서 문맥", Selected는 "업무 선택 집합" 의미를 유지한다.
-
-## 구현 메모
-
-- 현재 GenGrid는 `ActiveRow` 하이라이트를 `activeCell?.rowId` 기준으로 판단한다.
-- 즉, `ActiveCell`이 없으면 `ActiveRow` 하이라이트는 표시되지 않는다.
-- `SelectedRow`를 `CheckedRow`와 분리해 운영하려면 별도 상태/이벤트 설계가 필요하다.
+각 상태의 시각적 의미를 분리해 동시에 표시 가능해야 한다.

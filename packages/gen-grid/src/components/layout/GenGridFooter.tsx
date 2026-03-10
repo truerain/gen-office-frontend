@@ -5,7 +5,7 @@ import { flexRender, type Table } from '@tanstack/react-table';
 
 import { getCellStyle } from './cellStyles';
 import { getMeta } from './utils';
-import { SELECTION_COLUMN_ID } from '../../features/selection/selection';
+import { SELECTION_COLUMN_ID } from '../../features/row-selection/rowSelection';
 import { ROW_NUMBER_COLUMN_ID } from '../../features/row-number/useRowNumberColumn';
 
 import bodyStyles from './GenGridBody.module.css';

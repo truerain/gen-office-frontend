@@ -27,11 +27,11 @@ import {
 } from '../../features/pinning/pinningState';
 import { useColumnPinningState } from '../../features/pinning/useColumnPinningState';
 
-import { SELECTION_COLUMN_ID, useSelectionColumn, withSelectionColumn } from '../../features/selection/selection';
-import { ROW_NUMBER_COLUMN_ID, useRowNumberColumn, withRowNumberColumn } from '../../features/row-number/useRowNumberColumn';
+import { SELECTION_COLUMN_ID, useSelectionColumn } from '../../features/row-selection/rowSelection';
+import { ROW_NUMBER_COLUMN_ID, useRowNumberColumn } from '../../features/row-number/useRowNumberColumn';
 
 import { ROW_STATUS_COLUMN_ID } from '../../features/row-status/rowStatus';
-import { useRowStatusColumn, withRowStatusColumn } from '../../features/row-status/useRowStatusColumn';
+import { useRowStatusColumn } from '../../features/row-status/useRowStatusColumn';
 import { useTreeRowModel } from '../../features/tree/useTreeRowModel';
 
 import { GenGridTableActions } from './tanstack-table';
@@ -221,23 +221,14 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     width: rowNumberWidth ?? 56,
   });
 
-  // compose columns: rowStatus -> selection -> rowNumber -> user columns
+  // compose columns in a single pass to keep render/nav order stable:
+  // rowStatus -> selection -> rowNumber -> user columns
   const resolvedColumns = React.useMemo(() => {
-    let next = columns;
-
-    if (rowStatusColumn) {
-      next = withRowStatusColumn(next, rowStatusColumn);
-    }
-
-    if (checkboxSelection) {
-      next = withSelectionColumn(next, selectionColumn);
-    }
-
-    if (enableRowNumber) {
-      next = withRowNumberColumn(next, rowNumberColumn);
-    }
-
-    return next;
+    const systemColumns: ColumnDef<TData, any>[] = [];
+    if (rowStatusColumn) systemColumns.push(rowStatusColumn);
+    if (checkboxSelection) systemColumns.push(selectionColumn);
+    if (enableRowNumber) systemColumns.push(rowNumberColumn);
+    return [...systemColumns, ...columns];
   }, [
     columns,
     rowStatusColumn,

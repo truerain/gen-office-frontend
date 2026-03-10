@@ -19,8 +19,8 @@
 
   /* Grid Rows */
   --grid-row-bg: transparent;
-  --grid-row-bg-hover: var(--color-bg-secondary);
-  --grid-row-bg-selected: var(--color-primary-light);
+    --grid-row-bg-hover: color-mix(in srgb, var(--base-brand) 8%, var(--grid-row-bg));
+    --grid-row-bg-selected: color-mix(in srgb, var(--base-brand) 14%, var(--grid-row-bg));
   --grid-row-bg-disabled: var(--color-bg-tertiary);
   --grid-row-text: var(--color-fg-primary);
   --grid-row-border: var(--color-border-default);
@@ -34,9 +34,9 @@
   --grid-cell-padding-y: 8px;
   --grid-cell-font-size: 14px;
 
-  --grid-cell-bg-hover: var(--color-bg-secondary);
-  --grid-cell-bg-selected: var(--color-primary-light);
-  --grid-cell-bg-focus: var(--color-bg-tertiary);
+    --grid-cell-bg-hover: color-mix(in srgb, var(--base-brand) 8%, var(--grid-cell-bg));
+    --grid-cell-bg-selected: color-mix(in srgb, var(--base-brand) 14%, var(--grid-cell-bg));
+    --grid-cell-bg-focus: var(--grid-cell-bg);
 
   /* Pinned / Sticky Columns */
   --grid-cell-bg-pinned: var(--color-bg-primary);
@@ -49,9 +49,23 @@
 
   /* Selection / Checkbox Column */
   --grid-selection-bg: var(--color-bg-primary);
-  --grid-selection-bg-hover: var(--color-bg-secondary);
+  --grid-selection-bg-hover: color-mix(in srgb, var(--base-brand) 10%, var(--grid-selection-bg));
   --grid-selection-check: var(--color-fg-secondary);
-  --grid-selection-border: var(--color-border-strong);
+  --grid-selection-border: color-mix(in srgb, var(--base-brand) 55%, var(--grid-border));
+
+  /* Row Status Column */
+  --grid-row-status-created-bg: var(--color-success-light);
+  --grid-row-status-created-fg: var(--color-success);
+  --grid-row-status-updated-bg: var(--grid-cell-bg-focus);
+  --grid-row-status-updated-fg: var(--grid-selection-border);
+  --grid-row-status-deleted-bg: var(--color-danger-light);
+  --grid-row-status-deleted-fg: var(--color-danger);
+  --grid-row-status-clean-fg: var(--grid-cell-text);
+  --grid-row-status-border: var(--grid-border);
+  --grid-row-status-badge-size: 18px;
+  --grid-row-status-badge-radius: 999px;
+  --grid-row-status-font-size: 12px;
+  --grid-row-status-font-weight: 700;
 
   /* Empty / Loading / Skeleton States */
   --grid-empty-text: var(--color-fg-secondary);

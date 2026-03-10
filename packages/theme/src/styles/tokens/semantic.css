@@ -4,7 +4,7 @@
   /* Backgrounds (Semantic) */
   --color-bg-primary: var(--color-background);
   --color-bg-secondary: var(--color-surface);
-  --color-bg-tertiary: #eceff1; /*var(--color-surface-hover);*/
+  --color-bg-tertiary: var(--color-surface-hover);
 
   /* Foregrounds (Semantic) */
   --color-fg-primary: var(--color-text);
