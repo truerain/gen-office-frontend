@@ -97,3 +97,28 @@
   color: var(--grid-empty-text);
   white-space: nowrap;
 }
+
+.contextMenuStats {
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--grid-border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.contextMenuStatRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px;
+  font-size: 12px;
+  color: var(--grid-cell-text);
+}
+
+.contextMenuStatMeta {
+  padding: 0 4px;
+  font-size: 11px;
+  color: var(--grid-empty-text);
+}

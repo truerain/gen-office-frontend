@@ -16,6 +16,7 @@ import { buildRowSpanModel } from '../layout/rowSpanModel';
 import layout from './GenGridLayout.module.css';
 import { useClipboardActions } from '../../features/range-selection/useClipboardActions';
 import { GenGridContextMenu } from './GenGridContextMenu';
+import { resolveRangeBounds } from '../../features/range-selection/clipboard';
 
 export type GenGridBaseProps<TData> = {
   table: Table<TData>;
@@ -231,6 +232,32 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     onCellValueChange,
   });
 
+  const rangeStats = React.useMemo(() => {
+    if (!contextMenu) return null;
+    const bounds = resolveRangeBounds(table, selectedRange);
+    if (!bounds) return null;
+
+    let sum = 0;
+    let count = 0;
+
+    for (let rowIndex = bounds.rowMin; rowIndex <= bounds.rowMax; rowIndex++) {
+      const row = rows[rowIndex];
+      if (!row) continue;
+
+      for (const columnId of bounds.columnIds) {
+        const value = row.getValue(columnId);
+        if (typeof value !== 'number' || !Number.isFinite(value)) continue;
+        sum += value;
+        count += 1;
+      }
+    }
+
+    return {
+      sum,
+      avg: count > 0 ? sum / count : 0,
+      count,
+    };
+  }, [contextMenu, rows, selectedRange, table]);
   React.useEffect(() => {
     if (!contextMenu) return;
 
@@ -522,6 +549,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
         contextMenu={contextMenu}
         canCopy={canCopy}
         canPaste={canPaste}
+        rangeStats={rangeStats}
         onClose={closeContextMenu}
         onCopy={() => void copyToClipboard(false)}
         onCopyWithHeader={() => void copyToClipboard(true)}
