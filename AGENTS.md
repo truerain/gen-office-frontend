@@ -29,3 +29,14 @@
 - Reference before/after changes:
   - `docs/gen-grid/layout-contract.md`
   - `docs/gen-grid/layout-regression-playbook.md`
+
+## Source Editing Safety (when apply_patch is unavailable)
+
+- Keep edits minimal: one file and one logical block at a time.
+- Before edit, capture target context lines and verify exact location.
+- Do not use broad/global replacement across the whole file.
+- Allow only single-match replacement (exact string or regex). If match count is not 1, stop.
+- After each edit, immediately verify changed lines and git diff -- <file>.
+- Run relevant typecheck/build after code edits (tsc --noEmit when applicable).
+- If unexpected diff, mojibake, or syntax issue appears, stop and fix before additional edits.
+- In new sessions, remind the agent to follow AGENTS.md rules in the first message.

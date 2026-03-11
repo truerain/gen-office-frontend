@@ -142,6 +142,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
     table,
     activeCell: activeCell ?? null,
     onActiveCellChange,
+    clearSelectedRange: () => setSelectedRange(null),
     editOnActiveCell,
     keepEditingOnNavigate,
     editMode,

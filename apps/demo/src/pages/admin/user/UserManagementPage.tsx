@@ -111,7 +111,7 @@ export default function UserManagementPage(_props: PageComponentProps) {
           actionBar={{
             position: 'top',
             defaultStyle: 'icon',
-            includeBuiltIns: ['add', 'delete', 'save', 'filter', 'reset'],
+            includeBuiltIns: ['add', 'delete', 'save', 'filter'],
             customActions: [
               {
                 key: 'refresh',

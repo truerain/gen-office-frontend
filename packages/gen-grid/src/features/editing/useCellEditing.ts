@@ -9,6 +9,7 @@ export function useCellEditing<TData>(args: {
   table: Table<TData>;
   activeCell: CellCoord | null;
   onActiveCellChange: (next: CellCoord) => void;
+  clearSelectedRange?: () => void;
   editOnActiveCell?: boolean;
   keepEditingOnNavigate?: boolean;
   editMode: boolean;
@@ -24,6 +25,7 @@ export function useCellEditing<TData>(args: {
     table,
     activeCell,
     onActiveCellChange,
+    clearSelectedRange,
     updateValue,
     isCellEditable,
     editOnActiveCell,
@@ -130,9 +132,12 @@ export function useCellEditing<TData>(args: {
 
       return {
         onMouseDown: (e: any) => {
+          if (e.button !== 0) return;
+
           // Some browsers/input flows may skip td onDoubleClick after preventDefault on mousedown.
           // Use mouse detail as a stable fallback to enter edit on double-click.
           if (e?.detail >= 2) {
+            clearSelectedRange?.();
             onActiveCellChange({ rowId, columnId });
             if (canEdit(rowId, columnId)) {
               startEditing({ rowId, columnId });
@@ -175,6 +180,7 @@ export function useCellEditing<TData>(args: {
           }
         },
         onDoubleClick: () => {
+          clearSelectedRange?.();
           // 더블클릭하면 해당 셀로 active 맞추고 편집 시작
           onActiveCellChange({ rowId, columnId });
           startEditing({ rowId, columnId });
@@ -226,6 +232,7 @@ export function useCellEditing<TData>(args: {
       editOnActiveCell,
       isNavigationKey,
       onActiveCellChange,
+      clearSelectedRange,
       startEditing,
       editMode,
       activeCell,
@@ -382,8 +389,8 @@ export function useCellEditing<TData>(args: {
         const inEditor = !!target.closest('input,select,textarea,button,[contenteditable="true"]');
         const inCell = !!target.closest('td[data-rowid][data-colid]');
         if (!inEditor && !inCell) {
-          // Clicking blank area inside the same grid should not discard the in-progress draft.
-          // Let the editor keep its state until an explicit blur/commit path occurs.
+          // Clicking blank area inside the same grid should close the current editor.
+          exitEdit({ preserve: false });
           return;
         }
         return;

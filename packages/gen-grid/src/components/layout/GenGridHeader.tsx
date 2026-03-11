@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { flexRender, type Table } from '@tanstack/react-table';
+import { FilterCellPopover } from '../../features/filtering/FilterCellPopover';
 import { getCellStyle } from './cellStyles';
 
 import styles from './GenGridHeader.module.css';
@@ -14,22 +15,12 @@ type GenGridHeaderProps<TData> = {
   enableColumnSizing?: boolean;
   enableFiltering?: boolean;
 
-  // Step8.5 auto-size를 header 안에서 쓸 거면 table이 필요하니 여기서 구현 가능
   onAutoSizeColumn?: (columnId: string) => void;
-
-  // filter cell 렌더는 기존 구현을 그대로 이쪽으로 옮기기
   renderFilterCell?: (header: any) => React.ReactNode;
 };
 
 export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
-  const {
-    table,
-    enablePinning,
-    enableColumnSizing,
-    enableFiltering,
-    onAutoSizeColumn,
-    renderFilterCell
-  } = props;
+  const { table, enablePinning, enableColumnSizing, enableFiltering, onAutoSizeColumn, renderFilterCell } = props;
 
   const headerGroups = table.getHeaderGroups();
   const leafHeaderGroup = headerGroups[headerGroups.length - 1];
@@ -66,22 +57,15 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
       {headerGroups.map((hg, idx) => (
         <tr
           key={hg.id}
-          className={[
-            styles.tr,
-            styles.headerRow,
-            styles[`headerRow${idx}` as any]
-          ].filter(Boolean).join(' ')}
+          className={[styles.tr, styles.headerRow, styles[`headerRow${idx}` as any]].filter(Boolean).join(' ')}
         >
           {hg.headers.map((header) => {
             const col = header.column;
             const isLeafBySpan = header.colSpan === 1;
-            const subHeaders: any[] = Array.isArray((header as any).subHeaders)
-              ? (header as any).subHeaders
-              : [];
+            const subHeaders: any[] = Array.isArray((header as any).subHeaders) ? (header as any).subHeaders : [];
             const isLeafHeader = isLeafBySpan || subHeaders.length === 0;
             const hasParentColumn = Boolean((col as any).parent);
-            const shouldRenderLeafPlaceholder =
-              header.isPlaceholder && isLeafBySpan && !hasParentColumn;
+            const shouldRenderLeafPlaceholder = header.isPlaceholder && isLeafBySpan && !hasParentColumn;
 
             if (isLeafBySpan) {
               if (header.isPlaceholder && !shouldRenderLeafPlaceholder) return null;
@@ -96,7 +80,7 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
             const canSort = col.getCanSort();
             const sortState = col.getIsSorted();
             const rowSpan = isLeafHeader ? Math.max(1, totalHeaderRows - idx) : 1;
-            
+
             return (
               <th
                 key={header.id}
@@ -105,30 +89,21 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
                   isSelectCol ? styles.selectCol : '',
                   canSort ? styles.sortable : '',
                   sortState ? styles.sorted : '',
-                ].filter(Boolean).join(' ')}
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
                 style={getHeaderCellStyle(header)}
                 colSpan={header.colSpan}
                 rowSpan={rowSpan > 1 ? rowSpan : undefined}
               >
-                <div
-                  className={styles.thInner}
-                  onClick={canSort ? col.getToggleSortingHandler() : undefined}
-                >
+                <div className={styles.thInner} onClick={canSort ? col.getToggleSortingHandler() : undefined}>
                   {flexRender(col.columnDef.header, header.getContext())}
-                  {sortState ? (
-                    <span className={styles.sortIcon}>
-                      {sortState === 'asc' ? '▲' : '▼'}
-                    </span>
-                  ) : null}
+                  {sortState ? <span className={styles.sortIcon}>{sortState === 'asc' ? '^' : 'v'}</span> : null}
                 </div>
 
-                {/* leaf header에서만 */}
                 {enableColumnSizing && header.colSpan === 1 && header.getResizeHandler ? (
                   <div
-                    className={[
-                      pinning.resizer,
-                      resizing ? pinning.resizerActive : ''
-                    ].filter(Boolean).join(' ')}
+                    className={[pinning.resizer, resizing ? pinning.resizerActive : ''].filter(Boolean).join(' ')}
                     onMouseDown={header.getResizeHandler()}
                     onTouchStart={header.getResizeHandler()}
                     onDoubleClick={(e) => {
@@ -150,10 +125,11 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
             styles.tr,
             styles.headerRow,
             styles.filterRow,
-            styles[`headerRow${headerGroups.length}` as any]
-          ].filter(Boolean).join(' ')}
+            styles[`headerRow${headerGroups.length}` as any],
+          ]
+            .filter(Boolean)
+            .join(' ')}
         >
-          {/* filter row는 leaf header 기준이 안전 */}
           {leafHeaderGroup.headers.map((header) => {
             const isSelectCol = header.column.id === '__select__';
             const colDef: any = header.column.columnDef;
@@ -167,17 +143,10 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
                 style={getCellStyle(col, {
                   enablePinning,
                   enableColumnSizing,
-                  isHeader: true
+                  isHeader: true,
                 })}
               >
-                  {canFilter ? (
-                    <input
-                      className={styles.filterInput}
-                      value={(header.column.getFilterValue() ?? '') as string}
-                      onChange={(e) => header.column.setFilterValue(e.target.value)}
-                      placeholder="Filter..."
-                    />
-                  ) : null}
+                {canFilter ? <FilterCellPopover header={header} /> : null}
               </th>
             );
           })}

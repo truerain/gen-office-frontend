@@ -449,6 +449,11 @@ export function useActiveCellNavigation<TData>(args: {
         },
 
         onMouseDown: (e: React.MouseEvent) => {
+          if (e.button !== 0) {
+            e.preventDefault();
+            return;
+          }
+
           const target = e.target as HTMLElement | null;
           if (
             target &&

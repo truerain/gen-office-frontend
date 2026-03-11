@@ -98,7 +98,7 @@ export const GenGrid = React.forwardRef(function GenGridInner<TData>(
       options={{
         editorFactory: props.editorFactory,
         keepEditingOnNavigate: props.keepEditingOnNavigate,
-        enableRangeSelection: props.enableRangeSelection,
+        enableRangeSelection: props.enableRangeSelection ?? true,
       }}
     >
       <GenGridBase<TData>

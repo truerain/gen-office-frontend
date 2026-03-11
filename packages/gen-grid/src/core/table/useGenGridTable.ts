@@ -34,6 +34,8 @@ import { ROW_STATUS_COLUMN_ID } from '../../features/row-status/rowStatus';
 import { useRowStatusColumn } from '../../features/row-status/useRowStatusColumn';
 import { useTreeRowModel } from '../../features/tree/useTreeRowModel';
 
+import { genGridOperatorFilterFn } from '../../features/filtering/filterModel';
+
 import { GenGridTableActions } from './tanstack-table';
 
 export type GenGridTableProps<TData> = {
@@ -45,9 +47,9 @@ export type GenGridTableProps<TData> = {
   sorting?: SortingState;
   onSortingChange?: (next: SortingState) => void;
 
-  // ✅ row status
+  // row status
   enableRowStatus?: boolean;
-  rowStatusHeader?: string; // (지금 컬럼 header는 ''로 고정이라, 나중에 쓰고 싶으면 useRowStatusColumn에서 반영)
+  rowStatusHeader?: string; // currently fixed to '' in UI; keep for future extension
   rowStatusWidth?: number;
   isRowDirty?: (rowId: string) => boolean;
   rowStatusResolver?: (rowId: string) => 'clean' | 'created' | 'updated' | 'deleted';
@@ -95,7 +97,7 @@ export type GenGridTableProps<TData> = {
   columnSizing?: ColumnSizingState;
   onColumnSizingChange?: (next: ColumnSizingState) => void;
 
-  // 액션 주입
+  // actions
   actions?: GenGridTableActions<TData>;
   tableMeta?: Record<string, any>;
   tree?: GenGridTreeOptions<TData>;
@@ -177,7 +179,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
   const leafDefs = React.useMemo(() => getLeafColumnDefs(columns), [columns]);
   const userPinned = React.useMemo(() => getPinnedIdsFromMeta(leafDefs), [leafDefs]);
 
-  // ✅ initial pinning includes system columns (rowStatus -> selection -> rowNumber)
+  // initial pinning includes system columns (rowStatus -> selection -> rowNumber)
   const initialPinning = React.useMemo(
     () =>
       buildInitialPinningState({
@@ -206,7 +208,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
   const resolvedColumnPinning = columnPinning ?? innerColumnPinning;
   const resolvedColumnSizing = columnSizing ?? innerColumnSizing;
 
-  // ✅ create system columns
+  // create system columns
   const rowStatusColumn = useRowStatusColumn<TData>({
     enabled: !!enableRowStatus,
     width: rowStatusWidth ?? 44,
@@ -315,7 +317,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     }
   }, [rowSpanningEnabled, resolvedSorting, onSortingChange]);
 
-  // meta 객체를 안정적으로 유지 (table instance 불필요 리렌더 방지)
+  // keep meta object stable to avoid unnecessary table instance re-renders
   const meta = React.useMemo(() => {
     return {
       genGrid: actions,
@@ -340,6 +342,9 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
   return useReactTable<TData>({
     data: tableData,
     columns: resolvedColumns,
+    defaultColumn: {
+      filterFn: genGridOperatorFilterFn,
+    },
     autoResetExpanded: false,
     state: {
       sorting: treeEnabled || rowSpanningEnabled ? undefined : resolvedSorting,

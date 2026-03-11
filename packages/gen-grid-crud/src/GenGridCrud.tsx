@@ -1,6 +1,6 @@
 // packages/gen-grid-crud/src/GenGridCrud.tsx
 import * as React from 'react';
-import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
+import type { ColumnDef, ColumnFiltersState, RowSelectionState } from '@tanstack/react-table';
 import ExcelJS from 'exceljs';
 
 import { applyDiff } from './crud/applyDiff';
@@ -250,11 +250,11 @@ function resolveExcelNumFmt<TData>(meta?: ExportMeta<TData>): string | undefined
     case 'number':
       return '#,##0';
     case 'triangleNumber':
-      return '#,##0;△#,##0';
+      return '#,##0;??,##0';
     case 'percent':
       return '0.00%';
     case 'currency':
-      return '"₩"#,##0';
+      return '"??#,##0';
     default:
       return undefined;
   }
@@ -691,7 +691,7 @@ function generateTempId(): CrudRowId {
 }
 
 
-/* RowStatus/patch 愿???좏떥 */
+/* RowStatus/patch ????댁삩???????節떷??*/
 function shallowDiffPatch<TData extends Record<string, any>>(
   prev: TData,
   next: TData,
@@ -713,10 +713,8 @@ function shallowDiffPatch<TData extends Record<string, any>>(
 /**
  */
 /*
- * columns?먯꽌 patch 鍮꾧탳???ъ슜??key 異붿텧:
- * - accessorKey(string) ?곗꽑 ?ъ슜
- * - ?놁쑝硫?鍮?諛곗뿴
- */
+ * columns?????patch ???????????key ????살퓢癲??
+ * - accessorKey(string) ????????? ???? * - ?????쇨덧?筌먦렜逾?????ш끽維뽳쭩?壤굿??뽯쑆? */
 function getEditableKeysFromColumns<TData>(columns: readonly ColumnDef<TData, any>[]): string[] {
   const keys: string[] = [];
   for (const c of columns as any[]) {
@@ -770,8 +768,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     getRowId,
 
     createRow,
-    // columnId/value -> patch 留ㅽ븨 ?⑥닔 (accessorKey媛 ?덉쑝硫?湲곕낯 ?숈옉?쇰줈??異⑸텇)
-    makePatch, // columnId/value瑜?patch濡?蹂?섑븯???⑥닔 (accessorKey媛 ?덉쑝硫?湲곕낯 ?숈옉?쇰줈 異⑸텇)
+    // columnId/value -> patch ?轅붽틓?????紐????逆??(accessorKey???ル봿?? ???濚밸Ŧ寃㎩쳞???????????????繹먭퍗爰???????????濡ろ뜐筌?쓣???
+    makePatch, // columnId/value??patch?????ㅼ뒧????????????逆??(accessorKey???ル봿?? ???濚밸Ŧ寃㎩쳞???????????????繹먭퍗爰??????????濡ろ뜐筌?쓣???
     deleteMode = 'selected',
 
     onCommit,
@@ -788,7 +786,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     rowSelection: rowSelectionControlledIds,
     onRowSelectionChange: onRowSelectionIdsChange,
 
-    // active cell (?듭뀡)
+    // active cell (?????
     activeCell: activeCellControlled,
     onActiveCellChange,
     onActiveRowChange,
@@ -843,6 +841,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   const [filterEnabled, setFilterEnabled] = React.useState<boolean>(
     gridProps?.enableFiltering ?? false
   );
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 
   React.useEffect(() => {
     if (gridProps?.enableFiltering == null) return;
@@ -865,7 +864,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   // --- pending changes
   const pendingApi = usePendingChanges<TData>();
 
-  // diffKeys: accessorKey 기반으로 patch 비교 키 추출
+  // diffKeys: compare patch keys by editable accessors
   const diffKeys = React.useMemo(() => getEditableKeysFromColumns(columns), [columns]);
   const firstEditableColumnId = React.useMemo(() => getFirstEditableColumnId(columns), [columns]);
 
@@ -931,14 +930,14 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     [pendingApi.pending]
   );
 
-  // GenGrid???꾨떖??mutable array
+  // GenGrid???????밸븶????mutable array
   const gridData = React.useMemo<TData[]>(
     () => Array.from(diff.viewData),
     [diff.viewData]
   );
 
   // ??GenGrid getRowId??(row) => string
-  // GenGrid??rowId瑜?string?쇰줈 ?ъ슜
+  // GenGrid getRowId: normalize to string
   const genGridGetRowId = React.useCallback(
     (row: TData) => {
       const id = getCrudRowId(row, (r) => getRowId(r, -1));
@@ -947,7 +946,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     [getRowId]
   );
 
-  // pending update용 rowId (number/string 그대로 유지)
+  // pending update??rowId (number/string ???녾컯嶺??????)
   const getPendingRowId = React.useCallback(
     (row: TData) => getCrudRowId(row, (r) => getRowId(r, -1)),
     [getRowId]
@@ -1008,7 +1007,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     }
   }, [createRow, pendingApi, firstEditableColumnId, onActiveCellChange]);
 
-  // ?좏깮/?쒖꽦 ??湲곗??쇰줈 pending delete 泥섎━
+  // delete selected/active rows in pending state
   const handleDelete = React.useCallback(() => {
     let targets: readonly CrudRowId[] = [];
 
@@ -1039,6 +1038,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   }, [pendingApi]);
 
   const handleToggleFilter = React.useCallback(() => {
+    setColumnFilters([]);
     setFilterEnabled((prev) => !prev);
   }, []);
 
@@ -1421,7 +1421,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   ]);
 
 
-  // GenGrid?먯꽌 ?꾨떖??viewData 蹂寃쎌쓣 pending patch濡?蹂??
+  // GenGrid??????????밸븶????viewData ???ㅼ뒧????β뼯援????pending patch?????ㅼ뒧????
   const handleGridDataChange = React.useCallback(
     (nextViewData: TData[]) => {
       if (skipNextOnDataChangeRef.current) {
@@ -1589,8 +1589,10 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     () => ({
       ...gridProps,
       enableFiltering: filterEnabled,
+      columnFilters,
+      onColumnFiltersChange: setColumnFilters,
     }),
-    [gridProps, filterEnabled]
+    [gridProps, filterEnabled, columnFilters]
   );
 
   return (
