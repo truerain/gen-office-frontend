@@ -9,7 +9,7 @@ export type ActiveCell = { rowId: string; columnId: string } | null;
 
 type Direction = 'left' | 'right' | 'up' | 'down';
 
-// focusGridCell(rowId, colId, opts?) ?�태�?가??
+// focusGridCell(rowId, colId, opts?) option type alias
 type FocusOptions = Parameters<typeof focusGridCell>[2];
 
 type TreeMeta = {
@@ -30,24 +30,24 @@ export function useActiveCellNavigation<TData>(args: {
   onActiveCellChange: (next: { rowId: string; columnId: string }) => void;
 
   /**
-   * Navigable ?�???�어 (?? system column ?�외)
+   * Cell navigable predicate (excluding system columns).
    * default: true
    */
   isCellNavigable?: (rowId: string, columnId: string) => boolean;
 
   /**
-   * focusGridCell ?�출 ???�길 ?�션 (sticky/pinned 고려)
+   * Options passed to focusGridCell.
    */
   focusOptions?: FocusOptions;
 
   /**
-   * navigable ?�닌 ?�/컬럼??만났????건너?�기
+   * Skip non-navigable cells when moving.
    * default: true
    */
   skipNonNavigable?: boolean;
 
   /**
-   * PageUp/PageDown ??번에 ?�동??row ??계산???�한 fallback
+   * Fallback row count for PageUp/PageDown movement.
    * default: 10
    */
   pageRowFallback?: number;
@@ -64,7 +64,7 @@ export function useActiveCellNavigation<TData>(args: {
 
   const rows = table.getRowModel().rows;
 
-  // row?� 무�???"보이??컬럼" ?�서
+  // Collect visible columns in rendered order.
   const visibleColumnIds = React.useMemo(() => {
     // Keep keyboard navigation order aligned with rendered cell order.
     const firstRowCells = rows[0]?.getVisibleCells?.();
@@ -193,7 +193,7 @@ export function useActiveCellNavigation<TData>(args: {
         }
       };
 
-      // 목표 칸�???검?�하�?skip
+      // Keep stepping until a navigable target cell is found.
       for (let guard = 0; guard < 5000; guard++) {
         if (r < 0 || r > maxRow || c < 0 || c > maxCol) return null;
 
@@ -212,9 +212,9 @@ export function useActiveCellNavigation<TData>(args: {
   );
 
   /**
-   * PageUp/PageDown ?�동 row delta 계산
-   * - ?�재 active cell DOM??기�??�로 컨테?�너 ?�이 / ?� ?�이�?추정
-   * - �?찾으�?fallback ?�용
+   * Calculate row delta for PageUp/PageDown.
+   * - Estimate from active cell and scroll container metrics.
+   * - Use fallback when required DOM is unavailable.
    */
   const getPageRowDelta = React.useCallback(() => {
     if (!activeCell) return pageRowFallback;
@@ -230,7 +230,7 @@ export function useActiveCellNavigation<TData>(args: {
     const rowPx = el.getBoundingClientRect().height || 36;
     const visiblePx = container.clientHeight;
 
-    // ???�면 - 1�??�도 ?�동
+    // Always move at least one row.
     const delta = Math.max(1, Math.floor(visiblePx / rowPx) - 1);
     return delta;
   }, [activeCell, pageRowFallback]);
@@ -435,7 +435,7 @@ export function useActiveCellNavigation<TData>(args: {
     [handleTreeArrowKey, move, moveHomeEnd, movePage]
   );
 
-  // ??GenGridBody?�서 td??그�?�?spread ?????�는 props ?�공
+  // Props spread onto td elements from GenGridBody.
   const getCellProps = React.useCallback(
     (rowId: string, columnId: string, isActive: boolean) => {
       return {
@@ -476,7 +476,7 @@ export function useActiveCellNavigation<TData>(args: {
 
   return {
     getCellProps,
-    handleKeyDown, // ?��??�서 grid wrapper??걸고 ?�을 ?�도 ?�용 가??
+    handleKeyDown, // Can also be bound to the grid wrapper.
     move,
     setActive,
     setActiveRow,

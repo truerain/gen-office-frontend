@@ -13,11 +13,23 @@ export type DownloadedFile = {
   fileName: string;
 };
 
+function toTrimmedString(value: unknown): string {
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  return '';
+}
+
 function resolveFileSetId(payload: unknown): string {
-  if (typeof payload === 'string') return payload.trim();
+  const primitive = toTrimmedString(payload);
+  if (primitive) return primitive;
+
   if (payload && typeof payload === 'object') {
-    const raw = (payload as { fileSetId?: unknown }).fileSetId;
-    if (typeof raw === 'string') return raw.trim();
+    const row = payload as { fileSetId?: unknown; id?: unknown; value?: unknown };
+    const candidates = [row.fileSetId, row.id, row.value];
+    for (const candidate of candidates) {
+      const normalized = toTrimmedString(candidate);
+      if (normalized) return normalized;
+    }
   }
   return '';
 }

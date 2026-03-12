@@ -77,7 +77,7 @@ export const DeleteConfirmation: Story = {
   render: () => (
     <InteractiveAlertDialog
       variant="error"
-      title="정말 삭제하시겠습니까?"
+      title="정말 삭제하시겠습니까"
       description="이 작업은 되돌릴 수 없습니다. 삭제된 데이터는 복구할 수 없습니다."
       confirmText="삭제"
       onConfirm={() => console.log('Deleted!')}

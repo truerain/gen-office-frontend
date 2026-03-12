@@ -691,7 +691,7 @@ function generateTempId(): CrudRowId {
 }
 
 
-/* RowStatus/patch ????댁삩???????節떷??*/
+/* Build shallow patch from editable keys */
 function shallowDiffPatch<TData extends Record<string, any>>(
   prev: TData,
   next: TData,
@@ -710,11 +710,9 @@ function shallowDiffPatch<TData extends Record<string, any>>(
   return changed ? patch : {};
 }
 
-/**
- */
 /*
- * columns?????patch ???????????key ????살퓢癲??
- * - accessorKey(string) ????????? ???? * - ?????쇨덧?筌먦렜逾?????ш끽維뽳쭩?壤굿??뽯쑆? */
+ * Extract editable keys from column accessorKey values.
+ */
 function getEditableKeysFromColumns<TData>(columns: readonly ColumnDef<TData, any>[]): string[] {
   const keys: string[] = [];
   for (const c of columns as any[]) {
@@ -768,8 +766,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     getRowId,
 
     createRow,
-    // columnId/value -> patch ?轅붽틓?????紐????逆??(accessorKey???ル봿?? ???濚밸Ŧ寃㎩쳞???????????????繹먭퍗爰???????????濡ろ뜐筌?쓣???
-    makePatch, // columnId/value??patch?????ㅼ뒧????????????逆??(accessorKey???ル봿?? ???濚밸Ŧ寃㎩쳞???????????????繹먭퍗爰??????????濡ろ뜐筌?쓣???
+    // Map columnId/value to row patch.
+    makePatch,
     deleteMode = 'selected',
 
     onCommit,
@@ -930,13 +928,13 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     [pendingApi.pending]
   );
 
-  // GenGrid???????밸븶????mutable array
+  // GenGrid expects a mutable array instance.
   const gridData = React.useMemo<TData[]>(
     () => Array.from(diff.viewData),
     [diff.viewData]
   );
 
-  // ??GenGrid getRowId??(row) => string
+  // GenGrid getRowId must return string.
   // GenGrid getRowId: normalize to string
   const genGridGetRowId = React.useCallback(
     (row: TData) => {
@@ -946,7 +944,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     [getRowId]
   );
 
-  // pending update??rowId (number/string ???녾컯嶺??????)
+  // Pending update row id may be number or string.
   const getPendingRowId = React.useCallback(
     (row: TData) => getCrudRowId(row, (r) => getRowId(r, -1)),
     [getRowId]
@@ -1421,7 +1419,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   ]);
 
 
-  // GenGrid??????????밸븶????viewData ???ㅼ뒧????β뼯援????pending patch?????ㅼ뒧????
+  // Diff next viewData against current gridData and apply pending patches.
   const handleGridDataChange = React.useCallback(
     (nextViewData: TData[]) => {
       if (skipNextOnDataChangeRef.current) {

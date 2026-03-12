@@ -8,6 +8,14 @@ type RemoteBundle = {
   resources: Record<string, string>;
 };
 
+type ApiResponseEnvelope<T = unknown> = {
+  success: boolean;
+  code: string;
+  message: string | null;
+  data: T;
+  messageParams?: Record<string, unknown>;
+};
+
 const CACHE_PREFIX = 'i18n.bundle';
 
 function getCacheKey(locale: string, ns: string) {
@@ -33,6 +41,54 @@ function writeCache(bundle: RemoteBundle) {
   localStorage.setItem(getCacheKey(bundle.locale, bundle.namespace), JSON.stringify(bundle));
 }
 
+function isApiResponseEnvelope(value: unknown): value is ApiResponseEnvelope<unknown> {
+  if (!value || typeof value !== 'object') return false;
+  const record = value as Record<string, unknown>;
+  return typeof record.success === 'boolean' && typeof record.code === 'string' && 'data' in record;
+}
+
+function toRemoteBundle(payload: unknown, locale: string, ns: string): RemoteBundle {
+  // 1) { locale, namespace, version, resources }
+  if (
+    payload &&
+    typeof payload === 'object' &&
+    'resources' in payload &&
+    'namespace' in payload
+  ) {
+    return payload as RemoteBundle;
+  }
+
+  // 2) { version, items: [{ key, value }] }
+  if (payload && typeof payload === 'object' && Array.isArray((payload as { items?: unknown[] }).items)) {
+    const data = payload as { version?: string; items: Array<{ key?: string; value?: unknown }> };
+    const resources: Record<string, string> = {};
+    for (const item of data.items) {
+      if (item?.key) resources[item.key] = String(item.value ?? '');
+    }
+    return {
+      locale,
+      namespace: ns,
+      version: data.version,
+      resources,
+    };
+  }
+
+  // 3) [{ key, value }]
+  if (Array.isArray(payload)) {
+    const resources: Record<string, string> = {};
+    for (const item of payload as Array<{ key?: string; value?: unknown }>) {
+      if (item?.key) resources[item.key] = String(item.value ?? '');
+    }
+    return {
+      locale,
+      namespace: ns,
+      resources,
+    };
+  }
+
+  throw new Error('Unsupported i18n response shape');
+}
+
 async function fetchRemoteBundle(locale: string, ns: string, version?: string) {
   // Fetch remote (DB-backed) i18n bundle; server may return different shapes
   const url = new URL('/api/i18n', window.location.origin);
@@ -48,42 +104,19 @@ async function fetchRemoteBundle(locale: string, ns: string, version?: string) {
     },
   });
   if (!res.ok) throw new Error(`i18n fetch failed: ${res.status}`);
-  const data = await res.json();
-
-  // Accept multiple response shapes
-  // 1) { locale, namespace, version, resources }
-  if (data?.resources && data?.namespace) {
-    return data as RemoteBundle;
-  }
-
-  // 2) { version, items: [{ key, value }] }
-  if (Array.isArray(data?.items)) {
-    const resources: Record<string, string> = {};
-    for (const item of data.items) {
-      if (item?.key) resources[item.key] = String(item.value ?? '');
+  const raw = (await res.json()) as unknown;
+  if (isApiResponseEnvelope(raw)) {
+    if (!raw.success) {
+      const message =
+        (typeof raw.message === 'string' && raw.message.trim()) ||
+        raw.code ||
+        `i18n fetch failed: ${res.status}`;
+      throw new Error(message);
     }
-    return {
-      locale,
-      namespace: ns,
-      version: data.version,
-      resources,
-    } as RemoteBundle;
+    return toRemoteBundle(raw.data, locale, ns);
   }
 
-  // 3) [{ key, value }]
-  if (Array.isArray(data)) {
-    const resources: Record<string, string> = {};
-    for (const item of data) {
-      if (item?.key) resources[item.key] = String(item.value ?? '');
-    }
-    return {
-      locale,
-      namespace: ns,
-      resources,
-    } as RemoteBundle;
-  }
-
-  throw new Error('Unsupported i18n response shape');
+  return toRemoteBundle(raw, locale, ns);
 }
 
 export async function loadRemoteBundles(i18n: I18nInstance, namespaces: string[]) {

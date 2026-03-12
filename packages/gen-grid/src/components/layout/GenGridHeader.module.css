@@ -5,7 +5,7 @@
 }
 
 
-/* th ??れ삀???*/
+/* th cell base style */
 .th {
   height: var(--gen-grid-header-height);
   padding: 0 12px;
@@ -22,7 +22,7 @@
   position: relative; /* th::after */
 }
 
-/* ????밸쭬 ??嚥▲꺂??????㎦???*/
+/* bottom border rendered via pseudo element */
 .th::after {
   content: '';
   position: absolute;

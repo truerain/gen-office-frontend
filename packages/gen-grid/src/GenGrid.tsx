@@ -26,20 +26,20 @@ export const GenGrid = React.forwardRef(function GenGridInner<TData>(
   props: GenGridProps<TData>,
   ref: React.ForwardedRef<GenGridHandle<TData>>
 ) {
-  // 1. 湲곗큹 ?곗씠??諛?珥덇린媛?蹂닿?
+  // 1) Initialize base grid data
   const gridData = useGridData(props);
-  const initialDefaultRef = React.useRef<TData[]>(        // hardReset?? mount ?쒖젏 defaultData ???(uncontrolled?먯꽌留??섎? ?덉쓬)
+  const initialDefaultRef = React.useRef<TData[]>( // Capture defaultData at mount for hard reset in uncontrolled mode.
     'defaultData' in props ? props.defaultData ?? [] : []
   );
 
-  // 2. 湲곕뒫蹂?鍮꾩쫰?덉뒪 濡쒖쭅 ??
-  const dirty = useDirtyState<TData>({                    // baseline 珥덇린媛믪? ??긽 諛곗뿴?댁뼱????
+  // 2) Dirty-state tracking
+  const dirty = useDirtyState<TData>({
     initialBaseline: gridData.data ?? [],
     getRowId: props.getRowId,
   });
   const { updateCell } = useGridEditing({ props, gridData, dirty });
 
-  // 3. ?몃? API ?몄텧 (Imperative Handle)
+  // 3) Expose imperative API
   useGridInstance({
     ref,
     props,
@@ -52,25 +52,22 @@ export const GenGrid = React.forwardRef(function GenGridInner<TData>(
     return {
       setData: gridData.setData,
       deleteRow: (rowId: string) => {
-        // ???ш린??"?⑥씪 吏꾩엯???쇰줈 ??젣 濡쒖쭅 ?섑뻾
+        // Delete a row by matching the provided row id.
         gridData.setData(prev => prev.filter((_, idx) => {
-          // rowId 湲곕컲?쇰줈 吏?곕젮硫?getRowId ?꾩슂.
-          // 媛???덉쟾??諛⑹떇? table rowId 湲곗??쇰줈 吏?곕뒗 寃?
-          // ?쇰떒 湲곕낯? props.getRowId ?덉쑝硫?洹멸구濡?留ㅼ묶:
+          // getRowId is required for reliable deletion by business row id.
           if (!props.getRowId) {
-            // getRowId媛 ?녿떎硫?row.id(=tanstack rowId)濡쒕뒗 prev?먯꽌 李얘린 ?대젮?
-            // => ??寃쎌슦??"getRowId ?꾩닔"濡??뺤콉???먮뒗 嫄?媛뺣젰 異붿쿇
+            // Without getRowId, row.id mapping is ambiguous in this path.
             return true;
           }
           return props.getRowId(prev[idx] as any) !== rowId;
         }));
 
-        // ??젣 ??dirty/selection/activeCell ?뺣━???ㅼ쓬 ?④퀎?먯꽌 actions??媛숈씠 ?ｌ쑝硫???
+        // Follow-up cleanup (dirty/selection/activeCell) can be handled in a dedicated action.
       },
     };
   }, [gridData.setData, props.getRowId]);
 
-  // 4. TanStack Table ?붿쭊 ?뗭뾽
+  // 4) Create TanStack table instance
   const table = useGenGridTable<TData>({
     ...props,
     data: gridData.data ?? [],
@@ -78,7 +75,7 @@ export const GenGrid = React.forwardRef(function GenGridInner<TData>(
     actions,
   });
 
-// 5. ?곗씠??踰꾩쟾 蹂寃???Dirty 由ъ뀑 (Effect)
+  // 5) Reset dirty state when dataVersion changes
   React.useEffect(() => {
     dirty.setBaselineFromData(gridData.data ?? []);
     dirty.clearAllDirty();
@@ -102,7 +99,7 @@ export const GenGrid = React.forwardRef(function GenGridInner<TData>(
       }}
     >
       <GenGridBase<TData>
-        {...props} // ?뱀? ?꾩슂??寃껊쭔 ?좊퀎 ?꾨떖
+        {...props} // Pass-through options from parent
         table={table}
         onCellValueChange={updateCell}
         isRowDirty={dirty.isRowDirty}
@@ -113,5 +110,4 @@ export const GenGrid = React.forwardRef(function GenGridInner<TData>(
 }) as <TData>(
   props: GenGridProps<TData> & { ref?: React.Ref<GenGridHandle<TData>> }
 ) => React.ReactElement;
-
 

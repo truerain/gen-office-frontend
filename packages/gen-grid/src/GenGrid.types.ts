@@ -91,9 +91,9 @@ type CommonGridOptions<TData> = {
   footer?: React.ReactNode;
   renderFooter?: (table: Table<TData>) => React.ReactNode;
 
-  onDirtyChange?: (dirty: boolean) => void;               // dirty ?�태가 바�????�림
-  onDirtyRowsChange?: (rowIds: string[]) => void;         // dirty ??목록??바�????�림  
-  dirtyKeys?: string[];                                   // dirty 계산?�서 비교??key ?�한 (?�으�?editable 컬럼 accessorKey 기반?�로 ?�동 추출)
+  onDirtyChange?: (dirty: boolean) => void;               // notify when dirty flag changes
+  onDirtyRowsChange?: (rowIds: string[]) => void;         // notify when dirty row id list changes
+  dirtyKeys?: string[];                                   // keys used for dirty comparison
 
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: (next: RowSelectionState) => void;
@@ -163,8 +163,8 @@ export type GenGridProps<TData> = CommonGridOptions<TData> &
     getRowId: (row: TData) => string;
     editorFactory?: GenGridEditorFactory<TData>;
 
-    /** ?� ?�집 커밋 ?�점???�정?�히 ???�??변�??�벤??*/
-     onCellValueChange?: (args: {
+    /** Fires when a cell value is committed. */
+    onCellValueChange?: (args: {
       rowId: string;
       columnId: string;
       value: unknown;

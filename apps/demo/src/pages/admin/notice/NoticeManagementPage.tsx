@@ -13,6 +13,7 @@ import { noticeApi, useNoticeDetailQuery, useNoticeListQuery } from '@/pages/adm
 import type { Notice, NoticeListParams, NoticeRequest } from '@/pages/admin/notice/model/types';
 import { useAppStore } from '@/app/store/appStore';
 import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
+import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 
 import styles from './NoticeManagementPage.module.css';
 import { createNoticeManagementColumns } from './NoticeManagementColumns';
@@ -135,8 +136,10 @@ const handleSave = async () => {
       await openAlert({ title: 'Saved successfully.' });
     } catch (error) {
       console.error(error);
-      const message =
-        error instanceof Error ? error.message : 'Failed to save notice.';
+      const message = resolveApiErrorMessage(error, {
+        defaultMessage: 'Failed to save notice.',
+        t,
+      });
       addNotification(message, 'error');
     } finally {
       setIsSaving(false);

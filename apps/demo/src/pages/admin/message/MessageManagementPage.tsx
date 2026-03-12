@@ -6,6 +6,7 @@ import { SimpleFilterBar, type FilterField } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 import { HttpError } from '@/shared/api/http';
+import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 import { useMessageListQuery } from '@/pages/admin/message/api/message';
 import type { MessageListParams } from '@/pages/admin/message/model/types';
 import { useAppStore } from '@/app/store/appStore';
@@ -172,7 +173,7 @@ export default function MessageManagementPage(_props: PageComponentProps) {
               addNotification('이미 존재하는 메시지 키입니다.', 'error');
               return;
             }
-            const message = error instanceof Error ? error.message : 'Commit failed (see console).';
+            const message = resolveApiErrorMessage(error, { defaultMessage: 'Commit failed (see console).' });
             addNotification(message, 'error');
           }}
           onStateChange={({ dirty }) => {

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAppStore } from '@/app/store/appStore';
 import { login } from '@/shared/api/auth';
+import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 import styles from './LoginPage.module.css';
 
 type LoginPageProps = {
@@ -32,7 +33,7 @@ export default function LoginPage({ onLoggedIn }: LoginPageProps) {
       setUser(user);
       onLoggedIn?.();
     } catch (error) {
-      const message = error instanceof Error ? error.message : '로그인에 실패했습니다.';
+      const message = resolveApiErrorMessage(error, { defaultMessage: '로그인에 실패했습니다.' });
       addNotification(message, 'error');
     } finally {
       setSubmitting(false);

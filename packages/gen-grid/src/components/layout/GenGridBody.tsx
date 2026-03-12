@@ -33,7 +33,7 @@ type GenGridBodyProps<TData> = {
   enableColumnSizing?: boolean;
   enableActiveRowHighlight?: boolean;
 
-  tableClassName?: string; // (?좏깮) bodyStyles.table 媛숈? 嫄??꾨떖?댁꽌 cell?먯꽌 focus selector???쒖슜 媛??
+  tableClassName?: string; // Optional class from body styles for cell focus selectors.
 
   activeCell: ActiveCell;
   onCellClick?: (rowId: string, columnId: string) => void;
@@ -41,7 +41,7 @@ type GenGridBodyProps<TData> = {
   editOnActiveCell?: boolean;
   keepEditingOnNavigate?: boolean;
   
-  /** (?좏깮) ?ㅼ젣 ?곗씠???낅뜲?댄듃???곸쐞?먯꽌 泥섎━ */
+  /** Optional external handler for committed cell value changes. */
   onCellValueChange?: (coord: CellCoord, nextValue: unknown) => void;
   isRowDirty?: (rowId: string) => boolean;
   isCellDirty?: (rowId: string, columnId: string) => boolean;
@@ -148,10 +148,10 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
     editMode,
     setEditMode,
     isCellEditable: (rowId, columnId) => {
-      // system column ?쒖쇅
+      // Exclude system columns from editing.
       if (isSystemCol(columnId)) return false;
 
-      // ?섏씠吏蹂??뺤콉
+      // Block editing in readonly mode.
       if (pageMode === 'readonly') return false;
 
       return true;
@@ -398,7 +398,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
             const navProps = nav.getCellProps(row.id, colId, isActive);
             const editProps = editing.getCellEditProps(row.id, colId);
 
-            // 媛숈? ?대깽???ㅺ? 寃뱀튌 ???덉뼱??merge
+            // Merge navigation and edit handlers on the same cell.
             const mergedProps: React.TdHTMLAttributes<HTMLTableCellElement> = {
               ...(navProps as any),
               ...(editProps as any),

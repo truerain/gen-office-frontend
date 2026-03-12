@@ -183,7 +183,7 @@ function MyComponent() {
       <AlertDialog
         open={open}
         onOpenChange={setOpen}
-        title="정말 삭제하시겠습니까?"
+        title="정말 삭제하시겠습니까"
         description="이 작업은 되돌릴 수 없습니다."
         variant="error"
         onConfirm={handleDelete}
@@ -267,7 +267,7 @@ function MyComponent() {
       <AlertDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        title="정말 삭제하시겠습니까?"
+        title="정말 삭제하시겠습니까"
         description="이 작업은 되돌릴 수 없습니다. 삭제된 데이터는 복구할 수 없습니다."
         variant="error"
         confirmText="삭제"
@@ -278,7 +278,7 @@ function MyComponent() {
       <AlertDialog
         open={asyncOpen}
         onOpenChange={setAsyncOpen}
-        title="저장하시겠습니까?"
+        title="저장하시겠습니까"
         description="변경 사항을 저장합니다. 약 2초 정도 소요됩니다."
         variant="info"
         confirmText="저장"

@@ -24,6 +24,7 @@ import {
   //useUpdateCustomerMutation,
   //useDeleteCustomerMutation,
 } from '@/pages/customer/customer-info/api/customer';
+import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 
 interface CustomerInfoPageProps extends PageComponentProps {
   /** 초기 필터 파라미터 */
@@ -191,7 +192,7 @@ function CustomerInfoPage({
           <div style={{ padding: 12 }}>
             <div style={{ marginBottom: 8, fontWeight: 600 }}>데이터를 불러오지 못했습니다.</div>
             <div style={{ marginBottom: 8, opacity: 0.8 }}>
-              {(listQuery.error as Error)?.message || 'Unknown error'}
+              {resolveApiErrorMessage(listQuery.error, { defaultMessage: 'Unknown error' })}
             </div>
             <button type="button" onClick={handleRefetch}>
               다시 시도

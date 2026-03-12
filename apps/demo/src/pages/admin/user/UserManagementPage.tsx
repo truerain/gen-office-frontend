@@ -14,6 +14,7 @@ import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic'
 import { useUserListQuery } from '@/pages/admin/user/api/user';
 import type { User, UserListParams } from '@/pages/admin/user/model/types';
 import { useAppStore } from '@/app/store/appStore';
+import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 
 import styles from './UserManagementPage.module.css';
 import { createUserManagementColumns } from './UserManagementColumns';
@@ -141,7 +142,10 @@ export default function UserManagementPage(_props: PageComponentProps) {
           }}
           onCommitError={({ error }) => {
             console.error(error);
-            const message = error instanceof Error ? error.message : 'Commit failed (see console).';
+            const message = resolveApiErrorMessage(error, {
+              defaultMessage: t('commit_failed', { defaultValue: 'Commit failed (see console).' }),
+              t,
+            });
             addNotification(message, 'error');
           }}
           onCellEdit={({ rowId, columnId, rowIndex, prevValue, nextValue }) => {

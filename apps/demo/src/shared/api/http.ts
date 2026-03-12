@@ -4,13 +4,16 @@ import { getCurrentLocale } from '@/i18n';
 const API_BASE_URL = '';
 
 type ApiErrorResponse = {
+  success?: boolean;
   code?: string;
   messageKey?: string;
-  message?: string;
+  message?: string | null;
+  messageParams?: Record<string, unknown>;
   locale?: string;
   path?: string;
   timestamp?: string;
   traceId?: string | null;
+  data?: unknown;
 };
 
 type HttpResponseType = 'json' | 'blob' | 'text' | 'void' | 'response';
@@ -19,10 +22,25 @@ export type HttpRequestInit = RequestInit & {
   responseType?: HttpResponseType;
 };
 
+export type ApiResponseEnvelope<T = unknown> = {
+  success: boolean;
+  code: string;
+  message: string | null;
+  data: T;
+  messageParams?: Record<string, unknown>;
+};
+
+function isApiResponseEnvelope(value: unknown): value is ApiResponseEnvelope<unknown> {
+  if (!value || typeof value !== 'object') return false;
+  const record = value as Record<string, unknown>;
+  return typeof record.success === 'boolean' && typeof record.code === 'string' && 'data' in record;
+}
+
 export class HttpError extends Error {
   status: number;
   code?: string;
   messageKey?: string;
+  messageParams?: Record<string, unknown>;
   locale?: string;
   path?: string;
   timestamp?: string;
@@ -35,6 +53,7 @@ export class HttpError extends Error {
     message: string;
     code?: string;
     messageKey?: string;
+    messageParams?: Record<string, unknown>;
     locale?: string;
     path?: string;
     timestamp?: string;
@@ -47,6 +66,7 @@ export class HttpError extends Error {
     this.status = params.status;
     this.code = params.code;
     this.messageKey = params.messageKey;
+    this.messageParams = params.messageParams;
     this.locale = params.locale;
     this.path = params.path;
     this.timestamp = params.timestamp;
@@ -114,15 +134,18 @@ export async function http<T>(input: RequestInfo, init?: HttpRequestInit): Promi
 
   if (!res.ok) {
     const cloned = res.clone();
-    let data: ApiErrorResponse | null = null;
+    let parsed: unknown = null;
     try {
-      data = (await cloned.json()) as ApiErrorResponse;
+      parsed = await cloned.json();
     } catch {
-      data = null;
+      parsed = null;
     }
 
+    const envelope = isApiResponseEnvelope(parsed) ? parsed : null;
+    const data = !envelope && parsed && typeof parsed === 'object' ? (parsed as ApiErrorResponse) : null;
     const text = await res.text().catch(() => '');
     const message =
+      (typeof envelope?.message === 'string' && envelope.message.trim()) ||
       (data && typeof data.message === 'string' && data.message.trim()) ||
       text ||
       res.statusText ||
@@ -131,14 +154,15 @@ export async function http<T>(input: RequestInfo, init?: HttpRequestInit): Promi
     const error = new HttpError({
       status: res.status,
       message,
-      code: data?.code,
-      messageKey: data?.messageKey,
+      code: envelope?.code ?? data?.code,
+      messageKey: data?.messageKey ?? envelope?.code,
+      messageParams: envelope?.messageParams ?? data?.messageParams,
       locale: data?.locale,
       path: data?.path,
       timestamp: data?.timestamp,
       traceId: data?.traceId,
       contentLanguage: lastContentLanguage,
-      raw: data ?? text,
+      raw: parsed ?? text,
     });
 
     if (res.status === 401 || res.status === 440) {
@@ -155,5 +179,24 @@ export async function http<T>(input: RequestInfo, init?: HttpRequestInit): Promi
   if (responseType === 'response') return res as T;
   if (responseType === 'blob') return (await res.blob()) as T;
   if (responseType === 'text') return (await res.text()) as T;
-  return (await res.json()) as T;
+  const payload = (await res.json()) as unknown;
+  if (isApiResponseEnvelope(payload)) {
+    if (!payload.success) {
+      const message =
+        (typeof payload.message === 'string' && payload.message.trim()) ||
+        payload.code ||
+        `HTTP ${res.status}`;
+      throw new HttpError({
+        status: res.status,
+        message,
+        code: payload.code,
+        messageKey: payload.code,
+        messageParams: payload.messageParams,
+        contentLanguage: lastContentLanguage,
+        raw: payload,
+      });
+    }
+    return payload.data as T;
+  }
+  return payload as T;
 }

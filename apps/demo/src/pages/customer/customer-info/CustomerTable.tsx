@@ -8,6 +8,7 @@ import type { Customer } from './model/types';
 import { createCustomerColumns } from './CustomerInfoColumns';
 import type { PendingDiff } from '@/shared/models/pendingDiff';
 import { useAppStore } from '@/app/store/appStore';
+import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 
 import styles from './CustomerTable.module.css';
 
@@ -64,7 +65,7 @@ function CustomerTable(props: CustomerTableProps) {
         }}
         onCommitError={({ error }) => {
           console.error(error);
-          const message = error instanceof Error ? error.message : 'Commit failed (see console)';
+          const message = resolveApiErrorMessage(error, { defaultMessage: 'Commit failed (see console)' });
           addNotification(message, 'error');
         }}
         beforeCommit={({ changes }) => {

@@ -14,7 +14,7 @@
 - `.githooks/pre-commit` runs `node scripts/check-encoding.mjs --staged`.
 - The check blocks commits for:
   - UTF-8 BOM
-  - invalid UTF-8 / replacement character (`�`)
+  - invalid UTF-8 / replacement character (`\\uFFFD`)
   - suspicious mojibake patterns in Hangul lines
 
 ## GenGrid Layout Guard

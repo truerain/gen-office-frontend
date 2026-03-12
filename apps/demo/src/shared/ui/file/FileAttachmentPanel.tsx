@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAppStore } from '@/app/store/appStore';
 import { commonFileApi, type CommonFileItem } from '@/shared/api/commonFile';
+import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 import styles from './FileAttachmentPanel.module.css';
 
 export type FileAttachmentPanelProps = {
@@ -51,7 +52,7 @@ export function FileAttachmentPanel({
       const next = await commonFileApi.list(currentFileSetId);
       setItems(next);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to load attachments.';
+      const message = resolveApiErrorMessage(error, { defaultMessage: 'Failed to load attachments.' });
       addNotification(message, 'error');
     } finally {
       setIsLoading(false);
@@ -84,7 +85,7 @@ export function FileAttachmentPanel({
       await loadList();
       addNotification('Files uploaded successfully.', 'success');
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to upload files.';
+      const message = resolveApiErrorMessage(error, { defaultMessage: 'Failed to upload files.' });
       addNotification(message, 'error');
     } finally {
       setIsUploading(false);
@@ -104,7 +105,7 @@ export function FileAttachmentPanel({
       const finalName = downloaded.fileName || item.fileName;
       downloadBlob(downloaded.blob, finalName);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to download file.';
+      const message = resolveApiErrorMessage(error, { defaultMessage: 'Failed to download file.' });
       addNotification(message, 'error');
     }
   };

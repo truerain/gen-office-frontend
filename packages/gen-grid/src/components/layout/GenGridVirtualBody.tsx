@@ -40,7 +40,7 @@ type GenGridVirtualBodyProps<TData> = {
   rowHeight: number;
   overscan: number;
   
-  tableClassName?: string; // (?좏깮) bodyStyles.table 媛숈? 嫄??꾨떖?댁꽌 cell?먯꽌 focus selector???쒖슜 媛??
+  tableClassName?: string; // Optional class from body styles for cell focus selectors.
 
   activeCell: ActiveCell;
   onCellClick?: (rowId: string, columnId: string) => void;
@@ -48,7 +48,7 @@ type GenGridVirtualBodyProps<TData> = {
   editOnActiveCell?: boolean;
   keepEditingOnNavigate?: boolean;
   
-  /** (?좏깮) ?ㅼ젣 ?곗씠???낅뜲?댄듃???곸쐞?먯꽌 泥섎━ */
+  /** Optional external handler for committed cell value changes. */
   onCellValueChange?: (coord: CellCoord, nextValue: unknown) => void;
   isRowDirty?: (rowId: string) => boolean;
   isCellDirty?: (rowId: string, columnId: string) => boolean;
@@ -163,11 +163,11 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
     let raf1 = 0;
     let raf2 = 0;
 
-    // ??而ㅻ컠 吏곹썑 ?꾨젅?꾩뿉 measure
+    // Measure right after commit on the next frame.
     raf1 = requestAnimationFrame(() => {
       rowVirtualizer.measure();
 
-      // ???고듃/?덉씠?꾩썐?????꾨젅????쾶 ?≫엳??耳?댁뒪源뚯? 而ㅻ쾭
+      // Re-measure on one more frame to cover layout stabilization cases.
       raf2 = requestAnimationFrame(() => rowVirtualizer.measure());
     });
 
@@ -197,10 +197,10 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
     editMode,
     setEditMode,
     isCellEditable: (rowId, columnId) => {
-      // system column ?쒖쇅
+      // Exclude system columns from editing.
       if (isSystemCol(columnId)) return false;
 
-      // ?섏씠吏蹂??뺤콉
+      // Block editing in readonly mode.
       if (pageMode === 'readonly') return false;
 
       return true;

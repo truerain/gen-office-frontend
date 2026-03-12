@@ -14,6 +14,7 @@ import type { Menu, MenuListParams } from '@/pages/admin/menu/model/types';
 import { menuApi, useMenuListQuery } from '@/pages/admin/menu/api/menu';
 import { useAppStore } from '@/app/store/appStore';
 import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
+import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 
 import { createMenuManagementColumns } from './MenuManagementColumns';
 import { commitMenuChanges, createMenuRow, validateMenuChanges } from './MenuManagementCrud';
@@ -111,12 +112,12 @@ function MenuManagementPage(props: PageComponentProps) {
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error(error);
-        const message =
-          error instanceof Error
-            ? error.message
-            : t('admin.menu.error.load_children_failed', {
-                defaultValue: 'Failed to load menu children.',
-              });
+        const message = resolveApiErrorMessage(error, {
+          defaultMessage: t('admin.menu.error.load_children_failed', {
+            defaultValue: 'Failed to load menu children.',
+          }),
+          t,
+        });
         addNotification(message, 'error');
       } finally {
         loadingParentsRef.current.delete(parentKey);
@@ -242,10 +243,10 @@ function MenuManagementPage(props: PageComponentProps) {
                 onCommitError={({ error }) => {
                   // eslint-disable-next-line no-console
                   console.error(error);
-                  const message =
-                    error instanceof Error
-                      ? error.message
-                      : t('common.commit_failed', { defaultValue: 'Commit failed (see console)' });
+                  const message = resolveApiErrorMessage(error, {
+                    defaultMessage: t('common.commit_failed', { defaultValue: 'Commit failed (see console)' }),
+                    t,
+                  });
                   addNotification(message, 'error');
                 }}
                 actionBar={{

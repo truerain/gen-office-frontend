@@ -5,7 +5,7 @@ Active Row 정의
 Active Row = 현재 activeCell이 속한 row
 식별값: row.id (TanStack row model의 row.id를 그대로 사용)
 타입: string | null
-파생식: activeRowId = activeCell?.rowId ?? null
+파생식: activeRowId = activeCell ? activeCell.rowId : null
 단일 활성만 허용 (multi‑active 없음)
 Row Grouping 고려 정의
 

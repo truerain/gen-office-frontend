@@ -6,6 +6,7 @@ import { PopupInput, SimpleFilterBar, type FilterField } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 import { HttpError } from '@/shared/api/http';
+import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 import { useCommonCodesQuery } from '@/shared/api/commonCode';
 import { useUserRoleListQuery, useUserRoleOptionsQuery } from '@/pages/admin/user-role/api/userRole';
 import type { UserRoleListParams } from '@/pages/admin/user-role/model/types';
@@ -281,7 +282,7 @@ export default function UserRoleManagementPage(_props: PageComponentProps) {
               addNotification('사용자 또는 권한 정보를 찾을 수 없습니다.', 'error');
               return;
             }
-            const message = error instanceof Error ? error.message : 'Commit failed (see console).';
+            const message = resolveApiErrorMessage(error, { defaultMessage: 'Commit failed (see console).' });
             addNotification(message, 'error');
           }}
           onStateChange={({ dirty }) => {

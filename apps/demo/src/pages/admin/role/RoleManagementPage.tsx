@@ -26,6 +26,7 @@ import type { RoleMenu } from '@/pages/admin/role/model/roleMenuTypes';
 import type { Role, RoleListParams } from '@/pages/admin/role/model/types';
 import { useAppStore } from '@/app/store/appStore';
 import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
+import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 
 import styles from './RoleManagementPage.module.css';
 import { createRoleMenuColumns } from './RoleMenuColumns';
@@ -182,10 +183,10 @@ export default function RoleManagementPage(_props: PageComponentProps) {
       }
     } catch (error) {
       console.error(error);
-      const message =
-        error instanceof Error
-          ? error.message
-          : t('admin.role.error.switch_failed', { defaultValue: 'Failed to switch role.' });
+      const message = resolveApiErrorMessage(error, {
+        defaultMessage: t('admin.role.error.switch_failed', { defaultValue: 'Failed to switch role.' }),
+        t,
+      });
       addNotification(message, 'error');
     } finally {
       selectionTransitionRef.current = false;
@@ -270,10 +271,10 @@ export default function RoleManagementPage(_props: PageComponentProps) {
                 onCommitError={({ error }) => {
                   // eslint-disable-next-line no-console
                   console.error(error);
-                  const message =
-                    error instanceof Error
-                      ? error.message
-                      : t('common.commit_failed', { defaultValue: 'Commit failed (see console)' });
+                  const message = resolveApiErrorMessage(error, {
+                    defaultMessage: t('common.commit_failed', { defaultValue: 'Commit failed (see console)' }),
+                    t,
+                  });
                   addNotification(message, 'error');
                 }}
                 onStateChange={({ dirty }) => {
@@ -345,10 +346,10 @@ export default function RoleManagementPage(_props: PageComponentProps) {
                 onCommitError={({ error }) => {
                   // eslint-disable-next-line no-console
                   console.error(error);
-                  const message =
-                    error instanceof Error
-                      ? error.message
-                      : t('common.commit_failed', { defaultValue: 'Commit failed (see console)' });
+                  const message = resolveApiErrorMessage(error, {
+                    defaultMessage: t('common.commit_failed', { defaultValue: 'Commit failed (see console)' }),
+                    t,
+                  });
                   addNotification(message, 'error');
                 }}
                 onStateChange={({ dirty, changes, viewData }) => {

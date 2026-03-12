@@ -19,6 +19,8 @@ type AlertDialogContextValue = {
 };
 
 const AlertDialogContext = createContext<AlertDialogContextValue | null>(null);
+const DEFAULT_CONFIRM_TEXT = '확인';
+const DEFAULT_CANCEL_TEXT = '취소';
 
 export function AlertDialogProvider({ children }: PropsWithChildren) {
   const [alertOpen, setAlertOpen] = useState(false);
@@ -78,8 +80,8 @@ export function AlertDialogProvider({ children }: PropsWithChildren) {
           }
         }}
         title={confirmOptions?.title ?? ''}
-        confirmText={confirmOptions?.confirmText ?? '확인'}
-        cancelText={confirmOptions?.cancelText ?? '취소'}
+        confirmText={confirmOptions?.confirmText ?? DEFAULT_CONFIRM_TEXT}
+        cancelText={confirmOptions?.cancelText ?? DEFAULT_CANCEL_TEXT}
         onConfirm={confirmYes}
         onCancel={confirmNo}
       />
@@ -88,7 +90,7 @@ export function AlertDialogProvider({ children }: PropsWithChildren) {
         open={alertOpen}
         onOpenChange={setAlertOpen}
         title={alertOptions?.title ?? ''}
-        confirmText={alertOptions?.confirmText ?? '확인'}
+        confirmText={alertOptions?.confirmText ?? DEFAULT_CONFIRM_TEXT}
         hideCancelButton
         onConfirm={closeAlert}
       />
