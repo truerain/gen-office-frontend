@@ -104,6 +104,15 @@ export const commonFileApi = {
     });
   },
 
+  async remove(params: { fileSetId: string; fileId: string }): Promise<void> {
+    const encodedSetId = encodeURIComponent(params.fileSetId);
+    const encodedFileId = encodeURIComponent(params.fileId);
+    await http<void>(`/api/common/files/${encodedSetId}/${encodedFileId}`, {
+      method: 'DELETE',
+      responseType: 'void',
+    });
+  },
+
   async download(params: { fileSetId: string; fileId: string }): Promise<DownloadedFile> {
     const encodedSetId = encodeURIComponent(params.fileSetId);
     const encodedFileId = encodeURIComponent(params.fileId);

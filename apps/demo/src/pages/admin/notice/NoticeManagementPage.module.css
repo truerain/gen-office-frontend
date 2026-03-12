@@ -19,6 +19,21 @@
   height: 100%;
 }
 
+.noticeDialog {
+  width: min(1100px, 92vw);
+  max-width: 1100px;
+  height: min(88vh, 900px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.noticeDialogBody {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
 .pane {
   flex: 1;
   min-height: 0;
@@ -85,9 +100,23 @@
   gap: 8px;
 }
 
+.fieldRowControls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: end;
+  gap: 12px;
+}
+
 .label {
   font-size: 0.75rem;
   color: var(--color-text-secondary);
+}
+
+.switchField {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 4px;
 }
 
 .input {
@@ -143,6 +172,16 @@
   cursor: pointer;
 }
 
+.iconButton {
+  width: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-color: transparent;
+  background: transparent;
+}
+
 .primaryButton {
   border-color: var(--color-primary);
   color: var(--color-primary);
@@ -153,6 +192,10 @@
   font-size: 0.875rem;
 }
 
-.selectLikeDatePicker {
-  max-width: 16rem;
+@media (max-width: 960px) {
+  .fieldRowControls {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: 8px;
+  }
 }

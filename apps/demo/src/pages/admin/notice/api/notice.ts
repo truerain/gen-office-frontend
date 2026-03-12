@@ -37,7 +37,7 @@ export const noticeApi = {
     }),
 
   save: (input: NoticeRequest) =>
-    http<Notice>('/api/notices', {
+    http<Notice | null>('/api/notices', {
       method: 'POST',
       body: JSON.stringify(input),
     }),
