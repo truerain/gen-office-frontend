@@ -4,6 +4,7 @@ import { authHandlers } from './auth.handlers';
 import { roleHandlers } from './role.handlers';
 import { noticeHandlers } from './notice.handlers';
 import { messageHandlers } from './message.handlers';
+import { commonFileHandlers } from './commonFile.handlers';
 
 export const handlers = [
   ...customerHandlers,
@@ -12,4 +13,5 @@ export const handlers = [
   ...roleHandlers,
   ...noticeHandlers,
   ...messageHandlers,
+  ...commonFileHandlers,
 ];

@@ -31,6 +31,111 @@ type ExcelExportOptions<TData> = {
 };
 ```
 
+## ExportSchema 확장 설계 (검토안)
+화면 컬럼과 export 컬럼 구조(개수/순서/그룹/포맷)가 다를 수 있으므로, `exportColumns` 단일 배열보다 `ExportSchema` 기반 설계를 권장한다.
+
+### 핵심 원칙
+1. 화면 컬럼(`columns`)과 export 컬럼(`schema.columns`)을 분리한다.
+2. schema를 여러 개 두고, export 시 프로필을 선택할 수 있게 한다.
+3. 하나의 프로필에서 여러 시트(`sheets`)를 구성할 수 있게 한다.
+4. 각 시트는 서로 다른 데이터소스(`viewData`, `selectedRows`, `custom`)를 사용할 수 있다.
+
+### 타입 초안
+```ts
+type ExcelExportColumnSchema<TRow> = {
+  id: string;
+  header: string;
+  children?: ExcelExportColumnSchema<TRow>[];
+  width?: number;
+  align?: 'left' | 'center' | 'right';
+  format?: 'text' | 'number' | 'currency' | 'percent' | 'date' | 'datetime' | 'boolean';
+  numFmt?: string;
+  value?: (args: { row: TRow; rowIndex: number }) => unknown;
+};
+
+type ExcelExportSheetSchema<TData, TRow = TData> = {
+  key: string;
+  sheetName: string;
+  columns: ExcelExportColumnSchema<TRow>[];
+  dataSource:
+    | 'viewData'
+    | 'selectedRows'
+    | {
+        type: 'custom';
+        resolveRows: (ctx: {
+          state: CrudUiState<TData>;
+          columns: readonly ColumnDef<TData, any>[];
+        }) => Promise<readonly TRow[]> | readonly TRow[];
+      };
+};
+
+type ExcelExportProfile<TData> = {
+  key: string;
+  label: string;
+  fileName?: string;
+  sheets: ExcelExportSheetSchema<TData, any>[];
+};
+
+type ExcelExportOptions<TData> = {
+  mode: 'frontend' | 'backend';
+  profiles?: ExcelExportProfile<TData>[];
+  defaultProfileKey?: string;
+  resolveProfileKey?: (ctx: { state: CrudUiState<TData> }) => string | undefined;
+  defaultBorder?: boolean;
+  rowHeight?: number;
+  backend?: {
+    endpoint: string;
+    method?: 'GET' | 'POST';
+    buildPayload?: (args: { profileKey?: string; state: CrudUiState<TData> }) => Record<string, unknown>;
+  };
+  frontend?: {
+    onlySelected?: boolean;
+  };
+};
+```
+
+### 실행 우선순위
+1. `exportExcel(profileKey?)` 호출 파라미터
+2. `resolveProfileKey(ctx)` 결과
+3. `defaultProfileKey`
+4. `profiles[0]`
+
+### 값 추출 우선순위 (schema 모드)
+1. `schema.columns[].value`
+2. (옵션) `meta.exportValue`를 fallback으로 허용
+3. `accessorKey`/`accessorFn` (화면 컬럼 연계 모드에서만)
+4. 빈 문자열
+
+### 다중 시트/다중 데이터소스 예시
+```ts
+profiles: [
+  {
+    key: 'audit',
+    label: '감사 추적',
+    fileName: 'user_audit',
+    sheets: [
+      { key: 'summary', sheetName: '요약', columns: summaryCols, dataSource: 'viewData' },
+      { key: 'selected', sheetName: '선택행', columns: selectedCols, dataSource: 'selectedRows' },
+      {
+        key: 'history',
+        sheetName: '변경이력',
+        columns: historyCols,
+        dataSource: {
+          type: 'custom',
+          resolveRows: async ({ state }) => fetchHistoryRows(state),
+        },
+      },
+    ],
+  },
+];
+```
+
+### 호환 전략
+1. `profiles` 미지정: 기존 동작(화면 컬럼 기반 export) 유지
+2. `profiles` 지정: schema 기반 export 사용
+3. 기존 `meta.exportValue`는 화면 기반/혼합 모드에서 계속 지원
+4. backend 모드도 `profileKey`를 함께 전송해 서버와 동일 계약 유지
+
 ## 파일명 규칙
 - 권장 형식: `title_YYYYMMDD_HHmmss.xlsx`
 - 예시: `UserRole_20260302_153045.xlsx`
@@ -199,6 +304,9 @@ worksheet.getCell(2, 3).value = '부서';
 - 헤더 행 Gray 배경(반전) + Bold 스타일 적용
 - 조건부 스타일 훅(`getRowStyle`/`getCellStyle`) 사용 시 엑셀 스타일 매핑 동작 확인
 - 백엔드 모드 시 권한 검증 및 감사 로그 정책 반영
+- 다중 프로필 선택 시 `profileKey` 우선순위 규칙 확인
+- 다중 시트 생성 시 `sheetName` 중복/길이(31자) 검증
+- `custom` 데이터소스 실패 정책(전체 실패/부분 실패) 확정
 
 
 
@@ -206,4 +314,4 @@ worksheet.getCell(2, 3).value = '부서';
 - 프런트 엔진은 `exceljs`로 통일한다.
 - 이유:
   - 컬럼 `width`/`align` 반영 요구 대응
-  - 향후 셀 스타일/서식 확장 여지 확보
+  - 향후 다중 시트/다중 데이터소스 확장 여지 확보

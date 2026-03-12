@@ -13,6 +13,12 @@ type ApiErrorResponse = {
   traceId?: string | null;
 };
 
+type HttpResponseType = 'json' | 'blob' | 'text' | 'void' | 'response';
+
+export type HttpRequestInit = RequestInit & {
+  responseType?: HttpResponseType;
+};
+
 export class HttpError extends Error {
   status: number;
   code?: string;
@@ -79,18 +85,29 @@ function withBaseUrl(input: RequestInfo): RequestInfo {
   return `${API_BASE_URL}/${input}`;
 }
 
-export async function http<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
+export async function http<T>(input: RequestInfo, init?: HttpRequestInit): Promise<T> {
+  const requestInit = (init ?? {}) as HttpRequestInit;
+  const headers = new Headers(requestInit.headers ?? {});
+  const method = requestInit.method?.toUpperCase();
+  const body = requestInit.body;
+  const isFormDataBody = typeof FormData !== 'undefined' && body instanceof FormData;
+
+  if (!headers.has('X-Lang')) {
+    headers.set('X-Lang', getCurrentLocale());
+  }
+  if (method && !['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+    Object.entries(getCsrfHeader()).forEach(([key, value]) => {
+      if (!headers.has(key)) headers.set(key, value);
+    });
+  }
+  if (!isFormDataBody && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
+
   const res = await fetch(withBaseUrl(input), {
-    ...init,
-    credentials: init?.credentials ?? 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Lang': getCurrentLocale(),
-      ...(init?.method && !['GET', 'HEAD', 'OPTIONS'].includes(init.method.toUpperCase())
-        ? getCsrfHeader()
-        : {}),
-      ...(init?.headers ?? {}),
-    },
+    ...requestInit,
+    credentials: requestInit.credentials ?? 'include',
+    headers,
   });
 
   lastContentLanguage = res.headers.get('content-language');
@@ -132,5 +149,11 @@ export async function http<T>(input: RequestInfo, init?: RequestInit): Promise<T
   }
 
   if (res.status === 204) return undefined as T;
+
+  const responseType = requestInit.responseType ?? 'json';
+  if (responseType === 'void') return undefined as T;
+  if (responseType === 'response') return res as T;
+  if (responseType === 'blob') return (await res.blob()) as T;
+  if (responseType === 'text') return (await res.text()) as T;
   return (await res.json()) as T;
 }

@@ -1,4 +1,5 @@
 import { DatePicker, RichTextEditor, SimpleSelect } from '@gen-office/ui';
+import { FileAttachmentPanel } from '@/shared/ui/file/FileAttachmentPanel';
 
 import styles from './NoticeManagementPage.module.css';
 
@@ -18,11 +19,7 @@ type NoticeDraftPanelProps = {
   draft: NoticeDraft;
   isDetailLoading: boolean;
   isSaving: boolean;
-  currentFileSetId: string;
-  currentAttachments: File[];
   onDraftChange: (next: NoticeDraft) => void;
-  onAddAttachment: (files: FileList | null) => void;
-  onRemoveAttachment: (index: number) => void;
   onSave: () => void;
 };
 
@@ -44,11 +41,7 @@ export function NoticeDraftPanel({
   draft,
   isDetailLoading,
   isSaving,
-  currentFileSetId,
-  currentAttachments,
   onDraftChange,
-  onAddAttachment,
-  onRemoveAttachment,
   onSave,
 }: NoticeDraftPanelProps) {
   console.log(isDetailLoading);
@@ -137,31 +130,11 @@ export function NoticeDraftPanel({
           editorClassName={styles.noticeEditorBody}
         />
 
-        <div className={styles.attachments}>
-          <label className={styles.label}>
-            Attachments (group: {currentFileSetId || 'file_set_id not set'})
-          </label>
-          <input
-            className={styles.fileInput}
-            type="file"
-            multiple
-            onChange={(e) => onAddAttachment(e.target.files)}
-          />
-          <div className={styles.fileList}>
-            {currentAttachments.length === 0 ? (
-              <p className={styles.emptyText}>No attached files.</p>
-            ) : (
-              currentAttachments.map((file, index) => (
-                <div key={`${file.name}-${index}`} className={styles.fileItem}>
-                  <span>{file.name}</span>
-                  <button type="button" className={styles.button} onClick={() => onRemoveAttachment(index)}>
-                    Remove
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+        <FileAttachmentPanel
+          fileSetId={draft.fileSetId}
+          onFileSetIdChange={(next) => onDraftChange({ ...draft, fileSetId: next })}
+          disabled={isSaving}
+        />
 
       </div>
     </div>

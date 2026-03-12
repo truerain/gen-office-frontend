@@ -61,7 +61,6 @@ export default function NoticeManagementPage() {
   const [activeNoticeId, setActiveNoticeId] = useState<number | null>(null);
   const [draft, setDraft] = useState<NoticeDraft>(() => createDefaultDraft());
   const [isSaving, setIsSaving] = useState(false);
-  const [attachmentsByFileSetId, setAttachmentsByFileSetId] = useState<Record<string, File[]>>({});
 
   const tempNoticeIdRef = useRef(-1);
 
@@ -77,8 +76,6 @@ export default function NoticeManagementPage() {
   }, [activeNotice]);
 
   const columns = useMemo(() => createNoticeManagementColumns(t), [t]);
-  const currentFileSetId = draft.fileSetId.trim();
-  const currentAttachments = currentFileSetId ? (attachmentsByFileSetId[currentFileSetId] ?? []) : [];
 
   const handleSelectedRowsChange = useCallback((rowIds: readonly CrudRowId[]) => {
     setSelectedRowIds(rowIds);
@@ -144,28 +141,6 @@ const handleSave = async () => {
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const handleAddAttachment = (files: FileList | null) => {
-    if (!files || files.length === 0) return;
-    if (!currentFileSetId) {
-      addNotification('Enter file_set_id before attaching files.', 'error');
-      return;
-    }
-
-    const nextFiles = Array.from(files);
-    setAttachmentsByFileSetId((prev) => ({
-      ...prev,
-      [currentFileSetId]: [...(prev[currentFileSetId] ?? []), ...nextFiles],
-    }));
-  };
-
-  const handleRemoveAttachment = (index: number) => {
-    if (!currentFileSetId) return;
-    setAttachmentsByFileSetId((prev) => ({
-      ...prev,
-      [currentFileSetId]: (prev[currentFileSetId] ?? []).filter((_, idx) => idx !== index),
-    }));
   };
 
   return (
@@ -253,11 +228,7 @@ const handleSave = async () => {
               draft={draft}
               isDetailLoading={isDetailLoading}
               isSaving={isSaving}
-              currentFileSetId={currentFileSetId}
-              currentAttachments={currentAttachments}
               onDraftChange={setDraft}
-              onAddAttachment={handleAddAttachment}
-              onRemoveAttachment={handleRemoveAttachment}
               onSave={() => {
                 void handleSave();
               }}
