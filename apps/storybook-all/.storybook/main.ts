@@ -44,8 +44,8 @@ const config: StorybookConfig = {
     };
   },
   staticDirs: [
-    // theme 패키지의 폰트 폴더를 스토리북의 '/' 경로로 매핑
-    { from: "../../../packages/theme/public/fonts", to: "/fonts" }
+    // storybook-all 앱의 폰트 폴더를 스토리북의 '/fonts' 경로로 매핑
+    { from: "../public/fonts", to: "/fonts" }
   ],  
 };
 export default config;
