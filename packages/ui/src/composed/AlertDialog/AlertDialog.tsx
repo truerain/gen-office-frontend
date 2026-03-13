@@ -1,11 +1,17 @@
 // packages/ui/src/composed/AlertDialog/AlertDialog.tsx
 import { useState } from 'react';
 import {
+  CircleAlert,
+  CircleCheckBig,
+  CircleX,
+  TriangleAlert,
+} from 'lucide-react';
+import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogBody,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from '../../core/Dialog';
 import { Button } from '../../core/Button';
@@ -16,7 +22,7 @@ export function AlertDialog({
   open,
   onOpenChange,
   title,
-  description,
+  message,
   confirmText = '확인',
   cancelText = '취소',
   thirdText,
@@ -78,13 +84,34 @@ export function AlertDialog({
     }
   };
 
+  const Icon = (() => {
+    switch (variant) {
+      case 'warning':
+        return TriangleAlert;
+      case 'error':
+        return CircleX;
+      case 'success':
+        return CircleCheckBig;
+      default:
+        return CircleAlert;
+    }
+  })();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={getVariantClass()}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
+
+        {message && (
+          <DialogBody className={styles.body}>
+            <div className={styles.iconWrapper} aria-hidden="true">
+              <Icon className={styles.icon} />
+            </div>
+            <div className={styles.bodyContent}>{message}</div>
+          </DialogBody>
+        )}
 
         <DialogFooter>
           {!hideCancelButton && (

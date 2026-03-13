@@ -20,7 +20,7 @@ import type {
   LkupDetailListParams,
 } from '@/pages/admin/lkup/model/types';
 import { useAppStore } from '@/app/store/appStore';
-import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
+import { useAlertDialog } from '@/shared/ui/AlertDialogContext';
 
 import styles from './LkupManagementPage.module.css';
 
@@ -282,7 +282,10 @@ export default function LkupManagementPage(_props: PageComponentProps) {
                   }}
                   beforeCommit={({ changes }) => {
                     if (hasMissingLkupMasterRequired(changes)) {
-                      void openAlert({ title: 'Class Code and Class Name are required.' });
+                      void openAlert({
+                        type: 'warning',
+                        message: 'Class Code and Class Name are required.',
+                      });
                       return false;
                     }
                     return openConfirm({ title: 'Do you want to save?' });
@@ -290,7 +293,7 @@ export default function LkupManagementPage(_props: PageComponentProps) {
                   onCommit={async ({ changes, ctx }) => {
                     await commitLkupMasterChanges(changes, ctx.viewData);
                     await refreshClassList();
-                    await openAlert({ title: 'Saved successfully.' });
+                    await openAlert({ type: 'success', message: 'Saved successfully.' });
                     return { ok: true };
                   }}
                   onCommitError={({ error }) => {
@@ -368,11 +371,11 @@ export default function LkupManagementPage(_props: PageComponentProps) {
                   }}
                   beforeCommit={({ changes }) => {
                     if (!selectedClassCode) {
-                      void openAlert({ title: 'Select a code class first.' });
+                      void openAlert({ type: 'warning', message: 'Select a code class first.' });
                       return false;
                     }
                     if (hasMissingLkupDetailRequired(changes)) {
-                      void openAlert({ title: 'Code and Name are required.' });
+                      void openAlert({ type: 'warning', message: 'Code and Name are required.' });
                       return false;
                     }
                     return openConfirm({ title: 'Do you want to save?' });
@@ -386,7 +389,7 @@ export default function LkupManagementPage(_props: PageComponentProps) {
 
                     await commitLkupDetailChanges(changes, ctx.viewData, selectedClassCode);
                     await refreshItemList();
-                    await openAlert({ title: 'Saved successfully.' });
+                    await openAlert({ type: 'success', message: 'Saved successfully.' });
                     return { ok: true };
                   }}
                   onCommitError={({ error }) => {

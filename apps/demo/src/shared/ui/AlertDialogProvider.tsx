@@ -1,26 +1,21 @@
-import { createContext, useContext, useMemo, useRef, useState } from 'react';
-import type { PropsWithChildren, ReactNode } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import type { PropsWithChildren } from 'react';
 import { AlertDialog } from '@gen-office/ui';
-
-type AlertOptions = {
-  title: string | ReactNode;
-  confirmText?: string;
-};
-
-type ConfirmOptions = {
-  title: string | ReactNode;
-  confirmText?: string;
-  cancelText?: string;
-};
-
-type AlertDialogContextValue = {
-  openAlert: (options: AlertOptions) => Promise<void>;
-  openConfirm: (options: ConfirmOptions) => Promise<boolean>;
-};
-
-const AlertDialogContext = createContext<AlertDialogContextValue | null>(null);
+import type { AlertDialogVariant } from '@gen-office/ui';
+import {
+  AlertDialogContext,
+  type AlertDialogContextValue,
+  type AlertOptions,
+  type ConfirmOptions,
+} from './AlertDialogContext';
 const DEFAULT_CONFIRM_TEXT = '확인';
 const DEFAULT_CANCEL_TEXT = '취소';
+const ALERT_TYPE_TITLES: Record<AlertDialogVariant, string> = {
+  info: 'Information',
+  warning: 'Warning',
+  error: 'Error',
+  success: 'Success',
+};
 
 export function AlertDialogProvider({ children }: PropsWithChildren) {
   const [alertOpen, setAlertOpen] = useState(false);
@@ -67,6 +62,10 @@ export function AlertDialogProvider({ children }: PropsWithChildren) {
     []
   );
 
+  const alertType = alertOptions?.type ?? 'info';
+  const alertTitle = ALERT_TYPE_TITLES[alertType];
+  const alertMessage = alertOptions?.message ?? '';
+
   return (
     <AlertDialogContext.Provider value={value}>
       {children}
@@ -89,19 +88,13 @@ export function AlertDialogProvider({ children }: PropsWithChildren) {
       <AlertDialog
         open={alertOpen}
         onOpenChange={setAlertOpen}
-        title={alertOptions?.title ?? ''}
+        title={alertTitle}
+        message={alertMessage}
+        variant={alertType}
         confirmText={alertOptions?.confirmText ?? DEFAULT_CONFIRM_TEXT}
         hideCancelButton
         onConfirm={closeAlert}
       />
     </AlertDialogContext.Provider>
   );
-}
-
-export function useAlertDialog() {
-  const ctx = useContext(AlertDialogContext);
-  if (!ctx) {
-    throw new Error('useAlertDialog must be used within AlertDialogProvider');
-  }
-  return ctx;
 }

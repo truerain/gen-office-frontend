@@ -137,6 +137,12 @@
   text-align: left;
 }
 
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* 8px */
+}
+
 /* Footer */
 .footer {
   display: flex;

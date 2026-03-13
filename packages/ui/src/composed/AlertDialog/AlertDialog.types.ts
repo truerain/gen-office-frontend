@@ -13,8 +13,8 @@ export interface AlertDialogProps {
   /** Dialog title (string or JSX) */
   title: string | ReactNode;
 
-  /** Dialog description (string or JSX) */
-  description?: string | ReactNode;
+  /** Dialog body message (string or JSX) */
+  message?: string | ReactNode;
 
   /** Confirm button text */
   confirmText?: string;

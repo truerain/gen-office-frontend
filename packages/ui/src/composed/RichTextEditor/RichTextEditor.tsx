@@ -24,10 +24,12 @@ export function RichTextEditor({
   editorClassName,
   disabled = false,
 }: RichTextEditorProps) {
+  const normalizedValue = value || '';
   const skipSyncRef = React.useRef(false);
+  const lastAppliedExternalValueRef = React.useRef(normalizedValue);
   const editorRef = React.useRef<ReturnType<typeof useEditor>>(null);
   const [mode, setMode] = React.useState<'visual' | 'html'>('visual');
-  const [htmlSource, setHtmlSource] = React.useState(value || '');
+  const [htmlSource, setHtmlSource] = React.useState(normalizedValue);
   const [selectedFontFamily, setSelectedFontFamily] = React.useState('');
   const [selectedFontSize, setSelectedFontSize] = React.useState('');
   const [selectedTextColor, setSelectedTextColor] = React.useState('#111111');
@@ -110,10 +112,11 @@ export function RichTextEditor({
         placeholder: placeholder ?? '',
       }),
     ],
-    content: value,
+    content: normalizedValue,
     onUpdate: ({ editor: nextEditor }) => {
       if (skipSyncRef.current) return;
       const nextHtml = nextEditor.getHTML();
+      lastAppliedExternalValueRef.current = nextHtml;
       setHtmlSource(nextHtml);
       onChange(nextHtml);
     },
@@ -194,23 +197,33 @@ export function RichTextEditor({
 
   React.useEffect(() => {
     if (!editor) return;
-    if (editor.getHTML() === value) return;
+    if (lastAppliedExternalValueRef.current === normalizedValue) {
+      if (htmlSource !== normalizedValue) {
+        setHtmlSource(normalizedValue);
+      }
+      return;
+    }
     skipSyncRef.current = true;
-    editor.commands.setContent(value || '<p></p>', false);
-    skipSyncRef.current = false;
-  }, [value, editor]);
+    try {
+      editor.commands.setContent(normalizedValue || '<p></p>', false);
+      lastAppliedExternalValueRef.current = normalizedValue;
+      setHtmlSource(normalizedValue);
+    } finally {
+      skipSyncRef.current = false;
+    }
+  }, [normalizedValue, htmlSource, editor]);
 
   React.useEffect(() => {
-    if (value === htmlSource) return;
-    setHtmlSource(value || '');
-  }, [value, htmlSource]);
+    if (normalizedValue === htmlSource) return;
+    setHtmlSource(normalizedValue);
+  }, [normalizedValue, htmlSource]);
 
   const handleSwitchMode = React.useCallback(
     (nextMode: 'visual' | 'html') => {
       if (nextMode === mode) return;
 
       if (nextMode === 'html') {
-        setHtmlSource(editor?.getHTML() ?? value ?? '');
+        setHtmlSource(editor?.getHTML() ?? normalizedValue);
         setMode('html');
         return;
       }
@@ -229,7 +242,7 @@ export function RichTextEditor({
       onChange(nextHtml);
       setMode('visual');
     },
-    [editor, htmlSource, mode, onChange, value]
+    [editor, htmlSource, mode, onChange, normalizedValue]
   );
 
   const rootStyle = React.useMemo(

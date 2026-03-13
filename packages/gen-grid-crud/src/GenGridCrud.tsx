@@ -1,5 +1,6 @@
 // packages/gen-grid-crud/src/GenGridCrud.tsx
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import type { ColumnDef, ColumnFiltersState, RowSelectionState } from '@tanstack/react-table';
 import ExcelJS from 'exceljs';
 
@@ -113,22 +114,22 @@ function toTimestamp(now = new Date()): string {
   return `${yyyy}${mm}${dd}_${hh}${min}${ss}`;
 }
 
-function sanitizeFileNameBase(input: string): string {
+function sanitizeFileNameBase(input: string, fallback = 'export'): string {
   const trimmed = input.trim();
-  if (!trimmed) return 'export';
+  if (!trimmed) return fallback;
   return trimmed
     .replace(/[\\/:*?"<>|]/g, '_')
     .replace(/\s+/g, '_')
     .replace(/_+/g, '_')
-    .replace(/^_+|_+$/g, '') || 'export';
+    .replace(/^_+|_+$/g, '') || fallback;
 }
 
-function sanitizeSheetName(input: string): string {
+function sanitizeSheetName(input: string, fallback = 'Sheet1'): string {
   const cleaned = input
     .replace(/[\[\]:*?/\\]/g, '_')
     .trim()
     .slice(0, 31);
-  return cleaned || 'Sheet1';
+  return cleaned || fallback;
 }
 
 function downloadBlob(blob: Blob, fileName: string) {
@@ -173,12 +174,12 @@ function getColumnIdForExport<TData>(column: ColumnDef<TData, any>): string {
   return '';
 }
 
-function getHeaderLabel(column: any): string {
+function getHeaderLabel(column: any, fallback = 'column'): string {
   if (typeof column.header === 'string') return column.header;
   if (typeof column.header === 'number') return String(column.header);
   if (typeof column.id === 'string' && column.id) return column.id;
   if (typeof column.accessorKey === 'string' && column.accessorKey) return column.accessorKey;
-  return 'column';
+  return fallback;
 }
 
 function getValueByAccessorKey(row: unknown, accessorKey: string): unknown {
@@ -192,12 +193,16 @@ function getValueByAccessorKey(row: unknown, accessorKey: string): unknown {
   return current;
 }
 
-function formatExportValue<TData>(value: unknown, meta?: ExportMeta<TData>): unknown {
+function formatExportValue<TData>(
+  value: unknown,
+  meta: ExportMeta<TData> | undefined,
+  labels: { yes: string; no: string }
+): unknown {
   if (!meta?.format) return value;
   switch (meta.format) {
     case 'boolean':
-      if (value === true) return meta.trueLabel ?? 'Yes';
-      if (value === false) return meta.falseLabel ?? 'No';
+      if (value === true) return meta.trueLabel ?? labels.yes;
+      if (value === false) return meta.falseLabel ?? labels.no;
       return meta.emptyLabel ?? '';
     case 'date':
     case 'datetime': {
@@ -472,7 +477,10 @@ function applyExcelDefaultGridBorder(
   }
 }
 
-function buildExportColumns<TData>(columns: readonly ColumnDef<TData, any>[]): ExportLeafColumn<TData>[] {
+function buildExportColumns<TData>(
+  columns: readonly ColumnDef<TData, any>[],
+  headerFallback: string
+): ExportLeafColumn<TData>[] {
   const leaves = collectLeafColumns(columns);
   const exportColumns: ExportLeafColumn<TData>[] = [];
   for (const col of leaves as any[]) {
@@ -480,7 +488,7 @@ function buildExportColumns<TData>(columns: readonly ColumnDef<TData, any>[]): E
     if (!id || SYSTEM_COLUMN_IDS.has(id)) continue;
     exportColumns.push({
       id,
-      header: getHeaderLabel(col),
+      header: getHeaderLabel(col, headerFallback),
       accessorKey: typeof col.accessorKey === 'string' ? col.accessorKey : undefined,
       accessorFn: typeof col.accessorFn === 'function' ? col.accessorFn : undefined,
       meta: col.meta as ExportMeta<TData> | undefined,
@@ -580,7 +588,8 @@ function buildExportRowSpanModel<TData>(
 
 function buildExportHeaderTree<TData>(
   columns: readonly ColumnDef<TData, any>[],
-  exportColumnIds: ReadonlySet<string>
+  exportColumnIds: ReadonlySet<string>,
+  headerFallback: string
 ): ExportHeaderNode[] {
   const walk = (defs: readonly ColumnDef<TData, any>[]): ExportHeaderNode[] => {
     const nodes: ExportHeaderNode[] = [];
@@ -590,7 +599,7 @@ function buildExportHeaderTree<TData>(
         const childNodes = walk(children);
         if (childNodes.length === 0) continue;
         nodes.push({
-          label: getHeaderLabel(def),
+          label: getHeaderLabel(def, headerFallback),
           children: childNodes,
         });
         continue;
@@ -599,7 +608,7 @@ function buildExportHeaderTree<TData>(
       const columnId = getColumnIdForExport(def);
       if (!columnId || !exportColumnIds.has(columnId)) continue;
       nodes.push({
-        label: getHeaderLabel(def),
+        label: getHeaderLabel(def, headerFallback),
         columnId,
       });
     }
@@ -759,8 +768,10 @@ function buildPendingDiffFromPending<TData>(
 }
 
 export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
+  const { t } = useTranslation('common');
   const {
     title,
+    readonly: readonlyProp,
     data,
     columns,
     getRowId,
@@ -1106,15 +1117,28 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       isCommitting,
     };
 
-    const baseName = sanitizeFileNameBase(excelExport.fileName ?? title ?? 'export');
+    const exportFallbackName = t('common.export', { defaultValue: 'export' });
+    const sheetFallbackName = t('common.sheet1', { defaultValue: 'Sheet1' });
+    const baseName = sanitizeFileNameBase(
+      excelExport.fileName ?? title ?? exportFallbackName,
+      exportFallbackName
+    );
     const stampedName = `${baseName}_${toTimestamp()}.xlsx`;
-    const sheetName = sanitizeSheetName(excelExport.sheetName ?? title ?? 'Sheet1');
+    const sheetName = sanitizeSheetName(
+      excelExport.sheetName ?? title ?? sheetFallbackName,
+      sheetFallbackName
+    );
 
     try {
       if (excelExport.mode === 'backend') {
         const backend = excelExport.backend;
         if (!backend?.endpoint) {
-          throw new Error('[GenGridCrud] excelExport.backend.endpoint is required for backend mode.');
+          throw new Error(
+            t('crud.excel_backend_endpoint_required', {
+              defaultValue:
+                '[GenGridCrud] excelExport.backend.endpoint is required for backend mode.',
+            })
+          );
         }
 
         const method = backend.method ?? 'POST';
@@ -1155,7 +1179,13 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
         });
 
         if (!response.ok) {
-          throw new Error(`[GenGridCrud] excel export request failed: ${response.status}`);
+          throw new Error(
+            t('crud.excel_export_request_failed', {
+              defaultValue:
+                '[GenGridCrud] excel export request failed: {{status}}',
+              status: response.status,
+            })
+          );
         }
 
         const blob = await response.blob();
@@ -1176,7 +1206,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
         : diff.viewData;
       const sourceRowIds = sourceRows.map((row) => String(getPendingRowId(row)));
 
-      const exportColumns = buildExportColumns(columns);
+      const headerFallback = t('common.column', { defaultValue: 'Column' });
+      const exportColumns = buildExportColumns(columns, headerFallback);
       const headerSeen = new Map<string, number>();
       const resolvedColumnsRaw = exportColumns.map((col) => {
         const seq = (headerSeen.get(col.header) ?? 0) + 1;
@@ -1185,7 +1216,11 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
         return { ...col, headerKey };
       });
       const exportColumnIdSet = new Set(exportColumns.map((col) => col.id));
-      const headerTree = buildExportHeaderTree(columns, exportColumnIdSet);
+      const headerTree = buildExportHeaderTree(
+        columns,
+        exportColumnIdSet,
+        headerFallback
+      );
       const headerDepth = getExportHeaderDepth(headerTree);
       const { cellsByRow: headerCellsByRow, leafColumnIds } = buildExportHeaderCells(
         headerTree,
@@ -1223,7 +1258,11 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
           });
           const normalized = formatExportValue(
             customValue === undefined ? baseValue : customValue,
-            col.meta
+            col.meta,
+            {
+              yes: t('common.yes', { defaultValue: 'Yes' }),
+              no: t('common.no', { defaultValue: 'No' }),
+            }
           );
           const isCovered =
             Boolean(rowSpanModel) && rowSpanModel!.isCovered(rowIndex, col.id);
@@ -1586,11 +1625,12 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   const mergedGridProps = React.useMemo(
     () => ({
       ...gridProps,
+      readonly: readonlyProp ?? (gridProps as any)?.readonly,
       enableFiltering: filterEnabled,
       columnFilters,
       onColumnFiltersChange: setColumnFilters,
     }),
-    [gridProps, filterEnabled, columnFilters]
+    [gridProps, readonlyProp, filterEnabled, columnFilters]
   );
 
   return (

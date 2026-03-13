@@ -184,7 +184,7 @@ function MyComponent() {
         open={open}
         onOpenChange={setOpen}
         title="정말 삭제하시겠습니까"
-        description="이 작업은 되돌릴 수 없습니다."
+        message="이 작업은 되돌릴 수 없습니다."
         variant="error"
         onConfirm={handleDelete}
       />
@@ -211,7 +211,7 @@ function MyComponent() {
 
           <pre className={styles.codeBlock}>
             <code>{`<AlertDialog
-  description={
+  message={
     <>
       다음 항목들이 <strong>영구적으로 삭제</strong>됩니다:
       <ul>
@@ -231,7 +231,7 @@ function MyComponent() {
         open={infoOpen}
         onOpenChange={setInfoOpen}
         title="정보"
-        description="이것은 정보 메시지입니다. Info variant는 일반적인 알림에 사용됩니다."
+        message="이것은 정보 메시지입니다. Info variant는 일반적인 알림에 사용됩니다."
         variant="info"
         onConfirm={() => console.log('Info confirmed')}
       />
@@ -240,7 +240,7 @@ function MyComponent() {
         open={warningOpen}
         onOpenChange={setWarningOpen}
         title="주의"
-        description="계속하시겠습니까? 이 작업은 중요한 변경을 수행합니다."
+        message="계속하시겠습니까? 이 작업은 중요한 변경을 수행합니다."
         variant="warning"
         onConfirm={() => console.log('Warning confirmed')}
       />
@@ -249,7 +249,7 @@ function MyComponent() {
         open={errorOpen}
         onOpenChange={setErrorOpen}
         title="오류 발생"
-        description="작업을 수행하는 중 오류가 발생했습니다. 다시 시도해주세요."
+        message="작업을 수행하는 중 오류가 발생했습니다. 다시 시도해주세요."
         variant="error"
         confirmText="재시도"
         onConfirm={() => console.log('Error confirmed')}
@@ -259,7 +259,7 @@ function MyComponent() {
         open={successOpen}
         onOpenChange={setSuccessOpen}
         title="성공"
-        description="작업이 성공적으로 완료되었습니다!"
+        message="작업이 성공적으로 완료되었습니다!"
         variant="success"
         onConfirm={() => console.log('Success confirmed')}
       />
@@ -268,7 +268,7 @@ function MyComponent() {
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         title="정말 삭제하시겠습니까"
-        description="이 작업은 되돌릴 수 없습니다. 삭제된 데이터는 복구할 수 없습니다."
+        message="이 작업은 되돌릴 수 없습니다. 삭제된 데이터는 복구할 수 없습니다."
         variant="error"
         confirmText="삭제"
         cancelText="취소"
@@ -279,7 +279,7 @@ function MyComponent() {
         open={asyncOpen}
         onOpenChange={setAsyncOpen}
         title="저장하시겠습니까"
-        description="변경 사항을 저장합니다. 약 2초 정도 소요됩니다."
+        message="변경 사항을 저장합니다. 약 2초 정도 소요됩니다."
         variant="info"
         confirmText="저장"
         onConfirm={handleAsyncConfirm}
@@ -289,7 +289,7 @@ function MyComponent() {
         open={singleButtonOpen}
         onOpenChange={setSingleButtonOpen}
         title="다운로드 완료"
-        description="파일이 성공적으로 다운로드되었습니다."
+        message="파일이 성공적으로 다운로드되었습니다."
         variant="success"
         hideCancelButton={true}
         confirmText="확인"
@@ -300,7 +300,7 @@ function MyComponent() {
         open={styledOpen}
         onOpenChange={setStyledOpen}
         title="데이터 삭제 경고"
-        description={
+        message={
           <>
             다음 항목들이 <strong style={{ color: 'var(--color-status-error)' }}>영구적으로 삭제</strong>됩니다:
             <ul style={{ marginTop: '0.75rem', marginBottom: '0.75rem', paddingLeft: '1.5rem' }}>

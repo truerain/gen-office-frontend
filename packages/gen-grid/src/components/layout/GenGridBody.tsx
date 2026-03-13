@@ -28,6 +28,7 @@ function mergeHandlers<T extends (...args: any[]) => void>(...fns: Array<T | und
 
 type GenGridBodyProps<TData> = {
   table: Table<TData>;
+  'readonly'?: boolean;
   pageMode?: 'readonly' | 'editable';
   enablePinning?: boolean;
   enableColumnSizing?: boolean;
@@ -91,6 +92,7 @@ function pickRowStyleForCell(style?: React.CSSProperties): React.CSSProperties |
 export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
   const {
     table,
+    readonly: readonlyProp,
     pageMode,
     enablePinning,
     enableColumnSizing,
@@ -152,7 +154,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
       if (isSystemCol(columnId)) return false;
 
       // Block editing in readonly mode.
-      if (pageMode === 'readonly') return false;
+      if (readonlyProp || pageMode === 'readonly') return false;
 
       return true;
     },

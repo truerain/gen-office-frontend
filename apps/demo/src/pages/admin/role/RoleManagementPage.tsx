@@ -25,7 +25,7 @@ import { useRoleMenuViewQuery } from '@/pages/admin/role/api/roleMenu';
 import type { RoleMenu } from '@/pages/admin/role/model/roleMenuTypes';
 import type { Role, RoleListParams } from '@/pages/admin/role/model/types';
 import { useAppStore } from '@/app/store/appStore';
-import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
+import { useAlertDialog } from '@/shared/ui/AlertDialogContext';
 import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 
 import styles from './RoleManagementPage.module.css';
@@ -163,7 +163,8 @@ export default function RoleManagementPage(_props: PageComponentProps) {
           await commitRoleMenuChanges(currentRoleId, pendingChanges, roleMenuViewRowsRef.current);
           await refetchRoleMenu();
           await openAlert({
-            title: t('common.saved', { defaultValue: 'Saved successfully.' }),
+            type: 'success',
+            message: t('common.saved', { defaultValue: 'Saved successfully.' }),
           });
         }
         applyActiveRole(nextRoleId);
@@ -247,7 +248,8 @@ export default function RoleManagementPage(_props: PageComponentProps) {
                   await commitRoleChanges(changes, ctx.viewData);
                   await refetch();
                   await openAlert({
-                    title: t('common.saved', { defaultValue: 'Saved successfully.' }),
+                    type: 'success',
+                    message: t('common.saved', { defaultValue: 'Saved successfully.' }),
                   });
                   return { ok: true };
                 }}
@@ -261,7 +263,7 @@ export default function RoleManagementPage(_props: PageComponentProps) {
                       : t('common.validation.invalid_input', {
                           defaultValue: 'Please check your input.',
                         });
-                    void openAlert({ title });
+                    void openAlert({ type: 'warning', message: title });
                     return false;
                   }
                   return openConfirm({
@@ -332,14 +334,15 @@ export default function RoleManagementPage(_props: PageComponentProps) {
                     const message = t('admin.role.role_menu.select_role_first', {
                       defaultValue: 'Select a role first.',
                     });
-                    await openAlert({ title: message });
+                    await openAlert({ type: 'warning', message });
                     return { ok: false, error: new Error(message) };
                   }
 
                   await commitRoleMenuChanges(selectedRoleId, changes, ctx.viewData);
                   await refetchRoleMenu();
                   await openAlert({
-                    title: t('common.saved', { defaultValue: 'Saved successfully.' }),
+                    type: 'success',
+                    message: t('common.saved', { defaultValue: 'Saved successfully.' }),
                   });
                   return { ok: true };
                 }}

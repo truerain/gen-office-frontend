@@ -6,6 +6,7 @@ import { commonFileApi } from '@/shared/api/commonFile';
 import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 import { useAppStore } from '@/app/store/appStore';
 import { FileAttachmentPanel, type FileAttachmentUploadResult } from '@/shared/ui/file/FileAttachmentPanel';
+import type { NoticeDraftField } from './NoticeValidation';
 
 import styles from './NoticeManagementPage.module.css';
 
@@ -29,6 +30,7 @@ type NoticeDraftPanelProps = {
   onUploadDone: (result: FileAttachmentUploadResult) => void;
   onDraftChange: Dispatch<SetStateAction<NoticeDraft>>;
   onSave: () => void;
+  validationErrors?: Partial<Record<NoticeDraftField, string>>;
 };
 
 function parseDate(value: string): Date | undefined {
@@ -53,10 +55,10 @@ export function NoticeDraftPanel({
   onUploadDone,
   onDraftChange,
   onSave,
+  validationErrors,
 }: NoticeDraftPanelProps) {
   const addNotification = useAppStore((state) => state.addNotification);
   const issuingFileSetIdRef = useRef(false);
-
   useEffect(() => {
     if (isDetailLoading) return;
     if (issuingFileSetIdRef.current) return;
@@ -117,18 +119,24 @@ export function NoticeDraftPanel({
               fullWidth
               autoSelect={false}
               disabled={isSaving}
+              error={Boolean(validationErrors?.title)}
+              helperText={validationErrors?.title}
             />
           </div>
         </div>
 
-        <RichTextEditor
-          value={draft.content}
-          onChange={(nextHtml) => onDraftChange({ ...draft, content: nextHtml })}
-          placeholder="Enter notice content"
-          minHeight={220}
-          className={styles.noticeEditor}
-          editorClassName={styles.noticeEditorBody}
-        />
+        <div className={styles.field}>
+          <RichTextEditor
+            value={draft.content}
+            onChange={(nextHtml) => onDraftChange({ ...draft, content: nextHtml })}
+            placeholder="Enter notice content"
+            className={`${styles.noticeEditor} ${validationErrors?.content ? styles.fieldError : ''}`}
+            editorClassName={styles.noticeEditorBody}
+          />
+          {validationErrors?.content ? (
+            <div className={styles.fieldErrorText}>{validationErrors.content}</div>
+          ) : null}
+        </div>
 
         <FileAttachmentPanel
           fileSetId={draft.fileSetId}
@@ -142,23 +150,30 @@ export function NoticeDraftPanel({
         <div className={styles.fieldRowControls}>
           <div className={styles.field}>
             <label className={styles.label}>Display Period</label>
-            <RangeDatePicker
-              value={{
-                from: parseDate(draft.dispStartDate),
-                to: parseDate(draft.dispEndDate),
-              }}
-              onChange={(range) =>
-                onDraftChange({
-                  ...draft,
-                  dispStartDate: formatDate(range?.from),
-                  dispEndDate: formatDate(range?.to),
-                })
-              }
-              placeholder="YYYY-MM-DD ~ YYYY-MM-DD"
-              format={formatDate}
-              disabled={isSaving}
-              clearable
-            />
+            <div className={validationErrors?.dispStartDate || validationErrors?.dispEndDate ? styles.fieldError : ''}>
+              <RangeDatePicker
+                value={{
+                  from: parseDate(draft.dispStartDate),
+                  to: parseDate(draft.dispEndDate),
+                }}
+                onChange={(range) =>
+                  onDraftChange({
+                    ...draft,
+                    dispStartDate: formatDate(range?.from),
+                    dispEndDate: formatDate(range?.to),
+                  })
+                }
+                placeholder="YYYY-MM-DD ~ YYYY-MM-DD"
+                format={formatDate}
+                disabled={isSaving}
+                clearable
+              />
+            </div>
+            {validationErrors?.dispStartDate || validationErrors?.dispEndDate ? (
+              <div className={styles.fieldErrorText}>
+                {validationErrors?.dispStartDate ?? validationErrors?.dispEndDate}
+              </div>
+            ) : null}
           </div>
           <div className={styles.switchField}>
             <label className={styles.label} htmlFor="notice-popup-switch">

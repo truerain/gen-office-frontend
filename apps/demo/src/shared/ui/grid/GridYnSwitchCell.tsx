@@ -7,6 +7,7 @@ type YnValue = 'Y' | 'N';
 type GridYnSwitchCellProps = {
   value?: unknown;
   commitValue?: (value: YnValue) => void;
+  'readonly'?: boolean;
 };
 
 const gridYnSwitchStyle: CSSProperties & Record<`--${string}`, string> = {
@@ -19,11 +20,19 @@ const gridYnSwitchStyle: CSSProperties & Record<`--${string}`, string> = {
 
 const toYn = (value: unknown): YnValue => (value === 'Y' ? 'Y' : 'N');
 
-export const GridYnSwitchCell = ({ value, commitValue }: GridYnSwitchCellProps) => (
+export const GridYnSwitchCell = ({
+  value,
+  commitValue,
+  readonly: readonlyProp = false,
+}: GridYnSwitchCellProps) => (
   <div className={styles.wrapper}>
     <Switch
       checked={toYn(value) === 'Y'}
-      onCheckedChange={(next) => commitValue?.(next ? 'Y' : 'N')}
+      disabled={readonlyProp}
+      onCheckedChange={(next) => {
+        if (readonlyProp) return;
+        commitValue?.(next ? 'Y' : 'N');
+      }}
       style={gridYnSwitchStyle}
     />
   </div>

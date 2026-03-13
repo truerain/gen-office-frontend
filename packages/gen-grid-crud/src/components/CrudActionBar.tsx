@@ -56,10 +56,8 @@ export function CrudActionBar<TData>(props: {
   const labelDelete = t('crud.delete');
   const labelSave = t('crud.save');
   const labelFilter = t('crud.filter');
-  const translatedExcel = t('crud.excel');
-  const labelExcel = translatedExcel === 'crud.excel' ? 'Excel' : translatedExcel;
-  const translatedReset = t('crud.reset');
-  const labelReset = translatedReset === 'crud.reset' ? 'Reset' : translatedReset;
+  const labelExcel = t('crud.excel', { defaultValue: 'Excel' });
+  const labelReset = t('crud.reset', { defaultValue: 'Reset' });
 
   const ctx = React.useMemo<CrudActionContext<TData>>(
     () => ({ state, api: actionApi }),

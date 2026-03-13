@@ -19,7 +19,7 @@ import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 import styles from './UserManagementPage.module.css';
 import { createUserManagementColumns } from './UserManagementColumns';
 import { commitUserChanges } from './UserManagementCrud';
-import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
+import { useAlertDialog } from '@/shared/ui/AlertDialogContext';
 
 const createUserId = () => (Date.now() + Math.floor(Math.random() * 1000));
 
@@ -129,7 +129,10 @@ export default function UserManagementPage(_props: PageComponentProps) {
           }}
           beforeCommit={({ changes }) => {
             if (hasMissingUserRequired(changes)) {
-              void openAlert({ title: 'Class Code and Class Name are required.' });
+              void openAlert({
+                type: 'warning',
+                message: 'Class Code and Class Name are required.',
+              });
               return false;
             }
             return openConfirm({ title: 'Do you want to save?' });
@@ -137,7 +140,7 @@ export default function UserManagementPage(_props: PageComponentProps) {
           onCommit={async ({ changes, ctx }) => {
             await commitUserChanges(changes, ctx.viewData);
             await refetch();
-            await openAlert({ title: 'Saved successfully.' });
+            await openAlert({ type: 'success', message: 'Saved successfully.' });
             return { ok: true };
           }}
           onCommitError={({ error }) => {

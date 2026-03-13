@@ -14,11 +14,6 @@
   gap: var(--spacing-sm);
 }
 
-.splitLayout {
-  flex: 1;
-  height: 100%;
-}
-
 .noticeDialog {
   width: min(1100px, 92vw);
   max-width: 1100px;
@@ -47,21 +42,6 @@
   overflow: hidden;
 }
 
-.paneHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 2px 8px;
-  color: var(--color-text-secondary);
-  font-size: 0.875rem;
-}
-
-.meta {
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-}
-
 .editorWrap {
   display: flex;
   flex-direction: column;
@@ -71,13 +51,22 @@
 }
 
 .noticeEditor {
-  flex: 1;
-  min-height: 0;
+  flex: 0 0 320px;
+  height: 320px;
+  min-height: 320px;
+  max-height: 320px;
 }
 
 .noticeEditorBody {
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
+  overflow: auto;
+}
+
+.noticeEditorBody :global(.tiptap) {
+  height: 100%;
+  min-height: 100%;
+  overflow: auto;
 }
 
 .field {
@@ -86,18 +75,23 @@
   gap: 4px;
 }
 
-.fieldRow {
-  display: grid;
-  /*
-  grid-template-columns: 1fr 240px;
-  gap: 8px;
-  */
+.fieldError {
+  border-radius: var(--border-radius-sm);
 }
 
-.fieldRowMeta {
+.fieldError :global(.ProseMirror),
+.fieldError :global(button[data-empty]),
+.fieldError :global(button[class*='trigger']) {
+  border-color: var(--color-danger, #dc2626);
+}
+
+.fieldErrorText {
+  font-size: 0.75rem;
+  color: var(--color-danger, #dc2626);
+}
+
+.fieldRow {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
 }
 
 .fieldRowControls {
@@ -117,43 +111,6 @@
   flex-direction: column;
   justify-content: flex-end;
   gap: 4px;
-}
-
-.input {
-  height: 34px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-sm);
-  padding: 0 10px;
-  background: var(--color-surface);
-  color: var(--color-text);
-}
-
-.attachments {
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-sm);
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.fileInput {
-  height: 34px;
-}
-
-.fileList {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-height: 120px;
-  overflow: auto;
-}
-
-.fileItem {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.875rem;
 }
 
 .actions {
@@ -185,11 +142,6 @@
 .primaryButton {
   border-color: var(--color-primary);
   color: var(--color-primary);
-}
-
-.emptyText {
-  color: var(--color-text-secondary);
-  font-size: 0.875rem;
 }
 
 @media (max-width: 960px) {

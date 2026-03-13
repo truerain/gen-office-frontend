@@ -22,6 +22,7 @@ export type GenGridBaseProps<TData> = {
   table: Table<TData>;
 
   caption?: string;
+  'readonly'?: boolean;
 
   height?: number | string;
   maxHeight?: number | string;
@@ -90,6 +91,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
   const {
     table,
 
+    readonly: readonlyProp,
     height,
     maxHeight,
 
@@ -481,6 +483,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
           {enableVirtualization ? (
             <GenGridVirtualBody<TData>
               table={table}
+              readonly={readonlyProp}
               scrollRef={scrollRef}
               rowHeight={rowHeight ?? 36}
               overscan={overscan}
@@ -505,6 +508,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
           ) : (
             <GenGridBody<TData>
               table={table}
+              readonly={readonlyProp}
               enablePinning={enablePinning}
               enableColumnSizing={enableColumnSizing}
               enableActiveRowHighlight={enableActiveRowHighlight}
@@ -558,4 +562,3 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     </div>
   );
 }
-

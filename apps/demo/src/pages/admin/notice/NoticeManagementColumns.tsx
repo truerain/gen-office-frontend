@@ -2,8 +2,6 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { TFunction } from "i18next";
 import { SquarePen } from "lucide-react";
 import type { Notice } from "@/pages/admin/notice/model/types";
-import { GridYnSwitchCell } from "@/shared/ui/grid/GridYnSwitchCell";
-import { handleGridYnSwitchSpace } from "@/shared/ui/grid/GridYnSwitchCell.utils";
 import { Button } from "@gen-office/ui";
 
 type NoticeManagementColumnOptions = {
@@ -42,7 +40,7 @@ export const createNoticeManagementColumns = (
     id: "title",
     header: t("notice.title", { defaultValue: "Title" }),
     accessorKey: "title",
-    size: 300,
+    size: 500,
     meta: {
       pinned: "left",
     },
@@ -73,10 +71,6 @@ export const createNoticeManagementColumns = (
     size: 100,
     meta: {
       align: "center",
-      renderCell: ({ value, commitValue }) => (
-        <GridYnSwitchCell value={value} commitValue={commitValue} />
-      ),
-      onSpace: handleGridYnSwitchSpace,
     },
   },
   {
@@ -86,10 +80,6 @@ export const createNoticeManagementColumns = (
     size: 100,
     meta: {
       align: "center",
-      renderCell: ({ value, commitValue }) => (
-        <GridYnSwitchCell value={value} commitValue={commitValue} />
-      ),
-      onSpace: handleGridYnSwitchSpace,
     },
   },
   {
@@ -102,15 +92,27 @@ export const createNoticeManagementColumns = (
     },
   },
   {
-    id: "fileSetId",
-    header: t("notice.fileSetId", { defaultValue: "File Set ID" }),
-    accessorKey: "fileSetId",
+    id: "filenames",
+    header: t("notice.filenames", { defaultValue: "Filenames" }),
+    accessorKey: "filenames",
     size: 180,
   },
   {
-    id: "lastUpdatedDate",
-    header: t("common.updatedAt", { defaultValue: "Updated At" }),
-    accessorKey: "lastUpdatedDate",
+    id: 'lastUpdatedBy',
+    header: 'Last Updated By',
+    accessorKey: 'lastUpdatedByName',
     size: 180,
+    meta: {
+      align: 'center',
+    },
+  },
+  {
+    id: 'lastUpdatedDate',
+    header: 'Last Updated At',
+    accessorKey: 'lastUpdatedDate',
+    size: 180,
+    meta: {
+      align: 'center',
+    },
   },
 ];

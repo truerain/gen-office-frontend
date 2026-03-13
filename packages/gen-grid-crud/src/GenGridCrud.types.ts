@@ -126,6 +126,7 @@ export type CrudActionBarOptions<TData> = {
 
 export type GenGridCrudProps<TData> = {
   title?: string;
+  'readonly'?: boolean;
   data: readonly TData[];
   columns: readonly ColumnDef<TData, any>[];
   getRowId: (row: TData, index: number) => CrudRowId;

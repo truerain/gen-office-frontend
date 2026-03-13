@@ -35,6 +35,7 @@ export function getCurrentLocale(): string {
 function recordMissingKey(lngs: string | readonly string[], ns: string, key: string) {
   if (typeof window === 'undefined') return;
   const lng = Array.isArray(lngs) ? lngs[0] ?? 'en' : lngs;
+
   const entry: MissingKeyEntry = { key, ns, lng, ts: Date.now() };
   const raw = localStorage.getItem(MISSING_KEY_STORAGE);
   let list: MissingKeyEntry[] = [];

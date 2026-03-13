@@ -49,6 +49,7 @@ export type GenGridTreeOptions<TData> = {
 
 type CommonGridOptions<TData> = {
   caption?: string;
+  'readonly'?: boolean;
 
   height?: number | string;
   maxHeight?: number | string;

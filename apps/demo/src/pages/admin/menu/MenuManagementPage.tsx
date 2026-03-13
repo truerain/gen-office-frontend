@@ -13,7 +13,7 @@ import { GenGridCrud } from '@gen-office/gen-grid-crud';
 import type { Menu, MenuListParams } from '@/pages/admin/menu/model/types';
 import { menuApi, useMenuListQuery } from '@/pages/admin/menu/api/menu';
 import { useAppStore } from '@/app/store/appStore';
-import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
+import { useAlertDialog } from '@/shared/ui/AlertDialogContext';
 import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 
 import { createMenuManagementColumns } from './MenuManagementColumns';
@@ -217,7 +217,8 @@ function MenuManagementPage(props: PageComponentProps) {
                   await fetchChildren(selectedNodeId);
                   setMenuVersion((v) => v + 1);
                   await openAlert({
-                    title: t('common.saved', { defaultValue: 'Saved successfully.' }),
+                    type: 'success',
+                    message: t('common.saved', { defaultValue: 'Saved successfully.' }),
                   });
                   return { ok: true };
                 }}
@@ -233,7 +234,7 @@ function MenuManagementPage(props: PageComponentProps) {
                         : t('common.validation.invalid_input', {
                             defaultValue: 'Please check your input.',
                           });
-                    void openAlert({ title });
+                    void openAlert({ type: 'warning', message: title });
                     return false;
                   }
                   return openConfirm({

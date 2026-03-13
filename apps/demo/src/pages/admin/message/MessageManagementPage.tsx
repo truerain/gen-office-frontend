@@ -10,7 +10,7 @@ import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 import { useMessageListQuery } from '@/pages/admin/message/api/message';
 import type { MessageListParams } from '@/pages/admin/message/model/types';
 import { useAppStore } from '@/app/store/appStore';
-import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
+import { useAlertDialog } from '@/shared/ui/AlertDialogContext';
 
 import styles from './MessageManagementPage.module.css';
 import { createMessageManagementColumns } from './MessageManagementColumns';
@@ -151,7 +151,7 @@ export default function MessageManagementPage(_props: PageComponentProps) {
           beforeCommit={({ changes, viewData }) => {
             const validationError = getMessageCommitValidationError(changes, viewData);
             if (validationError) {
-              void openAlert({ title: validationError });
+              void openAlert({ type: 'warning', message: validationError });
               return false;
             }
             return openConfirm({ title: 'Do you want to save?' });
@@ -164,7 +164,7 @@ export default function MessageManagementPage(_props: PageComponentProps) {
               console.error(error);
               addNotification('Saved, but refresh failed. Please reload or try Refresh.', 'error');
             }
-            await openAlert({ title: 'Saved successfully.' });
+            await openAlert({ type: 'success', message: 'Saved successfully.' });
             return { ok: true };
           }}
           onCommitError={({ error }) => {

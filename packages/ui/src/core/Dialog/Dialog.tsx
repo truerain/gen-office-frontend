@@ -6,6 +6,7 @@ import type {
   DialogOverlayProps,
   DialogContentProps,
   DialogHeaderProps,
+  DialogBodyProps,
   DialogFooterProps,
   DialogTitleProps,
   DialogDescriptionProps,
@@ -75,6 +76,19 @@ export const DialogHeader = forwardRef<HTMLDivElement, DialogHeaderProps>(
 );
 
 DialogHeader.displayName = 'DialogHeader';
+
+// Dialog Body
+export const DialogBody = forwardRef<HTMLDivElement, DialogBodyProps>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(styles.body, className)}
+      {...props}
+    />
+  )
+);
+
+DialogBody.displayName = 'DialogBody';
 
 // Dialog Footer
 export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(

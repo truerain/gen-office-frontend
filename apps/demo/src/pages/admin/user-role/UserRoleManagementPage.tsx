@@ -11,7 +11,7 @@ import { useCommonCodesQuery } from '@/shared/api/commonCode';
 import { useUserRoleListQuery, useUserRoleOptionsQuery } from '@/pages/admin/user-role/api/userRole';
 import type { UserRoleListParams } from '@/pages/admin/user-role/model/types';
 import { useAppStore } from '@/app/store/appStore';
-import { useAlertDialog } from '@/shared/ui/AlertDialogProvider';
+import { useAlertDialog } from '@/shared/ui/AlertDialogContext';
 import {
   UserSearchPopup,
   USER_SEARCH_POPUP_CONTENT_CLASS_NAME,
@@ -261,7 +261,10 @@ export default function UserRoleManagementPage(_props: PageComponentProps) {
           }}
           beforeCommit={({ changes }) => {
             if (hasMissingUserRoleRequired(changes)) {
-              void openAlert({ title: 'userId, roleId, primaryYn, useYn are required. (Y or N)' });
+              void openAlert({
+                type: 'warning',
+                message: 'userId, roleId, primaryYn, useYn are required. (Y or N)',
+              });
               return false;
             }
             return openConfirm({ title: 'Do you want to save?' });
@@ -269,7 +272,7 @@ export default function UserRoleManagementPage(_props: PageComponentProps) {
           onCommit={async ({ changes, ctx }) => {
             await commitUserRoleChanges(changes, ctx.viewData);
             await refetch();
-            await openAlert({ title: 'Saved successfully.' });
+            await openAlert({ type: 'success', message: 'Saved successfully.' });
             return { ok: true };
           }}
           onCommitError={({ error }) => {

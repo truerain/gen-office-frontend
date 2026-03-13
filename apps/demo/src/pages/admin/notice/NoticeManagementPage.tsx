@@ -13,7 +13,6 @@ import {
 import { PageHeader } from "@/components/PageHeader/PageHeader";
 import {
   noticeApi,
-  useNoticeDetailQuery,
   useNoticeListQuery,
 } from "@/pages/admin/notice/api/notice";
 import type {
@@ -22,13 +21,17 @@ import type {
   NoticeRequest,
 } from "@/pages/admin/notice/model/types";
 import { useAppStore } from "@/app/store/appStore";
-import { useAlertDialog } from "@/shared/ui/AlertDialogProvider";
+import { useAlertDialog } from "@/shared/ui/AlertDialogContext";
 import { resolveApiErrorMessage } from "@/shared/api/errorMessage";
 
 import styles from "./NoticeManagementPage.module.css";
 import { createNoticeManagementColumns } from "./NoticeManagementColumns";
 import { commitNoticeChanges } from "./NoticeManagementCrud";
 import { NoticeDraftPanel, type NoticeDraft } from "./NoticeDraftPanel";
+import {
+  validateNoticeDraft,
+  type NoticeDraftField,
+} from "./NoticeValidation";
 import type { FileAttachmentUploadResult } from "@/shared/ui/file/FileAttachmentPanel";
 
 const createDefaultDraft = (): NoticeDraft => ({
@@ -69,6 +72,10 @@ export default function NoticeManagementPage() {
   const [activeNoticeId, setActiveNoticeId] = useState<number | null>(null);
   const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
   const [draft, setDraft] = useState<NoticeDraft>(() => createDefaultDraft());
+  const [draftValidationErrors, setDraftValidationErrors] = useState<
+    Partial<Record<NoticeDraftField, string>>
+  >({});
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [uploadRequestId, setUploadRequestId] = useState(0);
   const draftRef = useRef<NoticeDraft>(draft);
@@ -83,30 +90,9 @@ export default function NoticeManagementPage() {
     refetch,
     dataUpdatedAt,
   } = useNoticeListQuery(queryParams);
-  const {
-    data: activeNotice,
-    isFetching: isDetailLoading,
-    refetch: refetchDetail,
-  } = useNoticeDetailQuery(activeNoticeId ?? 0, activeNoticeId != null);
   useEffect(() => {
     draftRef.current = draft;
   }, [draft]);
-
-  useEffect(() => {
-    if (!activeNotice) return;
-    const nextDraft = toDraft(activeNotice);
-    setDraft((prev) => {
-      // Keep locally issued fileSetId until notice save persists it on server.
-      if (
-        prev.noticeId === nextDraft.noticeId &&
-        String(prev.fileSetId ?? "").trim() &&
-        !String(nextDraft.fileSetId ?? "").trim()
-      ) {
-        return { ...nextDraft, fileSetId: prev.fileSetId };
-      }
-      return nextDraft;
-    });
-  }, [activeNotice]);
 
   const handleUploadDone = useCallback((result: FileAttachmentUploadResult) => {
     const waiter = uploadWaiterRef.current;
@@ -137,18 +123,40 @@ export default function NoticeManagementPage() {
   const handleCreateDraft = useCallback(() => {
     setActiveNoticeId(null);
     setDraft(createDefaultDraft());
+    setDraftValidationErrors({});
     setSelectedRowIds([]);
     setIsDraftDialogOpen(true);
   }, []);
 
-  const handleOpenEditDraft = useCallback((row: Notice) => {
+  const handleOpenEditDraft = useCallback(async (row: Notice) => {
     const noticeId = Number(row.noticeId);
     if (!Number.isFinite(noticeId) || noticeId <= 0) return;
-    setActiveNoticeId(noticeId);
-    setSelectedRowIds([noticeId]);
-    setDraft(toDraft(row));
-    setIsDraftDialogOpen(true);
-  }, []);
+    try {
+      setIsDetailLoading(true);
+      const detail = await noticeApi.get(noticeId);
+      setActiveNoticeId(noticeId);
+      setSelectedRowIds([noticeId]);
+      setDraft(toDraft(detail));
+      setDraftValidationErrors({});
+      setIsDraftDialogOpen(true);
+    } catch (error) {
+      const message = resolveApiErrorMessage(error, {
+        defaultMessage: "Failed to load notice detail.",
+        t,
+      });
+      addNotification(message, "error");
+    } finally {
+      setIsDetailLoading(false);
+    }
+  }, [addNotification, t]);
+
+  const handleDraftChange = useCallback(
+    (next: React.SetStateAction<NoticeDraft>) => {
+      setDraftValidationErrors({});
+      setDraft(next);
+    },
+    [],
+  );
 
   const columns = useMemo(
     () => createNoticeManagementColumns(t, { onEditRow: handleOpenEditDraft }),
@@ -164,8 +172,13 @@ export default function NoticeManagementPage() {
   );
 
   const handleSave = async () => {
-    if (!draftRef.current.title.trim()) {
-      await openAlert({ title: "Please enter a notice title." });
+    const validation = validateNoticeDraft(draftRef.current);
+    if (!validation.ok) {
+      setDraftValidationErrors(validation.fieldErrors);
+      await openAlert({
+        type: 'warning',
+        message: validation.summaryMessage ?? "Please check required fields.",
+      });
       return;
     }
 
@@ -214,12 +227,10 @@ export default function NoticeManagementPage() {
       if (hasSavedNoticeId) {
         setActiveNoticeId(savedNoticeId);
         setSelectedRowIds([savedNoticeId]);
+        setDraft(toDraft(saved as Notice));
       }
       await refetch();
-      if (hasSavedNoticeId) {
-        await refetchDetail();
-      }
-      await openAlert({ title: "Saved successfully." });
+      await openAlert({ type: 'success', message: "Saved successfully." });
       setIsDraftDialogOpen(false);
     } catch (error) {
       console.error(error);
@@ -316,7 +327,10 @@ export default function NoticeManagementPage() {
             setIsDraftDialogOpen(nextOpen);
           }}
         >
-          <DialogContent className={styles.noticeDialog}>
+          <DialogContent
+            className={styles.noticeDialog}
+            aria-describedby={undefined}
+          >
             <DialogHeader>
               <DialogTitle>
                 {draft.noticeId ? "Edit Notice" : "Create Notice"}
@@ -329,10 +343,11 @@ export default function NoticeManagementPage() {
                 isSaving={isSaving}
                 uploadRequestId={uploadRequestId}
                 onUploadDone={handleUploadDone}
-                onDraftChange={setDraft}
+                onDraftChange={handleDraftChange}
                 onSave={() => {
                   void handleSave();
                 }}
+                validationErrors={draftValidationErrors}
               />
             </div>
           </DialogContent>

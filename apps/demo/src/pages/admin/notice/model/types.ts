@@ -7,6 +7,7 @@ export interface Notice {
   popupYn: string;
   useYn: string;
   fileSetId?: string;
+  filenames?: string;
   readCount?: number;
   createdBy?: string;
   creationDate?: string;
