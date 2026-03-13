@@ -1,19 +1,6 @@
 import { BarChart3 } from 'lucide-react';
-import {
-  AreaSeries,
-  BarSeries,
-  CartesianChart,
-  ChartGrid,
-  ChartLegend,
-  ChartTooltip,
-  ChartXAxis,
-  ChartYAxis,
-  ComposedSeries,
-  DonutSeries,
-  LineSeries,
-  PieSeries,
-  ResponsiveChartContainer,
-} from '@gen-office/gen-chart';
+import { GenChart, ResponsiveChartContainer } from '@gen-office/gen-chart';
+import type { TreemapNode } from '@gen-office/gen-chart';
 
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
@@ -32,6 +19,11 @@ type ChannelPoint = {
   value: number;
 };
 
+type DeltaPoint = {
+  month: string;
+  delta: number;
+};
+
 const monthlyData: MonthlyPoint[] = [
   { month: 'Jan', revenue: 120, cost: 84, profit: 36 },
   { month: 'Feb', revenue: 138, cost: 91, profit: 47 },
@@ -47,17 +39,71 @@ const channelData: ChannelPoint[] = [
   { channel: 'Store', value: 20 },
 ];
 
-const maxRevenue = Math.max(...monthlyData.map((d) => d.revenue));
-const maxCost = Math.max(...monthlyData.map((d) => d.cost));
-const maxProfit = Math.max(...monthlyData.map((d) => d.profit));
-const maxChannelValue = Math.max(...channelData.map((d) => d.value));
+const deltaData: DeltaPoint[] = [
+  { month: 'Jan', delta: 24 },
+  { month: 'Feb', delta: -18 },
+  { month: 'Mar', delta: 12 },
+  { month: 'Apr', delta: -26 },
+  { month: 'May', delta: 33 },
+  { month: 'Jun', delta: -11 },
+];
+
+const treemapData: TreemapNode = {
+  id: 'root',
+  name: 'All Channels',
+  children: [
+    {
+      id: 'digital',
+      name: 'Digital',
+      children: [
+        { id: 'web', name: 'Web', value: 49 },
+        { id: 'mobile', name: 'Mobile', value: 31 },
+        { id: 'app', name: 'App', value: 26 },
+        { id: 'social', name: 'Social', value: 18 },
+        { id: 'search', name: 'Search', value: 22 },
+      ],
+    },
+    {
+      id: 'offline',
+      name: 'Offline',
+      children: [
+        { id: 'store', name: 'Store', value: 20 },
+        { id: 'partners', name: 'Partners', value: 14 },
+        { id: 'branch-a', name: 'Branch A', value: 17 },
+        { id: 'branch-b', name: 'Branch B', value: 15 },
+        { id: 'reseller', name: 'Reseller', value: 12 },
+      ],
+    },
+    {
+      id: 'enterprise',
+      name: 'Enterprise',
+      children: [
+        { id: 'b2b', name: 'B2B', value: 28 },
+      ],
+    },
+  ],
+};
+
+const treemapColorById: Record<string, string> = {
+  web: '#2563eb',
+  mobile: '#0f766e',
+  app: '#7c3aed',
+  social: '#e11d48',
+  search: '#0891b2',
+  store: '#f59e0b',
+  partners: '#db2777',
+  'branch-a': '#16a34a',
+  'branch-b': '#ea580c',
+  reseller: '#6d28d9',
+  b2b: '#334155',
+};
 
 export default function ChartDemoPage(_props: PageComponentProps) {
   return (
     <div className={styles.page}>
       <PageHeader
-        title="Chart Demo"
-        description="Line, Bar(Column), Area, Composed, Pie, Donut samples"
+        title="Chart Demo (visx)"
+        description="Line, Bar, Area, Composed, Pie, Donut, Treemap"
         breadcrumbItems={[
           { label: 'UI Demo', icon: <BarChart3 size={16} /> },
           { label: 'Chart Demo', icon: <BarChart3 size={16} /> },
@@ -70,86 +116,73 @@ export default function ChartDemoPage(_props: PageComponentProps) {
           <div className={styles.chartWrap}>
             <ResponsiveChartContainer minHeight={280} fallbackHeight={280}>
               {({ width, height }) => (
-                <CartesianChart<MonthlyPoint>
+                <GenChart<MonthlyPoint>
+                  kind="line"
                   width={width}
                   height={height}
+                  data={monthlyData}
+                  x={(d) => d.month}
                   series={[
-                    {
-                      id: 'revenue',
-                      type: 'line',
-                      label: 'Revenue',
-                      data: monthlyData,
-                      x: (d) => d.month,
-                      y: (d) => d.revenue,
-                      showValueLabel: true,
-                      valueLabelPredicate: (value) => value === maxRevenue,
-                    },
-                    {
-                      id: 'cost',
-                      type: 'line',
-                      label: 'Cost',
-                      data: monthlyData,
-                      x: (d) => d.month,
-                      y: (d) => d.cost,
-                      showValueLabel: true,
-                      valueLabelPredicate: (value) => value === maxCost,
-                    },
+                    { id: 'revenue', type: 'line', label: 'Revenue', y: (d) => d.revenue },
+                    { id: 'cost', type: 'line', label: 'Cost', y: (d) => d.cost },
                   ]}
-                  interactive={{ tooltip: true, legend: true }}
-                >
-                  <ChartGrid />
-                  <ChartXAxis />
-                  <ChartYAxis />
-                  <LineSeries seriesId="revenue" />
-                  <LineSeries seriesId="cost" />
-                  <ChartTooltip />
-                  <ChartLegend />
-                </CartesianChart>
+                  tooltip
+                  legend
+                />
               )}
             </ResponsiveChartContainer>
           </div>
         </section>
 
         <section className={styles.card}>
-          <h3 className={styles.cardTitle}>Bar (Column)</h3>
+          <h3 className={styles.cardTitle}>Bar</h3>
           <div className={styles.chartWrap}>
             <ResponsiveChartContainer minHeight={280} fallbackHeight={280}>
               {({ width, height }) => (
-                <CartesianChart<MonthlyPoint>
+                <GenChart<MonthlyPoint>
+                  kind="bar"
                   width={width}
                   height={height}
+                  data={monthlyData}
+                  x={(d) => d.month}
+                  series={[
+                    { id: 'revenue', type: 'bar', label: 'Revenue', y: (d) => d.revenue },
+                    { id: 'cost', type: 'bar', label: 'Cost', y: (d) => d.cost },
+                  ]}
+                  tooltip
+                  legend
+                />
+              )}
+            </ResponsiveChartContainer>
+          </div>
+        </section>
+
+        <section className={styles.card}>
+          <h3 className={styles.cardTitle}>Bar (Negative + Zero Axis)</h3>
+          <div className={styles.chartWrap}>
+            <ResponsiveChartContainer minHeight={280} fallbackHeight={280}>
+              {({ width, height }) => (
+                <GenChart<DeltaPoint>
+                  kind="bar"
+                  width={width}
+                  height={height}
+                  data={deltaData}
+                  x={(d) => d.month}
+                  xAxis={{ showAllTicks: true, position: 'zero' }}
+                  yAxis={{ min: -40, max: 40 }}
                   series={[
                     {
-                      id: 'revenue',
+                      id: 'delta',
                       type: 'bar',
-                      label: 'Revenue',
-                      data: monthlyData,
-                      x: (d) => d.month,
-                      y: (d) => d.revenue,
-                      showValueLabel: true,
-                      valueLabelPredicate: (value) => value === maxRevenue,
-                    },
-                    {
-                      id: 'cost',
-                      type: 'bar',
-                      label: 'Cost',
-                      data: monthlyData,
-                      x: (d) => d.month,
-                      y: (d) => d.cost,
-                      showValueLabel: true,
-                      valueLabelPredicate: (value) => value === maxCost,
+                      label: 'Delta',
+                      y: (d) => d.delta,
+                      color: '#0ea5e9',
+                      negativeColor: '#dc2626',
                     },
                   ]}
-                  interactive={{ tooltip: true, legend: true }}
-                >
-                  <ChartGrid />
-                  <ChartXAxis />
-                  <ChartYAxis />
-                  <BarSeries seriesId="revenue" />
-                  <BarSeries seriesId="cost" />
-                  <ChartTooltip />
-                  <ChartLegend />
-                </CartesianChart>
+                  tooltip
+                  legend
+                />
               )}
             </ResponsiveChartContainer>
           </div>
@@ -160,30 +193,18 @@ export default function ChartDemoPage(_props: PageComponentProps) {
           <div className={styles.chartWrap}>
             <ResponsiveChartContainer minHeight={280} fallbackHeight={280}>
               {({ width, height }) => (
-                <CartesianChart<MonthlyPoint>
+                <GenChart<MonthlyPoint>
+                  kind="area"
                   width={width}
                   height={height}
+                  data={monthlyData}
+                  x={(d) => d.month}
                   series={[
-                    {
-                      id: 'profit-area',
-                      type: 'area',
-                      label: 'Profit',
-                      data: monthlyData,
-                      x: (d) => d.month,
-                      y: (d) => d.profit,
-                      showValueLabel: true,
-                      valueLabelPredicate: (value) => value === maxProfit,
-                    },
+                    { id: 'profit', type: 'area', label: 'Profit', y: (d) => d.profit },
                   ]}
-                  interactive={{ tooltip: true, legend: true }}
-                >
-                  <ChartGrid />
-                  <ChartXAxis />
-                  <ChartYAxis />
-                  <AreaSeries seriesId="profit-area" />
-                  <ChartTooltip />
-                  <ChartLegend />
-                </CartesianChart>
+                  tooltip
+                  legend
+                />
               )}
             </ResponsiveChartContainer>
           </div>
@@ -194,43 +215,19 @@ export default function ChartDemoPage(_props: PageComponentProps) {
           <div className={styles.chartWrap}>
             <ResponsiveChartContainer minHeight={280} fallbackHeight={280}>
               {({ width, height }) => (
-                <CartesianChart<MonthlyPoint>
+                <GenChart<MonthlyPoint>
+                  kind="composed"
                   width={width}
                   height={height}
+                  data={monthlyData}
+                  x={(d) => d.month}
                   series={[
-                    {
-                      id: 'revenue-bar',
-                      type: 'composed',
-                      renderAs: 'bar',
-                      label: 'Revenue',
-                      data: monthlyData,
-                      x: (d) => d.month,
-                      y: (d) => d.revenue,
-                      showValueLabel: true,
-                      valueLabelPredicate: (value) => value === maxRevenue,
-                    },
-                    {
-                      id: 'profit-line',
-                      type: 'composed',
-                      renderAs: 'line',
-                      label: 'Profit',
-                      data: monthlyData,
-                      x: (d) => d.month,
-                      y: (d) => d.profit,
-                      showValueLabel: true,
-                      valueLabelPredicate: (value) => value === maxProfit,
-                    },
+                    { id: 'revenue', type: 'bar', label: 'Revenue', y: (d) => d.revenue },
+                    { id: 'profit', type: 'line', label: 'Profit', y: (d) => d.profit },
                   ]}
-                  interactive={{ tooltip: true, legend: true }}
-                >
-                  <ChartGrid />
-                  <ChartXAxis />
-                  <ChartYAxis />
-                  <ComposedSeries seriesId="revenue-bar" />
-                  <ComposedSeries seriesId="profit-line" />
-                  <ChartTooltip />
-                  <ChartLegend />
-                </CartesianChart>
+                  tooltip
+                  legend
+                />
               )}
             </ResponsiveChartContainer>
           </div>
@@ -241,71 +238,62 @@ export default function ChartDemoPage(_props: PageComponentProps) {
           <div className={styles.chartWrap}>
             <ResponsiveChartContainer minHeight={300} fallbackHeight={300}>
               {({ width, height }) => (
-                <CartesianChart<ChannelPoint>
+                <GenChart<ChannelPoint>
+                  kind="pie"
                   width={width}
                   height={height}
-                  type="pie"
-                  series={[
-                    {
-                      id: 'channel-pie',
-                      type: 'pie',
-                      label: 'Channel Share',
-                      data: channelData,
-                      category: (d) => d.channel,
-                      value: (d) => d.value,
-                      showValueLabel: true,
-                      valueLabelPosition: 'inside',
-                      valueLabelFormatter: (value, datum) => `${datum.channel}: ${value}`,
-                    },
-                  ]}
-                  interactive={{ tooltip: true, legend: true }}
-                >
-                  <PieSeries seriesId="channel-pie" />
-                  <ChartTooltip />
-                  <ChartLegend />
-                </CartesianChart>
+                  data={channelData}
+                  category={(d) => d.channel}
+                  value={(d) => d.value}
+                  tooltip
+                  legend
+                />
               )}
             </ResponsiveChartContainer>
           </div>
         </section>
 
         <section className={styles.card}>
-          <h3 className={styles.cardTitle}>Donut + Token Override</h3>
+          <h3 className={styles.cardTitle}>Donut</h3>
           <div className={styles.chartWrap}>
             <ResponsiveChartContainer minHeight={300} fallbackHeight={300}>
               {({ width, height }) => (
-                <CartesianChart<ChannelPoint>
+                <GenChart<ChannelPoint>
+                  kind="donut"
                   width={width}
                   height={height}
-                  type="donut"
+                  data={channelData}
+                  category={(d) => d.channel}
+                  value={(d) => d.value}
                   tokens={{
                     color: {
                       background: '#f8fbff',
                       seriesPalette: ['#0f766e', '#2563eb', '#f59e0b'],
                     },
                   }}
-                  series={[
-                    {
-                      id: 'channel-donut',
-                      type: 'donut',
-                      label: 'Channel Share',
-                      data: channelData,
-                      category: (d) => d.channel,
-                      value: (d) => d.value,
-                      innerRadius: 72,
-                      outerRadius: 118,
-                      showValueLabel: true,
-                      valueLabelPredicate: (value) => value === maxChannelValue,
-                      valueLabelPosition: 'top',
-                      valueLabelFormatter: (value, datum) => `${datum.channel}: ${value}`,
-                    },
-                  ]}
-                  interactive={{ tooltip: true, legend: true }}
-                >
-                  <DonutSeries seriesId="channel-donut" />
-                  <ChartTooltip />
-                  <ChartLegend />
-                </CartesianChart>
+                  tooltip
+                  legend
+                />
+              )}
+            </ResponsiveChartContainer>
+          </div>
+        </section>
+
+        <section className={styles.card}>
+          <h3 className={styles.cardTitle}>Treemap</h3>
+          <div className={styles.chartWrap}>
+            <ResponsiveChartContainer minHeight={300} fallbackHeight={300}>
+              {({ width, height }) => (
+                <GenChart
+                  kind="treemap"
+                  width={width}
+                  height={height}
+                  data={treemapData}
+                  color={(node) => treemapColorById[node.id] ?? '#475569'}
+                  tile="squarify"
+                  minLabelArea={1400}
+                  tooltip
+                />
               )}
             </ResponsiveChartContainer>
           </div>

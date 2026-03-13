@@ -4,14 +4,7 @@ import { LayoutDashboard } from 'lucide-react';
 
 import { GenGridCrud } from '@gen-office/gen-grid-crud';
 import {
-  BarSeries,
-  CartesianChart,
-  ChartGrid,
-  ChartLegend,
-  ChartTooltip,
-  ChartXAxis,
-  ChartYAxis,
-  LineSeries,
+  GenChart,
   ResponsiveChartContainer,
 } from '@gen-office/gen-chart';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
@@ -195,11 +188,6 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
     [numberFormatter, percentFormatter]
   );
 
-  const salesPlanMax = useMemo(() => Math.max(...salesTrendRows.map((row) => row.plan)), []);
-  const salesActualMax = useMemo(() => Math.max(...salesTrendRows.map((row) => row.actual)), []);
-  const profitPlanMax = useMemo(() => Math.max(...operatingProfitTrendRows.map((row) => row.plan)), []);
-  const profitActualMax = useMemo(() => Math.max(...operatingProfitTrendRows.map((row) => row.actual)), []);
-
   return (
     <div className={styles.page}>
       <PageHeader
@@ -296,45 +284,32 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
             <div className={styles.gridWrap}>
               <ResponsiveChartContainer minHeight={260} fallbackHeight={260}>
                 {({ width, height }) => (
-                  <CartesianChart<SalesTrendRow>
+                  <GenChart<SalesTrendRow>
+                    kind="line"
                     width={width}
                     height={height}
+                    data={salesTrendRows}
+                    x={(d) => d.month}
                     xAxis={{ showAllTicks: true }}
                     series={[
                       {
                         id: 'sales-plan',
                         type: 'line',
-                        label: '계획',
-                        data: salesTrendRows,
-                        x: (d) => d.month,
+                        label: 'Plan',
                         y: (d) => d.plan,
                         color: '#9ca3af',
-                        strokeDasharray: '6 4',
-                        showValueLabel: true,
-                        valueLabelPredicate: (value) => value === salesPlanMax,
                       },
                       {
                         id: 'sales-actual',
                         type: 'line',
-                        label: '실적',
-                        data: salesTrendRows,
-                        x: (d) => d.month,
+                        label: 'Actual',
                         y: (d) => d.actual,
                         color: '#86efac',
-                        showValueLabel: false,
-                        valueLabelPredicate: (value) => value === salesActualMax,
                       },
                     ]}
-                    interactive={{ tooltip: true, legend: { enabled: true, position: 'bottom', align: 'center' } }}
-                  >
-                    <ChartGrid />
-                    <ChartXAxis />
-                    <ChartYAxis />
-                    <LineSeries seriesId="sales-plan" />
-                    <LineSeries seriesId="sales-actual" />
-                    <ChartTooltip />
-                    <ChartLegend />
-                  </CartesianChart>
+                    tooltip
+                    legend={{ enabled: true, position: 'bottom', align: 'center' }}
+                  />
                 )}
               </ResponsiveChartContainer>
             </div>
@@ -345,51 +320,32 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
             <div className={styles.gridWrap}>
               <ResponsiveChartContainer minHeight={260} fallbackHeight={260}>
                 {({ width, height }) => (
-                  <CartesianChart<ProfitTrendRow>
+                  <GenChart<ProfitTrendRow>
+                    kind="bar"
                     width={width}
                     height={height}
+                    data={operatingProfitTrendRows}
+                    x={(d) => d.month}
                     xAxis={{ showAllTicks: true }}
                     series={[
                       {
                         id: 'operating-profit-actual',
                         type: 'bar',
-                        label: '실적',
-                        data: operatingProfitTrendRows,
-                        x: (d) => d.month,
+                        label: 'Actual',
                         y: (d) => d.actual,
                         color: '#86efac',
-                        layout: 'overlay',
-                        maxBarWidth: 18,
-                        showValueLabel: true,
-                        valueLabelPosition: 'top',
-                        valueLabelPredicate: (value) => value === profitActualMax,
                       },
                       {
                         id: 'operating-profit-plan',
                         type: 'bar',
-                        label: '계획',
-                        data: operatingProfitTrendRows,
-                        x: (d) => d.month,
+                        label: 'Plan',
                         y: (d) => d.plan,
                         color: '#9ca3af',
-                        layout: 'overlay',
-                        maxBarWidth: 34,
-                        opacity: 0.45,
-                        showValueLabel: false,
-                        valueLabelPosition: 'inside',
-                        valueLabelPredicate: (value) => value === profitPlanMax,
                       },
                     ]}
-                    interactive={{ tooltip: true, legend: { enabled: true, position: 'bottom', align: 'center' } }}
-                  >
-                    <ChartGrid />
-                    <ChartXAxis />
-                    <ChartYAxis />
-                    <BarSeries seriesId="operating-profit-plan" />
-                    <BarSeries seriesId="operating-profit-actual" />
-                    <ChartTooltip />
-                    <ChartLegend />
-                  </CartesianChart>
+                    tooltip
+                    legend={{ enabled: true, position: 'bottom', align: 'center' }}
+                  />
                 )}
               </ResponsiveChartContainer>
             </div>

@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import type { PropsWithChildren } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AlertDialog } from '@gen-office/ui';
 import type { AlertDialogVariant } from '@gen-office/ui';
 import {
@@ -8,8 +9,7 @@ import {
   type AlertOptions,
   type ConfirmOptions,
 } from './AlertDialogContext';
-const DEFAULT_CONFIRM_TEXT = '확인';
-const DEFAULT_CANCEL_TEXT = '취소';
+
 const ALERT_TYPE_TITLES: Record<AlertDialogVariant, string> = {
   info: 'Information',
   warning: 'Warning',
@@ -18,6 +18,7 @@ const ALERT_TYPE_TITLES: Record<AlertDialogVariant, string> = {
 };
 
 export function AlertDialogProvider({ children }: PropsWithChildren) {
+  const { t } = useTranslation();
   const [alertOpen, setAlertOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [alertOptions, setAlertOptions] = useState<AlertOptions | null>(null);
@@ -66,6 +67,20 @@ export function AlertDialogProvider({ children }: PropsWithChildren) {
   const alertTitle = ALERT_TYPE_TITLES[alertType];
   const alertMessage = alertOptions?.message ?? '';
 
+  const confirmButtonSet = confirmOptions?.buttonSet ?? 'okCancel';
+  const confirmTitle = confirmOptions?.title ?? t('common.confirm', { defaultValue: 'Confirm' });
+  const confirmMessage = confirmOptions?.message;
+  const confirmVariant = confirmOptions?.variant ?? 'warning';
+  const confirmText =
+    confirmButtonSet === 'yesNo'
+      ? t('common.yes', { defaultValue: 'Yes' })
+      : t('common.confirm', { defaultValue: 'Confirm' });
+  const cancelText =
+    confirmButtonSet === 'yesNo'
+      ? t('common.no', { defaultValue: 'No' })
+      : t('common.cancel', { defaultValue: 'Cancel' });
+  const hideCancelButton = confirmButtonSet === 'ok';
+
   return (
     <AlertDialogContext.Provider value={value}>
       {children}
@@ -78,9 +93,12 @@ export function AlertDialogProvider({ children }: PropsWithChildren) {
             confirmNo();
           }
         }}
-        title={confirmOptions?.title ?? ''}
-        confirmText={confirmOptions?.confirmText ?? DEFAULT_CONFIRM_TEXT}
-        cancelText={confirmOptions?.cancelText ?? DEFAULT_CANCEL_TEXT}
+        title={confirmTitle}
+        message={confirmMessage}
+        variant={confirmVariant}
+        confirmText={confirmText}
+        cancelText={cancelText}
+        hideCancelButton={hideCancelButton}
         onConfirm={confirmYes}
         onCancel={confirmNo}
       />
@@ -91,7 +109,7 @@ export function AlertDialogProvider({ children }: PropsWithChildren) {
         title={alertTitle}
         message={alertMessage}
         variant={alertType}
-        confirmText={alertOptions?.confirmText ?? DEFAULT_CONFIRM_TEXT}
+        confirmText={alertOptions?.confirmText ?? t('common.confirm', { defaultValue: 'Confirm' })}
         hideCancelButton
         onConfirm={closeAlert}
       />

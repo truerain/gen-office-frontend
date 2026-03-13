@@ -9,9 +9,10 @@ export type AlertOptions = {
 };
 
 export type ConfirmOptions = {
-  title: string | ReactNode;
-  confirmText?: string;
-  cancelText?: string;
+  title?: string | ReactNode;
+  message?: string | ReactNode;
+  variant?: AlertDialogVariant;
+  buttonSet?: 'ok' | 'okCancel' | 'yesNo';
 };
 
 export type AlertDialogContextValue = {

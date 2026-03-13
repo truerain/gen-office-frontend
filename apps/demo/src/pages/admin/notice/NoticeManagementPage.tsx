@@ -184,8 +184,7 @@ export default function NoticeManagementPage() {
 
     const confirmed = await openConfirm({
       title: "Do you want to save changes?",
-      confirmText: "Save",
-      cancelText: "Cancel",
+      buttonSet: "yesNo",
     });
     if (!confirmed) return;
 

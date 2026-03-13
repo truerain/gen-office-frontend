@@ -153,8 +153,7 @@ export default function RoleManagementPage(_props: PageComponentProps) {
         title: t('admin.role.role_menu.unsaved_confirm_save', {
           defaultValue: 'Role Menu has unsaved changes. Save before switching role?',
         }),
-        confirmText: t('common.save', { defaultValue: 'Save' }),
-        cancelText: t('common.more', { defaultValue: 'More' }),
+        buttonSet: 'yesNo',
       });
 
       if (saveFirst) {
@@ -175,8 +174,7 @@ export default function RoleManagementPage(_props: PageComponentProps) {
         title: t('admin.role.role_menu.unsaved_confirm_discard', {
           defaultValue: 'Discard unsaved changes and switch role?',
         }),
-        confirmText: t('common.discard', { defaultValue: 'Discard' }),
-        cancelText: t('common.stay', { defaultValue: 'Stay' }),
+        buttonSet: 'yesNo',
       });
 
       if (discardAndMove) {

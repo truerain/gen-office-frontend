@@ -1,92 +1,6 @@
 import type { ChartTokens, DeepPartial } from '@gen-office/theme';
 
-export type ChartType = 'line' | 'bar' | 'area' | 'pie' | 'donut' | 'composed';
-
-export type Accessor<TDatum, TValue> = (datum: TDatum, index: number) => TValue;
-
-export interface ChartSeriesBase<TDatum> {
-  id: string;
-  label?: string;
-  color?: string;
-  data: TDatum[];
-  x: Accessor<TDatum, string | number | Date>;
-  y: Accessor<TDatum, number | null | undefined>;
-  hidden?: boolean;
-  showValueLabel?: boolean;
-  valueLabelPredicate?: (value: number, datum: TDatum, index: number) => boolean;
-  valueLabelFormatter?: (value: number, datum: TDatum, index: number) => string;
-  valueLabelPosition?: 'top' | 'inside';
-  valueLabelColor?: string;
-}
-
-export interface LineSeriesDef<TDatum> extends ChartSeriesBase<TDatum> {
-  type: 'line';
-  curve?: 'linear' | 'monotoneX' | 'step';
-  connectNulls?: boolean;
-  strokeDasharray?: string;
-}
-
-export interface BarSeriesDef<TDatum> extends ChartSeriesBase<TDatum> {
-  type: 'bar';
-  stackId?: string;
-  maxBarWidth?: number;
-  layout?: 'grouped' | 'overlay';
-  opacity?: number;
-}
-
-export interface AreaSeriesDef<TDatum> extends ChartSeriesBase<TDatum> {
-  type: 'area';
-  connectNulls?: boolean;
-}
-
-export interface ComposedSeriesDef<TDatum> extends ChartSeriesBase<TDatum> {
-  type: 'composed';
-  renderAs?: 'line' | 'bar';
-  maxBarWidth?: number;
-  layout?: 'grouped' | 'overlay';
-  opacity?: number;
-}
-
-export interface PieSeriesDef<TDatum> {
-  id: string;
-  type: 'pie' | 'donut';
-  label?: string;
-  data: TDatum[];
-  category: Accessor<TDatum, string>;
-  value: Accessor<TDatum, number | null | undefined>;
-  color?: string;
-  innerRadius?: number;
-  outerRadius?: number;
-  hidden?: boolean;
-  showValueLabel?: boolean;
-  valueLabelPredicate?: (value: number, datum: TDatum, index: number) => boolean;
-  valueLabelFormatter?: (value: number, datum: TDatum, index: number) => string;
-  valueLabelPosition?: 'top' | 'inside';
-  valueLabelColor?: string;
-}
-
-export type ChartSeries<TDatum> =
-  | LineSeriesDef<TDatum>
-  | BarSeriesDef<TDatum>
-  | AreaSeriesDef<TDatum>
-  | ComposedSeriesDef<TDatum>
-  | PieSeriesDef<TDatum>;
-
-export interface ChartAxisOptions {
-  show?: boolean;
-  tickCount?: number;
-  showAllTicks?: boolean;
-  tickFormat?: (value: unknown) => string;
-  min?: number | 'auto' | 'dataMin';
-  max?: number | 'auto' | 'dataMax';
-}
-
-export interface ChartPadding {
-  top?: number;
-  right?: number;
-  bottom?: number;
-  left?: number;
-}
+export type GenChartKind = 'line' | 'bar' | 'area' | 'composed' | 'pie' | 'donut' | 'treemap';
 
 export interface ChartTheme {
   background?: string;
@@ -97,108 +11,101 @@ export interface ChartTheme {
   palette?: string[];
 }
 
-export interface ChartMotionOptions {
-  enabled?: boolean;
-  durationMs?: number;
-  easing?: 'linear' | 'easeOut' | 'easeInOut';
-  animateOnMount?: boolean;
+export interface ChartPadding {
+  top?: number;
+  right?: number;
+  bottom?: number;
+  left?: number;
 }
 
-export type ChartLegendPosition = 'top' | 'bottom' | 'left' | 'right';
-export type ChartLegendAlign = 'start' | 'center' | 'end';
-
-export interface ChartLegendOptions {
-  enabled?: boolean;
-  position?: ChartLegendPosition;
-  align?: ChartLegendAlign;
-  reserveSpace?: boolean;
+export interface GenChartAxisOptions {
+  show?: boolean;
+  tickCount?: number;
+  showAllTicks?: boolean;
+  tickFormat?: (value: unknown) => string;
+  min?: number | 'auto' | 'dataMin';
+  max?: number | 'auto' | 'dataMax';
+  position?: 'default' | 'zero';
 }
 
-export interface ChartTooltipFormatterContext<TDatum = unknown> {
-  seriesId: string;
-  seriesLabel?: string;
-  seriesType: ChartType;
-  datum: TDatum;
-  x?: string | number | Date;
+export interface GenChartLegendOptions {
+  enabled?: boolean;
+  position?: 'top' | 'bottom';
+  align?: 'start' | 'center' | 'end';
+}
+
+export interface GenChartTooltipContext<T = unknown> {
+  label: string;
   value: number | null;
+  datum: T;
+  seriesId?: string;
 }
 
-export interface ChartTooltipOptions<TDatum = unknown> {
+export interface GenChartTooltipOptions<T = unknown> {
   enabled?: boolean;
-  titleFormatter?: (ctx: ChartTooltipFormatterContext<TDatum>) => string;
-  valueFormatter?: (ctx: ChartTooltipFormatterContext<TDatum>) => string;
+  labelFormatter?: (ctx: GenChartTooltipContext<T>) => string;
+  valueFormatter?: (ctx: GenChartTooltipContext<T>) => string;
 }
 
-export interface ChartInteractiveOptions {
-  tooltip?: boolean | ChartTooltipOptions;
-  legend?: boolean | ChartLegendOptions;
-  crosshair?: boolean;
-}
-
-export interface GenChartOptions<TDatum> {
-  type?: ChartType;
-  series: ChartSeries<TDatum>[];
-  xAxis?: ChartAxisOptions;
-  yAxis?: ChartAxisOptions;
+export interface GenChartBaseProps<T = unknown> {
+  width: number;
+  height: number;
   padding?: ChartPadding;
   theme?: ChartTheme;
   tokens?: DeepPartial<ChartTokens>;
-  motion?: ChartMotionOptions;
-  interactive?: ChartInteractiveOptions;
+  tooltip?: boolean | GenChartTooltipOptions<T>;
+  legend?: boolean | GenChartLegendOptions;
 }
 
-export interface GenChartNearestDatum<TDatum> {
-  seriesId: string;
-  datum: TDatum;
-  x: number;
-  y: number;
+export interface CartesianSeriesDef<T> {
+  id: string;
+  type: 'line' | 'bar' | 'area';
+  y: (d: T, index: number) => number | null | undefined;
+  label?: string;
+  color?: string;
+  negativeColor?: string;
+  stackId?: string;
+  curve?: 'linear' | 'monotoneX' | 'step';
 }
 
-export interface GenChartModel<TDatum> {
-  options: GenChartOptions<TDatum>;
-  visibleSeries: ChartSeries<TDatum>[];
-  xDomain: [unknown, unknown];
-  yDomain: [number, number];
-  toggleSeries: (seriesId: string) => void;
-  setSeriesVisibility: (seriesId: string, visible: boolean) => void;
-  getNearestDatum: (xPx: number, yPx: number) => GenChartNearestDatum<TDatum> | null;
+export interface CartesianChartProps<T> extends GenChartBaseProps<T> {
+  kind: 'line' | 'bar' | 'area' | 'composed';
+  data: T[];
+  x: (d: T, index: number) => string | number | Date;
+  series: CartesianSeriesDef<T>[];
+  xAxis?: GenChartAxisOptions;
+  yAxis?: GenChartAxisOptions;
 }
 
-export interface UseGenChartOptions<TDatum> extends GenChartOptions<TDatum> {
-  width: number;
-  height: number;
+export interface PieDonutChartProps<T> extends GenChartBaseProps<T> {
+  kind: 'pie' | 'donut';
+  data: T[];
+  category: (d: T, index: number) => string;
+  value: (d: T, index: number) => number;
+  innerRadius?: number;
+  outerRadius?: number;
+  color?: (d: T, index: number) => string;
 }
 
-export type ChartXKind = 'category' | 'number' | 'date';
-
-export interface ChartXMeta {
-  kind: ChartXKind;
-  categories: string[];
-  categoryIndexByKey: Record<string, number>;
-  minValue: number;
-  maxValue: number;
+export interface TreemapNode {
+  id: string;
+  name: string;
+  value?: number;
+  children?: TreemapNode[];
 }
 
-export interface UseGenChartResult<TDatum> extends GenChartModel<TDatum> {
-  width: number;
-  height: number;
-  innerWidth: number;
-  innerHeight: number;
-  padding: Required<ChartPadding>;
-  xMeta: ChartXMeta;
-  xToPx: (value: string | number | Date) => number;
-  yToPx: (value: number) => number;
-  tokens: ChartTokens;
-  legend: {
-    enabled: boolean;
-    position: ChartLegendPosition;
-    align: ChartLegendAlign;
-    reserveSpace: boolean;
-    bandSize: number;
-  };
-  seriesMeta: {
-    uniqueSeries: ChartSeries<TDatum>[];
-    duplicateSeriesIds: Set<string>;
-    invalidNoFiniteYIds: Set<string>;
-  };
+export interface TreemapChartProps extends GenChartBaseProps<TreemapNode> {
+  kind: 'treemap';
+  data: TreemapNode;
+  value?: (node: TreemapNode) => number;
+  label?: (node: TreemapNode) => string;
+  color?: (node: TreemapNode, depth: number, index: number) => string;
+  tile?: 'squarify' | 'binary' | 'slice' | 'dice' | 'sliceDice';
+  minLabelArea?: number;
+  onNodeClick?: (node: TreemapNode) => void;
 }
+
+export type GenChartProps<T = unknown> =
+  | CartesianChartProps<T>
+  | PieDonutChartProps<T>
+  | TreemapChartProps;

@@ -238,7 +238,9 @@ function MenuManagementPage(props: PageComponentProps) {
                     return false;
                   }
                   return openConfirm({
-                    title: t('common.confirm_save', { defaultValue: 'Do you want to save?' }),
+                    title: t('common.confirm', { defaultValue: 'Confirm' }),
+                    message: t('common.confirm_save', { defaultValue: 'Do you want to save?' }),
+                    buttonSet: 'okCancel',
                   });
                 }}
                 onCommitError={({ error }) => {
