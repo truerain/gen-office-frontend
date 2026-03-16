@@ -9,7 +9,19 @@ export type {
   GenGridEditorFactory,
   GenGridEditorContext,
   GenGridTreeOptions,
+  GenGridContextMenuCell,
+  GenGridContextMenuActionContext,
+  GenGridContextMenuCustomAction,
+  GenGridContextMenuOptions,
 } from './GenGrid.types';
+export type {
+  GenGridValidationTrigger,
+  GenGridValidationError,
+  GenGridFieldValidatorContext,
+  GenGridFieldValidator,
+  GenGridValidationRule,
+  GenGridFieldValidationMeta,
+} from './validation/types';
 export type { GenGridHandle } from './types/GenGridHandle';
 
 // 3. provider

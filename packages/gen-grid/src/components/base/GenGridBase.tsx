@@ -17,6 +17,10 @@ import layout from './GenGridLayout.module.css';
 import { useClipboardActions } from '../../features/range-selection/useClipboardActions';
 import { GenGridContextMenu } from './GenGridContextMenu';
 import { resolveRangeBounds } from '../../features/range-selection/clipboard';
+import type {
+  GenGridContextMenuActionContext,
+  GenGridContextMenuCustomAction,
+} from '../../GenGrid.types';
 
 export type GenGridBaseProps<TData> = {
   table: Table<TData>;
@@ -82,7 +86,28 @@ export type GenGridBaseProps<TData> = {
     columnId: string;
     value: unknown;
   }) => React.CSSProperties | undefined;
+  getCellTooltip?: (args: {
+    row: TData;
+    rowId: string;
+    rowIndex: number;
+    columnId: string;
+    value: unknown;
+  }) => string | undefined;
+  contextMenu?: {
+    customActions?: readonly GenGridContextMenuCustomAction<TData>[];
+  };
 };
+
+function resolveContextMenuColumnHeader<TData>(table: Table<TData>, columnId: string): string {
+  const column = table.getColumn(columnId);
+  if (!column) return columnId;
+
+  const header = column.columnDef.header;
+  if (typeof header === 'string' || typeof header === 'number') {
+    return String(header);
+  }
+  return columnId;
+}
 
 export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
@@ -125,6 +150,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
 
     editOnActiveCell,
     keepEditingOnNavigate,
+    contextMenu: contextMenuOptions,
 
     onCellValueChange,
     isCellDirty,
@@ -260,6 +286,86 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
       count,
     };
   }, [contextMenu, rows, selectedRange, table]);
+
+  const contextMenuActionContext = React.useMemo<GenGridContextMenuActionContext<TData> | null>(() => {
+    if (!contextMenu) return null;
+    const bounds = resolveRangeBounds(table, selectedRange);
+    if (!bounds) {
+      return {
+        table,
+        selectedRange,
+        bounds: null,
+        cells: [],
+        matrix: [],
+      };
+    }
+
+    const cells: GenGridContextMenuActionContext<TData>['cells'] = [];
+    const matrix: unknown[][] = [];
+
+    for (let rowIndex = bounds.rowMin; rowIndex <= bounds.rowMax; rowIndex++) {
+      const row = rows[rowIndex];
+      if (!row) continue;
+      const rowMatrix: unknown[] = [];
+      for (const columnId of bounds.columnIds) {
+        const value = row.getValue(columnId);
+        rowMatrix.push(value);
+        cells.push({
+          rowIndex,
+          rowId: row.id,
+          columnId,
+          columnHeader: resolveContextMenuColumnHeader(table, columnId),
+          value,
+          row: row.original,
+        });
+      }
+      matrix.push(rowMatrix);
+    }
+
+    return {
+      table,
+      selectedRange,
+      bounds,
+      cells,
+      matrix,
+    };
+  }, [contextMenu, rows, selectedRange, table]);
+
+  const customContextMenuActions = React.useMemo(() => {
+    const defs = contextMenuOptions?.customActions ?? [];
+    if (!contextMenuActionContext || defs.length === 0) return [];
+
+    type ResolvedContextMenuAction = {
+      key: string;
+      label: React.ReactNode;
+      disabled?: boolean;
+      onClick?: () => void | Promise<void>;
+      children?: ResolvedContextMenuAction[];
+    };
+
+    const resolveActions = (
+      actions: readonly GenGridContextMenuCustomAction<TData>[]
+    ): ResolvedContextMenuAction[] =>
+      actions.map((action) => {
+        const disabled = typeof action.disabled === 'function'
+          ? Boolean(action.disabled(contextMenuActionContext))
+          : Boolean(action.disabled);
+        return {
+          key: action.key,
+          label: action.label,
+          disabled,
+          onClick: action.onClick
+            ? () => action.onClick?.(contextMenuActionContext)
+            : undefined,
+          children:
+            action.children && action.children.length > 0
+              ? resolveActions(action.children)
+              : undefined,
+        };
+      });
+
+    return resolveActions(defs);
+  }, [contextMenuActionContext, contextMenuOptions?.customActions]);
   React.useEffect(() => {
     if (!contextMenu) return;
 
@@ -501,6 +607,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
               getRowStyle={props.getRowStyle}
               getCellClassName={props.getCellClassName}
               getCellStyle={props.getCellStyle}
+              getCellTooltip={props.getCellTooltip}
               footerSpacerHeight={footerSpacerHeight}
               rowSpanModel={rowSpanModel}
               rowSpanningMode={resolvedRowSpanningMode}
@@ -523,6 +630,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
               getRowStyle={props.getRowStyle}
               getCellClassName={props.getCellClassName}
               getCellStyle={props.getCellStyle}
+              getCellTooltip={props.getCellTooltip}
               footerSpacerHeight={footerSpacerHeight}
               rowSpanModel={rowSpanModel}
               rowSpanningMode={resolvedRowSpanningMode}
@@ -554,6 +662,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
         canCopy={canCopy}
         canPaste={canPaste}
         rangeStats={rangeStats}
+        customActions={customContextMenuActions}
         onClose={closeContextMenu}
         onCopy={() => void copyToClipboard(false)}
         onCopyWithHeader={() => void copyToClipboard(true)}

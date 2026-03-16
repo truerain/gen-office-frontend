@@ -17,6 +17,8 @@ export type {
   CrudActionContext,
   CrudActionItem,
   CrudBuiltInActionKey,
+  CrudValidationError,
+  CrudFieldErrorMap,
   ExcelExportMode,
   ExcelExportOptions,
 } from './GenGridCrud.types';

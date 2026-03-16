@@ -5,6 +5,14 @@ import type { GenGridEditorFactory, GenGridProps } from '@gen-office/gen-grid';
 import type { ButtonVariant } from '@gen-office/ui';
 import type { CrudChange, CrudRowId, UseMakePatch } from './crud/types';
 
+export type CrudValidationError = {
+  code: string;
+  messageKey?: string;
+  defaultMessage?: string;
+};
+
+export type CrudFieldErrorMap = Record<string, CrudValidationError>;
+
 export type CrudCommitContext<TData> = {
   baseData: readonly TData[];
   viewData: readonly TData[];
@@ -32,6 +40,7 @@ export type CrudUiState<TData> = {
   activeColumnId?: string;
 
   isCommitting: boolean;
+  fieldErrors: CrudFieldErrorMap;
 };
 
 export type CrudCellEditEvent<TData> = {

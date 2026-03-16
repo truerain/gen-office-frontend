@@ -16,6 +16,7 @@
     "@gen-office/utils": "workspace:*",
     "@gen-office/gen-grid": "workspace:*",
     "@gen-office/gen-grid-crud": "workspace:*",
+    "@gen-office/gen-grid-chart": "workspace:*",
     "@gen-office/gen-chart": "workspace:*",
     "@radix-ui/react-checkbox": "^1.3.3",
     "@radix-ui/react-dialog": "^1.1.15",

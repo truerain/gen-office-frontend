@@ -70,6 +70,7 @@ export interface CartesianSeriesDef<T> {
 
 export interface CartesianChartProps<T> extends GenChartBaseProps<T> {
   kind: 'line' | 'bar' | 'area' | 'composed';
+  barOrientation?: 'vertical' | 'horizontal';
   data: T[];
   x: (d: T, index: number) => string | number | Date;
   series: CartesianSeriesDef<T>[];

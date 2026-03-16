@@ -66,6 +66,13 @@ type GenGridBodyProps<TData> = {
     columnId: string;
     value: unknown;
   }) => React.CSSProperties | undefined;
+  getCellTooltip?: (args: {
+    row: TData;
+    rowId: string;
+    rowIndex: number;
+    columnId: string;
+    value: unknown;
+  }) => string | undefined;
 
   footerSpacerHeight?: number;
   rowSpanModel?: RowSpanModel;
@@ -108,6 +115,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
     getRowStyle,
     getCellClassName,
     getCellStyle: getCellStyleByRule,
+    getCellTooltip,
     footerSpacerHeight = 0,
     rowSpanModel,
     rowSpanningMode = 'real',
@@ -478,6 +486,13 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
             };
             
             const dirty = isCellDirty?.(row.id, colId) ?? false;
+            const cellTooltip = getCellTooltip?.({
+              row: cell.row.original,
+              rowId: row.id,
+              rowIndex: row.index,
+              columnId: colId,
+              value: cell.getValue(),
+            });
             return (
               <GenGridCell
                 key={cell.id}
@@ -492,7 +507,11 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
                 enableColumnSizing={enableColumnSizing}
                 getCellClassName={getCellClassName}
                 getCellStyle={getCellStyleByRule}
-                cellProps={mergedProps}
+                cellProps={{
+                  ...mergedProps,
+                  title: cellTooltip ?? mergedProps.title,
+                  ['data-gen-grid-cell-tooltip' as any]: cellTooltip ?? undefined,
+                }}
                 isRowSpanCovered={rowSpanCovered && isVisualMode}
                 cellRowSpan={cellRowSpan}
                 hideBottomBorder={hideBottomBorder}

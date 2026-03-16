@@ -295,7 +295,6 @@ function PrimitivesPage() {
             open={dialogOpen}
             onOpenChange={setDialogOpen}
             title="Dialog Title"
-            description="This is a dialog description. It provides additional context about the action."
           >
             <div className={styles.dialogContent}>
               <p>This is the dialog content. You can put any React components here.</p>

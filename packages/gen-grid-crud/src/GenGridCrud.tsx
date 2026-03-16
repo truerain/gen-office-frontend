@@ -13,8 +13,13 @@ import type {
   CrudPendingDiff,
   CrudActionApi,
   CrudCellPatch,
+  CrudFieldErrorMap,
 } from './GenGridCrud.types';
 import { CrudActionBar } from './components/CrudActionBar';
+import {
+  buildFieldErrorKey,
+  validatePendingRows,
+} from './validation/fieldValidation';
 import styles from './GenGridCrud.module.css';
 
 import { GenGrid } from '@gen-office/gen-grid';
@@ -872,6 +877,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   
   // --- pending changes
   const pendingApi = usePendingChanges<TData>();
+  const [fieldErrors, setFieldErrors] = React.useState<CrudFieldErrorMap>({});
 
   // diffKeys: compare patch keys by editable accessors
   const diffKeys = React.useMemo(() => getEditableKeysFromColumns(columns), [columns]);
@@ -897,6 +903,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     return [
       String(gridProps?.dataVersion ?? ""),
       String(pendingApi.dirty),
+      String(Object.keys(fieldErrors).length),
       selectedKey,
       `${activeRowKey}:${activeColKey}`,
       String(isCommitting),
@@ -908,6 +915,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     activeCell?.columnId,
     pendingApi.changes,
     pendingApi.dirty,
+    fieldErrors,
     gridProps?.dataVersion,
     isCommitting,
   ]);
@@ -938,6 +946,28 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     () => buildPendingDiffFromPending<TData>(pendingApi.pending),
     [pendingApi.pending]
   );
+  const latestSaveSnapshotRef = React.useRef({
+    changes: pendingApi.changes,
+    pending: pendingApi.pending,
+    viewData: diff.viewData,
+    pendingDiff,
+    dirty: pendingApi.dirty,
+    rowSelectionIds,
+    activeCell,
+    isCommitting,
+    data,
+  });
+  latestSaveSnapshotRef.current = {
+    changes: pendingApi.changes,
+    pending: pendingApi.pending,
+    viewData: diff.viewData,
+    pendingDiff,
+    dirty: pendingApi.dirty,
+    rowSelectionIds,
+    activeCell,
+    isCommitting,
+    data,
+  };
 
   // GenGrid expects a mutable array instance.
   const gridData = React.useMemo<TData[]>(
@@ -969,6 +999,31 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     }
     return map;
   }, [gridData, getPendingRowId]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    const run = async () => {
+      if (!pendingApi.dirty) {
+        if (!cancelled) setFieldErrors({});
+        return;
+      }
+      const next = await validatePendingRows({
+        trigger: 'change',
+        columns,
+        pending: pendingApi.pending,
+        viewData: diff.viewData,
+        getRowId,
+        includeAllRulesOnCommit: false,
+      });
+      if (!cancelled) setFieldErrors(next);
+    };
+
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [columns, pendingApi.pending, pendingApi.dirty, diff.viewData, getRowId]);
 
   const prevActiveRowIdRef = React.useRef<CrudRowId | null>(null);
   React.useEffect(() => {
@@ -1051,20 +1106,49 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     setFilterEnabled((prev) => !prev);
   }, []);
 
+  const flushActiveEditor = React.useCallback(async () => {
+    if (typeof document === 'undefined') return;
+    const active = document.activeElement as HTMLElement | null;
+    if (!active) return;
+    const isEditor = Boolean(active.closest('input,select,textarea,[contenteditable="true"]'));
+    if (!isEditor) return;
+    active.blur();
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve());
+    });
+  }, []);
+
   const handleSave = React.useCallback(async () => {
-    const changes = pendingApi.changes;
+    await flushActiveEditor();
+
+    const latest = latestSaveSnapshotRef.current;
+    const changes = latest.changes;
     if (!changes.length) return;
 
+    const commitFieldErrors = await validatePendingRows({
+      trigger: 'commit',
+      columns,
+      pending: latest.pending,
+      viewData: latest.viewData,
+      getRowId,
+      includeAllRulesOnCommit: true,
+    });
+    if (Object.keys(commitFieldErrors).length > 0) {
+      setFieldErrors(commitFieldErrors);
+      return;
+    }
+
     const stateForGuard: CrudUiState<TData> = {
-      baseData: data,
-      viewData: diff.viewData,
+      baseData: latest.data,
+      viewData: latest.viewData,
       changes,
-      pendingDiff,
-      dirty: pendingApi.dirty,
-      rowSelection: rowSelectionIds,
-      activeRowId: activeCell?.rowId,
-      activeColumnId: activeCell?.columnId,
-      isCommitting,
+      pendingDiff: latest.pendingDiff,
+      dirty: latest.dirty,
+      rowSelection: latest.rowSelectionIds,
+      activeRowId: latest.activeCell?.rowId,
+      activeColumnId: latest.activeCell?.columnId,
+      isCommitting: latest.isCommitting,
+      fieldErrors: {},
     };
 
     const ok = await beforeCommit?.(stateForGuard);
@@ -1075,7 +1159,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
 
       const result = await onCommit({
         changes,
-        ctx: { baseData: data, viewData: diff.viewData },
+        ctx: { baseData: latest.data, viewData: latest.viewData },
       });
 
       if (result.ok) {
@@ -1096,9 +1180,10 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     onCommitError,
     beforeCommit,
     data,
-    rowSelectionIds,
-    activeCell, activeCellControlled,
-    isCommitting,
+    columns,
+    getRowId,
+    flushActiveEditor,
+    setFieldErrors,
     isCommittingControlled,
   ]);
 
@@ -1115,6 +1200,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       activeRowId: activeCell?.rowId,
       activeColumnId: activeCell?.columnId,
       isCommitting,
+      fieldErrors,
     };
 
     const exportFallbackName = t('common.export', { defaultValue: 'export' });
@@ -1450,6 +1536,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     activeCell?.rowId,
     activeCell?.columnId,
     isCommitting,
+    fieldErrors,
     title,
     columns,
     getPendingRowId,
@@ -1576,14 +1663,18 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       activeRowId: activeCell?.rowId,
       activeColumnId: activeCell?.columnId,
       isCommitting,
+      fieldErrors,
     });
   }, [
     onStateChange,
     data,
     pendingApi.changes,
     pendingApi.dirty,
+    diff.viewData,
+    pendingDiff,
     rowSelectionIds,
     activeCell, activeCellControlled,
+    fieldErrors,
     isCommitting,
   ]);
 
@@ -1613,6 +1704,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
           activeRowId: activeCell?.rowId,
           activeColumnId: activeCell?.columnId,
           isCommitting,
+          fieldErrors,
         }}
         actionApi={actionApi}
         filterEnabled={filterEnabled}
@@ -1629,8 +1721,37 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       enableFiltering: filterEnabled,
       columnFilters,
       onColumnFiltersChange: setColumnFilters,
+      getCellClassName: (args: {
+        row: TData;
+        rowId: string;
+        rowIndex: number;
+        columnId: string;
+        value: unknown;
+      }) => {
+        const base = gridProps?.getCellClassName?.(args) ?? '';
+        const hasError = Boolean(fieldErrors[buildFieldErrorKey(args.rowId, args.columnId)]);
+        return [base, hasError ? styles.fieldErrorCell : ''].filter(Boolean).join(' ');
+      },
+      getCellTooltip: (args: {
+        row: TData;
+        rowId: string;
+        rowIndex: number;
+        columnId: string;
+        value: unknown;
+      }) => {
+        const base = gridProps?.getCellTooltip?.(args);
+        const err = fieldErrors[buildFieldErrorKey(args.rowId, args.columnId)];
+        if (!err) return base;
+        const fallback = err.defaultMessage ?? base;
+        if (err.messageKey) {
+          return t(err.messageKey, {
+            defaultValue: fallback,
+          });
+        }
+        return fallback;
+      },
     }),
-    [gridProps, readonlyProp, filterEnabled, columnFilters]
+    [gridProps, readonlyProp, filterEnabled, columnFilters, fieldErrors, t]
   );
 
   return (

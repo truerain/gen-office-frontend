@@ -5,6 +5,7 @@ import type { AppMenu } from './model/types';
 
 const componentNameByMenuId: Record<string, string> = {
   '100100': 'CustomerInfoPage',
+  '700100': 'CoActualsPage',
   '900100': 'UserManagementPage',
   '900200': 'MenuManagementPage',
   '900300': 'RoleManagementPage',
@@ -25,6 +26,8 @@ const iconByMenuId: Record<string, string> = {
   '100000': 'Users',
   '100100': 'Users',
   '900000': 'Settings',
+  '700000': 'Calculator',
+  '700100': 'Calculator',
   '900100': 'Users',
   '900200': 'Menu',
   '900300': 'Shield',

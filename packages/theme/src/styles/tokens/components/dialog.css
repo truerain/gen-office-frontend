@@ -1,0 +1,18 @@
+/* Component Tokens: Dialog */
+:root {
+  --dialog-bg: var(--color-bg-primary);
+  --dialog-border: var(--color-border-default);
+
+  --dialog-header-bg: var(--color-bg-secondary);
+  --dialog-header-border: var(--color-border-default);
+
+  --dialog-body-bg: var(--color-bg-primary);
+
+  --dialog-footer-bg: var(--dialog-bg);
+  --dialog-footer-border: transparent;
+
+  --dialog-title-text: var(--color-fg-primary);
+  --dialog-description-text: var(--color-fg-secondary);
+
+  --dialog-close-hover-bg: var(--color-bg-secondary);
+}

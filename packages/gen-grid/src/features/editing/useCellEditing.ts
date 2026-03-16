@@ -337,6 +337,14 @@ export function useCellEditing<TData>(args: {
     if (typeof document === 'undefined') return;
     if (!keepEditingOnNavigate) return;
 
+    const blurActiveEditor = () => {
+      const active = document.activeElement as HTMLElement | null;
+      if (!active) return false;
+      if (!active.closest('input,select,textarea,[contenteditable="true"]')) return false;
+      active.blur();
+      return true;
+    };
+
     const handleFocusIn = (event: FocusEvent) => {
       if (!editMode) return;
       if (!activeCell) return;
@@ -346,12 +354,13 @@ export function useCellEditing<TData>(args: {
       if (target.closest('[data-gen-grid-editor-overlay="true"]')) return;
 
       const cell = document.querySelector<HTMLElement>(
-        `[data-row-id="${CSS.escape(activeCell.rowId)}"][data-col-id="${CSS.escape(activeCell.columnId)}"]`
+        `[data-rowid="${CSS.escape(activeCell.rowId)}"][data-colid="${CSS.escape(activeCell.columnId)}"]`
       );
       const container = cell?.closest<HTMLElement>('[class*="tableScroll"]');
       if (!container) return;
 
       if (!container.contains(target)) {
+        if (blurActiveEditor()) return;
         exitEdit({ preserve: false });
       }
     };
@@ -366,6 +375,14 @@ export function useCellEditing<TData>(args: {
     if (typeof document === 'undefined') return;
     if (!keepEditingOnNavigate) return;
 
+    const blurActiveEditor = () => {
+      const active = document.activeElement as HTMLElement | null;
+      if (!active) return false;
+      if (!active.closest('input,select,textarea,[contenteditable="true"]')) return false;
+      active.blur();
+      return true;
+    };
+
     const handlePointerDown = (event: MouseEvent) => {
       if (!editMode) return;
       if (!activeCell) return;
@@ -375,13 +392,14 @@ export function useCellEditing<TData>(args: {
       if (target.closest('[data-gen-grid-editor-overlay="true"]')) return;
 
       const cell = document.querySelector<HTMLElement>(
-        `[data-row-id="${CSS.escape(activeCell.rowId)}"][data-col-id="${CSS.escape(activeCell.columnId)}"]`
+        `[data-rowid="${CSS.escape(activeCell.rowId)}"][data-colid="${CSS.escape(activeCell.columnId)}"]`
       );
       const activeContainer = cell?.closest<HTMLElement>('[class*="tableScroll"]') ?? null;
       const targetContainer = target.closest<HTMLElement>('[class*="tableScroll"]');
 
       if (activeContainer) {
         if (targetContainer !== activeContainer) {
+          if (blurActiveEditor()) return;
           exitEdit({ preserve: false });
           return;
         }
@@ -390,6 +408,7 @@ export function useCellEditing<TData>(args: {
         const inCell = !!target.closest('td[data-rowid][data-colid]');
         if (!inEditor && !inCell) {
           // Clicking blank area inside the same grid should close the current editor.
+          if (blurActiveEditor()) return;
           exitEdit({ preserve: false });
           return;
         }
@@ -397,6 +416,7 @@ export function useCellEditing<TData>(args: {
       }
 
       if (!targetContainer) {
+        if (blurActiveEditor()) return;
         exitEdit({ preserve: false });
       }
     };

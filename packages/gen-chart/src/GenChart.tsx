@@ -129,6 +129,11 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
     range: [0, innerWidth],
   });
 
+  const barSeries = props.series.filter((series) => series.type === 'bar');
+  const stackedBarSeries = barSeries.filter((series) => Boolean(series.stackId));
+  const groupedBarSeries = barSeries.filter((series) => !series.stackId);
+  const barOrientation = props.barOrientation ?? 'vertical';
+
   const yValues: number[] = [];
   props.series.forEach((series) => {
     props.data.forEach((datum, index) => {
@@ -136,6 +141,27 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
       if (typeof value === 'number' && Number.isFinite(value)) yValues.push(value);
     });
   });
+  if (stackedBarSeries.length > 0) {
+    const stackTotals = new Map<string, { pos: number; neg: number }>();
+    stackedBarSeries.forEach((series) => {
+      const stackId = String(series.stackId);
+      props.data.forEach((datum, index) => {
+        const value = series.y(datum, index);
+        if (typeof value !== 'number' || !Number.isFinite(value)) return;
+        const key = `${stackId}:${index}`;
+        const prev = stackTotals.get(key) ?? { pos: 0, neg: 0 };
+        if (value >= 0) {
+          prev.pos += value;
+        } else {
+          prev.neg += value;
+        }
+        stackTotals.set(key, prev);
+      });
+    });
+    stackTotals.forEach((total) => {
+      yValues.push(total.pos, total.neg);
+    });
+  }
   const minYFromData = yValues.length ? Math.min(...yValues, 0) : 0;
   const maxYFromData = yValues.length ? Math.max(...yValues) : 1;
   const minY = typeof props.yAxis?.min === 'number' ? props.yAxis.min : minYFromData;
@@ -146,6 +172,16 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
     domain: [minY, maxY],
     range: [innerHeight, 0],
     nice: true,
+  });
+  const valueXScale = scaleLinear<number>({
+    domain: [minY, maxY],
+    range: [0, innerWidth],
+    nice: true,
+  });
+  const yBand = scaleBand<string>({
+    domain: xValues.map((value) => String(value)),
+    range: [0, innerHeight],
+    padding: 0.22,
   });
   const xAxisTop =
     props.xAxis?.position === 'zero' && minY < 0 && maxY > 0
@@ -170,23 +206,31 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
       props.data.forEach((datum, index) => {
         const y = series.y(datum, index);
         if (typeof y !== 'number' || !Number.isFinite(y)) return;
+        const xRaw = props.x(datum, index);
+        const isHorizontalBar = series.type === 'bar' && barOrientation === 'horizontal';
         points.push({
           datum,
           index,
-          x: getX(props.x(datum, index)),
-          y: Number(yScale(y)),
+          x: isHorizontalBar ? Number(valueXScale(y)) : getX(xRaw),
+          y: isHorizontalBar
+            ? (yBand(String(xRaw)) ?? 0) + yBand.bandwidth() / 2
+            : Number(yScale(y)),
           value: y,
         });
       });
       map.set(series.id, points);
     });
     return map;
-  }, [getX, props.data, props.series, props.x, yScale]);
+  }, [barOrientation, getX, props.data, props.series, props.x, valueXScale, yBand, yScale]);
 
-  const barSeries = props.series.filter((series) => series.type === 'bar');
-  const barWidth = allCategory
-    ? Math.max(4, (xBand.bandwidth() / Math.max(1, barSeries.length)) * 0.92)
+  const groupedBarWidth = allCategory
+    ? Math.max(4, (xBand.bandwidth() / Math.max(1, groupedBarSeries.length)) * 0.92)
     : 14;
+  const stackedBarWidth = allCategory
+    ? Math.max(4, xBand.bandwidth() * 0.92)
+    : 14;
+  const groupedBarHeight = Math.max(4, (yBand.bandwidth() / Math.max(1, groupedBarSeries.length)) * 0.92);
+  const stackedBarHeight = Math.max(4, yBand.bandwidth() * 0.92);
 
   const onMove = React.useCallback((event: React.MouseEvent<SVGRectElement>) => {
     if (!tooltipOptions.enabled) return;
@@ -197,17 +241,40 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
     let bestDist = Number.POSITIVE_INFINITY;
     let bestSeries: CartesianSeriesDef<T> | null = null;
     let bestPoint: Point<T> | null = null;
+    let bestAnchorX = 0;
+    let bestAnchorY = 0;
 
     for (const series of props.series) {
       const points = pointsBySeries.get(series.id) ?? [];
+      const isGroupedBarSeries = series.type === 'bar' && !series.stackId;
+      const barIndex = isGroupedBarSeries
+        ? Math.max(0, groupedBarSeries.findIndex((item) => item.id === series.id))
+        : -1;
       for (const point of points) {
-        const dx = point.x - x;
-        const dy = point.y - y;
+        let hoverX = point.x;
+        let hoverY = point.y;
+
+        if (isGroupedBarSeries) {
+          if (barOrientation === 'horizontal') {
+            hoverY =
+              point.y - (yBand.bandwidth() / 2) + barIndex * groupedBarHeight + groupedBarHeight / 2;
+          } else {
+            hoverX =
+              allCategory
+                ? point.x - (xBand.bandwidth() / 2) + barIndex * groupedBarWidth + groupedBarWidth / 2
+                : point.x;
+          }
+        }
+
+        const dx = hoverX - x;
+        const dy = hoverY - y;
         const dist = dx * dx + dy * dy;
         if (dist < bestDist) {
           bestDist = dist;
           bestSeries = series;
           bestPoint = point;
+          bestAnchorX = hoverX;
+          bestAnchorY = hoverY;
         }
       }
     }
@@ -220,8 +287,8 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
     const raw = bestSeries.y(bestPoint.datum, bestPoint.index);
     const value = typeof raw === 'number' && Number.isFinite(raw) ? raw : null;
     setTooltip({
-      x: padding.left + bestPoint.x + 12,
-      y: padding.top + bestPoint.y - 44,
+      x: padding.left + bestAnchorX + 12,
+      y: padding.top + bestAnchorY - 44,
       context: {
         label: bestSeries.label ?? bestSeries.id,
         value,
@@ -229,7 +296,20 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
         seriesId: bestSeries.id,
       },
     });
-  }, [padding.left, padding.top, pointsBySeries, props.series, tooltipOptions.enabled]);
+  }, [
+    allCategory,
+    barOrientation,
+    groupedBarHeight,
+    groupedBarSeries,
+    groupedBarWidth,
+    padding.left,
+    padding.top,
+    pointsBySeries,
+    props.series,
+    tooltipOptions.enabled,
+    xBand,
+    yBand,
+  ]);
 
   return (
     <div className="gen-chart-root" style={{ width: props.width, height: props.height, background: tokens.color.background }}>
@@ -253,7 +333,9 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
             numTicks={props.yAxis?.tickCount ?? 5}
           />
 
-          {props.series.map((series) => {
+          {(() => {
+            const stackAcc = new Map<string, { pos: number; neg: number }>();
+            return props.series.map((series) => {
             const points = pointsBySeries.get(series.id) ?? [];
             const color = series.color ?? colorScale(series.id);
             if (series.type === 'line') {
@@ -284,13 +366,82 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
               );
             }
 
-            const barIndex = Math.max(0, barSeries.findIndex((item) => item.id === series.id));
+            const barIndex = Math.max(0, groupedBarSeries.findIndex((item) => item.id === series.id));
             return (
               <React.Fragment key={series.id}>
                 {points.map((point) => {
+                  if (series.stackId) {
+                    const stackId = String(series.stackId);
+                    const key = `${stackId}:${point.index}`;
+                    const prev = stackAcc.get(key) ?? { pos: 0, neg: 0 };
+                    const value = point.value;
+                    const start = value >= 0 ? prev.pos : prev.neg;
+                    const end = start + value;
+                    if (value >= 0) {
+                      prev.pos = end;
+                    } else {
+                      prev.neg = end;
+                    }
+                    stackAcc.set(key, prev);
+
+                    if (barOrientation === 'horizontal') {
+                      const xStart = Number(valueXScale(start));
+                      const xEnd = Number(valueXScale(end));
+                      const barWidth = Math.max(1, Math.abs(xEnd - xStart));
+                      const y = point.y - stackedBarHeight / 2;
+                      return (
+                        <Bar
+                          key={`${series.id}-${point.index}`}
+                          x={Math.min(xStart, xEnd)}
+                          y={y}
+                          width={barWidth}
+                          height={stackedBarHeight}
+                          fill={value < 0 ? (series.negativeColor ?? '#dc2626') : color}
+                          opacity={0.9}
+                        />
+                      );
+                    }
+
+                    const yStart = Number(yScale(start));
+                    const yEnd = Number(yScale(end));
+                    const barHeight = Math.max(1, Math.abs(yEnd - yStart));
+                    const x = allCategory
+                      ? point.x - stackedBarWidth / 2
+                      : point.x - stackedBarWidth / 2;
+
+                    return (
+                      <Bar
+                        key={`${series.id}-${point.index}`}
+                        x={x}
+                        y={Math.min(yStart, yEnd)}
+                        width={stackedBarWidth}
+                        height={barHeight}
+                        fill={value < 0 ? (series.negativeColor ?? '#dc2626') : color}
+                        opacity={0.9}
+                      />
+                    );
+                  }
+
+                  if (barOrientation === 'horizontal') {
+                    const zeroX = Number(valueXScale(0));
+                    const barWidth = Math.max(1, Math.abs(zeroX - point.x));
+                    const y = point.y - (yBand.bandwidth() / 2) + barIndex * groupedBarHeight;
+                    return (
+                      <Bar
+                        key={`${series.id}-${point.index}`}
+                        x={Math.min(zeroX, point.x)}
+                        y={y}
+                        width={barWidth}
+                        height={groupedBarHeight}
+                        fill={point.value < 0 ? (series.negativeColor ?? '#dc2626') : color}
+                        opacity={0.9}
+                      />
+                    );
+                  }
+
                   const x = allCategory
-                    ? point.x - (xBand.bandwidth() / 2) + barIndex * barWidth
-                    : point.x - barWidth / 2;
+                    ? point.x - (xBand.bandwidth() / 2) + barIndex * groupedBarWidth
+                    : point.x - groupedBarWidth / 2;
                   const zeroY = Number(yScale(0));
                   const barHeight = Math.max(1, Math.abs(zeroY - point.y));
                   return (
@@ -298,7 +449,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                       key={`${series.id}-${point.index}`}
                       x={x}
                       y={Math.min(zeroY, point.y)}
-                      width={barWidth}
+                      width={groupedBarWidth}
                       height={barHeight}
                       fill={point.value < 0 ? (series.negativeColor ?? '#dc2626') : color}
                       opacity={0.9}
@@ -307,12 +458,13 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                 })}
               </React.Fragment>
             );
-          })}
+            });
+          })()}
 
           {props.xAxis?.show !== false ? (
             <AxisBottom
-              top={xAxisTop}
-              scale={allCategory ? xBand : xLinear}
+              top={barOrientation === 'horizontal' ? innerHeight : xAxisTop}
+              scale={barOrientation === 'horizontal' ? valueXScale : (allCategory ? xBand : xLinear)}
               stroke={tokens.color.axis}
               tickStroke={tokens.color.axis}
               tickLabelProps={() => ({
@@ -320,14 +472,18 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                 fontSize: tokens.typography.axisTickFontSize,
                 textAnchor: 'middle',
               })}
-              numTicks={props.xAxis?.tickCount}
-              tickFormat={props.xAxis?.tickFormat as ((value: any) => string) | undefined}
+              numTicks={barOrientation === 'horizontal' ? (props.yAxis?.tickCount ?? 5) : props.xAxis?.tickCount}
+              tickFormat={
+                (barOrientation === 'horizontal' ? props.yAxis?.tickFormat : props.xAxis?.tickFormat) as
+                  | ((value: any) => string)
+                  | undefined
+              }
             />
           ) : null}
 
           {props.yAxis?.show !== false ? (
             <AxisLeft
-              scale={yScale}
+              scale={barOrientation === 'horizontal' ? yBand : yScale}
               stroke={tokens.color.axis}
               tickStroke={tokens.color.axis}
               tickLabelProps={() => ({
@@ -335,8 +491,12 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                 fontSize: tokens.typography.axisTickFontSize,
                 textAnchor: 'end',
               })}
-              numTicks={props.yAxis?.tickCount ?? 5}
-              tickFormat={props.yAxis?.tickFormat as ((value: any) => string) | undefined}
+              numTicks={barOrientation === 'horizontal' ? undefined : (props.yAxis?.tickCount ?? 5)}
+              tickFormat={
+                (barOrientation === 'horizontal' ? props.xAxis?.tickFormat : props.yAxis?.tickFormat) as
+                  | ((value: any) => string)
+                  | undefined
+              }
             />
           ) : null}
 
@@ -373,11 +533,12 @@ function PieDonutRenderer<T>(props: PieDonutChartProps<T>) {
   const legend = resolveLegend(props.legend);
   const tooltipOptions = resolveTooltip(props.tooltip);
   const [tooltip, setTooltip] = React.useState<TooltipState<T> | null>(null);
-  const radius = Math.max(24, Math.min(props.width, props.height) / 2 - 14);
+  const plotHeight = Math.max(0, props.height - (legend.enabled ? LEGEND_BAND : 0));
+  const radius = Math.max(8, Math.min(props.width, plotHeight) / 2 - 14);
   const outerRadius = props.outerRadius ?? radius;
   const innerRadius = props.kind === 'donut' ? (props.innerRadius ?? Math.round(outerRadius * 0.58)) : 0;
   const cx = props.width / 2;
-  const cy = props.height / 2;
+  const cy = plotHeight / 2;
 
   const colorScale = scaleOrdinal<number, string>({
     domain: props.data.map((_, index) => index),
@@ -386,7 +547,22 @@ function PieDonutRenderer<T>(props: PieDonutChartProps<T>) {
 
   return (
     <div className="gen-chart-root" style={{ width: props.width, height: props.height, background: tokens.color.background }}>
-      <svg width={props.width} height={props.height} role="img">
+      {legend.enabled && legend.position === 'top' ? (
+        <div className="gen-chart-legend" style={{ justifyContent: legendJustify(legend.align) }}>
+          {props.data.map((datum, index) => (
+            <span key={index} className="gen-chart-legend-item">
+              <i style={{ background: props.color?.(datum, index) ?? colorScale(index) }} />
+              {props.category(datum, index)}
+            </span>
+          ))}
+        </div>
+      ) : null}
+      <svg
+        width={props.width}
+        height={plotHeight}
+        role="img"
+        style={{ display: 'block', flex: '1 1 auto', minHeight: 0 }}
+      >
         <Group left={cx} top={cy}>
           <Pie<T>
             data={props.data}
@@ -438,7 +614,7 @@ function PieDonutRenderer<T>(props: PieDonutChartProps<T>) {
         </Group>
       </svg>
 
-      {legend.enabled ? (
+      {legend.enabled && legend.position === 'bottom' ? (
         <div className="gen-chart-legend" style={{ justifyContent: legendJustify(legend.align) }}>
           {props.data.map((datum, index) => (
             <span key={index} className="gen-chart-legend-item">

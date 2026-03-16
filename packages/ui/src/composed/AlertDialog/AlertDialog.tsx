@@ -4,10 +4,12 @@ import {
   CircleAlert,
   CircleCheckBig,
   CircleX,
+  X,
   TriangleAlert,
 } from 'lucide-react';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogHeader,
   DialogBody,
@@ -99,9 +101,16 @@ export function AlertDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={getVariantClass()}>
+      <DialogContent className={getVariantClass()} showClose={false}>
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <div className={styles.headerRow}>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogClose asChild>
+              <button type="button" aria-label="Close" className={styles.headerClose}>
+                <X size={16} />
+              </button>
+            </DialogClose>
+          </div>
         </DialogHeader>
 
         {message && (

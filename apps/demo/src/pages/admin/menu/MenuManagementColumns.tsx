@@ -31,6 +31,26 @@ export const createMenuManagementColumns = (
       editable: true,
       editType: 'number',
       editPlaceholder: 'Menu ID',
+      validation: {
+        validateOn: ['blur', 'commit'],
+        rules: [
+          { type: 'numeric' },
+          { type: 'min', value: 1 },
+          {
+            type: 'custom',
+            validate: ({ value, isCreate }) => {
+              if (!isCreate) return null;
+              const n = Number(value);
+              if (Number.isFinite(n) && n > 0) return null;
+              return {
+                code: 'MENU_ID_REQUIRED',
+                messageKey: 'admin.menu.validation.menu_id_required',
+                defaultMessage: 'Please enter Menu ID.',
+              };
+            },
+          },
+        ],
+      },
       renderCell: ({ value }) => (value == null || value === 0 ? '' : String(value)),
     },
   },
@@ -44,6 +64,12 @@ export const createMenuManagementColumns = (
       editable: true,
       editType: 'text',
       editPlaceholder: 'Menu name',
+      validation: {
+        validateOn: ['blur', 'commit'],
+        rules: [
+          { type: 'required'},
+        ],
+      },
     },
   },
   {
@@ -86,8 +112,6 @@ export const createMenuManagementColumns = (
     size: 80,
     meta: {
       align: 'center',
-      editable: true,
-      editType: 'number',
     },
   },
   {
@@ -97,8 +121,6 @@ export const createMenuManagementColumns = (
     size: 140,
     meta: {
       align: 'center',
-      editable: true,
-      editType: 'number',
     },
   },
   {

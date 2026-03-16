@@ -2,6 +2,7 @@
 
 import type * as React from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
+import type { GenGridFieldValidationMeta } from '../../validation/types';
 
 export type CellEditorRenderArgs<TData> = {
   value: unknown;
@@ -23,6 +24,7 @@ declare module '@tanstack/react-table' {
       | ((args: { row: TData; rowId: string; columnId: string }) => boolean);
     getEditOptions?: (row: TData) => { label: string; value: string | number }[];
     renderEditor?: (props: CellEditorRenderArgs<TData>) => React.ReactNode;
+    validation?: GenGridFieldValidationMeta<TData>;
   }
 }
 

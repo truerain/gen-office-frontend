@@ -21,6 +21,7 @@ export * from './core/Slider';
 
 // composed
 export * from './composed/AlertDialog';
+export * from './composed/ConfirmDialog';
 export * from './composed/TreeView';
 export * from './composed/SplitLayout';
 export * from './composed/MasterDetailLayout';

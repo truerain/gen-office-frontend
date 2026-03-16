@@ -51,6 +51,9 @@ importers:
       '@gen-office/gen-grid':
         specifier: workspace:*
         version: link:../../packages/gen-grid
+      '@gen-office/gen-grid-chart':
+        specifier: workspace:*
+        version: link:../../packages/gen-grid-chart
       '@gen-office/gen-grid-crud':
         specifier: workspace:*
         version: link:../../packages/gen-grid-crud
@@ -346,6 +349,39 @@ importers:
       storybook:
         specifier: 8.6.15
         version: 8.6.15(prettier@3.7.4)
+      vite:
+        specifier: ^6.2.0
+        version: 6.4.1(@types/node@24.10.4)(yaml@2.8.2)
+      vite-plugin-dts:
+        specifier: ^4.5.0
+        version: 4.5.4(@types/node@24.10.4)(rollup@4.54.0)(typescript@5.7.2)(vite@6.4.1(@types/node@24.10.4)(yaml@2.8.2))
+
+  packages/gen-grid-chart:
+    devDependencies:
+      '@gen-office/gen-chart':
+        specifier: workspace:*
+        version: link:../gen-chart
+      '@gen-office/gen-grid':
+        specifier: workspace:*
+        version: link:../gen-grid
+      '@gen-office/ui':
+        specifier: workspace:*
+        version: link:../ui
+      '@types/react':
+        specifier: 18.3.1
+        version: 18.3.1
+      '@types/react-dom':
+        specifier: 18.3.1
+        version: 18.3.1
+      '@vitejs/plugin-react':
+        specifier: ^5.1.1
+        version: 5.1.2(vite@6.4.1(@types/node@24.10.4)(yaml@2.8.2))
+      react:
+        specifier: 18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: 18.3.1
+        version: 18.3.1(react@18.3.1)
       vite:
         specifier: ^6.2.0
         version: 6.4.1(@types/node@24.10.4)(yaml@2.8.2)

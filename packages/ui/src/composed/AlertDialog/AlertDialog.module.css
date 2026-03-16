@@ -23,6 +23,27 @@
   align-items: center;
 }
 
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2rem;
+}
+
+.headerClose {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--color-fg-secondary);
+  cursor: pointer;
+}
+
 .bodyContent {
   min-width: 0;
   font-size: 0.875rem;

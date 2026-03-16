@@ -17,7 +17,7 @@ import { useAlertDialog } from '@/shared/ui/AlertDialogContext';
 import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 
 import { createMenuManagementColumns } from './MenuManagementColumns';
-import { commitMenuChanges, createMenuRow, validateMenuChanges } from './MenuManagementCrud';
+import { commitMenuChanges, createMenuRow } from './MenuManagementCrud';
 import styles from './MenuManagementPage.module.css';
 
 type MenuNode = {
@@ -222,27 +222,13 @@ function MenuManagementPage(props: PageComponentProps) {
                   });
                   return { ok: true };
                 }}
-                beforeCommit={({ changes }) => {
-                  const validation = validateMenuChanges(changes);
-                  if (!validation.ok) {
-                    const code = validation.errors[0]?.code;
-                    const title =
-                      code === 'MENU_ID_REQUIRED'
-                        ? t('admin.menu.validation.menu_id_required', {
-                            defaultValue: 'Please enter Menu ID.',
-                          })
-                        : t('common.validation.invalid_input', {
-                            defaultValue: 'Please check your input.',
-                          });
-                    void openAlert({ type: 'warning', message: title });
-                    return false;
-                  }
-                  return openConfirm({
+                beforeCommit={() =>
+                  openConfirm({
                     title: t('common.confirm', { defaultValue: 'Confirm' }),
                     message: t('common.confirm_save', { defaultValue: 'Do you want to save?' }),
                     buttonSet: 'okCancel',
-                  });
-                }}
+                  })
+                }
                 onCommitError={({ error }) => {
                   // eslint-disable-next-line no-console
                   console.error(error);

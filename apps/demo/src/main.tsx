@@ -6,6 +6,7 @@ import '@gen-office/theme/index.css';
 import '@gen-office/ui/index.css';
 import '@gen-office/gen-grid/index.css';
 import '@gen-office/gen-grid-crud/index.css';
+import '@gen-office/gen-chart/index.css';
 
 import './styles/index.css';
 import { AppProviders } from './app/providers/AppProvider';

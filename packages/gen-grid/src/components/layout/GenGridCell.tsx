@@ -88,7 +88,7 @@ type GenGridTreeMeta = {
 type ContentEditableEditorProps = {
   value: unknown;
   onChange: (next: string) => void;
-  onCommit: () => void;
+  onCommit: (nextValue?: string) => void;
   onCancel: () => void;
   onEscFocus?: () => void;
   onTabMove?: (dir: 1 | -1) => void;
@@ -234,7 +234,7 @@ function ContentEditableEditor({
       e.preventDefault();
       e.stopPropagation();
       setAutoSelectActive(false);
-      onCommit();
+      onCommit(ref.current?.textContent ?? '');
       onTabMove?.(e.shiftKey ? -1 : 1);
       return;
     }
@@ -242,7 +242,7 @@ function ContentEditableEditor({
       e.preventDefault();
       e.stopPropagation();
       setAutoSelectActive(false);
-      onCommit();
+      onCommit(ref.current?.textContent ?? '');
       return;
     }
     if (e.key === 'Escape') {
@@ -276,7 +276,9 @@ function ContentEditableEditor({
         didAutoSelectRef.current = false;
         pendingAutoSelectRef.current = false;
         setAutoSelectActive(false);
-        onCommit();
+        const nextText = ref.current?.textContent ?? '';
+        onChange(nextText);
+        onCommit(nextText);
       }}
       onKeyDown={handleKeyDown}
       style={{
@@ -373,15 +375,16 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     focusGridCell(rowId, colId);
   }, [rowId, colId]);
 
-  const commitDraft = React.useCallback(() => {
+  const commitDraft = React.useCallback((forcedDraft?: unknown) => {
     const currentValue = cell.getValue();
     // eslint-disable-next-line no-console
-    let nextValue: unknown = draft;
+    const sourceDraft = forcedDraft === undefined ? draft : forcedDraft;
+    let nextValue: unknown = sourceDraft;
     if (meta?.editType === 'number') {
-      const n = typeof draft === 'number' ? draft : Number(draft);
-      if (!Number.isNaN(n) && draft !== '') nextValue = n;
+      const n = typeof sourceDraft === 'number' ? sourceDraft : Number(sourceDraft);
+      if (!Number.isNaN(n) && sourceDraft !== '') nextValue = n;
     } else if (meta?.editType === 'checkbox') {
-      nextValue = Boolean(draft);
+      nextValue = Boolean(sourceDraft);
     }
 
     if (Object.is(currentValue, nextValue)) {

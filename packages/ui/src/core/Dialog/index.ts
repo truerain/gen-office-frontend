@@ -27,4 +27,4 @@ export type {
   DialogDescriptionProps,
 } from './Dialog.types';
 
-export type { SimpleDialogProps } from './SimpleDialog';
+export type { SimpleDialogProps, SimpleDialogSize } from './SimpleDialog';

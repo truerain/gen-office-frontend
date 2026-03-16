@@ -4,6 +4,8 @@ import type { ColumnDef, ExpandedState, GroupingState, RowSelectionState, Table 
 import type * as React from 'react';
 import type { ActiveCell } from './features/active-cell/types';
 import type { GenGridColumnMeta } from './components/layout/utils';
+import type { SelectedRange } from './features/range-selection/types';
+import type { RangeBounds } from './features/range-selection/clipboard';
 
 export type GenGridEditorContext<TData> = {
   value: unknown;
@@ -47,6 +49,35 @@ export type GenGridTreeOptions<TData> = {
   onOrphanRowsChange?: (rowIds: string[]) => void;
 };
 
+export type GenGridContextMenuCell<TData> = {
+  rowIndex: number;
+  rowId: string;
+  columnId: string;
+  columnHeader: string;
+  value: unknown;
+  row: TData;
+};
+
+export type GenGridContextMenuActionContext<TData> = {
+  table: Table<TData>;
+  selectedRange: SelectedRange;
+  bounds: RangeBounds | null;
+  cells: GenGridContextMenuCell<TData>[];
+  matrix: unknown[][];
+};
+
+export type GenGridContextMenuCustomAction<TData> = {
+  key: string;
+  label: React.ReactNode;
+  disabled?: boolean | ((ctx: GenGridContextMenuActionContext<TData>) => boolean);
+  onClick?: (ctx: GenGridContextMenuActionContext<TData>) => void | Promise<void>;
+  children?: readonly GenGridContextMenuCustomAction<TData>[];
+};
+
+export type GenGridContextMenuOptions<TData> = {
+  customActions?: readonly GenGridContextMenuCustomAction<TData>[];
+};
+
 type CommonGridOptions<TData> = {
   caption?: string;
   'readonly'?: boolean;
@@ -74,6 +105,7 @@ type CommonGridOptions<TData> = {
   enableActiveRowHighlight?: boolean;
   /** enable drag cell range selection */
   enableRangeSelection?: boolean;
+  contextMenu?: GenGridContextMenuOptions<TData>;
   enableGrouping?: boolean;
   /** enable body row spanning (row merge) */
   rowSpanning?: boolean;
@@ -139,6 +171,13 @@ type CommonGridOptions<TData> = {
     columnId: string;
     value: unknown;
   }) => React.CSSProperties | undefined;
+  getCellTooltip?: (args: {
+    row: TData;
+    rowId: string;
+    rowIndex: number;
+    columnId: string;
+    value: unknown;
+  }) => string | undefined;
 
   /** flat parent-child tree options */
   tree?: GenGridTreeOptions<TData>;

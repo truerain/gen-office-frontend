@@ -1,5 +1,6 @@
 // Step2: column meta
 import type * as React from 'react';
+import type { GenGridFieldValidationMeta } from '../../validation/types';
 
 export type GenGridColumnMeta = {
   editable?:
@@ -48,6 +49,7 @@ export type GenGridColumnMeta = {
   editOptions?: { label: string; value: string | number }[];
   getEditOptions?: (row: unknown) => { label: string; value: string | number }[];
   editPlaceholder?: string;
+  validation?: GenGridFieldValidationMeta<unknown>;
 
   // body row spanning (row merge)
   rowSpan?: boolean | ((args: { row: unknown; rowId: string; columnId: string }) => boolean);
