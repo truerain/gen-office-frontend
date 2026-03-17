@@ -7,6 +7,7 @@ import { useTheme } from '@gen-office/theme';
 import { Home, AlertCircle, Code, FileQuestion } from 'lucide-react';
 import { LeftPanelLayout, TitleBarLayout } from '@/layouts';
 import { buildSystemMenuData } from '@/app/menu/menuData';
+import { getIconComponent } from '@/app/menu/model/iconMapper';
 import { getLazyComponent } from '@/app/config/componentRegistry.dynamic';
 import { useAppStore } from '@/app/store/appStore';
 import { PageProvider } from '@/contexts';
@@ -248,14 +249,22 @@ function App() {
     // 4. 컴포넌트가 있으면 탭으로 열기
     // PageProvider로 감싸서 menuId를 Context로 제공
     const content = (
-      <PageProvider menuId={menuId}>
+      <PageProvider menuId={menuId} openMenuPage={openMenuPage}>
         <Suspense fallback={<LoadingPage />}>
           <LazyComponent menuId={menuId} initialParams={params} />
         </Suspense>
       </PageProvider>
     );
 
-    addTab({
+    const mdiStore = useMDIStore.getState();
+    const isExistingTab = mdiStore.tabs.some((tab) => tab.id === menuId);
+    if (isExistingTab) {
+      mdiStore.updateTab(menuId, { title, content, icon, closable: true });
+      mdiStore.setActiveTab(menuId);
+      return;
+    }
+
+    mdiStore.addTab({
       id: menuId,
       title,
       content,
@@ -263,6 +272,22 @@ function App() {
       closable: true,
     });
   };
+
+  function openMenuPage(targetMenuId: string, params?: Record<string, unknown>) {
+    const menuItem = systemMenuData.byId.get(targetMenuId);
+    if (!menuItem) {
+      setNotFoundMenuInfo({ menuId: targetMenuId, title: targetMenuId });
+      setNotFoundDrawerOpen(true);
+      return;
+    }
+
+    handleOpenPage(
+      menuItem.menuId,
+      menuItem.label,
+      getIconComponent(menuItem.icon || 'SquareMenu'),
+      params
+    );
+  }
 
   if (bootstrapping) {
     return <LoadingPage />;

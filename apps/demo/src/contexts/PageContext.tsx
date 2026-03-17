@@ -4,6 +4,7 @@ import { createContext, useContext, type ReactNode } from 'react';
 interface PageContextValue {
   /** 현재 페이지의 Menu ID */
   menuId?: string;
+  openMenuPage?: (menuId: string, params?: Record<string, unknown>) => void;
 }
 
 const PageContext = createContext<PageContextValue | undefined>(undefined);
@@ -12,12 +13,13 @@ const PageContext = createContext<PageContextValue | undefined>(undefined);
 
 interface PageProviderProps {
   menuId?: string;
+  openMenuPage?: (menuId: string, params?: Record<string, unknown>) => void;
   children: ReactNode;
 }
 
-export function PageProvider({ menuId, children }: PageProviderProps) {
+export function PageProvider({ menuId, openMenuPage, children }: PageProviderProps) {
   return (
-    <PageContext.Provider value={{ menuId }}>
+    <PageContext.Provider value={{ menuId, openMenuPage }}>
       {children}
     </PageContext.Provider>
   );

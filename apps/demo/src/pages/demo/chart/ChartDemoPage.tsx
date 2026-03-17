@@ -1,9 +1,11 @@
+import { useEffect, useMemo, useRef } from 'react';
 import { BarChart3 } from 'lucide-react';
 import { GenChart, ResponsiveChartContainer } from '@gen-office/gen-chart';
 import type { TreemapNode } from '@gen-office/gen-chart';
 
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
+import { useAlertDialog } from '@/shared/ui/AlertDialogContext';
 
 import styles from './ChartDemoPage.module.css';
 
@@ -99,6 +101,42 @@ const treemapColorById: Record<string, string> = {
 };
 
 export default function ChartDemoPage(_props: PageComponentProps) {
+  const { openAlert } = useAlertDialog();
+  const lastShownParamsSignatureRef = useRef<string>('');
+  const paramsSignature = useMemo(() => {
+    if (_props.initialParams == null) return '';
+    try {
+      return JSON.stringify(_props.initialParams);
+    } catch {
+      return String(_props.initialParams);
+    }
+  }, [_props.initialParams]);
+
+  const paramsPretty = useMemo(() => {
+    if (_props.initialParams == null) return '';
+    try {
+      return JSON.stringify(_props.initialParams, null, 2);
+    } catch {
+      return String(_props.initialParams);
+    }
+  }, [_props.initialParams]);
+
+  useEffect(() => {
+    if (!paramsSignature) return;
+    if (lastShownParamsSignatureRef.current === paramsSignature) return;
+
+    lastShownParamsSignatureRef.current = paramsSignature;
+    void openAlert({
+      type: 'info',
+      confirmText: 'OK',
+      message: (
+        <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+          {paramsPretty}
+        </pre>
+      ),
+    });
+  }, [openAlert, paramsPretty, paramsSignature]);
+
   return (
     <div className={styles.page}>
       <PageHeader

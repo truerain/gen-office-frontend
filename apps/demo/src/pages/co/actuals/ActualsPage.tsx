@@ -9,6 +9,7 @@ import {
 import { Button, Radio, RadioGroup, SimpleDialog, SimpleFilterBar, type FilterField } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
+import { usePageContext } from '@/contexts';
 import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 
 import { useCoActualsListQuery } from '@/pages/co/actuals/api/actuals';
@@ -39,6 +40,7 @@ function makeRowId(row: CoActual, index: number) {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function CoActualsPage(_props: PageComponentProps) {
+  const { openMenuPage } = usePageContext();
   const [draftFilters, setDraftFilters] = useState<ActualsFilters>(defaultFilters);
   const [filters, setFilters] = useState<ActualsFilters>(defaultFilters);
   const [gridDirty, setGridDirty] = useState(false);
@@ -66,7 +68,25 @@ export default function CoActualsPage(_props: PageComponentProps) {
 
   const { data: actuals = [], refetch, isError, error, dataUpdatedAt } =
     useCoActualsListQuery(queryParams);
-  const columns = useMemo(() => createActualsColumns(viewMode), [viewMode]);
+  const columns = useMemo(
+    () =>
+      createActualsColumns(viewMode, {
+        onAccountNameDoubleClick: (row) => {
+          openMenuPage?.('99060', {
+            sourceMenuId: _props.menuId,
+            sourceAction: 'acctNameDblClick',
+            payload: {
+              acctCd: row.acctCd,
+              acctName: row.acctName,
+              fiscalYr: filters.fiscalYr,
+              fiscalPrd: filters.fiscalPrd,
+              orgCd: filters.orgCd,
+            },
+          });
+        },
+      }),
+    [filters.fiscalPrd, filters.fiscalYr, filters.orgCd, openMenuPage, viewMode, _props.menuId]
+  );
 
   const filterFields = useMemo<FilterField<ActualsFilters>[]>(() => {
     return [

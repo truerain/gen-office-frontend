@@ -5,6 +5,9 @@ const numberFormatter = new Intl.NumberFormat('ko-KR');
 const monthKeys = ['m01', 'm02', 'm03', 'm04', 'm05', 'm06', 'm07', 'm08', 'm09', 'm10', 'm11', 'm12'] as const;
 
 export type ActualsViewMode = 'summary' | 'monthly-detail';
+type CreateActualsColumnsOptions = {
+  onAccountNameDoubleClick?: (row: CoActual) => void;
+};
 
 function formatAmount(value: unknown) {
   if (typeof value !== 'number') return '';
@@ -22,7 +25,10 @@ function createMonthlyColumn(monthKey: (typeof monthKeys)[number], index: number
   };
 }
 
-export const createActualsColumns = (viewMode: ActualsViewMode = 'summary'): ColumnDef<CoActual>[] => [
+export const createActualsColumns = (
+  viewMode: ActualsViewMode = 'summary',
+  options: CreateActualsColumnsOptions = {}
+): ColumnDef<CoActual>[] => [
   {
     id: 'acctCd',
     header: '계정코드',
@@ -35,6 +41,22 @@ export const createActualsColumns = (viewMode: ActualsViewMode = 'summary'): Col
     header: '계정명',
     accessorKey: 'acctName',
     size: 220,
+    cell: ({ getValue, row }) => {
+      const value = String(getValue() ?? '');
+      if (!options.onAccountNameDoubleClick) return value;
+
+      return (
+        <span
+          style={{ cursor: 'pointer' }}
+          onDoubleClick={(event) => {
+            event.stopPropagation();
+            options.onAccountNameDoubleClick?.(row.original);
+          }}
+        >
+          {value}
+        </span>
+      );
+    },
     meta: { pinned: 'left' },
   },
   {
