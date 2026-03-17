@@ -493,14 +493,16 @@ export const SimpleDialog = forwardRef<
               {title ? <DialogTitle>{title}</DialogTitle> : <span aria-hidden style={{ flex: 1 }} />}
               {showClose && (
                 <div style={{ display: 'inline-flex', gap: '0.25rem', alignItems: 'center', flex: '0 0 auto' }}>
-                  <button
-                    type="button"
-                    onClick={handleToggleMaximize}
-                    aria-label={isMaximized ? 'Restore dialog size' : 'Maximize dialog'}
-                    style={headerIconButtonStyle}
-                  >
-                    {isMaximized ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-                  </button>
+                  {resizable && (
+                    <button
+                      type="button"
+                      onClick={handleToggleMaximize}
+                      aria-label={isMaximized ? 'Restore dialog size' : 'Maximize dialog'}
+                      style={headerIconButtonStyle}
+                    >
+                      {isMaximized ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                    </button>
+                  )}
                   <DialogPrimitive.Close asChild>
                     <button type="button" aria-label="Close" style={headerIconButtonStyle}>
                       <X size={16} />

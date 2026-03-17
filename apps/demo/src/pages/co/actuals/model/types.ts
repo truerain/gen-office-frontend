@@ -2,7 +2,7 @@ export interface CoActual {
   acctCd: string;
   acctName: string;
   acctLevel: number;
-  parentCd: string | null;
+  parentCd: string;
   drCr: string;
   fiscalYr: string;
   fiscalPrd: string;
@@ -10,20 +10,20 @@ export interface CoActual {
   currActAmt: number;
   planAmt: number;
   prevActAmt: number;
-  attribute1: string | null;
-  attribute2: string | null;
-  attribute3: string | null;
-  attribute4: string | null;
-  attribute5: string | null;
-  attribute6: string | null;
-  attribute7: string | null;
-  attribute8: string | null;
-  attribute9: string | null;
-  attribute10: string | null;
-  createdBy: string | null;
-  creationDate: string | null;
-  lastUpdatedBy: string | null;
-  lastUpdatedDate: string | null;
+  m01: number;
+  m02: number;
+  m03: number;
+  m04: number;
+  m05: number;
+  m06: number;
+  m07: number;
+  m08: number;
+  m09: number;
+  m10: number;
+  m11: number;
+  m12: number;
+  lastUpdatedBy: string;
+  lastUpdatedDate: string;
 }
 
 export type CoActualsListParams = {

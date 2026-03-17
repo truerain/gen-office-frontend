@@ -65,6 +65,30 @@
   gap: var(--spacing-sm);
 }
 
+.optionSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.optionLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.optionGroup {
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing-md);
+}
+
+.optionItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
 .chartDialogContent {
   width: min(860px, 80vw);
 }

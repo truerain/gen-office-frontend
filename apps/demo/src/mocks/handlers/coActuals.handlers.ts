@@ -4,7 +4,7 @@ type ActualMockRow = {
   acctCd: string;
   acctName: string;
   acctLevel: number;
-  parentCd: string | null;
+  parentCd: string;
   drCr: string;
   fiscalYr: string;
   fiscalPrd: string;
@@ -12,20 +12,20 @@ type ActualMockRow = {
   currActAmt: number;
   planAmt: number;
   prevActAmt: number;
-  attribute1: string | null;
-  attribute2: string | null;
-  attribute3: string | null;
-  attribute4: string | null;
-  attribute5: string | null;
-  attribute6: string | null;
-  attribute7: string | null;
-  attribute8: string | null;
-  attribute9: string | null;
-  attribute10: string | null;
-  createdBy: string | null;
-  creationDate: string | null;
-  lastUpdatedBy: string | null;
-  lastUpdatedDate: string | null;
+  m01: number;
+  m02: number;
+  m03: number;
+  m04: number;
+  m05: number;
+  m06: number;
+  m07: number;
+  m08: number;
+  m09: number;
+  m10: number;
+  m11: number;
+  m12: number;
+  lastUpdatedBy: string;
+  lastUpdatedDate: string;
 };
 
 const baseRows: ActualMockRow[] = [
@@ -41,18 +41,18 @@ const baseRows: ActualMockRow[] = [
     currActAmt: 123000000,
     planAmt: 120000000,
     prevActAmt: 110000000,
-    attribute1: 'MANUFACTURE',
-    attribute2: null,
-    attribute3: null,
-    attribute4: null,
-    attribute5: null,
-    attribute6: null,
-    attribute7: null,
-    attribute8: null,
-    attribute9: null,
-    attribute10: null,
-    createdBy: 'SYSTEM',
-    creationDate: '2026-01-31T09:00:00',
+    m01: 123000000,
+    m02: 0,
+    m03: 0,
+    m04: 0,
+    m05: 0,
+    m06: 0,
+    m07: 0,
+    m08: 0,
+    m09: 0,
+    m10: 0,
+    m11: 0,
+    m12: 0,
     lastUpdatedBy: 'SYSTEM',
     lastUpdatedDate: '2026-02-01T10:15:00',
   },
@@ -68,18 +68,18 @@ const baseRows: ActualMockRow[] = [
     currActAmt: 78000000,
     planAmt: 80000000,
     prevActAmt: 76000000,
-    attribute1: 'MANUFACTURE',
-    attribute2: null,
-    attribute3: null,
-    attribute4: null,
-    attribute5: null,
-    attribute6: null,
-    attribute7: null,
-    attribute8: null,
-    attribute9: null,
-    attribute10: null,
-    createdBy: 'SYSTEM',
-    creationDate: '2026-01-31T09:00:00',
+    m01: 78000000,
+    m02: 0,
+    m03: 0,
+    m04: 0,
+    m05: 0,
+    m06: 0,
+    m07: 0,
+    m08: 0,
+    m09: 0,
+    m10: 0,
+    m11: 0,
+    m12: 0,
     lastUpdatedBy: 'SYSTEM',
     lastUpdatedDate: '2026-02-01T10:15:00',
   },
@@ -95,25 +95,25 @@ const baseRows: ActualMockRow[] = [
     currActAmt: 46000000,
     planAmt: 43000000,
     prevActAmt: 41000000,
-    attribute1: 'SGA',
-    attribute2: null,
-    attribute3: null,
-    attribute4: null,
-    attribute5: null,
-    attribute6: null,
-    attribute7: null,
-    attribute8: null,
-    attribute9: null,
-    attribute10: null,
-    createdBy: 'SYSTEM',
-    creationDate: '2026-01-31T09:00:00',
+    m01: 46000000,
+    m02: 0,
+    m03: 0,
+    m04: 0,
+    m05: 0,
+    m06: 0,
+    m07: 0,
+    m08: 0,
+    m09: 0,
+    m10: 0,
+    m11: 0,
+    m12: 0,
     lastUpdatedBy: 'SYSTEM',
     lastUpdatedDate: '2026-02-01T10:15:00',
   },
 ];
 
 export const coActualsHandlers = [
-  http.get('/api/co/actuals', ({ request }) => {
+  http.get('/api/co/actual', ({ request }) => {
     const url = new URL(request.url);
     const fiscalYr = (url.searchParams.get('fiscalYr') ?? '').trim();
     const fiscalPrd = (url.searchParams.get('fiscalPrd') ?? '').trim();

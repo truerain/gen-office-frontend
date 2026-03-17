@@ -6,14 +6,14 @@ import {
   RangeChartDialog,
   useRangeChartContextMenu,
 } from '@gen-office/gen-grid-chart';
-import { Button, SimpleDialog, SimpleFilterBar, type FilterField } from '@gen-office/ui';
+import { Button, Radio, RadioGroup, SimpleDialog, SimpleFilterBar, type FilterField } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 
 import { useCoActualsListQuery } from '@/pages/co/actuals/api/actuals';
 import type { CoActual, CoActualsListParams } from '@/pages/co/actuals/model/types';
-import { createActualsColumns } from '@/pages/co/actuals/ActualsColumns';
+import { createActualsColumns, type ActualsViewMode } from '@/pages/co/actuals/ActualsColumns';
 
 import styles from './ActualsPage.module.css';
 
@@ -43,6 +43,7 @@ export default function CoActualsPage(_props: PageComponentProps) {
   const [filters, setFilters] = useState<ActualsFilters>(defaultFilters);
   const [gridDirty, setGridDirty] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<ActualsViewMode>('summary');
 
   const rangeChart = useRangeChartContextMenu<CoActual>({
     categoryColumnId: 'acctName',
@@ -65,7 +66,7 @@ export default function CoActualsPage(_props: PageComponentProps) {
 
   const { data: actuals = [], refetch, isError, error, dataUpdatedAt } =
     useCoActualsListQuery(queryParams);
-  const columns = useMemo(() => createActualsColumns(), []);
+  const columns = useMemo(() => createActualsColumns(viewMode), [viewMode]);
 
   const filterFields = useMemo<FilterField<ActualsFilters>[]>(() => {
     return [
@@ -183,11 +184,8 @@ export default function CoActualsPage(_props: PageComponentProps) {
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
         title="Actuals Settings"
-      >
-        <div className={styles.dialogContent}>
-          <p className={styles.dialogText}>
-            You can place display options, default filters, and export options here.
-          </p>
+        initialHeight={320}
+        footer={
           <div className={styles.dialogActions}>
             <Button
               type="button"
@@ -204,6 +202,29 @@ export default function CoActualsPage(_props: PageComponentProps) {
             <Button type="button" variant="primary" onClick={() => setSettingsOpen(false)}>
               Close
             </Button>
+          </div>
+        }
+      >
+        <div className={styles.dialogContent}>
+          <p className={styles.dialogText}>
+            You can place display options, default filters, and export options here.
+          </p>
+          <div className={styles.optionSection}>
+            <span className={styles.optionLabel}>표시 형식</span>
+            <RadioGroup
+              className={styles.optionGroup}
+              value={viewMode}
+              onValueChange={(value) => setViewMode(value as ActualsViewMode)}
+            >
+              <div className={styles.optionItem}>
+                <Radio id="actuals-view-summary" value="summary" />
+                <label htmlFor="actuals-view-summary">요약보기</label>
+              </div>
+              <div className={styles.optionItem}>
+                <Radio id="actuals-view-monthly-detail" value="monthly-detail" />
+                <label htmlFor="actuals-view-monthly-detail">월별상세보기</label>
+              </div>
+            </RadioGroup>
           </div>
         </div>
       </SimpleDialog>
