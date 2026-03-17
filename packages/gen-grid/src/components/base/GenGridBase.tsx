@@ -16,7 +16,7 @@ import { buildRowSpanModel } from '../layout/rowSpanModel';
 import layout from './GenGridLayout.module.css';
 import { useClipboardActions } from '../../features/range-selection/useClipboardActions';
 import { GenGridContextMenu } from './GenGridContextMenu';
-import { resolveRangeBounds } from '../../features/range-selection/clipboard';
+import { resolveRangeBounds, resolveRangeBoundsList } from '../../features/range-selection/clipboard';
 import type {
   GenGridContextMenuActionContext,
   GenGridContextMenuCustomAction,
@@ -213,7 +213,14 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     return typeof value === 'number' ? `${value}px` : value;
   }, []);
   // activeCell is managed by Provider
-  const { activeCell, setActiveCell, options, clearSelectedRange, selectedRange } = useGenGridContext<TData>();
+  const {
+    activeCell,
+    setActiveCell,
+    options,
+    clearSelectedRanges,
+    selectedRanges,
+    getLastSelectedRange,
+  } = useGenGridContext<TData>();
 
   const tableState = table.getState();
   const hasColumnFilter = (tableState.columnFilters?.length ?? 0) > 0;
@@ -255,14 +262,15 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
   const { canCopy, canPaste, copyToClipboard, pasteFromClipboard } = useClipboardActions({
     table,
     rows,
-    selectedRange,
+    selectedRanges,
     activeCell,
     onCellValueChange,
   });
 
   const rangeStats = React.useMemo(() => {
     if (!contextMenu) return null;
-    const bounds = resolveRangeBounds(table, selectedRange);
+    const lastSelectedRange = getLastSelectedRange();
+    const bounds = lastSelectedRange ? resolveRangeBounds(table, lastSelectedRange) : null;
     if (!bounds) return null;
 
     let sum = 0;
@@ -285,51 +293,45 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
       avg: count > 0 ? sum / count : 0,
       count,
     };
-  }, [contextMenu, rows, selectedRange, table]);
+  }, [contextMenu, rows, table, getLastSelectedRange]);
 
   const contextMenuActionContext = React.useMemo<GenGridContextMenuActionContext<TData> | null>(() => {
     if (!contextMenu) return null;
-    const bounds = resolveRangeBounds(table, selectedRange);
-    if (!bounds) {
-      return {
-        table,
-        selectedRange,
-        bounds: null,
-        cells: [],
-        matrix: [],
-      };
-    }
-
+    const boundsList = resolveRangeBoundsList(table, selectedRanges);
+    const matrixList: unknown[][][] = [];
     const cells: GenGridContextMenuActionContext<TData>['cells'] = [];
-    const matrix: unknown[][] = [];
 
-    for (let rowIndex = bounds.rowMin; rowIndex <= bounds.rowMax; rowIndex++) {
-      const row = rows[rowIndex];
-      if (!row) continue;
-      const rowMatrix: unknown[] = [];
-      for (const columnId of bounds.columnIds) {
-        const value = row.getValue(columnId);
-        rowMatrix.push(value);
-        cells.push({
-          rowIndex,
-          rowId: row.id,
-          columnId,
-          columnHeader: resolveContextMenuColumnHeader(table, columnId),
-          value,
-          row: row.original,
-        });
+    for (const bounds of boundsList) {
+      const matrix: unknown[][] = [];
+      for (let rowIndex = bounds.rowMin; rowIndex <= bounds.rowMax; rowIndex++) {
+        const row = rows[rowIndex];
+        if (!row) continue;
+        const rowMatrix: unknown[] = [];
+        for (const columnId of bounds.columnIds) {
+          const value = row.getValue(columnId);
+          rowMatrix.push(value);
+          cells.push({
+            rowIndex,
+            rowId: row.id,
+            columnId,
+            columnHeader: resolveContextMenuColumnHeader(table, columnId),
+            value,
+            row: row.original,
+          });
+        }
+        matrix.push(rowMatrix);
       }
-      matrix.push(rowMatrix);
+      matrixList.push(matrix);
     }
 
     return {
       table,
-      selectedRange,
-      bounds,
+      selectedRanges,
+      boundsList,
       cells,
-      matrix,
+      matrixList,
     };
-  }, [contextMenu, rows, selectedRange, table]);
+  }, [contextMenu, rows, selectedRanges, table]);
 
   const customContextMenuActions = React.useMemo(() => {
     const defs = contextMenuOptions?.customActions ?? [];
@@ -536,7 +538,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
           }
 
           if (options.enableRangeSelection && e.key === 'Escape') {
-            clearSelectedRange();
+            clearSelectedRanges();
             return;
           }
           nav.handleKeyDown(e);

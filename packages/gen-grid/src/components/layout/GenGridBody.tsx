@@ -121,7 +121,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
     rowSpanningMode = 'real',
   } = props;
 
-  const { editMode, setEditMode, options, selectedRange, setSelectedRange } = useGenGridContext<TData>();
+  const { editMode, setEditMode, options, selectedRanges, setSelectedRanges } = useGenGridContext<TData>();
   const rows = table.getRowModel().rows;
   const rowStyleById = React.useMemo(() => {
     const map = new Map<string, React.CSSProperties | undefined>();
@@ -152,7 +152,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
     table,
     activeCell: activeCell ?? null,
     onActiveCellChange,
-    clearSelectedRange: () => setSelectedRange(null),
+    clearSelectedRanges: () => setSelectedRanges([]),
     editOnActiveCell,
     keepEditingOnNavigate,
     editMode,
@@ -175,8 +175,8 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
   const rangeSelection = useRangeSelection({
     table,
     enabled: Boolean(options.enableRangeSelection),
-    selectedRange,
-    setSelectedRange,
+    selectedRanges,
+    setSelectedRanges,
     activeCell,
   });
 

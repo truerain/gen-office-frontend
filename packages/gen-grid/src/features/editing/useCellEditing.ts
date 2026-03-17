@@ -9,7 +9,7 @@ export function useCellEditing<TData>(args: {
   table: Table<TData>;
   activeCell: CellCoord | null;
   onActiveCellChange: (next: CellCoord) => void;
-  clearSelectedRange?: () => void;
+  clearSelectedRanges?: () => void;
   editOnActiveCell?: boolean;
   keepEditingOnNavigate?: boolean;
   editMode: boolean;
@@ -25,7 +25,7 @@ export function useCellEditing<TData>(args: {
     table,
     activeCell,
     onActiveCellChange,
-    clearSelectedRange,
+    clearSelectedRanges,
     updateValue,
     isCellEditable,
     editOnActiveCell,
@@ -137,7 +137,7 @@ export function useCellEditing<TData>(args: {
           // Some browsers/input flows may skip td onDoubleClick after preventDefault on mousedown.
           // Use mouse detail as a stable fallback to enter edit on double-click.
           if (e?.detail >= 2) {
-            clearSelectedRange?.();
+            clearSelectedRanges?.();
             onActiveCellChange({ rowId, columnId });
             if (canEdit(rowId, columnId)) {
               startEditing({ rowId, columnId });
@@ -180,7 +180,7 @@ export function useCellEditing<TData>(args: {
           }
         },
         onDoubleClick: () => {
-          clearSelectedRange?.();
+          clearSelectedRanges?.();
           // 더블클릭하면 해당 셀로 active 맞추고 편집 시작
           onActiveCellChange({ rowId, columnId });
           startEditing({ rowId, columnId });
@@ -232,7 +232,7 @@ export function useCellEditing<TData>(args: {
       editOnActiveCell,
       isNavigationKey,
       onActiveCellChange,
-      clearSelectedRange,
+      clearSelectedRanges,
       startEditing,
       editMode,
       activeCell,

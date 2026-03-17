@@ -67,9 +67,6 @@ export function useRangeChartContextMenu<TData>(
     if (options.getCategoryColumnIndex) {
       return options.getCategoryColumnIndex(ctx);
     }
-    if (options.categoryColumnId) {
-      return ctx.bounds?.columnIds.findIndex((columnId) => columnId === options.categoryColumnId) ?? -1;
-    }
     return options.categoryColumnIndex ?? 0;
   };
 
@@ -78,11 +75,12 @@ export function useRangeChartContextMenu<TData>(
     nextChartKind: RangeChartKind,
     barSeriesLayout: BarSeriesLayout
   ) => {
-    const categoryColumnIndex = resolveCategoryColumnIndex(ctx);
-    if (categoryColumnIndex < 0) {
+    console.log('[gen-grid-chart] selectedRanges on dialog open', ctx.selectedRanges);
+
+    if (options.categoryColumnId && !ctx.table.getColumn(options.categoryColumnId)) {
       setError(
         options.messageWhenCategoryMissing ??
-          `Include "${options.categoryColumnId ?? 'category'}" column in the selected range.`
+          `Category column "${options.categoryColumnId}" was not found.`
       );
       setRows([]);
       setSeries([]);
@@ -93,7 +91,9 @@ export function useRangeChartContextMenu<TData>(
       return;
     }
 
+    const categoryColumnIndex = resolveCategoryColumnIndex(ctx);
     const built = buildRangeChartModel(ctx, {
+      categoryColumnId: options.categoryColumnId,
       categoryColumnIndex,
       barSeriesLayout,
       messageWhenInvalid: options.messageWhenInvalid,
@@ -122,17 +122,17 @@ export function useRangeChartContextMenu<TData>(
   const contextMenuAction: GenGridContextMenuCustomAction<TData> = {
     key: 'chart',
     label: options.menuLabel ?? 'Chart',
-    disabled: ({ bounds }) => !bounds,
+    disabled: ({ boundsList }) => boundsList.length === 0,
     children: kinds.map((kind) => {
       if (kind === 'column' || kind === 'bar') {
         return {
           key: `chart-${kind}`,
           label: chartKindLabel(kind),
-          disabled: ({ bounds }) => !bounds,
+          disabled: ({ boundsList }) => boundsList.length === 0,
           children: modes.map((mode) => ({
             key: `chart-${kind}-${mode}`,
             label: modeLabel(mode),
-            disabled: ({ bounds }) => !bounds,
+            disabled: ({ boundsList }) => boundsList.length === 0,
             onClick: (ctx) => openFromRange(ctx, kind, mode),
           })),
         };
@@ -140,7 +140,7 @@ export function useRangeChartContextMenu<TData>(
       return {
         key: `chart-${kind}`,
         label: chartKindLabel(kind),
-        disabled: ({ bounds }) => !bounds,
+        disabled: ({ boundsList }) => boundsList.length === 0,
         onClick: (ctx) => openFromRange(ctx, kind, 'grouped'),
       };
     }),

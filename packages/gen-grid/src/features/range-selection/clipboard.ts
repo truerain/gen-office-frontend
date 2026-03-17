@@ -1,5 +1,5 @@
 import type { Table } from '@tanstack/react-table';
-import type { SelectedRange } from './types';
+import type { SelectedRange, SelectedRanges } from './types';
 
 export type RangeBounds = {
   rowMin: number;
@@ -19,8 +19,6 @@ export function resolveRangeBounds<TData>(
   table: Table<TData>,
   selectedRange: SelectedRange
 ): RangeBounds | null {
-  if (!selectedRange) return null;
-
   const rows = table.getRowModel().rows;
   const visibleColumns = table.getVisibleLeafColumns();
   const visibleColumnIds = visibleColumns.map((col) => col.id);
@@ -52,6 +50,15 @@ export function resolveRangeBounds<TData>(
     colMax: colBounds.max,
     columnIds: visibleColumnIds.slice(colBounds.min, colBounds.max + 1),
   };
+}
+
+export function resolveRangeBoundsList<TData>(
+  table: Table<TData>,
+  selectedRanges: SelectedRanges
+): RangeBounds[] {
+  return selectedRanges
+    .map((range) => resolveRangeBounds(table, range))
+    .filter((bounds): bounds is RangeBounds => Boolean(bounds));
 }
 
 export function stringifyClipboardValue(value: unknown): string {

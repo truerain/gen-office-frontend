@@ -47,9 +47,9 @@ export default function CoActualsPage(_props: PageComponentProps) {
   const rangeChart = useRangeChartContextMenu<CoActual>({
     categoryColumnId: 'acctName',
     chartKinds: ['column', 'bar', 'line', 'area', 'pie', 'donut'],
-    messageWhenCategoryMissing: 'Include "Account Name (acctName)" column in the selected range.',
+    messageWhenCategoryMissing: 'Category column "Account Name (acctName)" was not found.',
     messageWhenInvalid:
-      'Select at least 2 columns including "Account Name (acctName)" and one numeric column.',
+      'Select at least one numeric column. For multi-selection charts, all selected ranges must share the same column range.',
     barModes: ['grouped', 'stacked', 'stacked100'],
   });
 

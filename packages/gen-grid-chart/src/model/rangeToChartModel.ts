@@ -36,42 +36,103 @@ function toFiniteNumber(value: unknown): number | null {
   return null;
 }
 
+function resolveColumnHeader<TData>(
+  ctx: GenGridContextMenuActionContext<TData>,
+  columnId: string
+): string {
+  const fromCells = ctx.cells.find((cell) => cell.columnId === columnId)?.columnHeader;
+  if (fromCells) return fromCells;
+  const column = ctx.table.getColumn(columnId);
+  if (!column) return columnId;
+  const header = column.columnDef.header;
+  if (typeof header === 'string' || typeof header === 'number') {
+    return String(header);
+  }
+  return columnId;
+}
+
+function areAllBoundsOnSameColumnWindow<TData>(ctx: GenGridContextMenuActionContext<TData>): boolean {
+  if (ctx.boundsList.length <= 1) return true;
+  const first = ctx.boundsList[0];
+  if (!first) return true;
+  return ctx.boundsList.every((bounds) => {
+    if (bounds.columnIds.length !== first.columnIds.length) return false;
+    return bounds.columnIds.every((columnId, idx) => columnId === first.columnIds[idx]);
+  });
+}
+
 export function buildRangeChartModel<TData>(
   ctx: GenGridContextMenuActionContext<TData>,
   options?: {
+    categoryColumnId?: string;
     categoryColumnIndex?: number;
     barSeriesLayout?: BarSeriesLayout;
     messageWhenInvalid?: string;
   }
 ): RangeChartBuildResult {
-  if (!ctx.bounds || ctx.matrix.length === 0 || ctx.bounds.columnIds.length < 2) {
+  if (!ctx.boundsList.length) {
     return {
       ok: false,
-      message:
-        options?.messageWhenInvalid ??
-        'Select at least 2 columns including one numeric column.',
+      message: options?.messageWhenInvalid ?? 'Select at least one range first.',
+    };
+  }
+  if (!areAllBoundsOnSameColumnWindow(ctx)) {
+    return {
+      ok: false,
+      message: options?.messageWhenInvalid ?? 'Select ranges that share the same column range.',
     };
   }
 
-  const categoryColumnIndex = options?.categoryColumnIndex ?? 0;
-  if (categoryColumnIndex < 0 || categoryColumnIndex >= ctx.bounds.columnIds.length) {
+  const primaryBounds = ctx.boundsList[0]!;
+  const selectedColumnIds = primaryBounds.columnIds;
+  if (!selectedColumnIds.length) {
+    return {
+      ok: false,
+      message: options?.messageWhenInvalid ?? 'Select at least one numeric column.',
+    };
+  }
+
+  const rows = ctx.table.getRowModel().rows;
+  const sourceRows = ctx.boundsList.flatMap((bounds) =>
+    rows.slice(bounds.rowMin, bounds.rowMax + 1)
+  );
+  if (!sourceRows.length) {
+    return {
+      ok: false,
+      message: options?.messageWhenInvalid ?? 'No rows available for chart.',
+    };
+  }
+
+  const categoryColumnId = options?.categoryColumnId
+    ? options.categoryColumnId
+    : (() => {
+        const categoryColumnIndex = options?.categoryColumnIndex ?? 0;
+        if (categoryColumnIndex < 0 || categoryColumnIndex >= selectedColumnIds.length) {
+          return null;
+        }
+        return selectedColumnIds[categoryColumnIndex]!;
+      })();
+
+  if (!categoryColumnId) {
     return {
       ok: false,
       message: options?.messageWhenInvalid ?? 'Invalid chart category column index.',
     };
   }
 
-  const headerByColumnId = new Map<string, string>();
-  for (const cell of ctx.cells) {
-    if (!headerByColumnId.has(cell.columnId)) {
-      headerByColumnId.set(cell.columnId, cell.columnHeader);
-    }
+  const categoryColumn = ctx.table.getColumn(categoryColumnId);
+  if (!categoryColumn) {
+    return {
+      ok: false,
+      message: options?.messageWhenInvalid ?? `Category column "${categoryColumnId}" not found.`,
+    };
   }
 
-  const numericColumns = ctx.bounds.columnIds
-    .map((columnId, index) => ({ columnId, index }))
-    .filter(({ index }) => index !== categoryColumnIndex)
-    .filter(({ index }) => ctx.matrix.some((row) => toFiniteNumber(row[index]) != null));
+  const numericColumns = selectedColumnIds
+    .filter((columnId) => columnId !== categoryColumnId)
+    .filter((columnId) =>
+      sourceRows.some((row) => toFiniteNumber(row.getValue(columnId)) != null)
+    );
 
   if (numericColumns.length === 0) {
     return {
@@ -80,43 +141,41 @@ export function buildRangeChartModel<TData>(
     };
   }
 
-  const series: RangeChartSeries[] = numericColumns.map(({ columnId }) => ({
+  const series: RangeChartSeries[] = numericColumns.map((columnId) => ({
     id: columnId,
-    label: headerByColumnId.get(columnId) ?? columnId,
+    label: resolveColumnHeader(ctx, columnId),
   }));
-  const barSeriesLayout = options?.barSeriesLayout ?? 'grouped';
 
-  const rows: RangeChartRow[] = [];
-  for (let rowIndex = 0; rowIndex < ctx.matrix.length; rowIndex++) {
-    const row = ctx.matrix[rowIndex] ?? [];
-    const label =
-      String(row[categoryColumnIndex] ?? `Row ${rowIndex + 1}`).trim() || `Row ${rowIndex + 1}`;
+  const barSeriesLayout = options?.barSeriesLayout ?? 'grouped';
+  const resultRows: RangeChartRow[] = [];
+  for (let rowOffset = 0; rowOffset < sourceRows.length; rowOffset++) {
+    const row = sourceRows[rowOffset]!;
+    const categoryValue = row.getValue(categoryColumnId);
+    const label = String(categoryValue ?? `Row ${rowOffset + 1}`).trim() || `Row ${rowOffset + 1}`;
 
     const chartRow: RangeChartRow = { label };
     let hasAnyNumeric = false;
-    for (const numericCol of numericColumns) {
-      const value = toFiniteNumber(row[numericCol.index]);
+    for (const columnId of numericColumns) {
+      const value = toFiniteNumber(row.getValue(columnId));
       if (value == null) continue;
-      chartRow[numericCol.columnId] = value;
+      chartRow[columnId] = value;
       hasAnyNumeric = true;
     }
-
     if (hasAnyNumeric) {
-      rows.push(chartRow);
+      resultRows.push(chartRow);
     }
   }
 
-  if (rows.length === 0) {
+  if (resultRows.length === 0) {
     return {
       ok: false,
       message: options?.messageWhenInvalid ?? 'No numeric values found in selected range.',
     };
   }
 
-  const categoryHeader =
-    headerByColumnId.get(ctx.bounds.columnIds[categoryColumnIndex] ?? '') ?? 'Category';
+  const categoryHeader = resolveColumnHeader(ctx, categoryColumnId);
   if (barSeriesLayout === 'stacked100') {
-    for (const row of rows) {
+    for (const row of resultRows) {
       let sum = 0;
       for (const item of series) {
         const value = row[item.id];
@@ -149,7 +208,7 @@ export function buildRangeChartModel<TData>(
     ok: true,
     model: {
       title: `${seriesLabel} by ${categoryHeader} (${layoutLabel})`,
-      rows,
+      rows: resultRows,
       series,
       categoryHeader,
       barSeriesLayout,

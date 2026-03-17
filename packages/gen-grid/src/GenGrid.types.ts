@@ -4,7 +4,7 @@ import type { ColumnDef, ExpandedState, GroupingState, RowSelectionState, Table 
 import type * as React from 'react';
 import type { ActiveCell } from './features/active-cell/types';
 import type { GenGridColumnMeta } from './components/layout/utils';
-import type { SelectedRange } from './features/range-selection/types';
+import type { SelectedRanges } from './features/range-selection/types';
 import type { RangeBounds } from './features/range-selection/clipboard';
 
 export type GenGridEditorContext<TData> = {
@@ -60,10 +60,10 @@ export type GenGridContextMenuCell<TData> = {
 
 export type GenGridContextMenuActionContext<TData> = {
   table: Table<TData>;
-  selectedRange: SelectedRange;
-  bounds: RangeBounds | null;
+  selectedRanges: SelectedRanges;
+  boundsList: RangeBounds[];
   cells: GenGridContextMenuCell<TData>[];
-  matrix: unknown[][];
+  matrixList: unknown[][][];
 };
 
 export type GenGridContextMenuCustomAction<TData> = {

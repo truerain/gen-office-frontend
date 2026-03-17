@@ -1,6 +1,6 @@
 import * as React from 'react';
 import type { Table } from '@tanstack/react-table';
-import type { RangeCellCoord, SelectedRange } from './types';
+import type { RangeCellCoord, SelectedRange, SelectedRanges } from './types';
 
 function toBounds(a: number, b: number) {
   return { min: Math.min(a, b), max: Math.max(a, b) };
@@ -9,12 +9,13 @@ function toBounds(a: number, b: number) {
 export function useRangeSelection<TData>(args: {
   table: Table<TData>;
   enabled: boolean;
-  selectedRange: SelectedRange;
-  setSelectedRange: React.Dispatch<React.SetStateAction<SelectedRange>>;
+  selectedRanges: SelectedRanges;
+  setSelectedRanges: React.Dispatch<React.SetStateAction<SelectedRanges>>;
   activeCell: RangeCellCoord | null;
 }) {
-  const { table, enabled, selectedRange, setSelectedRange, activeCell } = args;
+  const { table, enabled, selectedRanges, setSelectedRanges, activeCell } = args;
   const draggingRef = React.useRef(false);
+  const draggingRangeIndexRef = React.useRef<number | null>(null);
 
   const rows = table.getRowModel().rows;
 
@@ -49,69 +50,80 @@ export function useRangeSelection<TData>(args: {
   );
 
   const beginRange = React.useCallback(
-    (rowId: string, columnId: string) => {
+    (rowId: string, columnId: string, additive: boolean) => {
       if (!enabled) return;
       draggingRef.current = true;
-      setSelectedRange(createRange(rowId, columnId));
+      setSelectedRanges((prev) => {
+        const next = additive ? [...prev, createRange(rowId, columnId)] : [createRange(rowId, columnId)];
+        draggingRangeIndexRef.current = next.length - 1;
+        return next;
+      });
     },
-    [createRange, enabled, setSelectedRange]
+    [createRange, enabled, setSelectedRanges]
   );
 
   const selectFromAnchor = React.useCallback(
-    (anchor: RangeCellCoord | null, rowId: string, columnId: string) => {
+    (
+      anchor: RangeCellCoord | null,
+      rowId: string,
+      columnId: string,
+      additive: boolean
+    ) => {
       if (!enabled) return;
       if (!rowIndexById.has(rowId) || !colIndexById.has(columnId)) return;
 
       draggingRef.current = false;
+      draggingRangeIndexRef.current = null;
+
       const anchorIsValid =
         !!anchor && rowIndexById.has(anchor.rowId) && colIndexById.has(anchor.columnId);
 
-      if (anchorIsValid && anchor) {
-        setSelectedRange({
-          anchor: { rowId: anchor.rowId, columnId: anchor.columnId },
-          focus: { rowId, columnId },
-        });
-        return;
-      }
+      const nextRange = anchorIsValid && anchor
+        ? { anchor: { rowId: anchor.rowId, columnId: anchor.columnId }, focus: { rowId, columnId } }
+        : createRange(rowId, columnId);
 
-      setSelectedRange(createRange(rowId, columnId));
+      setSelectedRanges((prev) => (additive ? [...prev, nextRange] : [nextRange]));
     },
-    [colIndexById, createRange, enabled, rowIndexById, setSelectedRange]
+    [colIndexById, createRange, enabled, rowIndexById, setSelectedRanges]
   );
 
   const extendRange = React.useCallback(
     (rowId: string, columnId: string) => {
       if (!enabled || !draggingRef.current) return;
+      const targetIndex = draggingRangeIndexRef.current;
+      if (targetIndex == null) return;
 
-      setSelectedRange((prev) => {
-        if (!prev) return createRange(rowId, columnId);
-
-        if (prev.focus.rowId === rowId && prev.focus.columnId === columnId) {
+      setSelectedRanges((prev) => {
+        const range = prev[targetIndex];
+        if (!range) return prev;
+        if (range.focus.rowId === rowId && range.focus.columnId === columnId) {
           return prev;
         }
 
-        return {
-          ...prev,
-          focus: {
-            rowId,
-            columnId,
-          },
+        const next = [...prev];
+        next[targetIndex] = {
+          ...range,
+          focus: { rowId, columnId },
         };
+        return next;
       });
     },
-    [createRange, enabled, setSelectedRange]
+    [enabled, setSelectedRanges]
   );
 
   const endRange = React.useCallback(() => {
     draggingRef.current = false;
+    draggingRangeIndexRef.current = null;
   }, []);
 
   React.useEffect(() => {
     const handleMouseUp = () => {
       draggingRef.current = false;
+      draggingRangeIndexRef.current = null;
     };
     const handleBlur = () => {
       draggingRef.current = false;
+      draggingRangeIndexRef.current = null;
     };
 
     document.addEventListener('mouseup', handleMouseUp, true);
@@ -126,24 +138,24 @@ export function useRangeSelection<TData>(args: {
   React.useEffect(() => {
     if (enabled) return;
     draggingRef.current = false;
-    if (selectedRange) setSelectedRange(null);
-  }, [enabled, selectedRange, setSelectedRange]);
+    draggingRangeIndexRef.current = null;
+    if (selectedRanges.length > 0) setSelectedRanges([]);
+  }, [enabled, selectedRanges.length, setSelectedRanges]);
 
-  const clearRange = React.useCallback(() => {
+  const clearRanges = React.useCallback(() => {
     draggingRef.current = false;
-    setSelectedRange(null);
-  }, [setSelectedRange]);
+    draggingRangeIndexRef.current = null;
+    setSelectedRanges([]);
+  }, [setSelectedRanges]);
 
-  const isCellInRange = React.useCallback(
-    (rowId: string, columnId: string) => {
-      if (!enabled || !selectedRange) return false;
-
+  const isInSingleRange = React.useCallback(
+    (range: SelectedRange, rowId: string, columnId: string) => {
       const rowIndex = rowIndexById.get(rowId);
       const colIndex = colIndexById.get(columnId);
-      const anchorRowIndex = rowIndexById.get(selectedRange.anchor.rowId);
-      const focusRowIndex = rowIndexById.get(selectedRange.focus.rowId);
-      const anchorColIndex = colIndexById.get(selectedRange.anchor.columnId);
-      const focusColIndex = colIndexById.get(selectedRange.focus.columnId);
+      const anchorRowIndex = rowIndexById.get(range.anchor.rowId);
+      const focusRowIndex = rowIndexById.get(range.focus.rowId);
+      const anchorColIndex = colIndexById.get(range.anchor.columnId);
+      const focusColIndex = colIndexById.get(range.focus.columnId);
 
       if (
         rowIndex == null ||
@@ -159,7 +171,7 @@ export function useRangeSelection<TData>(args: {
       const rowBounds = toBounds(anchorRowIndex, focusRowIndex);
       const isRowRange =
         firstVisibleColumnId != null &&
-        selectedRange.anchor.columnId === firstVisibleColumnId;
+        range.anchor.columnId === firstVisibleColumnId;
       const colBounds = isRowRange
         ? { min: 0, max: visibleColumnIds.length - 1 }
         : toBounds(anchorColIndex, focusColIndex);
@@ -171,14 +183,15 @@ export function useRangeSelection<TData>(args: {
         colIndex <= colBounds.max
       );
     },
-    [
-      enabled,
-      selectedRange,
-      rowIndexById,
-      colIndexById,
-      firstVisibleColumnId,
-      visibleColumnIds.length,
-    ]
+    [colIndexById, firstVisibleColumnId, rowIndexById, visibleColumnIds.length]
+  );
+
+  const isCellInRange = React.useCallback(
+    (rowId: string, columnId: string) => {
+      if (!enabled || selectedRanges.length === 0) return false;
+      return selectedRanges.some((range) => isInSingleRange(range, rowId, columnId));
+    },
+    [enabled, isInSingleRange, selectedRanges]
   );
 
   const getRangeHandlers = React.useCallback(
@@ -195,13 +208,15 @@ export function useRangeSelection<TData>(args: {
           return;
         }
 
+        const additive = e.ctrlKey || e.metaKey;
         if (e.shiftKey) {
           e.preventDefault();
-          selectFromAnchor(activeCell ?? selectedRange?.anchor ?? null, rowId, columnId);
+          const fallbackAnchor = selectedRanges[selectedRanges.length - 1]?.anchor ?? null;
+          selectFromAnchor(activeCell ?? fallbackAnchor, rowId, columnId, additive);
           return;
         }
 
-        beginRange(rowId, columnId);
+        beginRange(rowId, columnId, additive);
       },
       onMouseEnter: (_e: React.MouseEvent) => {
         if (!enabled) return;
@@ -212,11 +227,11 @@ export function useRangeSelection<TData>(args: {
         endRange();
       },
     }),
-    [activeCell, beginRange, enabled, endRange, extendRange, selectFromAnchor, selectedRange]
+    [activeCell, beginRange, enabled, endRange, extendRange, selectFromAnchor, selectedRanges]
   );
 
   return {
-    clearRange,
+    clearRanges,
     isCellInRange,
     getRangeHandlers,
   };

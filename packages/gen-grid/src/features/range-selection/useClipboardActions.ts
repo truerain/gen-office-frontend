@@ -1,10 +1,11 @@
 import * as React from 'react';
 import type { Row, Table } from '@tanstack/react-table';
 import type { ActiveCell } from '../active-cell/types';
-import type { SelectedRange } from './types';
+import type { SelectedRanges } from './types';
 import {
   parseClipboardGrid,
   resolveRangeBounds,
+  resolveRangeBoundsList,
   stringifyClipboardValue,
   SYSTEM_COLUMN_IDS,
   toClipboardCell,
@@ -13,19 +14,24 @@ import {
 export function useClipboardActions<TData>(args: {
   table: Table<TData>;
   rows: Row<TData>[];
-  selectedRange: SelectedRange;
+  selectedRanges: SelectedRanges;
   activeCell: ActiveCell;
   onCellValueChange?: (coord: { rowId: string; columnId: string }, value: unknown) => void;
 }) {
-  const { table, rows, selectedRange, activeCell, onCellValueChange } = args;
+  const { table, rows, selectedRanges, activeCell, onCellValueChange } = args;
+  const lastSelectedRange = selectedRanges[selectedRanges.length - 1];
 
   const rangeBounds = React.useMemo(
-    () => resolveRangeBounds(table, selectedRange),
-    [table, selectedRange]
+    () => (lastSelectedRange ? resolveRangeBounds(table, lastSelectedRange) : null),
+    [table, lastSelectedRange]
+  );
+  const boundsList = React.useMemo(
+    () => resolveRangeBoundsList(table, selectedRanges),
+    [table, selectedRanges]
   );
 
-  const canCopy = Boolean(rangeBounds);
-  const pasteStartCell = selectedRange?.anchor ?? activeCell;
+  const canCopy = boundsList.length > 0;
+  const pasteStartCell = lastSelectedRange?.anchor ?? activeCell;
   const canPaste = Boolean(pasteStartCell && onCellValueChange);
 
   const rowById = React.useMemo(() => new Map(rows.map((row) => [row.id, row] as const)), [rows]);

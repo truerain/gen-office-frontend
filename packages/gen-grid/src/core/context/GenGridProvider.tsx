@@ -5,7 +5,7 @@ import type { Table } from '@tanstack/react-table';
 
 import { focusGridCell } from '../../features/active-cell/cellDom';
 import { ActiveCell } from '../../features/active-cell/types';
-import type { SelectedRange } from '../../features/range-selection/types';
+import type { SelectedRange, SelectedRanges } from '../../features/range-selection/types';
 import type { GenGridEditorFactory } from '../../GenGrid.types';
 
 export type GenGridOptions = {
@@ -22,9 +22,10 @@ type GenGridContextValue<TData> = {
   activeCell: ActiveCell;
   setActiveCell: (cell: ActiveCell) => void;
 
-  selectedRange: SelectedRange;
-  setSelectedRange: React.Dispatch<React.SetStateAction<SelectedRange>>;
-  clearSelectedRange: () => void;
+  selectedRanges: SelectedRanges;
+  setSelectedRanges: React.Dispatch<React.SetStateAction<SelectedRanges>>;
+  clearSelectedRanges: () => void;
+  getLastSelectedRange: () => SelectedRange | null;
 
   editMode: boolean;
   setEditMode: (next: boolean) => void;
@@ -54,10 +55,14 @@ export function GenGridProvider<TData>(props: {
   const [uncontrolled, setUncontrolled] = React.useState<ActiveCell>(null);
   const activeCell = controlled ?? uncontrolled;
 
-  const [selectedRange, setSelectedRange] = React.useState<SelectedRange>(null);
-  const clearSelectedRange = React.useCallback(() => {
-    setSelectedRange(null);
+  const [selectedRanges, setSelectedRanges] = React.useState<SelectedRanges>([]);
+  const clearSelectedRanges = React.useCallback(() => {
+    setSelectedRanges([]);
   }, []);
+  const getLastSelectedRange = React.useCallback(
+    () => selectedRanges[selectedRanges.length - 1] ?? null,
+    [selectedRanges]
+  );
 
   const [editMode, setEditMode] = React.useState(false);
 
@@ -83,9 +88,10 @@ export function GenGridProvider<TData>(props: {
       options: options ?? {},
       activeCell,
       setActiveCell,
-      selectedRange,
-      setSelectedRange,
-      clearSelectedRange,
+      selectedRanges,
+      setSelectedRanges,
+      clearSelectedRanges,
+      getLastSelectedRange,
       editMode,
       setEditMode,
       focusCell,
@@ -95,8 +101,9 @@ export function GenGridProvider<TData>(props: {
       options,
       activeCell,
       setActiveCell,
-      selectedRange,
-      clearSelectedRange,
+      selectedRanges,
+      clearSelectedRanges,
+      getLastSelectedRange,
       editMode,
       focusCell,
     ]

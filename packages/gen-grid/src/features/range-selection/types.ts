@@ -6,4 +6,6 @@ export type RangeCellCoord = {
 export type SelectedRange = {
   anchor: RangeCellCoord;
   focus: RangeCellCoord;
-} | null;
+};
+
+export type SelectedRanges = SelectedRange[];
