@@ -83,6 +83,33 @@ export interface SimpleDialogProps extends DialogProps {
    * @default true
    */
   bodyScrollable?: boolean;
+
+  /**
+   * External ref for the dialog body element.
+   */
+  bodyRef?: React.Ref<HTMLDivElement>;
+
+  /**
+   * Initial width used before user resize.
+   */
+  initialWidth?: number;
+
+  /**
+   * Initial height used before user resize.
+   */
+  initialHeight?: number;
+
+  /**
+   * Minimum width for runtime resize.
+   * @default 320
+   */
+  minResizableWidth?: number;
+
+  /**
+   * Minimum height for runtime resize.
+   * @default 200
+   */
+  minResizableHeight?: number;
 }
 
 /**
@@ -110,6 +137,11 @@ export const SimpleDialog = forwardRef<
   size = 'md',
   resizable = false,
   bodyScrollable = true,
+  bodyRef,
+  initialWidth,
+  initialHeight,
+  minResizableWidth = 320,
+  minResizableHeight = 200,
   className,
   onOpenChange,
   ...props
@@ -155,6 +187,16 @@ export const SimpleDialog = forwardRef<
     },
     [ref]
   );
+  const setMergedBodyRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (typeof bodyRef === 'function') {
+        bodyRef(node);
+      } else if (bodyRef) {
+        (bodyRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+      }
+    },
+    [bodyRef]
+  );
 
   useEffect(() => {
     return () => {
@@ -167,35 +209,64 @@ export const SimpleDialog = forwardRef<
       return;
     }
 
-    let frame1 = 0;
-    let frame2 = 0;
-    frame1 = window.requestAnimationFrame(() => {
-      frame2 = window.requestAnimationFrame(() => {
+    let frame = 0;
+    let cancelled = false;
+    const maxMeasureRetries = 120;
+
+    const measure = (attempt: number) => {
+      if (cancelled) return;
+      frame = window.requestAnimationFrame(() => {
+        if (cancelled) return;
         const node = contentRef.current;
-        if (!node) {
-          return;
-        }
+        if (!node) return;
+
         const rect = node.getBoundingClientRect();
         const computed = window.getComputedStyle(node);
         const cssWidth = Number.parseFloat(computed.width) || 0;
         const cssHeight = Number.parseFloat(computed.height) || 0;
         const minWidth = Number.parseFloat(computed.minWidth) || 0;
         const minHeight = Number.parseFloat(computed.minHeight) || 0;
-        const nextWidth = Math.max(320, Math.round(Math.max(rect.width, cssWidth, minWidth)));
-        const nextHeight = Math.max(200, Math.round(Math.max(rect.height, cssHeight, minHeight)));
-        setDimensions((prev) => prev ?? { width: nextWidth, height: nextHeight });
-      });
-    });
+        const nextWidth = Math.max(minResizableWidth, Math.round(Math.max(rect.width, cssWidth, minWidth)));
+        const nextHeight = Math.max(minResizableHeight, Math.round(Math.max(rect.height, cssHeight, minHeight)));
+        const hasStableHeight = nextHeight > 220 || minHeight > 220 || cssHeight > 220;
 
-    return () => {
-      if (frame1) {
-        window.cancelAnimationFrame(frame1);
-      }
-      if (frame2) {
-        window.cancelAnimationFrame(frame2);
-      }
+        if (hasStableHeight) {
+          setDimensions((prev) => prev ?? { width: nextWidth, height: nextHeight });
+          return;
+        }
+
+        if (attempt < maxMeasureRetries) {
+          measure(attempt + 1);
+          return;
+        }
+
+        // Final guard: never leave resizable dialog collapsed to header-only height.
+        setDimensions((prev) => {
+          if (prev) return prev;
+          const fallbackHeight = Math.max(
+            minResizableHeight,
+            initialHeight ?? Math.min(window.innerHeight - 32, 640)
+          );
+          const fallbackWidth = Math.max(minResizableWidth, initialWidth ?? nextWidth);
+          return { width: fallbackWidth, height: fallbackHeight };
+        });
+      });
     };
-  }, [dimensions, isOpen, resizable]);
+
+    measure(0);
+    return () => {
+      cancelled = true;
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [
+    dimensions,
+    initialHeight,
+    initialWidth,
+    isOpen,
+    minResizableHeight,
+    minResizableWidth,
+    resizable,
+  ]);
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
@@ -309,11 +380,11 @@ export const SimpleDialog = forwardRef<
 
     const nextWidth = Math.min(
       maxWidth,
-      Math.max(320, resizeState.startWidth + (event.clientX - resizeState.startX))
+      Math.max(minResizableWidth, resizeState.startWidth + (event.clientX - resizeState.startX))
     );
     const nextHeight = Math.min(
       maxHeight,
-      Math.max(200, resizeState.startHeight + (event.clientY - resizeState.startY))
+      Math.max(minResizableHeight, resizeState.startHeight + (event.clientY - resizeState.startY))
     );
 
     setDimensions({
@@ -321,7 +392,7 @@ export const SimpleDialog = forwardRef<
       height: nextHeight,
     });
     event.preventDefault();
-  }, []);
+  }, [minResizableHeight, minResizableWidth]);
 
   const handleResizePointerUp = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
     const resizeState = resizeStateRef.current;
@@ -351,13 +422,13 @@ export const SimpleDialog = forwardRef<
     };
     setPosition({ left: margin, top: margin });
     setDimensions({
-      width: Math.max(320, window.innerWidth - margin * 2),
-      height: Math.max(200, window.innerHeight - margin * 2),
+      width: Math.max(minResizableWidth, window.innerWidth - margin * 2),
+      height: Math.max(minResizableHeight, window.innerHeight - margin * 2),
     });
     setIsMaximized(true);
     dragStateRef.current = null;
     resizeStateRef.current = null;
-  }, [dimensions, isMaximized, position]);
+  }, [dimensions, isMaximized, minResizableHeight, minResizableWidth, position]);
 
   return (
     <Dialog {...props} onOpenChange={handleOpenChange}>
@@ -372,6 +443,15 @@ export const SimpleDialog = forwardRef<
           gap: 0,
           overflow: 'hidden',
           ...SIMPLE_DIALOG_SIZE_STYLES[size],
+          ...(!dimensions && typeof initialWidth === 'number'
+            ? { width: `${Math.max(minResizableWidth, initialWidth)}px` }
+            : {}),
+          ...(!dimensions && typeof initialHeight === 'number'
+            ? {
+                height: `${Math.max(minResizableHeight, initialHeight)}px`,
+                maxHeight: `${Math.max(minResizableHeight, initialHeight)}px`,
+              }
+            : {}),
           ...(dimensions
             ? {
                 width: `${dimensions.width}px`,
@@ -432,6 +512,7 @@ export const SimpleDialog = forwardRef<
           </DialogHeader>
         )}
         <DialogBody
+          ref={setMergedBodyRef}
           style={{
             flex: '1 1 0',
             minHeight: 0,

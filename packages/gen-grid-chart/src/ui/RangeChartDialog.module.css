@@ -1,10 +1,7 @@
 .dialog {
   width: min(960px, calc(100vw - 2rem));
   max-width: min(960px, calc(100vw - 2rem));
-  height: min(760px, calc(100vh - 2rem));
-  max-height: calc(100vh - 2rem);
   min-width: 640px;
-  min-height: 460px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -58,6 +55,5 @@
     min-width: 0;
     width: calc(100vw - 1.5rem);
     max-width: calc(100vw - 1.5rem);
-    min-height: 420px;
   }
 }

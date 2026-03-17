@@ -75,8 +75,6 @@ export function useRangeChartContextMenu<TData>(
     nextChartKind: RangeChartKind,
     barSeriesLayout: BarSeriesLayout
   ) => {
-    console.log('[gen-grid-chart] selectedRanges on dialog open', ctx.selectedRanges);
-
     if (options.categoryColumnId && !ctx.table.getColumn(options.categoryColumnId)) {
       setError(
         options.messageWhenCategoryMissing ??

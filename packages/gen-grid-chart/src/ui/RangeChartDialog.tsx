@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { GenChart, ResponsiveChartContainer } from '@gen-office/gen-chart';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { GenChart } from '@gen-office/gen-chart';
 import type { GenChartTooltipContext } from '@gen-office/gen-chart';
 import { SimpleDialog, SimpleSelect } from '@gen-office/ui';
 import type {
@@ -55,6 +55,69 @@ export function RangeChartDialog({
     [pieSeriesId, series]
   );
   const numberFormatter = useMemo(() => new Intl.NumberFormat('ko-KR'), []);
+  const [dialogBodyEl, setDialogBodyEl] = useState<HTMLDivElement | null>(null);
+  const [seriesSelectEl, setSeriesSelectEl] = useState<HTMLDivElement | null>(null);
+  const [chartSize, setChartSize] = useState({ width: 320, height: 220 });
+  const bodyRef = useCallback((node: HTMLDivElement | null) => {
+    setDialogBodyEl(node);
+  }, []);
+  const seriesSelectRef = useCallback((node: HTMLDivElement | null) => {
+    setSeriesSelectEl(node);
+  }, []);
+  const chartHostRef = useCallback((_node: HTMLDivElement | null) => {
+    // Size is measured from DialogBody.
+    return;
+  }, []);
+
+  useEffect(() => {
+    const body = dialogBodyEl;
+    if (!body || !open) return;
+
+    const updateFromBodyRect = (reason: string) => {
+      void reason;
+      const bodyRect = body.getBoundingClientRect();
+      const bodyStyle = window.getComputedStyle(body);
+      const paddingLeft = Number.parseFloat(bodyStyle.paddingLeft) || 0;
+      const paddingRight = Number.parseFloat(bodyStyle.paddingRight) || 0;
+      const paddingTop = Number.parseFloat(bodyStyle.paddingTop) || 0;
+      const paddingBottom = Number.parseFloat(bodyStyle.paddingBottom) || 0;
+      const selectHeight = seriesSelectEl?.getBoundingClientRect().height ?? 0;
+
+      const rawWidth = bodyRect.width - paddingLeft - paddingRight;
+      const rawHeight = bodyRect.height - paddingTop - paddingBottom - selectHeight;
+      if (rawWidth <= 0 || rawHeight <= 0) return;
+
+      const nextWidth = Math.max(120, Math.floor(rawWidth));
+      const nextHeight = Math.max(220, Math.floor(rawHeight));
+      setChartSize((prev) => {
+        if (prev.width === nextWidth && prev.height === nextHeight) {
+          return prev;
+        }
+        return { width: nextWidth, height: nextHeight };
+      });
+    };
+
+    updateFromBodyRect('effect-init');
+
+    if (typeof ResizeObserver === 'undefined') return;
+    const dialogContent = body.closest('[role="dialog"]') as HTMLElement | null;
+
+    const ro = new ResizeObserver((entries) => {
+      if (!entries.length) return;
+      updateFromBodyRect('resize-observer');
+    });
+    ro.observe(body);
+    if (seriesSelectEl) ro.observe(seriesSelectEl);
+    if (dialogContent && dialogContent !== body) {
+      ro.observe(dialogContent);
+    }
+    const onWindowResize = () => updateFromBodyRect('window-resize');
+    window.addEventListener('resize', onWindowResize);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', onWindowResize);
+    };
+  }, [dialogBodyEl, open, seriesSelectEl]);
 
   return (
     <SimpleDialog
@@ -63,7 +126,10 @@ export function RangeChartDialog({
       title={title}
       className={styles.dialog}
       resizable
+      initialHeight={280}
+      minResizableHeight={280}
       bodyScrollable={false}
+      bodyRef={bodyRef}
     >
       <div className={styles.content}>
         {error ? (
@@ -71,7 +137,7 @@ export function RangeChartDialog({
         ) : (
           <div className={styles.chartWrap}>
             {isPieLike && series.length > 1 ? (
-              <div className={styles.seriesSelectWrap}>
+              <div ref={seriesSelectRef} className={styles.seriesSelectWrap}>
                 <SimpleSelect
                   value={pieSeries?.id ?? ''}
                   onValueChange={setPieSeriesId}
@@ -80,76 +146,70 @@ export function RangeChartDialog({
                 />
               </div>
             ) : null}
-            <ResponsiveChartContainer
-              className={styles.chartCanvas}
-              minHeight={220}
-              fallbackHeight={220}
-            >
-              {({ width, height }) => {
-                return isPieLike ? (
-                  <GenChart<RangeChartRow>
-                    kind={chartKind}
-                    width={width}
-                    height={height}
-                    data={rows}
-                    category={(d) => d.label}
-                    value={(d) => {
-                      const value = d[pieSeries?.id ?? ''];
-                      return typeof value === 'number' ? value : 0;
-                    }}
-                    tooltip
-                    legend={{ enabled: true, position: 'bottom', align: 'start' }}
-                  />
-                ) : (
-                  <GenChart<RangeChartRow>
-                    kind={isBarLike ? 'bar' : chartKind}
-                    barOrientation={chartKind === 'bar' ? 'horizontal' : 'vertical'}
-                    width={width}
-                    height={height}
-                    data={rows}
-                    padding={{ top: 16, right: 16, bottom: 56, left: 52 }}
-                    x={(d) => d.label}
-                    series={series.map((item) => ({
-                      id: item.id,
-                      type: cartesianSeriesType,
-                      label: item.label,
-                      stackId:
-                        isBarLike && barSeriesLayout !== 'grouped' ? 'range-stack-1' : undefined,
-                      y: (d: RangeChartRow) => {
-                        const value = d[item.id];
-                        return typeof value === 'number' ? value : null;
-                      },
-                    }))}
-                    yAxis={
-                      isBarLike && barSeriesLayout === 'stacked100'
-                        ? {
-                            min: 0,
-                            max: 100,
-                            tickFormat: (value) => `${value}%`,
-                          }
-                        : undefined
-                    }
-                    tooltip={
-                      isBarLike && barSeriesLayout === 'stacked100'
-                        ? {
-                            valueFormatter: (ctx: GenChartTooltipContext<RangeChartRow>) => {
-                              const percent = ctx.value ?? 0;
-                              const rawKey = `__raw__${ctx.seriesId ?? ''}`;
-                              const rawValue = ctx.datum[rawKey];
-                              const rawText =
-                                typeof rawValue === 'number' && Number.isFinite(rawValue)
-                                  ? numberFormatter.format(rawValue)
-                                  : '-';
-                              return `${rawText} (${percent.toFixed(2)}%)`;
-                            },
-                          }
-                        : true
-                    }
-                    legend={{ enabled: true, position: 'bottom', align: 'start' }}
-                  />
-                );
-              }}
-            </ResponsiveChartContainer>
+            <div ref={chartHostRef} className={styles.chartCanvas}>
+              {isPieLike ? (
+                <GenChart<RangeChartRow>
+                  kind={chartKind}
+                  width={chartSize.width}
+                  height={chartSize.height}
+                  data={rows}
+                  category={(d) => d.label}
+                  value={(d) => {
+                    const value = d[pieSeries?.id ?? ''];
+                    return typeof value === 'number' ? value : 0;
+                  }}
+                  tooltip
+                  legend={{ enabled: true, position: 'bottom', align: 'start' }}
+                />
+              ) : (
+                <GenChart<RangeChartRow>
+                  kind={isBarLike ? 'bar' : chartKind}
+                  barOrientation={chartKind === 'bar' ? 'horizontal' : 'vertical'}
+                  width={chartSize.width}
+                  height={chartSize.height}
+                  data={rows}
+                  padding={{ top: 16, right: 16, bottom: 56, left: 52 }}
+                  x={(d) => d.label}
+                  series={series.map((item) => ({
+                    id: item.id,
+                    type: cartesianSeriesType,
+                    label: item.label,
+                    stackId:
+                      isBarLike && barSeriesLayout !== 'grouped' ? 'range-stack-1' : undefined,
+                    y: (d: RangeChartRow) => {
+                      const value = d[item.id];
+                      return typeof value === 'number' ? value : null;
+                    },
+                  }))}
+                  yAxis={
+                    isBarLike && barSeriesLayout === 'stacked100'
+                      ? {
+                          min: 0,
+                          max: 100,
+                          tickFormat: (value) => `${value}%`,
+                        }
+                      : undefined
+                  }
+                  tooltip={
+                    isBarLike && barSeriesLayout === 'stacked100'
+                      ? {
+                          valueFormatter: (ctx: GenChartTooltipContext<RangeChartRow>) => {
+                            const percent = ctx.value ?? 0;
+                            const rawKey = `__raw__${ctx.seriesId ?? ''}`;
+                            const rawValue = ctx.datum[rawKey];
+                            const rawText =
+                              typeof rawValue === 'number' && Number.isFinite(rawValue)
+                                ? numberFormatter.format(rawValue)
+                                : '-';
+                            return `${rawText} (${percent.toFixed(2)}%)`;
+                          },
+                        }
+                      : true
+                  }
+                  legend={{ enabled: true, position: 'bottom', align: 'start' }}
+                />
+              )}
+            </div>
           </div>
         )}
       </div>
