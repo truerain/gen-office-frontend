@@ -244,6 +244,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
     let bestAnchorX = 0;
     let bestAnchorY = 0;
 
+    const hoverStackAcc = new Map<string, { pos: number; neg: number }>();
     for (const series of props.series) {
       const points = pointsBySeries.get(series.id) ?? [];
       const isGroupedBarSeries = series.type === 'bar' && !series.stackId;
@@ -254,7 +255,32 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
         let hoverX = point.x;
         let hoverY = point.y;
 
-        if (isGroupedBarSeries) {
+        if (series.type === 'bar' && series.stackId) {
+          const stackId = String(series.stackId);
+          const key = `${stackId}:${point.index}`;
+          const prev = hoverStackAcc.get(key) ?? { pos: 0, neg: 0 };
+          const value = point.value;
+          const start = value >= 0 ? prev.pos : prev.neg;
+          const end = start + value;
+          if (value >= 0) {
+            prev.pos = end;
+          } else {
+            prev.neg = end;
+          }
+          hoverStackAcc.set(key, prev);
+
+          if (barOrientation === 'horizontal') {
+            const xStart = Number(valueXScale(start));
+            const xEnd = Number(valueXScale(end));
+            hoverX = (xStart + xEnd) / 2;
+            hoverY = point.y;
+          } else {
+            const yStart = Number(yScale(start));
+            const yEnd = Number(yScale(end));
+            hoverX = point.x;
+            hoverY = (yStart + yEnd) / 2;
+          }
+        } else if (isGroupedBarSeries) {
           if (barOrientation === 'horizontal') {
             hoverY =
               point.y - (yBand.bandwidth() / 2) + barIndex * groupedBarHeight + groupedBarHeight / 2;
@@ -307,8 +333,10 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
     pointsBySeries,
     props.series,
     tooltipOptions.enabled,
+    valueXScale,
     xBand,
     yBand,
+    yScale,
   ]);
 
   return (

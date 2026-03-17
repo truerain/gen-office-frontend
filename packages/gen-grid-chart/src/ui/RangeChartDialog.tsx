@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { GenChart, ResponsiveChartContainer } from '@gen-office/gen-chart';
+import type { GenChartTooltipContext } from '@gen-office/gen-chart';
 import { SimpleDialog, SimpleSelect } from '@gen-office/ui';
 import type {
   BarSeriesLayout,
@@ -53,6 +54,7 @@ export function RangeChartDialog({
     () => series.find((item) => item.id === pieSeriesId) ?? series[0],
     [pieSeriesId, series]
   );
+  const numberFormatter = useMemo(() => new Intl.NumberFormat('ko-KR'), []);
 
   return (
     <SimpleDialog
@@ -127,7 +129,22 @@ export function RangeChartDialog({
                           }
                         : undefined
                     }
-                    tooltip
+                    tooltip={
+                      isBarLike && barSeriesLayout === 'stacked100'
+                        ? {
+                            valueFormatter: (ctx: GenChartTooltipContext<RangeChartRow>) => {
+                              const percent = ctx.value ?? 0;
+                              const rawKey = `__raw__${ctx.seriesId ?? ''}`;
+                              const rawValue = ctx.datum[rawKey];
+                              const rawText =
+                                typeof rawValue === 'number' && Number.isFinite(rawValue)
+                                  ? numberFormatter.format(rawValue)
+                                  : '-';
+                              return `${rawText} (${percent.toFixed(2)}%)`;
+                            },
+                          }
+                        : true
+                    }
                     legend={{ enabled: true, position: 'bottom', align: 'start' }}
                   />
                 );

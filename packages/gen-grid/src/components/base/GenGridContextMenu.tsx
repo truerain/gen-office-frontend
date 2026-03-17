@@ -39,6 +39,29 @@ export function GenGridContextMenu(props: {
     onPaste,
   } = props;
   const formatStatValue = React.useCallback((value: number) => value.toLocaleString(), []);
+  const positionSubMenu = React.useCallback((wrapEl: HTMLDivElement | null) => {
+    if (!wrapEl || typeof window === 'undefined') return;
+    const submenu = Array.from(wrapEl.children).find((child) =>
+      (child as HTMLElement).classList.contains(controls.contextSubMenu)
+    ) as HTMLElement | undefined;
+    if (!submenu) return;
+
+    wrapEl.dataset.submenuUp = 'false';
+    wrapEl.dataset.submenuLeft = 'false';
+
+    requestAnimationFrame(() => {
+      const rect = submenu.getBoundingClientRect();
+      const overBottom = rect.bottom > window.innerHeight - 8;
+      const overRight = rect.right > window.innerWidth - 8;
+
+      if (overBottom) {
+        wrapEl.dataset.submenuUp = 'true';
+      }
+      if (overRight) {
+        wrapEl.dataset.submenuLeft = 'true';
+      }
+    });
+  }, []);
   const renderCustomAction = React.useCallback(
     (action: CustomContextMenuAction) => {
       const hasChildren = Boolean(action.children && action.children.length > 0);
@@ -48,6 +71,14 @@ export function GenGridContextMenu(props: {
           key={action.key}
           className={controls.contextMenuItemWrap}
           data-has-children={hasChildren || undefined}
+          onMouseEnter={(e) => {
+            if (!hasChildren) return;
+            positionSubMenu(e.currentTarget);
+          }}
+          onFocusCapture={(e) => {
+            if (!hasChildren) return;
+            positionSubMenu(e.currentTarget as HTMLDivElement);
+          }}
         >
           <button
             type="button"
@@ -73,7 +104,7 @@ export function GenGridContextMenu(props: {
         </div>
       );
     },
-    [onClose]
+    [onClose, positionSubMenu]
   );
 
   if (!contextMenu) return null;

@@ -176,22 +176,27 @@ export function buildRangeChartModel<TData>(
   const categoryHeader = resolveColumnHeader(ctx, categoryColumnId);
   if (barSeriesLayout === 'stacked100') {
     for (const row of resultRows) {
-      let sum = 0;
+      let positiveSum = 0;
+      let negativeSumAbs = 0;
       for (const item of series) {
         const value = row[item.id];
         if (typeof value === 'number' && Number.isFinite(value)) {
-          sum += value;
+          row[`__raw__${item.id}`] = value;
+          if (value > 0) positiveSum += value;
+          if (value < 0) negativeSumAbs += Math.abs(value);
         }
-      }
-      if (!Number.isFinite(sum) || sum === 0) {
-        for (const item of series) row[item.id] = 0;
-        continue;
       }
       for (const item of series) {
         const value = row[item.id];
-        const normalized =
-          typeof value === 'number' && Number.isFinite(value) ? (value / sum) * 100 : 0;
-        row[item.id] = Math.round(normalized * 100) / 100;
+        if (typeof value !== 'number' || !Number.isFinite(value) || value === 0) {
+          row[item.id] = 0;
+          continue;
+        }
+        if (value > 0) {
+          row[item.id] = positiveSum > 0 ? (value / positiveSum) * 100 : 0;
+          continue;
+        }
+        row[item.id] = negativeSumAbs > 0 ? -(Math.abs(value) / negativeSumAbs) * 100 : 0;
       }
     }
   }

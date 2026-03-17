@@ -134,6 +134,7 @@
   top: 0;
   z-index: 1210;
   min-width: 180px;
+  overflow: visible;
   padding: 6px;
   border: 1px solid var(--grid-border);
   border-radius: 10px;
@@ -147,6 +148,16 @@
 .contextMenuItemWrap:hover > .contextSubMenu,
 .contextMenuItemWrap:focus-within > .contextSubMenu {
   display: flex;
+}
+
+.contextMenuItemWrap[data-submenu-up='true'] > .contextSubMenu {
+  top: auto;
+  bottom: 0;
+}
+
+.contextMenuItemWrap[data-submenu-left='true'] > .contextSubMenu {
+  left: auto;
+  right: 100%;
 }
 
 .contextMenuStatRow {
