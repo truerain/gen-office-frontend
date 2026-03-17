@@ -52,6 +52,60 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
     } as React.CSSProperties;
   };
 
+  const getGroupVisibilityToggle = (header: any) => {
+    const meta = header?.column?.columnDef?.meta as
+      | {
+          groupVisibilityToggle?: {
+            columnIds?: string[];
+            expandLabel?: React.ReactNode;
+            collapseLabel?: React.ReactNode;
+            ariaLabel?: string;
+          };
+        }
+      | undefined;
+    const config = meta?.groupVisibilityToggle;
+    if (!config) return null;
+
+    const configuredColumnIds =
+      Array.isArray(config.columnIds) && config.columnIds.length > 0 ? config.columnIds : null;
+    const fallbackColumnIds: string[] =
+      configuredColumnIds == null
+        ? ((typeof header.column?.getLeafColumns === 'function'
+            ? header.column.getLeafColumns()
+            : []) as any[])
+            .map((leafColumn) => leafColumn?.id)
+            .filter((columnId): columnId is string => typeof columnId === 'string')
+            .slice(1)
+        : [];
+    const targetColumnIds = configuredColumnIds ?? fallbackColumnIds;
+    if (targetColumnIds.length === 0) return null;
+
+    const targetColumns = targetColumnIds
+      .map((columnId) => table.getColumn(columnId))
+      .filter((column): column is NonNullable<typeof column> => Boolean(column));
+    if (targetColumns.length === 0) return null;
+
+    const isExpanded = targetColumns.every((column) => column.getIsVisible());
+    return {
+      isExpanded,
+      expandLabel: config.expandLabel ?? '+',
+      collapseLabel: config.collapseLabel ?? '-',
+      ariaLabel: config.ariaLabel ?? 'Toggle grouped columns',
+      onToggle: (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const nextVisible = !isExpanded;
+        table.setColumnVisibility((prev) => {
+          const next = { ...prev };
+          targetColumns.forEach((column) => {
+            next[column.id] = nextVisible;
+          });
+          return next;
+        });
+      },
+    };
+  };
+
   return (
     <thead className={styles.thead}>
       {headerGroups.map((hg, idx) => (
@@ -61,18 +115,16 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
         >
           {hg.headers.map((header) => {
             const col = header.column;
-            const isLeafBySpan = header.colSpan === 1;
             const subHeaders: any[] = Array.isArray((header as any).subHeaders) ? (header as any).subHeaders : [];
-            const isLeafHeader = isLeafBySpan || subHeaders.length === 0;
             const hasParentColumn = Boolean((col as any).parent);
-            const shouldRenderLeafPlaceholder = header.isPlaceholder && isLeafBySpan && !hasParentColumn;
+            const isStandaloneLeafPlaceholder =
+              header.isPlaceholder && !hasParentColumn && header.colSpan === 1;
+            const isLeafHeader = subHeaders.length === 0 || isStandaloneLeafPlaceholder;
 
-            if (isLeafBySpan) {
-              if (header.isPlaceholder && !shouldRenderLeafPlaceholder) return null;
+            if (header.isPlaceholder && !isStandaloneLeafPlaceholder) return null;
+            if (isLeafHeader) {
               if (renderedLeafColumnIds.has(col.id)) return null;
               renderedLeafColumnIds.add(col.id);
-            } else if (header.isPlaceholder) {
-              return null;
             }
 
             const resizing = col.getIsResizing?.() ?? false;
@@ -80,6 +132,7 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
             const canSort = col.getCanSort();
             const sortState = col.getIsSorted();
             const rowSpan = isLeafHeader ? Math.max(1, totalHeaderRows - idx) : 1;
+            const groupToggle = getGroupVisibilityToggle(header);
 
             return (
               <th
@@ -98,6 +151,17 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
               >
                 <div className={styles.thInner} onClick={canSort ? col.getToggleSortingHandler() : undefined}>
                   {flexRender(col.columnDef.header, header.getContext())}
+                  {groupToggle ? (
+                    <button
+                      type="button"
+                      className={styles.groupToggleButton}
+                      aria-label={groupToggle.ariaLabel}
+                      aria-expanded={groupToggle.isExpanded}
+                      onClick={groupToggle.onToggle}
+                    >
+                      {groupToggle.isExpanded ? groupToggle.collapseLabel : groupToggle.expandLabel}
+                    </button>
+                  ) : null}
                   {sortState ? <span className={styles.sortIcon}>{sortState === 'asc' ? '^' : 'v'}</span> : null}
                 </div>
 

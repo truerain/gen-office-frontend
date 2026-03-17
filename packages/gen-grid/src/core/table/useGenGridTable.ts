@@ -17,6 +17,7 @@ import {
   type SortingState,
   type ColumnPinningState,
   type ColumnSizingState,
+  type VisibilityState,
 } from '@tanstack/react-table';
 import type { GenGridTreeOptions } from '../../GenGrid.types';
 
@@ -66,6 +67,9 @@ export type GenGridTableProps<TData> = {
 
   expanded?: ExpandedState;
   onExpandedChange?: (next: ExpandedState) => void;
+
+  columnVisibility?: VisibilityState;
+  onColumnVisibilityChange?: (next: VisibilityState) => void;
 
   // row number
   enableRowNumber?: boolean;
@@ -129,6 +133,9 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     expanded,
     onExpandedChange,
 
+    columnVisibility,
+    onColumnVisibilityChange,
+
     enableRowNumber,
     rowNumberHeader,
     rowNumberWidth,
@@ -174,6 +181,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
   const [innerColumnFilters, setInnerColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [innerGlobalFilter, setInnerGlobalFilter] = React.useState<string>('');
   const [innerColumnSizing, setInnerColumnSizing] = React.useState<ColumnSizingState>({});
+  const [innerColumnVisibility, setInnerColumnVisibility] = React.useState<VisibilityState>({});
 
   // ---------- user pinned from meta ----------
   const leafDefs = React.useMemo(() => getLeafColumnDefs(columns), [columns]);
@@ -207,6 +215,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
   const resolvedGlobalFilter = globalFilter ?? innerGlobalFilter;
   const resolvedColumnPinning = columnPinning ?? innerColumnPinning;
   const resolvedColumnSizing = columnSizing ?? innerColumnSizing;
+  const resolvedColumnVisibility = columnVisibility ?? innerColumnVisibility;
 
   // create system columns
   const rowStatusColumn = useRowStatusColumn<TData>({
@@ -356,6 +365,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
       globalFilter: enableGlobalFilter ? resolvedGlobalFilter : undefined,
       columnPinning: resolvedColumnPinning,
       columnSizing: resolvedColumnSizing,
+      columnVisibility: resolvedColumnVisibility,
     },
 
     onSortingChange: (updater) => {
@@ -426,6 +436,15 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
         onColumnSizingChange(typeof updater === 'function' ? updater(resolvedColumnSizing) : updater);
       } else {
         setInnerColumnSizing(updater);
+      }
+    },
+
+    onColumnVisibilityChange: (updater) => {
+      const next = typeof updater === 'function' ? updater(resolvedColumnVisibility) : updater;
+      if (onColumnVisibilityChange) {
+        onColumnVisibilityChange(next);
+      } else {
+        setInnerColumnVisibility(next);
       }
     },
 

@@ -126,10 +126,14 @@ export default function CoActualsPage(_props: PageComponentProps) {
           columns={columns}
           getRowId={(row, index) => makeRowId(row, index)}
           onCommit={async () => ({ ok: true })}
+          excelExport={{
+            mode: 'frontend',
+            frontend: { onlySelected: false },
+          }}
           actionBar={{
             position: 'top',
             defaultStyle: 'icon',
-            includeBuiltIns: ['filter'],
+            includeBuiltIns: ['filter', 'excel'],
             customActions: [
               {
                 key: 'settings',

@@ -1,0 +1,75 @@
+erDiagram
+    %% 1. 조직 마스터
+    TB_MA_ORG_MASTER ||--o{ TB_MA_PERFORMANCE_FACT : "costs incurred by"
+    TB_MA_ORG_MASTER {
+        string org_cd PK "조직 코드 (Cost Center/Profit Center)"
+        string org_nm "조직명"
+        string org_type "조직 유형 (CC/PC)"
+        string parent_org_cd "상위 조직 (Hierarchy)"
+    }
+
+    %% 2. 계정 마스터 (COA)
+    TB_MA_COA_MASTER ||--o{ TB_MA_PERFORMANCE_FACT : "classified by"
+    TB_MA_COA_MASTER {
+        string acct_cd PK "GL 계정 코드"
+        string acct_nm "계정명"
+        string acct_group "계정 그룹 (수익/비용/자산/부채)"
+        string parent_acct_cd "상위 계정 (Total Account)"
+    }
+
+    %% 3. 통계지표 마스터 (SKF)
+    TB_MA_SKF_MASTER ||--o{ TB_MA_PERFORMANCE_FACT : "measured by"
+    TB_MA_SKF_MASTER {
+        string skf_cd PK "통계지표 코드 (판매대수, 인원수 등)"
+        string skf_nm "지표명"
+        string uom_cd "단위 (EA, HR, M2)"
+    }
+
+    %% 4. 실적 및 계획 팩트 테이블
+    TB_MA_PERFORMANCE_FACT {
+        string fiscal_yr PK "회계 연도 (FY)"
+        string fiscal_prd PK "회계 기간 (01~12)"
+        string org_cd PK "조직 코드 (FK)"
+        string acct_cd PK "계정 코드 (FK)"
+        string version_cd PK "버전 (Actual/Plan_V1/Plan_Final)"
+        decimal amt_lc "금액 (Local Currency)"
+        decimal stat_qty "통계 수량 (Quantity)"
+        string currency_cd "통화 (KRW, USD)"
+    }
+
+    %% 1. GL 원장 (Transaction Level)
+    TB_MA_GL_LEDGER ||--o{ TB_MA_SUMMARY_FACT : "aggregated into"
+    TB_MA_GL_LEDGER {
+        string doc_no PK "전표 번호"
+        int line_item PK "전표 행 번호"
+        date posting_date "전기 일자"
+        string gl_acct_cd FK "GL 계정 코드"
+        string org_cd FK "코스트 센터"
+        decimal amt "금액"
+        string desc "적요 (내용)"
+    }
+
+    %% 2. PL 마스터 (Report Structure)
+    TB_MA_PL_MASTER ||--o{ TB_MA_SUMMARY_FACT : "defines rows for"
+    TB_MA_PL_MASTER {
+        string pl_item_cd PK "PL 항목 코드 (예: GP, OP)"
+        string pl_item_nm "항목명 (예: 매출총이익)"
+        int sort_ord "출력 순서"
+        string formula "계산식 (예: 매출-원가)"
+        int level "계층 레벨"
+    }
+
+    %% 3. 요약 테이블 (Performance Summary)
+    TB_MA_SUMMARY_FACT {
+        string fiscal_yr PK "회계 연도"
+        string fiscal_prd PK "회계 기간 (01-12)"
+        string org_cd PK "조직 코드 (FK)"
+        string acct_cd PK "계정 코드 (FK)"
+        string version_cd PK "ACT(실적)/BUD(계획)"
+        decimal curr_amt "당월 금액"
+        decimal ytd_amt "연간 누적 금액 (YTD)"
+    }
+
+    %% 관계 설정
+    TB_MA_COA_MASTER ||--o{ TB_MA_GL_LEDGER : "defines"
+    TB_MA_ORG_MASTER ||--o{ TB_MA_GL_LEDGER : "incurs"

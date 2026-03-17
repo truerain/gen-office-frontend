@@ -80,6 +80,22 @@
   color: var(--grid-header-sort-icon);
 }
 
+.groupToggleButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border: 1px solid var(--grid-border);
+  border-radius: 4px;
+  background: var(--grid-bg);
+  color: var(--grid-cell-text);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+}
+
 /* column filter row */
 .columnFilter {
   padding: 4px 8px;

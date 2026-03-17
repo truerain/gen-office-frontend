@@ -1,6 +1,13 @@
 // packages/gen-grid/src/GenGrid.types.ts
 
-import type { ColumnDef, ExpandedState, GroupingState, RowSelectionState, Table } from '@tanstack/react-table';
+import type {
+  ColumnDef,
+  ExpandedState,
+  GroupingState,
+  RowSelectionState,
+  Table,
+  VisibilityState,
+} from '@tanstack/react-table';
 import type * as React from 'react';
 import type { ActiveCell } from './features/active-cell/types';
 import type { GenGridColumnMeta } from './components/layout/utils';
@@ -136,6 +143,9 @@ type CommonGridOptions<TData> = {
 
   expanded?: ExpandedState;
   onExpandedChange?: (next: ExpandedState) => void;
+
+  columnVisibility?: VisibilityState;
+  onColumnVisibilityChange?: (next: VisibilityState) => void;
 
   activeCell?: ActiveCell;
   onActiveCellChange?: (next: ActiveCell) => void;

@@ -60,6 +60,14 @@ export type GenGridColumnMeta = {
     value: unknown;
   }) => unknown;
   rowSpanComparator?: (a: unknown, b: unknown, args: { columnId: string }) => boolean;
+
+  // group header toggle for child column visibility
+  groupVisibilityToggle?: {
+    columnIds?: string[];
+    expandLabel?: React.ReactNode;
+    collapseLabel?: React.ReactNode;
+    ariaLabel?: string;
+  };
 };
 
 // Step2: columnDef meta getter

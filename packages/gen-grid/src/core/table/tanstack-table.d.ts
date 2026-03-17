@@ -60,6 +60,12 @@ declare module '@tanstack/react-table' {
       rowId: string;
       columnId: string;
     }) => unknown;
+    groupVisibilityToggle?: {
+      columnIds?: string[];
+      expandLabel?: React.ReactNode;
+      collapseLabel?: React.ReactNode;
+      ariaLabel?: string;
+    };
   }
 }
 

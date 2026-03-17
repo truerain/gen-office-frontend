@@ -58,6 +58,14 @@ export const createActualsColumns = (viewMode: ActualsViewMode = 'summary'): Col
         {
           id: 'currGroup',
           header: '당기',
+          meta: {
+            groupVisibilityToggle: {
+              //columnIds: [...monthKeys],
+              expandLabel: '+',
+              collapseLabel: '-',
+              ariaLabel: '월별 컬럼 접기 또는 펼치기',
+            },
+          } as any,
           columns: [
             {
               id: 'currActAmt',
