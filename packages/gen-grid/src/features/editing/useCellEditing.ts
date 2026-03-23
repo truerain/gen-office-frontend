@@ -169,7 +169,13 @@ export function useCellEditing<TData>(args: {
             suppressNextFocusEditRef.current = null;
             return;
           }
-          if (!editOnActiveCell && !editMode) return;
+          if (!editOnActiveCell) {
+            // Avoid re-entering edit on plain cell focus after the editor blurs.
+            // Keep edit chaining on navigation handled by pending-edit flow instead.
+            if (!editCell) return;
+          } else if (!editMode) {
+            return;
+          }
           if (isEditing) return;
           if (editCell && (editCell.rowId !== rowId || editCell.columnId !== columnId)) {
             pendingEditCellRef.current = { rowId, columnId };
@@ -438,7 +444,8 @@ export function useCellEditing<TData>(args: {
         }
       }
     }
-    stopEditing({ preserve: Boolean(keepEditingOnNavigate) });
+    // If there is no pending target cell, finish edit and return to navigation mode.
+    stopEditing({ preserve: false });
   }, [canEdit, clearPending, enterEdit, keepEditingOnNavigate, stopEditing]);
 
   return {
@@ -465,7 +472,8 @@ export function useCellEditing<TData>(args: {
           }
         }
       }
-      stopEditing({ preserve: Boolean(keepEditingOnNavigate) });
+      // Blur/commit without navigation target should exit edit mode.
+      stopEditing({ preserve: false });
     },
 
     /** value만 즉시 반영하고 편집 상태는 유지 */

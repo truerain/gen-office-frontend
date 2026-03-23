@@ -351,6 +351,7 @@ export default function LkupManagementPage(_props: PageComponentProps) {
                     ({ [columnId]: value } as Partial<LkupDetailGridRow>)
                   }
                   deleteMode="selected"
+                  deletePolicy='createdOnly'
                   actionBar={{
                     position: 'top',
                     defaultStyle: 'icon',
@@ -424,6 +425,7 @@ export default function LkupManagementPage(_props: PageComponentProps) {
                     enableFooterRow: false,
                     enableStickyFooterRow: true,
                     enableActiveRowHighlight: true,
+                    checkboxSelectionMode: 'createdOnly',
                   }}
                 />
               </div>

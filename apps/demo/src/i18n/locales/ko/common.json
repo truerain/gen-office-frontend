@@ -30,6 +30,7 @@
   "crud.excel": "엑셀",
   "crud.rows": "행",
   "crud.reset": "초기화",
+  "crud.delete_created_only": "신규로 추가된 행(created)만 삭제할 수 있습니다.",
   "crud.excel_backend_endpoint_required": "[GenGridCrud] backend 엑셀 내보내기에는 excelExport.backend.endpoint가 필요합니다.",
   "crud.excel_export_request_failed": "[GenGridCrud] 엑셀 내보내기 요청이 실패했습니다: {{status}}",
   "menu.name": "메뉴 이름",

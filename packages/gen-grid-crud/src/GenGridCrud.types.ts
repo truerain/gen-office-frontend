@@ -38,6 +38,8 @@ export type CrudUiState<TData> = {
   rowSelection: readonly CrudRowId[];
   activeRowId?: CrudRowId;
   activeColumnId?: string;
+  deleteMode?: 'selected' | 'activeRow';
+  deletePolicy?: 'all' | 'createdOnly';
 
   isCommitting: boolean;
   fieldErrors: CrudFieldErrorMap;
@@ -144,6 +146,7 @@ export type GenGridCrudProps<TData> = {
   createRow?: () => TData;
   makePatch?: UseMakePatch<TData>;
   deleteMode?: 'selected' | 'activeRow';
+  deletePolicy?: 'all' | 'createdOnly';
 
   /** commit */
   onCommit: (args: {

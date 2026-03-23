@@ -23,6 +23,7 @@ import {
 import styles from './GenGridCrud.module.css';
 
 import { GenGrid } from '@gen-office/gen-grid';
+import { AlertDialog } from '@gen-office/ui';
 
 const CRUD_TEMP_ID_KEY = '__crud_temp_id__';
 const SYSTEM_COLUMN_IDS = new Set(['__select__', '__rowNumber__', '__row_status__']);
@@ -785,6 +786,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     // Map columnId/value to row patch.
     makePatch,
     deleteMode = 'selected',
+    deletePolicy = 'all',
 
     onCommit,
     isCommitting: isCommittingControlled,
@@ -820,6 +822,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   const resolvedActionButtonStyle = actionBar?.defaultStyle ?? actionButtonStyle;
   const includedBuiltInActions = actionBar?.includeBuiltIns;
   const customActions = actionBar?.customActions;
+  const [deleteBlockedDialogOpen, setDeleteBlockedDialogOpen] = React.useState(false);
 
   const [rowSelectionUncontrolled, setRowSelectionUncontrolled] = React.useState<readonly CrudRowId[]>([]);
   const rowSelectionIds = rowSelectionControlledIds ?? rowSelectionUncontrolled;
@@ -1084,16 +1087,31 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       targets = rowId != null ? [rowId] : [];
     }
 
+    const requestedCount = targets.length;
+    if (deletePolicy === 'createdOnly') {
+      targets = targets.filter((rowId) => {
+        const pendingRowId = pendingRowIdByGridId.get(String(rowId)) ?? rowId;
+        return pendingApi.getRowStatus(pendingRowId) === 'created';
+      });
+      if (requestedCount > 0 && targets.length === 0) {
+        setDeleteBlockedDialogOpen(true);
+        return;
+      }
+    }
+
     if (!targets.length) return;
     pendingApi.deleteRowIds(targets);
     setRowSelectionIds([]);
   }, [
+    t,
+    deletePolicy,
     deleteMode,
     rowSelectionIds,
     activeCell,
     activeCellControlled,
     pendingApi,
     pendingRowIdByGridId,
+    setDeleteBlockedDialogOpen,
     setRowSelectionIds,
   ]);
 
@@ -1147,6 +1165,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       rowSelection: latest.rowSelectionIds,
       activeRowId: latest.activeCell?.rowId,
       activeColumnId: latest.activeCell?.columnId,
+      deleteMode,
+      deletePolicy,
       isCommitting: latest.isCommitting,
       fieldErrors: {},
     };
@@ -1179,6 +1199,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     onCommitSuccess,
     onCommitError,
     beforeCommit,
+    deleteMode,
+    deletePolicy,
     data,
     columns,
     getRowId,
@@ -1199,6 +1221,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       rowSelection: rowSelectionIds,
       activeRowId: activeCell?.rowId,
       activeColumnId: activeCell?.columnId,
+      deleteMode,
+      deletePolicy,
       isCommitting,
       fieldErrors,
     };
@@ -1535,6 +1559,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     rowSelectionIds,
     activeCell?.rowId,
     activeCell?.columnId,
+    deleteMode,
+    deletePolicy,
     isCommitting,
     fieldErrors,
     title,
@@ -1662,6 +1688,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       rowSelection: rowSelectionIds,
       activeRowId: activeCell?.rowId,
       activeColumnId: activeCell?.columnId,
+      deleteMode,
+      deletePolicy,
       isCommitting,
       fieldErrors,
     });
@@ -1674,6 +1702,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     pendingDiff,
     rowSelectionIds,
     activeCell, activeCellControlled,
+    deleteMode,
+    deletePolicy,
     fieldErrors,
     isCommitting,
   ]);
@@ -1703,6 +1733,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
           rowSelection: rowSelectionIds,
           activeRowId: activeCell?.rowId,
           activeColumnId: activeCell?.columnId,
+          deleteMode,
+          deletePolicy,
           isCommitting,
           fieldErrors,
         }}
@@ -1785,6 +1817,19 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       {(resolvedActionBarPosition === 'bottom' || resolvedActionBarPosition === 'both') && (
         <div className={styles.actionBarBottom}>{actionBarNode}</div>
       )}
+
+      <AlertDialog
+        open={deleteBlockedDialogOpen}
+        onOpenChange={setDeleteBlockedDialogOpen}
+        title={t('crud.delete', { defaultValue: 'Delete' })}
+        message={t('crud.delete_created_only', {
+          defaultValue: 'Only newly created rows can be deleted.',
+        })}
+        confirmText={t('common.confirm', { defaultValue: 'Confirm' })}
+        onConfirm={() => {}}
+        hideCancelButton
+        variant="warning"
+      />
     </div>
   );
 }

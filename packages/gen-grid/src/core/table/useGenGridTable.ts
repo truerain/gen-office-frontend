@@ -57,6 +57,7 @@ export type GenGridTableProps<TData> = {
 
   // selection
   checkboxSelection?: boolean;
+  checkboxSelectionMode?: 'all' | 'createdOnly';
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: (next: RowSelectionState) => void;
 
@@ -122,6 +123,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     rowStatusResolver,
 
     checkboxSelection,
+    checkboxSelectionMode,
     rowSelection,
     onRowSelectionChange,
 
@@ -448,7 +450,14 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
       }
     },
 
-    enableRowSelection: checkboxSelection ?? false,
+    enableRowSelection: (row) => {
+      if (!checkboxSelection) return false;
+      if (checkboxSelectionMode === 'createdOnly') {
+        if (!rowStatusResolver) return false;
+        return rowStatusResolver(String(row.id)) === 'created';
+      }
+      return true;
+    },
     enableGrouping: treeEnabled ? false : enableGrouping ?? false,
     enableSorting: treeEnabled || rowSpanningEnabled ? false : true,
     enableColumnResizing: enableColumnSizing ?? false,

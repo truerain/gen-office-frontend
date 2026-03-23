@@ -108,6 +108,7 @@ type CommonGridOptions<TData> = {
   enableRowStatus?: boolean;
   rowStatusResolver?: (rowId: string) => 'clean' | 'created' | 'updated' | 'deleted';
   checkboxSelection?: boolean;
+  checkboxSelectionMode?: 'all' | 'createdOnly';
   enableRowNumber?: boolean;
   enableActiveRowHighlight?: boolean;
   /** enable drag cell range selection */

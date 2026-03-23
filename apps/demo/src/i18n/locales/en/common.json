@@ -30,6 +30,7 @@
   "crud.excel": "Excel",
   "crud.rows": "Rows",
   "crud.reset": "Reset",
+  "crud.delete_created_only": "Only newly created rows can be deleted.",
   "crud.excel_backend_endpoint_required": "[GenGridCrud] excelExport.backend.endpoint is required for backend mode.",
   "crud.excel_export_request_failed": "[GenGridCrud] excel export request failed: {{status}}",
   "menu.name": "Menu Name",
