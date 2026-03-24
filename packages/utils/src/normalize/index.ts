@@ -30,6 +30,14 @@ export const normalizeUppercode = (value: unknown): string => {
     .replace(/[^A-Z0-9_]/g, '');
 }
 
+export const normalizeUseYn = (value: unknown): 'Y' | 'N' => {
+    const v = normalize(value).toUpperCase();
+    if(v !== 'Y' && v !== 'N') {
+        throw new Error(`Value should be either 'Y' or 'N'.`);
+    }
+    return v === 'Y' ? 'Y' : 'N';
+}
+
 export const normalizeYesNo = (value: unknown): 'Y' | 'N' => {
     const v = normalize(value).toUpperCase();
     if(v !== 'Y' && v !== 'N') {
