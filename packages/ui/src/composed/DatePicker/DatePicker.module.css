@@ -129,3 +129,105 @@
   height: 0.875rem;
   margin-right: 0.25rem;
 }
+
+.monthHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.monthPopover {
+  width: 14rem;
+}
+
+.monthContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.yearNav {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  color: var(--color-fg-secondary);
+}
+
+.yearNav:hover {
+  background-color: var(--color-bg-secondary);
+}
+
+.yearNav:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.yearNav:focus-visible {
+  box-shadow: 0 0 0 0.125rem rgba(165, 0, 52, 0.2);
+}
+
+.yearNavIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.yearLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-fg-primary);
+}
+
+.monthGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.375rem;
+}
+
+.monthCell {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.9rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--color-border-default);
+  font-size: 0.8125rem;
+  color: var(--color-fg-secondary);
+  cursor: pointer;
+}
+
+.monthCell:hover {
+  border-color: var(--color-border-strong);
+  background-color: var(--color-bg-secondary);
+}
+
+.monthCell:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-color: var(--color-border-default);
+  background-color: transparent;
+}
+
+.monthCell[data-selected='true'] {
+  border-color: var(--color-primary);
+  background-color: rgba(165, 0, 52, 0.1);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.monthActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.375rem;
+}
+
+.monthActionIcon {
+  width: 0.95rem;
+  height: 0.95rem;
+}

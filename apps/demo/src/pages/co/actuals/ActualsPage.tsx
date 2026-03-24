@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
-import { Calculator, RefreshCcw, Settings } from 'lucide-react';
+import { Calculator, RefreshCcw, Search, Settings } from 'lucide-react';
 
 import { GenGridCrud } from '@gen-office/gen-grid-crud';
 import {
   RangeChartDialog,
   useRangeChartContextMenu,
 } from '@gen-office/gen-grid-chart';
-import { Button, Radio, RadioGroup, SimpleDialog, SimpleFilterBar, type FilterField } from '@gen-office/ui';
+import { Button, FilterBar, Input, MonthPicker, Radio, RadioGroup, SimpleDialog } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 import { usePageContext } from '@/contexts';
@@ -36,6 +36,21 @@ function makeRowId(row: CoActual, index: number) {
   return [row.fiscalYr, row.fiscalPrd, row.orgCd, row.acctCd, String(index)]
     .map((v) => String(v ?? '').trim())
     .join('|');
+}
+
+function toMonthDate(fiscalYr: string, fiscalPrd: string): Date | undefined {
+  const year = Number(fiscalYr.trim());
+  const month = Number(fiscalPrd.trim());
+  if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) return undefined;
+  return new Date(year, month - 1, 1);
+}
+
+function fromMonthDate(date?: Date) {
+  if (!date) return { fiscalYr: '', fiscalPrd: '' };
+  return {
+    fiscalYr: String(date.getFullYear()),
+    fiscalPrd: String(date.getMonth() + 1).padStart(2, '0'),
+  };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -88,15 +103,6 @@ export default function CoActualsPage(_props: PageComponentProps) {
     [filters.fiscalPrd, filters.fiscalYr, filters.orgCd, openMenuPage, viewMode, _props.menuId]
   );
 
-  const filterFields = useMemo<FilterField<ActualsFilters>[]>(() => {
-    return [
-      { key: 'fiscalYr', title: 'Fiscal Year', type: 'text', placeholder: '2026', flex: 0 },
-      { key: 'fiscalPrd', title: 'Period', type: 'text', placeholder: '03', flex: 0 },
-      { key: 'orgCd', title: 'Organization', type: 'text', placeholder: 'HQ', flex: 0 },
-      { key: 'acctCd', title: 'Account', type: 'text', placeholder: '500100', flex: 1 },
-    ];
-  }, []);
-
   const handleSearch = () => {
     const same =
       draftFilters.fiscalYr.trim() === filters.fiscalYr.trim() &&
@@ -119,13 +125,48 @@ export default function CoActualsPage(_props: PageComponentProps) {
         ]}
       />
       <div className={styles.filter}>
-        <SimpleFilterBar
-          value={draftFilters}
-          fields={filterFields}
-          onChange={setDraftFilters}
-          onSearch={handleSearch}
-          searchLabel="Search"
-        />
+        <FilterBar
+          actions={
+            <Button onClick={handleSearch} variant="primary" size="md">
+              <Search size={16} />
+              Search
+            </Button>
+          }
+        >
+          <FilterBar.Item title="Fiscal Month" flex={0} width="220px">
+            <MonthPicker
+              value={toMonthDate(draftFilters.fiscalYr, draftFilters.fiscalPrd)}
+              onChange={(next) => {
+                const { fiscalYr, fiscalPrd } = fromMonthDate(next);
+                setDraftFilters((prev) => ({ ...prev, fiscalYr, fiscalPrd }));
+              }}
+              placeholder="YYYY-MM"
+              format={(date) =>
+                `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+              }
+            />
+          </FilterBar.Item>
+          <FilterBar.Item title="Organization" flex={0} width="220px">
+            <Input
+              value={draftFilters.orgCd}
+              onChange={(event) =>
+                setDraftFilters((prev) => ({ ...prev, orgCd: event.target.value }))
+              }
+              placeholder="HQ"
+              clearable
+            />
+          </FilterBar.Item>
+          <FilterBar.Item title="Account" flex={1} width="300px">
+            <Input
+              value={draftFilters.acctCd}
+              onChange={(event) =>
+                setDraftFilters((prev) => ({ ...prev, acctCd: event.target.value }))
+              }
+              placeholder="500100"
+              clearable
+            />
+          </FilterBar.Item>
+        </FilterBar>
       </div>
       <div className={styles.workarea}>
         {isError && (

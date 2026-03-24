@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
-import { Calendar, DatePicker, RangeDatePicker } from '@gen-office/ui';
+import { Calendar, DatePicker, MonthPicker, RangeDatePicker } from '@gen-office/ui';
 import styles from './DatePickerDemoPage.module.css';
 
 function DatePickerDemoPage() {
@@ -9,6 +9,7 @@ function DatePickerDemoPage() {
   const [calendarDate, setCalendarDate] = useState<Date | undefined>(new Date());
   const [rangeDate, setRangeDate] = useState<DateRange | undefined>();
   const [rangeCalendar, setRangeCalendar] = useState<DateRange | undefined>();
+  const [monthDate, setMonthDate] = useState<Date | undefined>(new Date());
 
   const formatted = useMemo(() => {
     if (!basicDate) return '';
@@ -55,6 +56,22 @@ function DatePickerDemoPage() {
             <RangeDatePicker value={rangeDate} onChange={setRangeDate} />
             <div className={styles.meta}>
               Range: {rangeDate?.from ? rangeDate.from.toDateString() : 'None'}{rangeDate?.to ? ` ~ ${rangeDate.to.toDateString()}` : ''}
+            </div>
+          </div>
+
+          <div className={styles.card}>
+            <h3>Month Picker</h3>
+            <MonthPicker
+              value={monthDate}
+              onChange={setMonthDate}
+              placeholder="Select month"
+              fromMonth={new Date(2026, 2, 1)}
+              format={(date) =>
+                `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+              }
+            />
+            <div className={styles.meta}>
+              Month: {monthDate ? `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}` : 'None'}
             </div>
           </div>
         </div>

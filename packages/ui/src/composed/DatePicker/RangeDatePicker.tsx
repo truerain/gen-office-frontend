@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react';
-import { Calendar as CalendarIcon, X } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Calendar as CalendarIcon, Check, X } from 'lucide-react';
 import type { DateRange, PropsRange } from 'react-day-picker';
 import { Button } from '../../core/Button';
 import { Calendar } from '../../core/Calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '../../core/Popover';
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '../../core/Popover';
 import type { CalendarProps } from '../../core/Calendar/Calendar.types';
 import type { RangeDatePickerProps } from './RangeDatePicker.types';
 import styles from './DatePicker.module.css';
@@ -46,60 +46,87 @@ export function RangeDatePicker({
   className,
 }: RangeDatePickerProps) {
   const [open, setOpen] = useState(false);
+  const [draftValue, setDraftValue] = useState<DateRange | undefined>(value);
 
-  const label = useMemo(
-    () => formatRange(value, locale, format, formatOptions),
-    [value, locale, format, formatOptions]
-  );
+  useEffect(() => {
+    if (open) setDraftValue(value);
+  }, [open, value]);
 
   const handleSelect: PropsRange['onSelect'] = (next) => {
-    onChange?.(next ?? undefined);
-    const wasSelectingEnd = value?.from && !value?.to;
-    if (wasSelectingEnd && next?.to) setOpen(false);
+    setDraftValue(next ?? undefined);
   };
 
   const handleClear = () => {
-    onChange?.(undefined);
+    setDraftValue(undefined);
   };
+
+  const selectedValue = open ? draftValue : value;
+  const label = useMemo(
+    () => formatRange(selectedValue, locale, format, formatOptions),
+    [selectedValue, locale, format, formatOptions]
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          size="md"
-          className={styles.trigger}
-          data-empty={!label}
-          disabled={disabled}
-        >
-          <CalendarIcon className={styles.icon} />
-          {label || placeholder}
-        </Button>
-      </PopoverTrigger>
+      <PopoverAnchor asChild>
+        <div className={styles.field} data-disabled={disabled}>
+          <input
+            type="text"
+            className={styles.input}
+            value={label}
+            placeholder={placeholder}
+            disabled={disabled}
+            readOnly
+            onFocus={() => setOpen(true)}
+            onClick={() => setOpen(true)}
+          />
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className={styles.triggerButton}
+              aria-label="Open range calendar"
+              disabled={disabled}
+            >
+              <CalendarIcon className={styles.triggerIcon} />
+            </button>
+          </PopoverTrigger>
+        </div>
+      </PopoverAnchor>
       <PopoverContent align={align} className={className}>
         <div className={styles.content}>
           <Calendar
             mode="range"
-            selected={value}
+            selected={selectedValue}
             onSelect={handleSelect}
             locale={locale as CalendarProps['locale']}
             {...calendarProps}
           />
-          {clearable && value?.from && (
-            <div className={styles.actions}>
+          <div className={styles.monthActions}>
+            {clearable && (
               <Button
                 type="button"
-                size="sm"
+                size="icon"
                 variant="ghost"
+                aria-label="Clear range"
                 onClick={handleClear}
-                className={styles.clearButton}
+                disabled={!draftValue?.from}
               >
-                <X className={styles.clearIcon} />
-                Clear
+                <X className={styles.monthActionIcon} />
               </Button>
-            </div>
-          )}
+            )}
+            <Button
+              type="button"
+              size="icon"
+              variant="primary"
+              aria-label="Confirm range"
+              onClick={() => {
+                onChange?.(draftValue);
+                setOpen(false);
+              }}
+            >
+              <Check className={styles.monthActionIcon} />
+            </Button>
+          </div>
         </div>
       </PopoverContent>
     </Popover>
