@@ -39,6 +39,23 @@ export function useCellEditing<TData>(args: {
   const pendingEditCellRef = React.useRef<CellCoord | null>(null);
   const suppressNextFocusEditRef = React.useRef<CellCoord | null>(null);
   const suppressNextAutoEditOnceRef = React.useRef(false);
+  const liveEditCoordRef = React.useRef<CellCoord | null>(null);
+  const editStartSnapshotRef = React.useRef<{ coord: CellCoord; value: unknown } | null>(null);
+
+  const isSameCoord = React.useCallback((a: CellCoord | null, b: CellCoord | null) => {
+    if (!a || !b) return false;
+    return a.rowId === b.rowId && a.columnId === b.columnId;
+  }, []);
+
+  const readCellValue = React.useCallback(
+    (coord: CellCoord): unknown => {
+      const row =
+        table.getRowModel().rowsById?.[coord.rowId]?.original ??
+        table.getRowModel().rows.find((item) => item.id === coord.rowId)?.original;
+      return (row as any)?.[coord.columnId];
+    },
+    [table]
+  );
 
   const isNavigationKey = React.useCallback((key: string) => {
     return (
@@ -78,9 +95,35 @@ export function useCellEditing<TData>(args: {
     pendingEditCellRef.current = null;
   }, []);
 
+  const captureEditStartSnapshot = React.useCallback(
+    (coord: CellCoord) => {
+      editStartSnapshotRef.current = {
+        coord,
+        value: readCellValue(coord),
+      };
+    },
+    [readCellValue]
+  );
+
+  const restoreEditStartSnapshot = React.useCallback(
+    (coord: CellCoord) => {
+      const snapshot = editStartSnapshotRef.current;
+      if (!snapshot) return;
+      if (!isSameCoord(snapshot.coord, coord)) return;
+      if (!updateValue) return;
+
+      const currentValue = readCellValue(coord);
+      if (!Object.is(currentValue, snapshot.value)) {
+        updateValue(coord, snapshot.value);
+      }
+    },
+    [isSameCoord, readCellValue, updateValue]
+  );
+
   const enterEdit = React.useCallback(
     (coord: CellCoord) => {
       if (!canEdit(coord.rowId, coord.columnId)) return;
+      liveEditCoordRef.current = coord;
       setEditMode(true);
       setEditCell(coord);
     },
@@ -92,7 +135,9 @@ export function useCellEditing<TData>(args: {
       const preserve = Boolean(opts?.preserve);
       if (!preserve) setEditMode(false);
       clearPending();
+      liveEditCoordRef.current = null;
       setEditCell(null);
+      editStartSnapshotRef.current = null;
     },
     [clearPending, setEditMode]
   );
@@ -115,15 +160,27 @@ export function useCellEditing<TData>(args: {
 
   const cancelEditing = React.useCallback(
     (opts?: { preserve?: boolean }) => {
-      // 브리핑: v1에서는 별도 revert 로직 없음 (editor가 local state로 관리하면 됨)
       const preserve =
         opts?.preserve === undefined
           ? keepEditingOnNavigate && !!pendingEditCellRef.current
           : opts.preserve;
+      if (!preserve && editCell) {
+        restoreEditStartSnapshot(editCell);
+      }
       exitEdit({ preserve });
     },
-    [exitEdit, keepEditingOnNavigate]
+    [editCell, exitEdit, keepEditingOnNavigate, restoreEditStartSnapshot]
   );
+
+  React.useEffect(() => {
+    if (!editCell) {
+      editStartSnapshotRef.current = null;
+      return;
+    }
+    const snapshot = editStartSnapshotRef.current;
+    if (snapshot && isSameCoord(snapshot.coord, editCell)) return;
+    captureEditStartSnapshot(editCell);
+  }, [captureEditStartSnapshot, editCell, isSameCoord]);
 
   /** 편집 상태에서 Enter/Esc 처리: Cell에서 핸들 */
   const getCellEditProps = React.useCallback(
@@ -307,9 +364,9 @@ export function useCellEditing<TData>(args: {
       onActiveCellChange(next);
 
       // 편집 대상 변경
-      setEditCell(next);
+      enterEdit(next);
     },
-    [activeCell, editCell, findNextEditableCell, onActiveCellChange]
+    [activeCell, editCell, enterEdit, findNextEditableCell, onActiveCellChange]
   );
 
   React.useEffect(() => {
@@ -465,6 +522,7 @@ export function useCellEditing<TData>(args: {
 
     /** editor 렌더에서 바로 업데이트 전달 */
     commitValue: (coord: CellCoord, nextValue: unknown) => {
+      if (!isSameCoord(liveEditCoordRef.current, coord)) return;
       updateValue?.(coord, nextValue);
       if (keepEditingOnNavigate) {
         const pending = pendingEditCellRef.current;
@@ -482,6 +540,7 @@ export function useCellEditing<TData>(args: {
 
     /** value만 즉시 반영하고 편집 상태는 유지 */
     applyValue: (coord: CellCoord, nextValue: unknown) => {
+      if (!isSameCoord(liveEditCoordRef.current, coord)) return;
       updateValue?.(coord, nextValue);
     },
   };

@@ -387,7 +387,11 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
       nextValue = Boolean(sourceDraft);
     }
 
-    if (Object.is(currentValue, nextValue)) {
+    const isCurrentEmpty = currentValue == null || currentValue === '';
+    const isNextEmpty = nextValue == null || nextValue === '';
+    const isSemanticallySame = Object.is(currentValue, nextValue) || (isCurrentEmpty && isNextEmpty);
+
+    if (isSemanticallySame) {
       onCommitEdit();
       return;
     }
