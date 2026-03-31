@@ -7,7 +7,12 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshCcw, Users } from 'lucide-react';
 
-import { GenGridCrud, type CrudChange, type CrudRowId } from '@gen-office/gen-grid-crud';
+import {
+  GenGridCrud,
+  type AdditionalExportDefinition,
+  type CrudChange,
+  type CrudRowId,
+} from '@gen-office/gen-grid-crud';
 import { SimpleFilterBar, type FilterField } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
@@ -42,6 +47,41 @@ export default function UserManagementPage(_props: PageComponentProps) {
   const { data: userList = [], refetch, dataUpdatedAt } = useUserListQuery(queryParams);
 
   const columns = useMemo(() => createUserManagementColumns(t), [t]);
+  const additionalExports = useMemo<readonly AdditionalExportDefinition<User, User>[]>(() => {
+    return [
+      {
+        key: 'user-upload-template',
+        label: 'User Upload Template',
+        fileName: 'user_upload_template',
+        sheetName: 'UserTemplate',
+        defaultBorder: true,
+        source: () => ({
+          columns: [
+            { id: 'userId', header: 'User ID', accessorKey: 'userId' },
+            { id: 'empNo', header: 'Employee No', accessorKey: 'empNo' },
+            { id: 'empName', header: 'Employee Name', accessorKey: 'empName' },
+            { id: 'email', header: 'Email', accessorKey: 'email' },
+            { id: 'orgId', header: 'Org ID', accessorKey: 'orgId' },
+            { id: 'langCd', header: 'Language', accessorKey: 'langCd' },
+          ],
+          data: Array.from({ length: 20 }, (_, index) => ({
+            userId: index + 1,
+            empNo: '',
+            empName: '',
+            empNameEng: '',
+            password: '',
+            email: '',
+            orgId: '',
+            title: '',
+            langCd: 'ko',
+            createdBy: '',
+            lastUpdatedBy: '',
+          })),
+          getRowId: (row) => row.userId,
+        }),
+      },
+    ];
+  }, []);
 
   const filterFields = useMemo<FilterField<{ empName: string, email: string }>[]>(() => {
     return [
@@ -51,6 +91,7 @@ export default function UserManagementPage(_props: PageComponentProps) {
         type: 'text',
         placeholder: '',
         flex: 0,
+        enterToSearch: true,
       },
       {
         key: 'email',
@@ -112,7 +153,7 @@ export default function UserManagementPage(_props: PageComponentProps) {
           actionBar={{
             position: 'top',
             defaultStyle: 'icon',
-            includeBuiltIns: ['add', 'delete', 'save', 'filter'],
+            includeBuiltIns: ['add', 'delete', 'save', 'filter', 'excel'],
             customActions: [
               {
                 key: 'refresh',
@@ -125,8 +166,23 @@ export default function UserManagementPage(_props: PageComponentProps) {
                   void refetch();
                 },
               },
+              {
+                key: 'download-template',
+                label: 'Upload Template',
+                side: 'right',
+                style: 'icon',
+                order: 30,
+                onClick: async (ctx) => {
+                  await ctx.api.exportAdditional?.('user-upload-template');
+                },
+              },
             ],
           }}
+          excelExport={{
+            mode: 'frontend',
+            frontend: { onlySelected: false },
+          }}
+          additionalExports={additionalExports}
           beforeCommit={({ changes }) => {
             if (hasMissingUserRequired(changes)) {
               void openAlert({

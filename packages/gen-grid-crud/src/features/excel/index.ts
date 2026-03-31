@@ -1,1 +1,1 @@
-export { exportCrudExcel } from './exportExcel';
+export { exportCrudExcel, exportAdditionalCrudExcel } from './exportExcel';

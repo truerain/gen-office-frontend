@@ -15,7 +15,7 @@ import type {
   CrudFieldErrorMap,
 } from './GenGridCrud.types';
 import { CrudActionBar } from './components/CrudActionBar';
-import { exportCrudExcel } from './features/excel';
+import { exportAdditionalCrudExcel, exportCrudExcel } from './features/excel';
 import {
   buildFieldErrorKey,
   validatePendingRows,
@@ -151,6 +151,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     onStateChange,
     onCellEdit,
     excelExport,
+    additionalExports,
     editorFactory,
 
     clearDirtyOnRevert = true,
@@ -602,6 +603,73 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     t,
   ]);
 
+  const handleExportAdditional = React.useCallback(
+    async (key: string) => {
+      const target = additionalExports?.find((item) => item.key === key);
+      if (!target) {
+        const error = new Error(
+          `[GenGridCrud] additionalExports key not found: ${key}`
+        );
+        onCommitError?.({ error });
+        // eslint-disable-next-line no-console
+        console.error(error);
+        return;
+      }
+
+      const stateForExport: CrudUiState<TData> = {
+        baseData: data,
+        viewData: diff.viewData,
+        changes: pendingApi.changes,
+        pendingDiff,
+        dirty: pendingApi.dirty,
+        rowSelection: rowSelectionIds,
+        activeRowId: activeCell?.rowId,
+        activeColumnId: activeCell?.columnId,
+        deleteMode,
+        deletePolicy,
+        isCommitting,
+        fieldErrors,
+      };
+
+      const source =
+        typeof target.source === 'function'
+          ? await target.source({ state: stateForExport, columns, title })
+          : target.source;
+
+      await exportAdditionalCrudExcel({
+        fileName: target.fileName,
+        sheetName: target.sheetName,
+        defaultBorder: target.defaultBorder,
+        rowHeight: target.rowHeight,
+        columns: source.columns,
+        data: source.data,
+        getRowId: source.getRowId,
+        title,
+        t,
+        onCommitError,
+      });
+    },
+    [
+      additionalExports,
+      data,
+      diff.viewData,
+      pendingApi.changes,
+      pendingApi.dirty,
+      pendingDiff,
+      rowSelectionIds,
+      activeCell?.rowId,
+      activeCell?.columnId,
+      deleteMode,
+      deletePolicy,
+      isCommitting,
+      fieldErrors,
+      columns,
+      title,
+      t,
+      onCommitError,
+    ]
+  );
+
 
   // Diff next viewData against current gridData and apply pending patches.
   const handleGridDataChange = React.useCallback(
@@ -748,8 +816,23 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       reset: handleReset,
       toggleFilter: handleToggleFilter,
       exportExcel: excelExport ? handleExportExcel : undefined,
+      exportAdditional:
+        additionalExports && additionalExports.length > 0
+          ? handleExportAdditional
+          : undefined,
     }),
-    [createRow, handleAdd, handleDelete, handleSave, handleReset, handleToggleFilter, excelExport, handleExportExcel]
+    [
+      createRow,
+      handleAdd,
+      handleDelete,
+      handleSave,
+      handleReset,
+      handleToggleFilter,
+      excelExport,
+      handleExportExcel,
+      additionalExports,
+      handleExportAdditional,
+    ]
   );
 
   const actionBarNode =

@@ -78,8 +78,21 @@ type ExportCrudExcelArgs<TData> = {
   title?: string;
   viewData: readonly TData[];
   rowSelectionIds: readonly CrudRowId[];
-  getPendingRowId: (row: TData) => CrudRowId;
+  getPendingRowId: (row: TData, index?: number) => CrudRowId;
   gridProps?: GenGridCrudProps<TData>['gridProps'];
+  t: TranslateLike;
+  onCommitError?: (result: { error: unknown; fieldErrors?: Record<string, string> }) => void;
+};
+
+type ExportAdditionalCrudExcelArgs<TRow> = {
+  fileName?: string;
+  sheetName?: string;
+  defaultBorder?: boolean;
+  rowHeight?: number;
+  columns: readonly ColumnDef<TRow, any>[];
+  data: readonly TRow[];
+  getRowId?: (row: TRow, index: number) => CrudRowId;
+  title?: string;
   t: TranslateLike;
   onCommitError?: (result: { error: unknown; fieldErrors?: Record<string, string> }) => void;
 };
@@ -785,9 +798,13 @@ export async function exportCrudExcel<TData>(args: ExportCrudExcelArgs<TData>) {
     const excelRowHeightPt = toExcelRowHeightPt(excelExport.rowHeight);
     const selectedIds = new Set(rowSelectionIds.map((id) => String(id)));
     const sourceRows = onlySelected
-      ? viewData.filter((row) => selectedIds.has(String(getPendingRowId(row))))
+      ? viewData.filter((row, rowIndex) =>
+          selectedIds.has(String(getPendingRowId(row, rowIndex)))
+        )
       : viewData;
-    const sourceRowIds = sourceRows.map((row) => String(getPendingRowId(row)));
+    const sourceRowIds = sourceRows.map((row, rowIndex) =>
+      String(getPendingRowId(row, rowIndex))
+    );
 
     const headerFallback = t('common.column', { defaultValue: 'Column' });
     const exportColumns = buildExportColumns(columns, headerFallback);
@@ -1021,4 +1038,61 @@ export async function exportCrudExcel<TData>(args: ExportCrudExcelArgs<TData>) {
     // eslint-disable-next-line no-console
     console.error(error);
   }
+}
+
+export async function exportAdditionalCrudExcel<TRow>(
+  args: ExportAdditionalCrudExcelArgs<TRow>
+) {
+  const {
+    fileName,
+    sheetName,
+    defaultBorder,
+    rowHeight,
+    columns,
+    data,
+    getRowId,
+    title,
+    t,
+    onCommitError,
+  } = args;
+
+  const stateForExport: CrudUiState<TRow> = {
+    baseData: data,
+    viewData: data,
+    changes: [],
+    pendingDiff: { added: [], modified: [], deleted: [] },
+    dirty: false,
+    rowSelection: [],
+    activeRowId: undefined,
+    activeColumnId: undefined,
+    deleteMode: undefined,
+    deletePolicy: undefined,
+    isCommitting: false,
+    fieldErrors: {},
+  };
+
+  const resolvedGetRowId = (row: TRow, index?: number): CrudRowId => {
+    if (getRowId) return getRowId(row, index ?? 0);
+    return `additional_${index ?? 0}` as CrudRowId;
+  };
+
+  await exportCrudExcel<TRow>({
+    excelExport: {
+      mode: 'frontend',
+      fileName,
+      sheetName,
+      defaultBorder,
+      rowHeight,
+      frontend: { onlySelected: false },
+    },
+    stateForExport,
+    columns,
+    title,
+    viewData: data,
+    rowSelectionIds: [],
+    getPendingRowId: resolvedGetRowId,
+    gridProps: undefined,
+    t,
+    onCommitError,
+  });
 }

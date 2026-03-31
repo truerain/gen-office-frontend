@@ -100,6 +100,36 @@ export type ExcelExportOptions<TData> = {
   frontend?: ExcelExportFrontendOptions;
 };
 
+export type AdditionalExportSource<TData, TRow = TData> = {
+  columns: readonly ColumnDef<TRow, any>[];
+  data: readonly TRow[];
+  getRowId?: (row: TRow, index: number) => CrudRowId;
+};
+
+export type AdditionalExportContext<TData> = {
+  state: CrudUiState<TData>;
+  columns: readonly ColumnDef<TData, any>[];
+  title?: string;
+};
+
+export type AdditionalExportDefinition<TData, TRow = TData> = {
+  key: string;
+  label?: React.ReactNode;
+  fileName?: string;
+  sheetName?: string;
+  /** apply default thin border to all exported header/data cells */
+  defaultBorder?: boolean;
+  /** Excel row height in px */
+  rowHeight?: number;
+  source:
+    | AdditionalExportSource<TData, TRow>
+    | ((
+        ctx: AdditionalExportContext<TData>
+      ) =>
+        | AdditionalExportSource<TData, TRow>
+        | Promise<AdditionalExportSource<TData, TRow>>);
+};
+
 export type CrudActionApi = {
   add?: () => void;
   deleteSelected?: () => void;
@@ -107,6 +137,7 @@ export type CrudActionApi = {
   reset: () => void;
   toggleFilter?: () => void;
   exportExcel?: () => Promise<void>;
+  exportAdditional?: (key: string) => Promise<void>;
 };
 
 export type CrudActionContext<TData> = {
@@ -188,6 +219,7 @@ export type GenGridCrudProps<TData> = {
   onStateChange?: (state: CrudUiState<TData>) => void;
   onCellEdit?: (event: CrudCellEditEvent<TData>) => void | readonly CrudCellPatch<TData>[];
   excelExport?: ExcelExportOptions<TData>;
+  additionalExports?: readonly AdditionalExportDefinition<TData, any>[];
 
   /** pass-through (GenGrid props except controlled fields) */
   gridProps?: Omit<

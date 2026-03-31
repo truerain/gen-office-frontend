@@ -21,4 +21,7 @@ export type {
   CrudFieldErrorMap,
   ExcelExportMode,
   ExcelExportOptions,
+  AdditionalExportContext,
+  AdditionalExportDefinition,
+  AdditionalExportSource,
 } from './GenGridCrud.types';
