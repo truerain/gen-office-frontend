@@ -1,0 +1,1 @@
+export { exportCrudExcel } from './exportExcel';
