@@ -129,21 +129,16 @@ export function useCellEditing<TData>(args: {
   const getCellEditProps = React.useCallback(
     (rowId: string, columnId: string): React.HTMLAttributes<HTMLElement> => {
       const isEditing = !!editCell && editCell.rowId === rowId && editCell.columnId === columnId;
+      const isInteractiveTarget = (target: EventTarget | null) => {
+        const el = target as HTMLElement | null;
+        if (!el) return false;
+        return !!el.closest('input,select,textarea,button,[contenteditable="true"]');
+      };
 
       return {
         onMouseDown: (e: any) => {
           if (e.button !== 0) return;
-
-          // Some browsers/input flows may skip td onDoubleClick after preventDefault on mousedown.
-          // Use mouse detail as a stable fallback to enter edit on double-click.
-          if (e?.detail >= 2) {
-            clearSelectedRanges?.();
-            onActiveCellChange({ rowId, columnId });
-            if (canEdit(rowId, columnId)) {
-              startEditing({ rowId, columnId });
-            }
-            return;
-          }
+          if (isInteractiveTarget(e.target)) return;
 
           if (!editMode && !editCell) return;
           if (isEditing) return;
@@ -155,6 +150,15 @@ export function useCellEditing<TData>(args: {
             pendingEditCellRef.current = { rowId, columnId };
             return;
           }
+          if (canEdit(rowId, columnId)) {
+            startEditing({ rowId, columnId });
+          }
+        },
+        onClickCapture: (e: any) => {
+          if (isInteractiveTarget(e.target)) return;
+          if (e?.detail !== 2) return;
+          clearSelectedRanges?.();
+          onActiveCellChange({ rowId, columnId });
           if (canEdit(rowId, columnId)) {
             startEditing({ rowId, columnId });
           }

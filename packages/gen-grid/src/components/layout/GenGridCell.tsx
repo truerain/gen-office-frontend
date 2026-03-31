@@ -747,7 +747,9 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
             {editor}
           </div>) 
         : (
-          <span className={isRowSpanCovered ? bodyStyles.rowSpanCoveredContent : undefined}>
+          <span 
+            className={isRowSpanCovered ? bodyStyles.rowSpanCoveredContent : undefined}
+            >
             {nonEditingContent}
           </span>
         )}
