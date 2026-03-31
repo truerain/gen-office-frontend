@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { CircleDot, FileSpreadsheet, ListFilter, ListPlus, ListX, RotateCcw, Save } from 'lucide-react';
+import { CircleDot, ListFilter, ListPlus, ListX, RotateCcw, Save } from 'lucide-react';
 
 import { Button } from '@gen-office/ui';
 import type {
@@ -18,6 +18,20 @@ import { useTranslation } from 'react-i18next';
 import styles from './CrudActionBar.module.css';
 
 const DEFAULT_BUILT_INS: readonly CrudBuiltInActionKey[] = ['add', 'delete', 'save', 'filter'];
+
+function ExcelSvgIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="none" {...props}>
+      <rect x="7.5" y="3" width="13.5" height="18" rx="2" fill="currentColor" opacity="0.2" />
+      <rect x="3" y="5.5" width="9.5" height="13" rx="1.5" fill="currentColor" />
+      <path
+        d="M6 9L7.25 11L8.5 9H9.85L8 12L9.9 15H8.5L7.25 13L6 15H4.6L6.5 12L4.65 9H6Z"
+        fill="white"
+      />
+      <path d="M12.75 8.5H18.5M12.75 12H18.5M12.75 15.5H18.5" stroke="currentColor" strokeWidth="1.25" />
+    </svg>
+  );
+}
 
 function resolveRule<TData>(
   rule: boolean | ((ctx: CrudActionContext<TData>) => boolean) | undefined,
@@ -126,7 +140,7 @@ export function CrudActionBar<TData>(props: {
       excel: {
         key: 'excel',
         label: labelExcel,
-        icon: <FileSpreadsheet aria-hidden size={16} />,
+        icon: <ExcelSvgIcon aria-hidden width={16} height={16} />,
         side: 'right',
         order: 30,
         variant: actionButtonStyle === 'icon' ? 'ghost' : 'secondary',
