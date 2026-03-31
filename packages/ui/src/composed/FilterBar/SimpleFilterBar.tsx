@@ -10,7 +10,8 @@ import { Search } from 'lucide-react';
 function renderDefaultField<TFilters>(
   field: FilterField<TFilters>,
   value: TFilters,
-  onChange: (next: TFilters) => void
+  onChange: (next: TFilters) => void,
+  onSearch?: () => void
 ) {
   if (field.type === 'custom') return null;
 
@@ -48,6 +49,13 @@ function renderDefaultField<TFilters>(
         <Input
           value={String(fieldValue ?? '')}
           onChange={(e) => setFieldValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (!field.enterToSearch || !onSearch) return;
+            if (e.key !== 'Enter') return;
+            if (e.nativeEvent.isComposing) return;
+            e.preventDefault();
+            onSearch();
+          }}
           placeholder={field.placeholder}
           className={field.className}
           clearable
@@ -88,7 +96,7 @@ export function SimpleFilterBar<TFilters>({
             ? field.render(value[field.key], (next) =>
                 onChange({ ...value, [field.key]: next } as TFilters)
               )
-            : renderDefaultField(field, value, onChange)}
+            : renderDefaultField(field, value, onChange, onSearch)}
         </FilterBar.Item>
       ))}
     </FilterBar>
