@@ -95,6 +95,7 @@ type ContentEditableEditorProps = {
   multiline?: boolean;
   style?: React.CSSProperties;
   allowArrowNavigation?: boolean;
+  sanitizeInput?: (next: string) => string;
 };
 
 function getCaretOffset(root: HTMLElement): number | null {
@@ -137,6 +138,30 @@ function setCaretOffset(root: HTMLElement, offset: number) {
   selection?.addRange(fallback);
 }
 
+function sanitizeNumberText(value: string): string {
+  let out = '';
+  let hasDot = false;
+  let hasSign = false;
+
+  for (const ch of value) {
+    if (ch >= '0' && ch <= '9') {
+      out += ch;
+      continue;
+    }
+    if (ch === '-' && !hasSign && out.length === 0) {
+      out += ch;
+      hasSign = true;
+      continue;
+    }
+    if (ch === '.' && !hasDot) {
+      out += ch;
+      hasDot = true;
+    }
+  }
+
+  return out;
+}
+
 function ContentEditableEditor({
   value,
   onChange,
@@ -147,6 +172,7 @@ function ContentEditableEditor({
   multiline,
   style,
   allowArrowNavigation,
+  sanitizeInput,
 }: ContentEditableEditorProps) {
   const ref = React.useRef<HTMLDivElement | null>(null);
   const didAutoSelectRef = React.useRef(false);
@@ -234,7 +260,8 @@ function ContentEditableEditor({
       e.preventDefault();
       e.stopPropagation();
       setAutoSelectActive(false);
-      onCommit(ref.current?.textContent ?? '');
+      const nextText = ref.current?.textContent ?? '';
+      onCommit(sanitizeInput ? sanitizeInput(nextText) : nextText);
       onTabMove?.(e.shiftKey ? -1 : 1);
       return;
     }
@@ -242,7 +269,8 @@ function ContentEditableEditor({
       e.preventDefault();
       e.stopPropagation();
       setAutoSelectActive(false);
-      onCommit(ref.current?.textContent ?? '');
+      const nextText = ref.current?.textContent ?? '';
+      onCommit(sanitizeInput ? sanitizeInput(nextText) : nextText);
       return;
     }
     if (e.key === 'Escape') {
@@ -265,9 +293,34 @@ function ContentEditableEditor({
       onFocus={() => {
         pendingAutoSelectRef.current = true;
       }}
+      onBeforeInput={(e: React.FormEvent<HTMLDivElement>) => {
+        if (!sanitizeInput) return;
+        const inserted = (e.nativeEvent as InputEvent).data;
+        if (!inserted) return;
+        if (!/^[0-9.-]+$/.test(inserted)) {
+          e.preventDefault();
+        }
+      }}
       onInput={() => {
         setAutoSelectActive(false);
-        onChange(ref.current?.textContent ?? '');
+        const root = ref.current;
+        if (!root) {
+          onChange('');
+          return;
+        }
+
+        const raw = root.textContent ?? '';
+        const next = sanitizeInput ? sanitizeInput(raw) : raw;
+
+        if (next !== raw) {
+          const caret = getCaretOffset(root);
+          root.textContent = next;
+          if (caret != null) {
+            setCaretOffset(root, Math.min(caret, next.length));
+          }
+        }
+
+        onChange(next);
       }}
       onMouseDown={() => {
         setAutoSelectActive(false);
@@ -276,7 +329,8 @@ function ContentEditableEditor({
         didAutoSelectRef.current = false;
         pendingAutoSelectRef.current = false;
         setAutoSelectActive(false);
-        const nextText = ref.current?.textContent ?? '';
+        const rawText = ref.current?.textContent ?? '';
+        const nextText = sanitizeInput ? sanitizeInput(rawText) : rawText;
         onChange(nextText);
         onCommit(nextText);
       }}
@@ -426,6 +480,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
             onTabMove={onTab}
             style={commonEditorStyle}
             allowArrowNavigation={Boolean(options.keepEditingOnNavigate)}
+            sanitizeInput={sanitizeNumberText}
           />
         );
       case 'date':
@@ -613,7 +668,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     }) ??
     renderDefaultEditor();
 
-  const hasColumnCellRenderer = cell.column.columnDef.cell != null;
+  const hasColumnCellRenderer = Boolean((cell.column.columnDef.meta as any)?.__genGridHasUserCellRenderer);
   const displayContent = meta?.renderCell
     ? meta.renderCell({
         value: cell.getValue(),

@@ -39,6 +39,13 @@ declare module '@tanstack/react-table' {
       columnId: string;
       commitValue?: (nextValue: unknown) => void;
     }) => React.ReactNode;
+    tooltip?: string;
+    getCellTooltip?: (args: {
+      value: unknown;
+      row: TData;
+      rowId: string;
+      columnId: string;
+    }) => string | undefined;
     renderEditor?: (props: {
       value: unknown;
       row: TData;

@@ -25,6 +25,13 @@ export type GenGridColumnMeta = {
     rowId: string;
     columnId: string;
   }) => React.ReactNode;
+  tooltip?: string;
+  getCellTooltip?: (args: {
+    value: unknown;
+    row: unknown;
+    rowId: string;
+    columnId: string;
+  }) => string | undefined;
   renderEditor?: (args: {
     value: unknown;
     row: unknown;

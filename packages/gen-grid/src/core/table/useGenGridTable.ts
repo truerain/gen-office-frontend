@@ -109,6 +109,35 @@ export type GenGridTableProps<TData> = {
 
 };
 
+function annotateUserCellRendererMeta<TData>(
+  defs: readonly ColumnDef<TData, any>[]
+): ColumnDef<TData, any>[] {
+  return defs.map((def) => {
+    const typed = def as ColumnDef<TData, any> & {
+      columns?: readonly ColumnDef<TData, any>[];
+      meta?: Record<string, unknown>;
+    };
+    const hasUserCellRenderer = typeof typed.cell === 'function';
+    const nextMeta = {
+      ...(typed.meta ?? {}),
+      __genGridHasUserCellRenderer: hasUserCellRenderer,
+    };
+
+    if (typed.columns?.length) {
+      return {
+        ...typed,
+        meta: nextMeta,
+        columns: annotateUserCellRendererMeta(typed.columns),
+      } as ColumnDef<TData, any>;
+    }
+
+    return {
+      ...typed,
+      meta: nextMeta,
+    } as ColumnDef<TData, any>;
+  });
+}
+
 export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
   const {
     data,
@@ -234,6 +263,11 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     width: rowNumberWidth ?? 56,
   });
 
+  const annotatedColumns = React.useMemo(
+    () => annotateUserCellRendererMeta(columns),
+    [columns]
+  );
+
   // compose columns in a single pass to keep render/nav order stable:
   // rowStatus -> selection -> rowNumber -> user columns
   const resolvedColumns = React.useMemo(() => {
@@ -241,9 +275,9 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     if (rowStatusColumn) systemColumns.push(rowStatusColumn);
     if (checkboxSelection) systemColumns.push(selectionColumn);
     if (enableRowNumber) systemColumns.push(rowNumberColumn);
-    return [...systemColumns, ...columns];
+    return [...systemColumns, ...annotatedColumns];
   }, [
-    columns,
+    annotatedColumns,
     rowStatusColumn,
     checkboxSelection,
     selectionColumn,

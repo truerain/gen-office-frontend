@@ -96,6 +96,30 @@ function pickRowStyleForCell(style?: React.CSSProperties): React.CSSProperties |
   };
 }
 
+function resolveColumnTooltip<TData>(args: {
+  meta: any;
+  row: TData;
+  rowId: string;
+  rowIndex: number;
+  columnId: string;
+  value: unknown;
+  getCellTooltip?: (args: {
+    row: TData;
+    rowId: string;
+    rowIndex: number;
+    columnId: string;
+    value: unknown;
+  }) => string | undefined;
+}) {
+  const { meta, row, rowId, rowIndex, columnId, value, getCellTooltip } = args;
+  const base = getCellTooltip?.({ row, rowId, rowIndex, columnId, value });
+  if (base != null) return base;
+  if (typeof meta?.getCellTooltip === 'function') {
+    return meta.getCellTooltip({ row, rowId, columnId, value });
+  }
+  return typeof meta?.tooltip === 'string' ? meta.tooltip : undefined;
+}
+
 export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
   const {
     table,
@@ -486,12 +510,15 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
             };
             
             const dirty = isCellDirty?.(row.id, colId) ?? false;
-            const cellTooltip = getCellTooltip?.({
+            const meta = getMeta(cell.column.columnDef) as any;
+            const cellTooltip = resolveColumnTooltip({
+              meta,
               row: cell.row.original,
               rowId: row.id,
               rowIndex: row.index,
               columnId: colId,
               value: cell.getValue(),
+              getCellTooltip,
             });
             return (
               <GenGridCell
