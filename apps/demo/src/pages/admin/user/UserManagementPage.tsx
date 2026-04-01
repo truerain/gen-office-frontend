@@ -25,6 +25,7 @@ import styles from './UserManagementPage.module.css';
 import { createUserManagementColumns } from './UserManagementColumns';
 import { commitUserChanges } from './UserManagementCrud';
 import { useAlertDialog } from '@/shared/ui/AlertDialogContext';
+import { type User2 } from '@/pages/admin/user/model/types';
 
 const createUserId = () => (Date.now() + Math.floor(Math.random() * 1000));
 
@@ -47,7 +48,7 @@ export default function UserManagementPage(_props: PageComponentProps) {
   const { data: userList = [], refetch, dataUpdatedAt } = useUserListQuery(queryParams);
 
   const columns = useMemo(() => createUserManagementColumns(t), [t]);
-  const additionalExports = useMemo<readonly AdditionalExportDefinition<User, User>[]>(() => {
+  const additionalExports = useMemo<readonly AdditionalExportDefinition<User2, User2>[]>(() => {
     return [
       {
         key: 'user-upload-template',
@@ -75,7 +76,6 @@ export default function UserManagementPage(_props: PageComponentProps) {
             title: '',
             langCd: 'ko',
             createdBy: '',
-            lastUpdatedBy: '',
           })),
           getRowId: (row) => row.userId,
         }),

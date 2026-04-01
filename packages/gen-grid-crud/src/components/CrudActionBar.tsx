@@ -140,7 +140,7 @@ export function CrudActionBar<TData>(props: {
       excel: {
         key: 'excel',
         label: labelExcel,
-        icon: <ExcelSvgIcon aria-hidden width={16} height={16} />,
+        icon: <ExcelSvgIcon aria-hidden width={32} height={16} />,
         side: 'right',
         order: 30,
         variant: actionButtonStyle === 'icon' ? 'ghost' : 'secondary',

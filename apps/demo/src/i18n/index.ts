@@ -52,7 +52,7 @@ function recordMissingKey(lngs: string | readonly string[], ns: string, key: str
     localStorage.setItem(MISSING_KEY_STORAGE, JSON.stringify(list.slice(-200)));
   }
   // eslint-disable-next-line no-console
-  console.warn(`[i18n] missing key: ${lng}.${ns}.${key}`);
+  //console.warn(`[i18n] missing key: ${lng}.${ns}.${key}`);
 }
 
 function dispatchRemoteFailed(error?: unknown) {

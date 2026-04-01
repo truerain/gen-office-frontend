@@ -26,6 +26,19 @@ export interface User {
   lastUpdatedByName?: string;
 }
 
+export interface User2 {
+  userId: number;
+  empNo?: string;
+  empName?: string;
+  empNameEng?: string;
+  email?: string;
+  orgId?: string;
+  titleCd?: string;
+  titleName?: string;
+  langCd?: string;
+  password?: string;
+}
+
 export type UserListParams = {
   empName?: string;
   page?: number;

@@ -3,7 +3,7 @@ import type { TFunction } from "i18next";
 import { SquarePen } from "lucide-react";
 import type { Notice } from "@/pages/admin/notice/model/types";
 import { Button } from "@gen-office/ui";
-
+import { formatNumber } from "@gen-office/utils"
 type NoticeManagementColumnOptions = {
   onEditRow?: (row: Notice) => void;
 };
@@ -88,7 +88,17 @@ export const createNoticeManagementColumns = (
     accessorKey: "readCount",
     size: 110,
     meta: {
-      align: "center",
+      format: 'number',
+      formatLocale: 'en-US', // 9,999.00 형태
+      numberFormat: {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        useGrouping: true,
+      },
+      editable: true,
+      editType: "number",
+      align: "right",
+      getCellTooltip: ({value}) => `${formatNumber(value as number, {maximumFractionDigits: 20})}`,
     },
   },
   {
