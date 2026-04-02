@@ -253,8 +253,12 @@ export default function GridStyleDemoPage(_props: PageComponentProps) {
 
   const columns = useMemo<ColumnDef<DemoRow, any>[]>(
     () => [
+      { id: 'test', header: 'Test',
+        columns: [
       { accessorKey: 'level', header: 'Level', size: 80, meta: { pinned: 'left', align: 'center', mono: true } },
       { accessorKey: 'fsIndex', header: 'Fs Index', size: 120, meta: { pinned: 'left', mono: true } },
+        ]
+      },
       {
         accessorKey: 'indexName',
         header: 'Index Name',
@@ -269,7 +273,7 @@ export default function GridStyleDemoPage(_props: PageComponentProps) {
         id: 'perfPlan',
         header: '실적/계획',
         columns: [
-          { accessorKey: '2022', header: '2022', size: 110, meta: { align: 'right', mono: true, format: 'triangleNumber' as any }, cell: ({ column, getValue }) => renderByFormat(column.columnDef.meta?.format, getValue()) },
+          { accessorKey: '2022', header: '2022', size: 110, meta: { editable: true, align: 'right', mono: true, format: 'triangleNumber' as any }, cell: ({ column, getValue }) => renderByFormat(column.columnDef.meta?.format, getValue()) },
           { accessorKey: '2023', header: '2023', size: 110, meta: { align: 'right', mono: true, format: 'triangleNumber' as any }, cell: ({ column, getValue }) => renderByFormat(column.columnDef.meta?.format, getValue()) },
           { accessorKey: '2024', header: '2024', size: 110, meta: { align: 'right', mono: true, format: 'triangleNumber' as any }, cell: ({ column, getValue }) => renderByFormat(column.columnDef.meta?.format, getValue()) },
           { accessorKey: '2025', header: '2025', size: 110, meta: { align: 'right', mono: true, format: 'triangleNumber' as any }, cell: ({ column, getValue }) => renderByFormat(column.columnDef.meta?.format, getValue()) },

@@ -27,26 +27,67 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
   const totalHeaderRows = headerGroups.length;
   const renderedLeafColumnIds = new Set<string>();
 
-  const getHeaderCellStyle = (header: any) => {
+  const getHeaderPinning = (header: any): { side?: 'left' | 'right'; offset?: number } => {
+    if (!enablePinning) return {};
+
+    const leafHeaders: any[] = typeof header.getLeafHeaders === 'function' ? header.getLeafHeaders() : [];
+    const headersToResolve = leafHeaders.length > 0 ? leafHeaders : [header];
+    const leafColumns = headersToResolve
+      .map((leafHeader) => leafHeader?.column)
+      .filter((column): column is NonNullable<typeof column> => Boolean(column));
+    if (leafColumns.length === 0) return {};
+
+    const pinnedSides = leafColumns.map((column) => column.getIsPinned?.());
+    if (
+      pinnedSides.length !== leafColumns.length ||
+      pinnedSides.some((side) => side !== 'left' && side !== 'right')
+    ) {
+      return {};
+    }
+
+    const side = pinnedSides[0] as 'left' | 'right';
+    if (!pinnedSides.every((value) => value === side)) return {};
+
+    const offsets = leafColumns.map((column) =>
+      side === 'left' ? column.getStart('left') : column.getAfter('right')
+    );
+    if (offsets.length === 0) return {};
+
+    return { side, offset: Math.min(...offsets) };
+  };
+
+  const getHeaderCellStyle = (header: any, pinningInfo: { side?: 'left' | 'right'; offset?: number }) => {
     const col = header.column;
     const baseStyle = getCellStyle(col, {
       enablePinning,
       enableColumnSizing,
       isHeader: true,
     });
+    const stickyPinStyle =
+      pinningInfo.side && pinningInfo.offset != null
+        ? ({
+            position: 'sticky',
+            zIndex: 'calc(var(--grid-z-header) + 3)',
+            [pinningInfo.side]: pinningInfo.offset,
+          } as React.CSSProperties)
+        : undefined;
+    const mergedBaseStyle = {
+      ...(baseStyle ?? {}),
+      ...(stickyPinStyle ?? {}),
+    } as React.CSSProperties;
 
     if (!enableColumnSizing || header.colSpan <= 1) {
-      return baseStyle;
+      return mergedBaseStyle;
     }
 
     const leafHeaders: any[] = typeof header.getLeafHeaders === 'function' ? header.getLeafHeaders() : [];
-    if (!leafHeaders.length) return baseStyle;
+    if (!leafHeaders.length) return mergedBaseStyle;
 
     const width = leafHeaders.reduce((sum, leafHeader) => sum + (leafHeader?.column?.getSize?.() ?? 0), 0);
-    if (!Number.isFinite(width) || width <= 0) return baseStyle;
+    if (!Number.isFinite(width) || width <= 0) return mergedBaseStyle;
 
     return {
-      ...(baseStyle ?? {}),
+      ...mergedBaseStyle,
       width,
       minWidth: width,
     } as React.CSSProperties;
@@ -116,6 +157,7 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
           {hg.headers.map((header) => {
             const col = header.column;
             const subHeaders: any[] = Array.isArray((header as any).subHeaders) ? (header as any).subHeaders : [];
+            const headerPinning = getHeaderPinning(header);
             const hasParentColumn = Boolean((col as any).parent);
             const isStandaloneLeafPlaceholder =
               header.isPlaceholder && !hasParentColumn && header.colSpan === 1;
@@ -142,10 +184,13 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
                   isSelectCol ? styles.selectCol : '',
                   canSort ? styles.sortable : '',
                   sortState ? styles.sorted : '',
+                  headerPinning.side ? pinning.pinned : '',
+                  headerPinning.side === 'left' ? pinning.pinnedLeft : '',
+                  headerPinning.side === 'right' ? pinning.pinnedRight : '',
                 ]
                   .filter(Boolean)
                   .join(' ')}
-                style={getHeaderCellStyle(header)}
+                style={getHeaderCellStyle(header, headerPinning)}
                 colSpan={header.colSpan}
                 rowSpan={rowSpan > 1 ? rowSpan : undefined}
               >
@@ -199,11 +244,20 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
             const colDef: any = header.column.columnDef;
             const hasAccessorKey = !!colDef.accessorKey;
             const col = header.column;
+            const pinned = col.getIsPinned();
             const canFilter = header.column.getCanFilter() && hasAccessorKey && !isSelectCol;
             return (
               <th
                 key={header.id}
-                className={[styles.th, styles.columnFilter].filter(Boolean).join(' ')}
+                className={[
+                  styles.th,
+                  styles.columnFilter,
+                  pinned ? pinning.pinned : '',
+                  pinned === 'left' ? pinning.pinnedLeft : '',
+                  pinned === 'right' ? pinning.pinnedRight : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
                 style={getCellStyle(col, {
                   enablePinning,
                   enableColumnSizing,
