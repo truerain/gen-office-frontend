@@ -55,7 +55,8 @@ function renderDefaultField<TFilters>(
             value: String(opt.value),
             group: opt.group,
           }))}
-          clearable
+          clearable={field.clearable ?? true}
+          clearLabel={field.clearLabel}
           fullWidth
           maxVisibleItems={field.maxVisibleItems}
           optionItemHeight={field.optionItemHeight}

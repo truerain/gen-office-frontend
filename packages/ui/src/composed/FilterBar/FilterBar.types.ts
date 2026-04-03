@@ -22,6 +22,8 @@ export type FilterField<TFilters> =
       type: 'text' | 'search' | 'select' | 'combo';
       label?: string;
       placeholder?: string;
+      clearable?: boolean;
+      clearLabel?: string;
       options?: FilterFieldOption[];
       maxVisibleItems?: number;
       optionItemHeight?: number;
