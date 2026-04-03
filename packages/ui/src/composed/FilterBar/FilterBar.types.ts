@@ -23,6 +23,8 @@ export type FilterField<TFilters> =
       label?: string;
       placeholder?: string;
       options?: FilterFieldOption[];
+      maxVisibleItems?: number;
+      optionItemHeight?: number;
     })
   | (FilterFieldBase<TFilters> & {
       type: 'custom';

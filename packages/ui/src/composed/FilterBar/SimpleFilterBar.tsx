@@ -57,6 +57,8 @@ function renderDefaultField<TFilters>(
           }))}
           clearable
           fullWidth
+          maxVisibleItems={field.maxVisibleItems}
+          optionItemHeight={field.optionItemHeight}
         />
       );
     case 'text':

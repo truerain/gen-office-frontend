@@ -42,6 +42,8 @@ export function Combobox({
   openOnFocus = true,
   filterOptions,
   id: providedId,
+  maxVisibleItems,
+  optionItemHeight = 32,
 }: ComboboxProps) {
   const generatedId = useId();
   const inputId = providedId ?? generatedId;
@@ -262,6 +264,11 @@ export function Combobox({
     setOpen(nextOpen);
   };
 
+  const computedMaxHeight =
+    maxVisibleItems && maxVisibleItems > 0
+      ? maxVisibleItems * optionItemHeight + 8
+      : undefined;
+
   const toggleOpen = () => {
     if (disabled) return;
     setOpen((prevOpen) => !prevOpen);
@@ -321,6 +328,7 @@ export function Combobox({
         className={cn(styles.content, listClassName)}
         align="start"
         sideOffset={6}
+        style={computedMaxHeight ? { maxHeight: `${computedMaxHeight}px` } : undefined}
         onOpenAutoFocus={(event) => event.preventDefault()}
         onCloseAutoFocus={(event) => event.preventDefault()}
         onInteractOutside={handleInteractOutside}

@@ -116,4 +116,16 @@ export interface ComboboxProps {
    * Optional id for input.
    */
   id?: string;
+
+  /**
+   * Maximum visible option rows before scrolling.
+   * Final dropdown max-height is calculated by `optionItemHeight * maxVisibleItems`.
+   */
+  maxVisibleItems?: number;
+
+  /**
+   * Estimated single option row height (px) used with `maxVisibleItems`.
+   * Defaults to 32.
+   */
+  optionItemHeight?: number;
 }

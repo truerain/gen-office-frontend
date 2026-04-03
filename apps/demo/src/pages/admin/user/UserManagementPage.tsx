@@ -110,6 +110,8 @@ export default function UserManagementPage(_props: PageComponentProps) {
         type: 'combo',
         placeholder: 'Select country',
         flex: 0,
+        maxVisibleItems: 6,
+        optionItemHeight: 32,
         options: [
           { value: 'jp', label: 'Japan (JP)', group: 'Asia' },
           { value: 'kr', label: 'South Korea (KR)', group: 'Asia' },
