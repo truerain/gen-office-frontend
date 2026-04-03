@@ -1,6 +1,7 @@
 export interface ComboboxOption {
   value: string;
   label: string;
+  group?: string;
   disabled?: boolean;
   description?: string;
 }

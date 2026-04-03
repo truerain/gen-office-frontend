@@ -1,5 +1,6 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { cn } from '@gen-office/utils';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { Popover, PopoverContent } from '../../core/Popover';
@@ -261,6 +262,14 @@ export function Combobox({
     setOpen(nextOpen);
   };
 
+  const toggleOpen = () => {
+    if (disabled) return;
+    setOpen((prevOpen) => !prevOpen);
+    window.setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
+  };
+
   return (
     <Popover open={open} onOpenChange={handleOpenChange} modal={false}>
       <PopoverPrimitive.Anchor asChild={true}>
@@ -282,7 +291,7 @@ export function Combobox({
             required={required}
             disabled={disabled}
             fullWidth={fullWidth}
-            className={inputClassName}
+            className={cn(styles.inputWithTrigger, inputClassName)}
             clearable={clearable}
             clearLabel={clearLabel}
             onClear={handleClear}
@@ -291,6 +300,20 @@ export function Combobox({
             aria-expanded={open}
             aria-controls={listboxId}
             aria-activedescendant={activeOptionId}
+            suffix={
+              <button
+                type="button"
+                className={styles.triggerButton}
+                aria-label="Open options"
+                aria-expanded={open}
+                disabled={disabled}
+                data-open={open}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={toggleOpen}
+              >
+                <ChevronDown className={styles.triggerIcon} size={14} aria-hidden={true} />
+              </button>
+            }
           />
         </div>
       </PopoverPrimitive.Anchor>
@@ -308,34 +331,46 @@ export function Combobox({
           <div className={styles.list} role="listbox" id={listboxId}>
             {filteredOptions.map((option, index) => {
               const isActive = index === highlightedIndex;
+              const currentGroup = option.group?.trim() ?? '';
+              const previousGroup =
+                index > 0 ? (filteredOptions[index - 1]?.group?.trim() ?? '') : '';
+              const showGroupSeparator =
+                currentGroup.length > 0 && currentGroup !== previousGroup;
+
               return (
-                <button
-                  key={option.value}
-                  id={`${inputId}-option-${index}`}
-                  type="button"
-                  role="option"
-                  aria-selected={isActive}
-                  aria-disabled={option.disabled}
-                  disabled={option.disabled}
-                  ref={(node) => {
-                    optionRefs.current[index] = node;
-                  }}
-                  className={cn(
-                    styles.option,
-                    isActive && styles.optionActive,
-                    option.disabled && styles.optionDisabled
+                <Fragment key={option.value}>
+                  {showGroupSeparator && (
+                    <div className={styles.groupSeparator} role="separator">
+                      <span className={styles.groupLabel}>{currentGroup}</span>
+                    </div>
                   )}
-                  onMouseDown={(event) => event.preventDefault()}
-                  onClick={() => selectOption(option)}
-                  onKeyDown={handleListKeyDown}
-                >
-                  <span className={styles.optionLabel}>{option.label}</span>
-                  {option.description && (
-                    <span className={styles.optionDescription}>
-                      {option.description}
-                    </span>
-                  )}
-                </button>
+                  <button
+                    id={`${inputId}-option-${index}`}
+                    type="button"
+                    role="option"
+                    aria-selected={isActive}
+                    aria-disabled={option.disabled}
+                    disabled={option.disabled}
+                    ref={(node) => {
+                      optionRefs.current[index] = node;
+                    }}
+                    className={cn(
+                      styles.option,
+                      isActive && styles.optionActive,
+                      option.disabled && styles.optionDisabled
+                    )}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => selectOption(option)}
+                    onKeyDown={handleListKeyDown}
+                  >
+                    <span className={styles.optionLabel}>{option.label}</span>
+                    {option.description && (
+                      <span className={styles.optionDescription}>
+                        {option.description}
+                      </span>
+                    )}
+                  </button>
+                </Fragment>
               );
             })}
           </div>

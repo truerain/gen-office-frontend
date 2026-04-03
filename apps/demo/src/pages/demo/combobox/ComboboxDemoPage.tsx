@@ -3,17 +3,30 @@ import { Combobox } from '@gen-office/ui';
 import styles from './ComboboxDemoPage.module.css';
 
 const options = [
-  { value: 'seoul', label: 'Seoul', description: 'South Korea' },
-  { value: 'tokyo', label: 'Tokyo', description: 'Japan' },
-  { value: 'singapore', label: 'Singapore', description: 'Singapore' },
-  { value: 'bangkok', label: 'Bangkok', description: 'Thailand' },
-  { value: 'hongkong', label: 'Hong Kong', description: 'China SAR' },
-  { value: 'sydney', label: 'Sydney', description: 'Australia' },
-  { value: 'losangeles', label: 'Los Angeles', description: 'United States' },
-  { value: 'london', label: 'London', description: 'United Kingdom' },
-  { value: 'paris', label: 'Paris', description: 'France' },
-  { value: 'rome', label: 'Rome', description: 'Italy' },
+  { value: 'seoul', label: 'Seoul' },
+  { value: 'tokyo', label: 'Tokyo' },
+  { value: 'singapore', label: 'Singapore' },
+  { value: 'bangkok', label: 'Bangkok' },
+  { value: 'hongkong', label: 'Hong Kong' },
+  { value: 'sydney', label: 'Sydney' },
+  { value: 'losangeles', label: 'Los Angeles' },
+  { value: 'london', label: 'London' },
+  { value: 'paris', label: 'Paris' },
+  { value: 'rome', label: 'Rome' },
   { value: 'barcelona', label: 'Barcelona', description: 'Spain', disabled: true },
+];
+
+const countries = [
+  { code: 'ar', value: 'argentina', label: 'Argentina', continent: 'South America' },
+  { code: 'au', value: 'australia', label: 'Australia', continent: 'Oceania' },
+  { code: 'br', value: 'brazil', label: 'Brazil', continent: 'South America' },
+  { code: 'ca', value: 'canada', label: 'Canada', continent: 'North America' },
+  { code: 'cn', value: 'china', label: 'China', continent: 'Asia' },
+  { code: 'fr', value: 'france', label: 'France', continent: 'Europe' },
+  { code: 'de', value: 'germany', label: 'Germany', continent: 'Europe' },
+  { code: 'jp', value: 'japan', label: 'Japan', continent: 'Asia' },
+  { code: 'kr', value: 'south-korea', label: 'South Korea', continent: 'Asia' },
+  { code: 'us', value: 'united-states', label: 'United States', continent: 'North America' },
 ];
 
 function ComboboxDemoPage() {
@@ -21,10 +34,15 @@ function ComboboxDemoPage() {
   const [inputValue, setInputValue] = useState('');
   const [controlledValue, setControlledValue] = useState<string | undefined>();
   const [noMatchValue, setNoMatchValue] = useState('');
+  const [groupedCountryValue, setGroupedCountryValue] = useState<string | undefined>();
 
   const selectedLabel = useMemo(() => {
     return options.find((option) => option.value === basicValue)?.label ?? 'None';
   }, [basicValue]);
+
+  const groupedCountryLabel = useMemo(() => {
+    return countries.find((country) => country.value === groupedCountryValue)?.label ?? 'None';
+  }, [groupedCountryValue]);
 
   return (
     <div className={styles.page}>
@@ -128,6 +146,29 @@ function ComboboxDemoPage() {
               disabled
               fullWidth
             />
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <h2>Grouped Options</h2>
+        <div className={styles.grid}>
+          <div className={styles.card}>
+            <h3>Combobox with Group Separator</h3>
+            <Combobox
+              label="Country"
+              placeholder="Type to search..."
+              options={countries.map((country) => ({
+                value: country.value,
+                label: `${country.label} (${country.code})`,
+                group: country.continent,
+              }))}
+              value={groupedCountryValue}
+              onValueChange={(next) => setGroupedCountryValue(next)}
+              fullWidth
+            />
+            <div className={styles.meta}>Grouped by continent</div>
+            <div className={styles.meta}>Selected: {groupedCountryLabel}</div>
           </div>
         </div>
       </section>
