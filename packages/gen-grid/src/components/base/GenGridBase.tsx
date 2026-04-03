@@ -56,6 +56,7 @@ export type GenGridBaseProps<TData> = {
   enableFooter?: boolean;
   footer?: React.ReactNode;
   renderFooter?: (table: Table<TData>) => React.ReactNode;
+  noRowsMessage?: React.ReactNode;
 
   enableFooterRow?: boolean;
   enableStickyFooterRow?: boolean;
@@ -145,6 +146,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     enableFooter,
     footer,
     renderFooter,
+    noRowsMessage,
     enableFooterRow,
     enableStickyFooterRow,
 
@@ -203,6 +205,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     stickyFooterRowEnabled
       ? Math.max(0, availableBodyHeight - totalBodyHeight)
       : 0;
+  const resolvedNoRowsMessage = noRowsMessage ?? 'No data';
 
   const autoSizeColumn = React.useCallback((columnId: string) => {
     void columnId;
@@ -610,6 +613,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
               getCellClassName={props.getCellClassName}
               getCellStyle={props.getCellStyle}
               getCellTooltip={props.getCellTooltip}
+              noRowsMessage={null}
               footerSpacerHeight={footerSpacerHeight}
               rowSpanModel={rowSpanModel}
               rowSpanningMode={resolvedRowSpanningMode}
@@ -633,6 +637,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
               getCellClassName={props.getCellClassName}
               getCellStyle={props.getCellStyle}
               getCellTooltip={props.getCellTooltip}
+              noRowsMessage={null}
               footerSpacerHeight={footerSpacerHeight}
               rowSpanModel={rowSpanModel}
               rowSpanningMode={resolvedRowSpanningMode}
@@ -647,6 +652,14 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
             />
           ) : null}
         </table>
+        {rowCount === 0 && resolvedNoRowsMessage ? (
+          <div
+            className={layout.emptyOverlay}
+            style={{ top: totalHeaderHeight }}
+          >
+            {resolvedNoRowsMessage}
+          </div>
+        ) : null}
       </div>
 
       {showFooter ? (

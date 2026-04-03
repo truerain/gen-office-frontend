@@ -244,6 +244,7 @@ export default function UserManagementPage(_props: PageComponentProps) {
           }}
           gridProps={{
             dataVersion: dataUpdatedAt,
+            noRowsMessage: 'No users found.',
             rowHeight: 34,
             overscan: 8,
             enablePinning: true,

@@ -73,6 +73,7 @@ type GenGridBodyProps<TData> = {
     columnId: string;
     value: unknown;
   }) => string | undefined;
+  noRowsMessage?: React.ReactNode;
 
   footerSpacerHeight?: number;
   rowSpanModel?: RowSpanModel;
@@ -140,6 +141,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
     getCellClassName,
     getCellStyle: getCellStyleByRule,
     getCellTooltip,
+    noRowsMessage,
     footerSpacerHeight = 0,
     rowSpanModel,
     rowSpanningMode = 'real',
@@ -203,6 +205,21 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
     setSelectedRanges,
     activeCell,
   });
+
+  if (rows.length === 0 && noRowsMessage != null) {
+    return (
+      <tbody className={bodyStyles.tbody}>
+        <tr className={bodyStyles.tr}>
+          <td
+            className={`${bodyStyles.td} ${bodyStyles.emptyCell}`}
+            colSpan={Math.max(1, table.getVisibleLeafColumns().length)}
+          >
+            {noRowsMessage}
+          </td>
+        </tr>
+      </tbody>
+    );
+  }
 
   const renderGroupedRow = React.useCallback(
     (row: any) => {

@@ -80,6 +80,7 @@ type GenGridVirtualBodyProps<TData> = {
     columnId: string;
     value: unknown;
   }) => string | undefined;
+  noRowsMessage?: React.ReactNode;
 
   footerSpacerHeight?: number;
   rowSpanModel?: RowSpanModel;
@@ -149,6 +150,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
     getCellClassName,
     getCellStyle: getCellStyleByRule,
     getCellTooltip,
+    noRowsMessage,
     footerSpacerHeight = 0,
     rowSpanModel,
     rowSpanningMode = 'real',
@@ -192,6 +194,21 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
   const bottomSpacerHeight = paddingBottom + footerSpacerHeight;
 
   const colSpan = table.getVisibleLeafColumns().length;
+
+  if (rows.length === 0 && noRowsMessage != null) {
+    return (
+      <tbody className={bodyStyles.tbody}>
+        <tr className={bodyStyles.tr}>
+          <td
+            className={`${bodyStyles.td} ${bodyStyles.emptyCell}`}
+            colSpan={Math.max(1, colSpan)}
+          >
+            {noRowsMessage}
+          </td>
+        </tr>
+      </tbody>
+    );
+  }
 
   React.useLayoutEffect(() => {
     let raf1 = 0;
