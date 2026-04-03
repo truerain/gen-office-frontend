@@ -56,13 +56,15 @@ export function Combobox({
   const [open, setOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [internalInputValue, setInternalInputValue] = useState('');
+  const [showAllOnOpen, setShowAllOnOpen] = useState(false);
 
   const resolvedInputValue = inputValue ?? internalInputValue;
   const resolvedFilter = filterOptions ?? defaultFilter;
+  const effectiveFilterValue = showAllOnOpen ? '' : resolvedInputValue;
 
   const filteredOptions = useMemo(
-    () => options.filter((option) => resolvedFilter(option, resolvedInputValue)),
-    [options, resolvedFilter, resolvedInputValue]
+    () => options.filter((option) => resolvedFilter(option, effectiveFilterValue)),
+    [options, resolvedFilter, effectiveFilterValue]
   );
 
   useEffect(() => {
@@ -118,6 +120,7 @@ export function Combobox({
     if (option.disabled) return;
     onValueChange?.(option.value, option);
     setInputValue(option.label);
+    setShowAllOnOpen(false);
     setOpen(false);
   };
 
@@ -134,6 +137,7 @@ export function Combobox({
       setInputValue(nextValue);
       return;
     }
+    setShowAllOnOpen(false);
     const nextFilteredOptions = options.filter((option) =>
       resolvedFilter(option, nextValue)
     );
@@ -188,6 +192,7 @@ export function Combobox({
     if (event.key === 'Escape') {
       if (open) {
         event.preventDefault();
+        setShowAllOnOpen(false);
         setOpen(false);
       }
     }
@@ -227,6 +232,7 @@ export function Combobox({
 
     if (event.key === 'Escape') {
       event.preventDefault();
+      setShowAllOnOpen(false);
       setOpen(false);
       window.setTimeout(() => {
         inputRef.current?.focus();
@@ -240,11 +246,13 @@ export function Combobox({
       event.preventDefault();
       return;
     }
+    setShowAllOnOpen(false);
     setOpen(false);
   };
 
   const handleClear = () => {
     clearingRef.current = true;
+    setShowAllOnOpen(false);
     setInputValue('');
     onValueChange?.('', null);
     onClear?.();
@@ -261,6 +269,7 @@ export function Combobox({
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (disabled) return;
+    if (!nextOpen) setShowAllOnOpen(false);
     setOpen(nextOpen);
   };
 
@@ -271,7 +280,11 @@ export function Combobox({
 
   const toggleOpen = () => {
     if (disabled) return;
-    setOpen((prevOpen) => !prevOpen);
+    setOpen((prevOpen) => {
+      const nextOpen = !prevOpen;
+      setShowAllOnOpen(nextOpen);
+      return nextOpen;
+    });
     window.setTimeout(() => {
       inputRef.current?.focus();
     }, 0);
