@@ -188,6 +188,12 @@ export function CrudActionBar<TData>(props: {
     [visibleActions]
   );
 
+  const totalRowsText = React.useMemo(() => {
+    const count = state.viewData.length;
+    const raw = t('common:total_rows', { count });
+    return raw.replace(String(count), count.toLocaleString());
+  }, [state.viewData.length, t]);
+
   const renderAction = (action: CrudActionItem<TData>) => {
     const style = action.style ?? actionButtonStyle;
     const isIcon = style === 'icon';
@@ -222,7 +228,7 @@ export function CrudActionBar<TData>(props: {
           </div>
         )}
         <div className={styles.total}>
-          <span>{t('common.total_rows', { count: state.viewData.length })}</span>
+          <span>{totalRowsText}</span>
         </div>
 
         <div className={styles.actions}>
