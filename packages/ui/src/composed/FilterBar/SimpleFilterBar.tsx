@@ -4,6 +4,7 @@ import { FilterBar } from './FilterBar';
 import { SearchInput } from './SearchInput';
 import { Input } from '../../core/Input';
 import { SimpleSelect } from '../../core/Select';
+import { Combobox } from '../Combobox';
 import { Button } from '../../core/Button';
 import { Search } from 'lucide-react';
 
@@ -41,6 +42,21 @@ function renderDefaultField<TFilters>(
             label: opt.label,
             value: String(opt.value),
           }))}
+        />
+      );
+    case 'combo':
+      return (
+        <Combobox
+          value={String(fieldValue ?? '')}
+          onValueChange={(next) => setFieldValue(next)}
+          placeholder={field.placeholder}
+          options={(field.options ?? []).map((opt) => ({
+            label: opt.label,
+            value: String(opt.value),
+            group: opt.group,
+          }))}
+          clearable
+          fullWidth
         />
       );
     case 'text':

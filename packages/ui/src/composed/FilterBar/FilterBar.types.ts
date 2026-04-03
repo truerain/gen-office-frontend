@@ -1,7 +1,11 @@
 // packages/ui/src/composed/FilterBar/FilterBar.types.ts
 import type { ReactNode } from 'react';
 
-export type FilterFieldOption = { label: string; value: string | number };
+export type FilterFieldOption = {
+  label: string;
+  value: string | number;
+  group?: string;
+};
 
 type FilterFieldBase<TFilters> = {
   key: keyof TFilters;
@@ -15,7 +19,7 @@ type FilterFieldBase<TFilters> = {
 
 export type FilterField<TFilters> =
   | (FilterFieldBase<TFilters> & {
-      type: 'text' | 'search' | 'select';
+      type: 'text' | 'search' | 'select' | 'combo';
       label?: string;
       placeholder?: string;
       options?: FilterFieldOption[];

@@ -37,7 +37,11 @@ export default function UserManagementPage(_props: PageComponentProps) {
 
   const [gridDirty, setGridDirty] = useState(false);
 
-  const [draftFilters, setDraftFilters] = useState<{ empName: string, email: string }>({ empName: '', email: '' });
+  const [draftFilters, setDraftFilters] = useState<{ empName: string, email: string, country: string }>({
+    empName: '',
+    email: '',
+    country: '',
+  });
   const [filters, setFilters] = useState<{ empName: string }>({ empName: '' });
   const queryParams = useMemo<UserListParams>(
     () => ({
@@ -83,7 +87,7 @@ export default function UserManagementPage(_props: PageComponentProps) {
     ];
   }, []);
 
-  const filterFields = useMemo<FilterField<{ empName: string, email: string }>[]>(() => {
+  const filterFields = useMemo<FilterField<{ empName: string, email: string, country: string }>[]>(() => {
     return [
       {
         key: 'empName',
@@ -99,6 +103,23 @@ export default function UserManagementPage(_props: PageComponentProps) {
         type: 'text',
         placeholder: '',
         flex: 0,
+      },
+      {
+        key: 'country',
+        title: 'Country',
+        type: 'combo',
+        placeholder: 'Select country',
+        flex: 0,
+        options: [
+          { value: 'jp', label: 'Japan (JP)', group: 'Asia' },
+          { value: 'kr', label: 'South Korea (KR)', group: 'Asia' },
+          { value: 'cn', label: 'China (CN)', group: 'Asia' },
+          { value: 'fr', label: 'France (FR)', group: 'Europe' },
+          { value: 'de', label: 'Germany (DE)', group: 'Europe' },
+          { value: 'gb', label: 'United Kingdom (GB)', group: 'Europe' },
+          { value: 'ca', label: 'Canada (CA)', group: 'North America' },
+          { value: 'us', label: 'United States (US)', group: 'North America' },
+        ],
       },
     ];
   }, [t]);
