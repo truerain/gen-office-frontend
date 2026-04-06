@@ -233,6 +233,10 @@ export function TreeCombobox({
       collectVisibleNodes(tree, expandedSet, effectiveFilterValue, resolvedFilter),
     [tree, expandedSet, effectiveFilterValue, resolvedFilter]
   );
+  const selectedNodeKey = useMemo(() => {
+    const selected = findOptionByValue(options, value);
+    return selected ? keyOf(selected.id) : null;
+  }, [options, value]);
 
   const setInputValue = (nextValue: string) => {
     if (inputValue === undefined) {
@@ -426,8 +430,16 @@ export function TreeCombobox({
       : null;
     if (current && !current.node.disabled) return;
 
+    if (selectedNodeKey) {
+      const selectedNode = visibleNodes.find((node) => node.key === selectedNodeKey);
+      if (selectedNode && !selectedNode.node.disabled) {
+        setHighlightedKey(selectedNodeKey);
+        return;
+      }
+    }
+
     setHighlightedKey(getNextEnabledKey(visibleNodes, null, 1));
-  }, [open, visibleNodes, highlightedKey]);
+  }, [open, visibleNodes, highlightedKey, selectedNodeKey]);
 
   useEffect(() => {
     if (disabled && open) {
