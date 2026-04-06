@@ -854,6 +854,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
           fieldErrors,
         }}
         actionApi={actionApi}
+        totalRowCount={gridProps?.totalRowCount}
         filterEnabled={filterEnabled}
         actionButtonStyle={resolvedActionButtonStyle}
         includeBuiltIns={includedBuiltInActions}

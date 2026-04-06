@@ -51,6 +51,7 @@ export function CrudActionBar<TData>(props: {
   title?: string;
   state: CrudUiState<TData>;
   actionApi: CrudActionApi;
+  totalRowCount?: number;
   filterEnabled?: boolean;
   actionButtonStyle?: CrudActionButtonStyle;
   includeBuiltIns?: readonly CrudBuiltInActionKey[];
@@ -60,6 +61,7 @@ export function CrudActionBar<TData>(props: {
     title,
     state,
     actionApi,
+    totalRowCount,
     filterEnabled,
     actionButtonStyle = 'text',
     includeBuiltIns,
@@ -189,10 +191,13 @@ export function CrudActionBar<TData>(props: {
   );
 
   const totalRowsText = React.useMemo(() => {
-    const count = state.viewData.length;
-    const raw = t('common:total_rows', { count });
-    return raw.replace(String(count), count.toLocaleString());
-  }, [state.viewData.length, t]);
+    const viewCount = state.viewData.length;
+    const resolvedTotal =
+      typeof totalRowCount === 'number' && Number.isFinite(totalRowCount)
+        ? Math.max(0, Math.floor(totalRowCount))
+        : viewCount;
+    return `(${viewCount.toLocaleString()}/${resolvedTotal.toLocaleString()})`;
+  }, [state.viewData.length, totalRowCount]);
 
   const renderAction = (action: CrudActionItem<TData>) => {
     const style = action.style ?? actionButtonStyle;
