@@ -32,6 +32,23 @@ const defaultFilters: ActualsFilters = {
   acctCd: '',
 };
 
+const TARGET_GRID_ROWS = 2000;
+
+function buildGridRows(rows: CoActual[], targetSize: number): CoActual[] {
+  if (!Array.isArray(rows) || rows.length === 0) return [];
+  if (rows.length >= targetSize) return rows;
+
+  return Array.from({ length: targetSize }, (_, index) => {
+    const source = rows[index % rows.length]!;
+    const seq = index + 1;
+    return {
+      ...source,
+      acctCd: `${source.acctCd}-${String(seq).padStart(4, '0')}`,
+      acctName: `${source.acctName} ${String(seq).padStart(4, '0')}`,
+    };
+  });
+}
+
 function makeRowId(row: CoActual, index: number) {
   return [row.fiscalYr, row.fiscalPrd, row.orgCd, row.acctCd, String(index)]
     .map((v) => String(v ?? '').trim())
@@ -83,6 +100,10 @@ export default function CoActualsPage(_props: PageComponentProps) {
 
   const { data: actuals = [], refetch, isError, error, dataUpdatedAt } =
     useCoActualsListQuery(queryParams);
+  const gridRows = useMemo(
+    () => buildGridRows(actuals, TARGET_GRID_ROWS),
+    [actuals]
+  );
   const columns = useMemo(
     () =>
       createActualsColumns(viewMode, {
@@ -183,7 +204,7 @@ export default function CoActualsPage(_props: PageComponentProps) {
         <GenGridCrud<CoActual>
           title="Actuals List"
           readonly
-          data={actuals}
+          data={gridRows}
           columns={columns}
           getRowId={(row, index) => makeRowId(row, index)}
           onCommit={async () => ({ ok: true })}
@@ -230,6 +251,7 @@ export default function CoActualsPage(_props: PageComponentProps) {
             enablePinning: true,
             enableColumnSizing: true,
             enableVirtualization: true,
+            enablePagination: false,
             enableRowStatus: true,
             enableRowNumber: false,
             checkboxSelection: true,

@@ -112,21 +112,91 @@ const baseRows: ActualMockRow[] = [
   },
 ];
 
+const TOTAL_ACTUAL_ROWS = 2000;
+
+const orgCodes = ['HQ', 'SALES', 'MFG', 'RND', 'FIN'];
+const fiscalPeriods = Array.from({ length: 12 }, (_, index) =>
+  String(index + 1).padStart(2, '0')
+);
+
+function toIsoDateByIndex(index: number) {
+  const month = (index % 12) + 1;
+  const day = (index % 28) + 1;
+  return `2026-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T10:15:00`;
+}
+
+function buildMockRows(total: number): ActualMockRow[] {
+  return Array.from({ length: total }, (_, index) => {
+    const template = baseRows[index % baseRows.length]!;
+    const variance = (index % 23) * 110_000;
+    const currActAmt = Math.max(0, template.currActAmt + variance);
+    const planAmt = Math.max(0, template.planAmt + Math.floor(variance * 0.85));
+    const prevActAmt = Math.max(0, template.prevActAmt + Math.floor(variance * 0.7));
+    const fiscalPrd = fiscalPeriods[index % fiscalPeriods.length]!;
+    const orgCd = orgCodes[index % orgCodes.length]!;
+    const acctCd = `${template.acctCd}${String(index + 1).padStart(4, '0')}`;
+
+    return {
+      ...template,
+      acctCd,
+      acctName: `${template.acctName} ${String(index + 1).padStart(4, '0')}`,
+      fiscalYr: String(2026 - (index % 3)),
+      fiscalPrd,
+      orgCd,
+      currActAmt,
+      planAmt,
+      prevActAmt,
+      m01: fiscalPrd === '01' ? currActAmt : 0,
+      m02: fiscalPrd === '02' ? currActAmt : 0,
+      m03: fiscalPrd === '03' ? currActAmt : 0,
+      m04: fiscalPrd === '04' ? currActAmt : 0,
+      m05: fiscalPrd === '05' ? currActAmt : 0,
+      m06: fiscalPrd === '06' ? currActAmt : 0,
+      m07: fiscalPrd === '07' ? currActAmt : 0,
+      m08: fiscalPrd === '08' ? currActAmt : 0,
+      m09: fiscalPrd === '09' ? currActAmt : 0,
+      m10: fiscalPrd === '10' ? currActAmt : 0,
+      m11: fiscalPrd === '11' ? currActAmt : 0,
+      m12: fiscalPrd === '12' ? currActAmt : 0,
+      lastUpdatedBy: `SYSTEM${String((index % 9) + 1)}`,
+      lastUpdatedDate: toIsoDateByIndex(index),
+    };
+  });
+}
+
+const actualRows: ActualMockRow[] = buildMockRows(TOTAL_ACTUAL_ROWS);
+
+function filterActualRows(
+  request: Request
+) {
+  const url = new URL(request.url);
+  const fiscalYr = (url.searchParams.get('fiscalYr') ?? '').trim();
+  const fiscalPrd = (url.searchParams.get('fiscalPrd') ?? '').trim();
+  const orgCd = (url.searchParams.get('orgCd') ?? '').trim().toUpperCase();
+  const acctCd = (url.searchParams.get('acctCd') ?? '').trim();
+
+  return actualRows.filter((row) => {
+    if (fiscalYr && row.fiscalYr !== fiscalYr) return false;
+    if (fiscalPrd && row.fiscalPrd !== fiscalPrd) return false;
+    if (orgCd && row.orgCd.toUpperCase() !== orgCd) return false;
+    if (acctCd && !row.acctCd.includes(acctCd)) return false;
+    return true;
+  });
+}
+
 export const coActualsHandlers = [
   http.get('/api/co/actual', ({ request }) => {
-    const url = new URL(request.url);
-    const fiscalYr = (url.searchParams.get('fiscalYr') ?? '').trim();
-    const fiscalPrd = (url.searchParams.get('fiscalPrd') ?? '').trim();
-    const orgCd = (url.searchParams.get('orgCd') ?? '').trim().toUpperCase();
-    const acctCd = (url.searchParams.get('acctCd') ?? '').trim();
+    const items = filterActualRows(request);
 
-    const items = baseRows.filter((row) => {
-      if (fiscalYr && row.fiscalYr !== fiscalYr) return false;
-      if (fiscalPrd && row.fiscalPrd !== fiscalPrd) return false;
-      if (orgCd && row.orgCd.toUpperCase() !== orgCd) return false;
-      if (acctCd && !row.acctCd.includes(acctCd)) return false;
-      return true;
+    return HttpResponse.json({
+      success: true,
+      code: 'S0000',
+      message: 'ok',
+      data: items,
     });
+  }),
+  http.get('/api/co/actuals', ({ request }) => {
+    const items = filterActualRows(request);
 
     return HttpResponse.json({
       success: true,
