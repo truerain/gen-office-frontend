@@ -141,7 +141,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     rowSpanningMode,
 
     enablePagination,
-    pageSizeOptions = [10, 20, 50, 100],
+    pageSizeOptions,
 
     enableFooter,
     footer,

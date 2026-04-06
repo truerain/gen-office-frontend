@@ -4,6 +4,7 @@ import type {
   ColumnDef,
   ExpandedState,
   GroupingState,
+  PaginationState,
   RowSelectionState,
   Table,
   VisibilityState,
@@ -122,6 +123,8 @@ type CommonGridOptions<TData> = {
 
   enablePagination?: boolean;
   pageSizeOptions?: number[];
+  pagination?: PaginationState;
+  onPaginationChange?: (next: PaginationState) => void;
 
   /** column footer row (TanStack columnDef.footer) */
   enableFooterRow?: boolean;

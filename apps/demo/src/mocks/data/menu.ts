@@ -217,6 +217,17 @@ const menus: AppMenu[] = [
     sortOrder: 8,
     execComponent: 'ChartDemoPage',
   },
+  {
+    menuId: 990900,
+    menuName: 'Pagination Demo',
+    menuNameEng: 'Pagination Demo',
+    menuIcon: 'Rows4',
+    parentMenuId: 990000,
+    displayYn: 'Y',
+    useYn: 'Y',
+    sortOrder: 9,
+    execComponent: 'PaginationDemoPage',
+  },
 ];
 
 export function loadAppMenuData() {

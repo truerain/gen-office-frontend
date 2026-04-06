@@ -11,7 +11,17 @@ type Props<TData> = {
 };
 
 export function GenGridPagination<TData>({ table, pageSizeOptions }: Props<TData>) {
-  const options = pageSizeOptions ?? [10, 20, 50, 100];
+  const options = React.useMemo(() => {
+    if (!pageSizeOptions) return [];
+    const uniq = new Set<number>();
+    for (const size of pageSizeOptions) {
+      if (!Number.isFinite(size) || size <= 0) continue;
+      uniq.add(Math.floor(size));
+    }
+    return Array.from(uniq);
+  }, [pageSizeOptions]);
+
+  const showPageSizeSelector = options.length > 0;
   const { pageIndex, pageSize } = table.getState().pagination;
 
  return (
@@ -55,22 +65,24 @@ export function GenGridPagination<TData>({ table, pageSizeOptions }: Props<TData
         Page <strong>{pageIndex + 1}</strong> of <strong>{table.getPageCount()}</strong>
       </div>
 
-      <div className={styles.pagerRight}>
-        <label className={styles.pagerLabel}>
-          Page size
-          <select
-            className={styles.pagerSelect}
-            value={pageSize}
-            onChange={(e) => table.setPageSize(Number(e.target.value))}
-          >
-            {options.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+      {showPageSizeSelector ? (
+        <div className={styles.pagerRight}>
+          <label className={styles.pagerLabel}>
+            Page size
+            <select
+              className={styles.pagerSelect}
+              value={pageSize}
+              onChange={(e) => table.setPageSize(Number(e.target.value))}
+            >
+              {options.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      ) : null}
     </div>
   );
 }

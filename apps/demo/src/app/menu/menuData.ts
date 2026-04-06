@@ -20,6 +20,7 @@ const componentNameByMenuId: Record<string, string> = {
   '990500': 'RowSpanningDemoPage',
   '990700': 'DashboardDemoPage',
   '990800': 'ChartDemoPage',
+  '990900': 'PaginationDemoPage',
 };
 
 const iconByMenuId: Record<string, string> = {
@@ -43,6 +44,7 @@ const iconByMenuId: Record<string, string> = {
   '990500': 'Table2',
   '990700': 'LayoutDashboard',
   '990800': 'BarChart3',
+  '990900': 'Rows4',
 };
 
 export type SystemMenuData = {
