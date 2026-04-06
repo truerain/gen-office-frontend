@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import type { ColumnDef } from '@tanstack/react-table';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { ColumnDef, PaginationState } from '@tanstack/react-table';
 import { Rows4 } from 'lucide-react';
 
 import { GenGridCrud } from '@gen-office/gen-grid-crud';
@@ -38,7 +38,19 @@ function buildRows(total: number): PaginationRow[] {
 const INITIAL_SIZE = 137;
 
 export default function PaginationDemoPage(_props: PageComponentProps) {
+  const [allRows, setAllRows] = useState<PaginationRow[]>(() => buildRows(INITIAL_SIZE));
   const [data, setData] = useState<PaginationRow[]>(() => buildRows(INITIAL_SIZE));
+  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 25 });
+  const [isFetching, setIsFetching] = useState(false);
+
+  const handlePaginationChange = useCallback((next: PaginationState) => {
+    setPagination((prev) => {
+      if (prev.pageIndex === next.pageIndex && prev.pageSize === next.pageSize) {
+        return prev;
+      }
+      return next;
+    });
+  }, []);
 
   const columns = useMemo<ColumnDef<PaginationRow, any>[]>(
     () => [
@@ -75,8 +87,30 @@ export default function PaginationDemoPage(_props: PageComponentProps) {
     []
   );
 
+  const runQuery = useCallback(
+    async (next: PaginationState, baseData: PaginationRow[]) => {
+      setIsFetching(true);
+      try {
+        // Demo purpose: emulate external query on pagination change.
+        await new Promise((resolve) => setTimeout(resolve, 120));
+        const start = next.pageIndex * next.pageSize;
+        const end = start + next.pageSize;
+        setData(baseData.slice(start, end));
+      } finally {
+        setIsFetching(false);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    void runQuery(pagination, allRows);
+  }, [allRows, pagination.pageIndex, pagination.pageSize, runQuery]);
+
   const replaceData = (size: number) => {
-    setData(buildRows(size));
+    const nextRows = buildRows(size);
+    setAllRows(nextRows);
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
   };
 
   return (
@@ -102,7 +136,7 @@ export default function PaginationDemoPage(_props: PageComponentProps) {
           503 rows
         </button>
         <span className={styles.hint}>
-          Check page navigation buttons and page-size selector at the bottom pager.
+          Next/Prev click updates external pagination state and triggers query.
         </span>
       </div>
 
@@ -134,22 +168,26 @@ export default function PaginationDemoPage(_props: PageComponentProps) {
           }}
           gridProps={{
             height: '100%',
-            dataVersion: data.length,
+            dataVersion: `${allRows.length}-${pagination.pageIndex}-${pagination.pageSize}`,
             rowHeight: 34,
             enableColumnSizing: true,
             enablePinning: true,
             enablePagination: true,
-            pageSizeOptions: [10, 25, 50, 100],
+            pagination,
+            onPaginationChange: handlePaginationChange,
+            //pageSizeOptions: [10, 25, 50, 100],
             enableRowNumber: true,
             enableFooter: true,
             renderFooter: (table) => {
               const { pageIndex, pageSize } = table.getState().pagination ?? { pageIndex: 0, pageSize: 0 };
               return (
                 <div className={styles.footerSummary}>
-                  total {data.length} rows | page {pageIndex + 1}/{table.getPageCount()} | page size {pageSize}
+                  {isFetching ? 'loading...' : 'loaded'} | total {allRows.length} rows | page {pageIndex + 1}/
+                  {table.getPageCount()} | page size {pageSize}
                 </div>
               );
             },
+            totalRowCount: 1000,
           }}
         />
       </div>

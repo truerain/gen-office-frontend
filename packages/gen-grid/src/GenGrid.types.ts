@@ -121,11 +121,6 @@ type CommonGridOptions<TData> = {
   /** rowSpanning render mode */
   rowSpanningMode?: 'real' | 'visual';
 
-  enablePagination?: boolean;
-  pageSizeOptions?: number[];
-  pagination?: PaginationState;
-  onPaginationChange?: (next: PaginationState) => void;
-
   /** column footer row (TanStack columnDef.footer) */
   enableFooterRow?: boolean;
   /** sticky footer row inside table scroll */
@@ -198,6 +193,22 @@ type CommonGridOptions<TData> = {
   tree?: GenGridTreeOptions<TData>;
 };
 
+type PaginationOptions =
+  | {
+      enablePagination?: false;
+      pagination?: never;
+      onPaginationChange?: never;
+      totalRowCount?: never;
+      pageSizeOptions?: never;
+    }
+  | {
+      enablePagination: true;
+      pagination: PaginationState;
+      onPaginationChange: (next: PaginationState) => void;
+      totalRowCount: number;
+      pageSizeOptions?: number[];
+    };
+
 type ControlledDataProps<TData> = {
   data: TData[];
   onDataChange: (next: TData[]) => void;
@@ -213,6 +224,7 @@ type UncontrolledDataProps<TData> = {
 };
 
 export type GenGridProps<TData> = CommonGridOptions<TData> &
+  PaginationOptions &
   (ControlledDataProps<TData> | UncontrolledDataProps<TData>) & {
     columns: ColumnDef<TData, any>[];
     getRowId: (row: TData) => string;

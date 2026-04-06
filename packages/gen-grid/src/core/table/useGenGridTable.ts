@@ -3,7 +3,6 @@ import * as React from 'react';
 import {
   getCoreRowModel,
   getExpandedRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   getFilteredRowModel,
   getGroupedRowModel,
@@ -81,6 +80,7 @@ export type GenGridTableProps<TData> = {
   enablePagination?: boolean;
   pagination?: PaginationState;
   onPaginationChange?: (next: PaginationState) => void;
+  totalRowCount?: number;
 
   // filtering
   enableFiltering?: boolean;
@@ -174,6 +174,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     enablePagination,
     pagination,
     onPaginationChange,
+    totalRowCount,
 
     enableFiltering,
     columnFilters,
@@ -208,7 +209,6 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
   const [innerRowSelection, setInnerRowSelection] = React.useState<RowSelectionState>({});
   const [innerGrouping, setInnerGrouping] = React.useState<GroupingState>([]);
   const [innerExpanded, setInnerExpanded] = React.useState<ExpandedState>({});
-  const [innerPagination, setInnerPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [innerColumnFilters, setInnerColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [innerGlobalFilter, setInnerGlobalFilter] = React.useState<string>('');
   const [innerColumnSizing, setInnerColumnSizing] = React.useState<ColumnSizingState>({});
@@ -241,7 +241,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
   const resolvedRowSelection = rowSelection ?? innerRowSelection;
   const resolvedGrouping = grouping ?? innerGrouping;
   const resolvedExpanded = expanded ?? innerExpanded;
-  const resolvedPagination = pagination ?? innerPagination;
+  const resolvedPagination = pagination ?? { pageIndex: 0, pageSize: 10 };
   const resolvedColumnFilters = columnFilters ?? innerColumnFilters;
   const resolvedGlobalFilter = globalFilter ?? innerGlobalFilter;
   const resolvedColumnPinning = columnPinning ?? innerColumnPinning;
@@ -286,6 +286,17 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
   ]);
 
   const enableAnyFiltering = !!enableFiltering || !!enableGlobalFilter;
+  const resolvedTotalRowCount = React.useMemo(() => {
+    if (typeof totalRowCount === 'number' && Number.isFinite(totalRowCount)) {
+      return Math.max(0, Math.floor(totalRowCount));
+    }
+    return tableData.length;
+  }, [totalRowCount, tableData.length]);
+  const resolvedPageCount = React.useMemo(() => {
+    if (!enablePagination) return undefined;
+    const pageSize = Math.max(1, Math.floor(resolvedPagination.pageSize || 1));
+    return Math.max(0, Math.ceil(resolvedTotalRowCount / pageSize));
+  }, [enablePagination, resolvedPagination.pageSize, resolvedTotalRowCount]);
 
   const treeWarningsRef = React.useRef<{
     sorting: boolean;
@@ -432,11 +443,8 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     onPaginationChange: (updater) => {
       if (treeEnabled) return;
       if (!enablePagination) return;
-      if (onPaginationChange) {
-        onPaginationChange(typeof updater === 'function' ? updater(resolvedPagination) : updater);
-      } else {
-        setInnerPagination(updater);
-      }
+      if (!onPaginationChange) return;
+      onPaginationChange(typeof updater === 'function' ? updater(resolvedPagination) : updater);
     },
 
     onColumnFiltersChange: (updater) => {
@@ -496,6 +504,8 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     enableSorting: treeEnabled || rowSpanningEnabled ? false : true,
     enableColumnResizing: enableColumnSizing ?? false,
     columnResizeMode: 'onChange',
+    manualPagination: Boolean(enablePagination),
+    pageCount: treeEnabled ? undefined : resolvedPageCount,
 
     meta,
     
@@ -505,7 +515,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     getGroupedRowModel: treeEnabled ? undefined : enableGrouping ? getGroupedRowModel() : undefined,
     getSortedRowModel: treeEnabled || rowSpanningEnabled ? undefined : getSortedRowModel(),
     getFilteredRowModel: enableAnyFiltering ? getFilteredRowModel() : undefined,
-    getPaginationRowModel: treeEnabled ? undefined : enablePagination ? getPaginationRowModel() : undefined,
+    getPaginationRowModel: undefined,
     getExpandedRowModel: treeEnabled ? undefined : enableGrouping ? getExpandedRowModel() : undefined,
   });
 }

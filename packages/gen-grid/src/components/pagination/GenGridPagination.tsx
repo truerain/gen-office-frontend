@@ -10,6 +10,38 @@ type Props<TData> = {
   pageSizeOptions?: number[];
 };
 
+type PageItem = number | 'ellipsis';
+
+function buildPageItems(pageCount: number, currentPageIndex: number): PageItem[] {
+  if (pageCount <= 0) return [];
+  if (pageCount <= 9) return Array.from({ length: pageCount }, (_, i) => i);
+
+  const candidates = new Set<number>([
+    0,
+    1,
+    pageCount - 2,
+    pageCount - 1,
+    currentPageIndex - 1,
+    currentPageIndex,
+    currentPageIndex + 1,
+  ]);
+
+  const pages = Array.from(candidates)
+    .filter((page) => page >= 0 && page < pageCount)
+    .sort((a, b) => a - b);
+
+  const items: PageItem[] = [];
+  for (let i = 0; i < pages.length; i += 1) {
+    const page = pages[i]!;
+    const prev = pages[i - 1];
+    if (typeof prev === 'number' && page - prev > 1) {
+      items.push('ellipsis');
+    }
+    items.push(page);
+  }
+  return items;
+}
+
 export function GenGridPagination<TData>({ table, pageSizeOptions }: Props<TData>) {
   const options = React.useMemo(() => {
     if (!pageSizeOptions) return [];
@@ -23,6 +55,11 @@ export function GenGridPagination<TData>({ table, pageSizeOptions }: Props<TData
 
   const showPageSizeSelector = options.length > 0;
   const { pageIndex, pageSize } = table.getState().pagination;
+  const pageCount = table.getPageCount();
+  const pageItems = React.useMemo(
+    () => buildPageItems(pageCount, pageIndex),
+    [pageCount, pageIndex]
+  );
 
  return (
     <div className={styles.pager}>
@@ -30,39 +67,40 @@ export function GenGridPagination<TData>({ table, pageSizeOptions }: Props<TData
         <button
           type="button"
           className={styles.pagerBtn}
-          onClick={() => table.setPageIndex(0)}
-          disabled={!table.getCanPreviousPage()}
-        >
-          {'<<'}
-        </button>
-        <button
-          type="button"
-          className={styles.pagerBtn}
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
-          {'<'}
+          Prev
         </button>
+
+        <div className={styles.pagerPages}>
+          {pageItems.map((item, idx) =>
+            item === 'ellipsis' ? (
+              <span key={`ellipsis-${idx}`} className={styles.pagerEllipsis}>
+                ...
+              </span>
+            ) : (
+              <button
+                key={item}
+                type="button"
+                className={`${styles.pagerBtn} ${item === pageIndex ? styles.pagerBtnActive : ''}`}
+                onClick={() => table.setPageIndex(item)}
+                aria-current={item === pageIndex ? 'page' : undefined}
+              >
+                {item + 1}
+              </button>
+            )
+          )}
+        </div>
+
         <button
           type="button"
           className={styles.pagerBtn}
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
-          {'>'}
+          Next
         </button>
-        <button
-          type="button"
-          className={styles.pagerBtn}
-          onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-          disabled={!table.getCanNextPage()}
-        >
-          {'>>'}
-        </button>
-      </div>
-
-      <div className={styles.pagerMid}>
-        Page <strong>{pageIndex + 1}</strong> of <strong>{table.getPageCount()}</strong>
       </div>
 
       {showPageSizeSelector ? (
