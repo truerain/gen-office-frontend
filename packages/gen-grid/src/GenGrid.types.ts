@@ -193,21 +193,13 @@ type CommonGridOptions<TData> = {
   tree?: GenGridTreeOptions<TData>;
 };
 
-type PaginationOptions =
-  | {
-      enablePagination?: false;
-      pagination?: never;
-      onPaginationChange?: never;
-      totalRowCount?: never;
-      pageSizeOptions?: never;
-    }
-  | {
-      enablePagination: true;
-      pagination: PaginationState;
-      onPaginationChange: (next: PaginationState) => void;
-      totalRowCount: number;
-      pageSizeOptions?: number[];
-    };
+type PaginationOptions = {
+  enablePagination?: boolean;
+  pagination?: PaginationState;
+  onPaginationChange?: (next: PaginationState) => void;
+  totalRowCount?: number;
+  pageSizeOptions?: number[];
+};
 
 type ControlledDataProps<TData> = {
   data: TData[];

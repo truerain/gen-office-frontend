@@ -286,6 +286,16 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
   ]);
 
   const enableAnyFiltering = !!enableFiltering || !!enableGlobalFilter;
+  React.useEffect(() => {
+    if (!enablePagination) return;
+    if (!pagination || !onPaginationChange || totalRowCount == null) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        '[GenGrid] external pagination requires pagination, onPaginationChange, totalRowCount.'
+      );
+    }
+  }, [enablePagination, onPaginationChange, pagination, totalRowCount]);
+
   const resolvedTotalRowCount = React.useMemo(() => {
     if (typeof totalRowCount === 'number' && Number.isFinite(totalRowCount)) {
       return Math.max(0, Math.floor(totalRowCount));
