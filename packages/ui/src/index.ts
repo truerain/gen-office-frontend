@@ -31,5 +31,6 @@ export * from './composed/FilterBar/SimpleFilterBar';
 export * from './composed/FilterBar/FilterBar.types';
 export * from './composed/DatePicker';
 export * from './composed/Combobox';
+export * from './composed/TreeCombobox';
 export * from './composed/PopupInput';
 export * from './composed/RichTextEditor';

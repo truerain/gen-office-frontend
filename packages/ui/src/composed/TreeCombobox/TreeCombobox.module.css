@@ -1,0 +1,150 @@
+.root {
+  position: relative;
+  display: inline-flex;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.inputWithTrigger {
+  padding-right: 3.75rem;
+}
+
+.triggerButton {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.25rem;
+  color: var(--color-fg-secondary);
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.triggerButton:hover {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-fg-primary);
+}
+
+.triggerButton:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.triggerButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.triggerIcon {
+  transition: transform 0.12s ease;
+}
+
+.triggerButton[data-open='true'] .triggerIcon {
+  transform: rotate(180deg);
+}
+
+.content {
+  padding: 0.25rem;
+  min-width: var(--radix-popover-trigger-width);
+  max-height: 16rem;
+  overflow: auto;
+}
+
+.tree {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding-left: calc(var(--tree-indent, 16px) * var(--tree-depth, 0));
+}
+
+.toggle {
+  all: unset;
+  width: 1.25rem;
+  height: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  color: var(--color-fg-tertiary);
+  cursor: pointer;
+}
+
+.toggle:hover {
+  background: var(--color-bg-secondary);
+  color: var(--color-fg-primary);
+}
+
+.toggleDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.togglePlaceholder {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.chevron {
+  width: 1rem;
+  height: 1rem;
+  transition: transform 0.15s ease;
+}
+
+.chevronExpanded {
+  transform: rotate(90deg);
+}
+
+.option {
+  all: unset;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding: 0.375rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--color-fg-primary);
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.option:hover {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.optionActive {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.optionDisabled {
+  color: var(--color-fg-tertiary);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.optionLabel {
+  line-height: 1.4;
+}
+
+.optionDescription {
+  font-size: 0.75rem;
+  color: var(--color-fg-tertiary);
+}
+
+.empty {
+  padding: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--color-fg-tertiary);
+}

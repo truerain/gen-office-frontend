@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Combobox } from '@gen-office/ui';
+import { Combobox, TreeCombobox } from '@gen-office/ui';
 import styles from './ComboboxDemoPage.module.css';
 
 const options = [
@@ -29,12 +29,32 @@ const countries = [
   { code: 'us', value: 'united-states', label: 'United States', continent: 'North America' },
 ];
 
+const categoryTreeOptions = [
+  { id: 'electronics', value: 'electronics', label: 'Electronics' },
+  { id: 'phones', parentId: 'electronics', value: 'phones', label: 'Phones' },
+  { id: 'android', parentId: 'phones', value: 'android', label: 'Android', description: 'Google ecosystem' },
+  { id: 'ios', parentId: 'phones', value: 'ios', label: 'iOS', description: 'Apple ecosystem' },
+  { id: 'laptops', parentId: 'electronics', value: 'laptops', label: 'Laptops' },
+  { id: 'gaming-laptop', parentId: 'laptops', value: 'gaming-laptop', label: 'Gaming Laptop' },
+  { id: 'ultrabook', parentId: 'laptops', value: 'ultrabook', label: 'Ultrabook', disabled: true },
+  { id: 'home', value: 'home', label: 'Home' },
+  { id: 'kitchen', parentId: 'home', value: 'kitchen', label: 'Kitchen' },
+  { id: 'cookware', parentId: 'kitchen', value: 'cookware', label: 'Cookware' },
+  { id: 'appliances', parentId: 'kitchen', value: 'appliances', label: 'Appliances' },
+  { id: 'furniture', parentId: 'home', value: 'furniture', label: 'Furniture' },
+  { id: 'chair', parentId: 'furniture', value: 'chair', label: 'Chair' },
+  { id: 'desk', parentId: 'furniture', value: 'desk', label: 'Desk' },
+];
+
 function ComboboxDemoPage() {
   const [basicValue, setBasicValue] = useState<string | undefined>('seoul');
   const [inputValue, setInputValue] = useState('');
   const [controlledValue, setControlledValue] = useState<string | undefined>();
   const [noMatchValue, setNoMatchValue] = useState('');
   const [groupedCountryValue, setGroupedCountryValue] = useState<string | undefined>();
+  const [treeValue, setTreeValue] = useState<string | undefined>();
+  const [treeControlledValue, setTreeControlledValue] = useState<string | undefined>();
+  const [treeExpanded, setTreeExpanded] = useState<(string | number)[]>(['electronics', 'home']);
 
   const selectedLabel = useMemo(() => {
     return options.find((option) => option.value === basicValue)?.label ?? 'None';
@@ -43,6 +63,16 @@ function ComboboxDemoPage() {
   const groupedCountryLabel = useMemo(() => {
     return countries.find((country) => country.value === groupedCountryValue)?.label ?? 'None';
   }, [groupedCountryValue]);
+
+  const treeLabel = useMemo(() => {
+    return categoryTreeOptions.find((option) => option.value === treeValue)?.label ?? 'None';
+  }, [treeValue]);
+
+  const treeControlledLabel = useMemo(() => {
+    return (
+      categoryTreeOptions.find((option) => option.value === treeControlledValue)?.label ?? 'None'
+    );
+  }, [treeControlledValue]);
 
   return (
     <div className={styles.page}>
@@ -169,6 +199,42 @@ function ComboboxDemoPage() {
             />
             <div className={styles.meta}>Grouped by continent</div>
             <div className={styles.meta}>Selected: {groupedCountryLabel}</div>
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <h2>TreeCombobox</h2>
+        <div className={styles.grid}>
+          <div className={styles.card}>
+            <h3>Basic Tree</h3>
+            <TreeCombobox
+              label="Category"
+              placeholder="Search category..."
+              options={categoryTreeOptions}
+              value={treeValue}
+              onValueChange={(next) => setTreeValue(next)}
+              defaultExpandedIds={['electronics', 'home']}
+              fullWidth
+              clearable
+            />
+            <div className={styles.meta}>Selected: {treeLabel}</div>
+          </div>
+
+          <div className={styles.card}>
+            <h3>Controlled Expanded</h3>
+            <TreeCombobox
+              label="Category (Controlled)"
+              placeholder="Type to filter..."
+              options={categoryTreeOptions}
+              value={treeControlledValue}
+              onValueChange={(next) => setTreeControlledValue(next)}
+              expandedIds={treeExpanded}
+              onExpandedIdsChange={setTreeExpanded}
+              fullWidth
+            />
+            <div className={styles.meta}>Selected: {treeControlledLabel}</div>
+            <div className={styles.meta}>Expanded: {treeExpanded.join(', ') || 'None'}</div>
           </div>
         </div>
       </section>
