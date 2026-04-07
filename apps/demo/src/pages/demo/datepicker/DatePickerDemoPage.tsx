@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
-import { Calendar, DatePicker, MonthPicker, RangeDatePicker } from '@gen-office/ui';
+import { Calendar, DatePicker, MonthPicker, RangeDatePicker, RangeMonthPicker } from '@gen-office/ui';
+import type { MonthRange } from '@gen-office/ui';
 import styles from './DatePickerDemoPage.module.css';
 
 function DatePickerDemoPage() {
@@ -10,6 +11,7 @@ function DatePickerDemoPage() {
   const [rangeDate, setRangeDate] = useState<DateRange | undefined>();
   const [rangeCalendar, setRangeCalendar] = useState<DateRange | undefined>();
   const [monthDate, setMonthDate] = useState<Date | undefined>(new Date());
+  const [rangeMonth, setRangeMonth] = useState<MonthRange | undefined>();
 
   const formatted = useMemo(() => {
     if (!basicDate) return '';
@@ -19,6 +21,15 @@ function DatePickerDemoPage() {
       day: '2-digit',
     }).format(basicDate);
   }, [basicDate]);
+
+  const rangeMonthLabel = useMemo(() => {
+    if (!rangeMonth?.from && !rangeMonth?.to) return 'None';
+    const fmt = (date: Date) =>
+      `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    if (rangeMonth?.from && rangeMonth?.to) return `${fmt(rangeMonth.from)} ~ ${fmt(rangeMonth.to)}`;
+    if (rangeMonth?.from) return `${fmt(rangeMonth.from)} ~`;
+    return 'None';
+  }, [rangeMonth]);
 
   return (
     <div className={styles.page}>
@@ -72,6 +83,22 @@ function DatePickerDemoPage() {
             />
             <div className={styles.meta}>
               Month: {monthDate ? `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}` : 'None'}
+            </div>
+          </div>
+
+          <div className={styles.card}>
+            <h3>Range Month Picker</h3>
+            <RangeMonthPicker
+              value={rangeMonth}
+              onChange={setRangeMonth}
+              fromMonth={new Date(2024, 0, 1)}
+              toMonth={new Date(2028, 11, 1)}
+              format={(date) =>
+                `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+              }
+            />
+            <div className={styles.meta}>
+              Range: {rangeMonthLabel}
             </div>
           </div>
         </div>

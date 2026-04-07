@@ -228,6 +228,17 @@ const menus: AppMenu[] = [
     sortOrder: 9,
     execComponent: 'PaginationDemoPage',
   },
+  {
+    menuId: 991000,
+    menuName: 'Popup Input Demo',
+    menuNameEng: 'Popup Input Demo',
+    menuIcon: 'Search',
+    parentMenuId: 990000,
+    displayYn: 'Y',
+    useYn: 'Y',
+    sortOrder: 10,
+    execComponent: 'PopupInputDemoPage',
+  },
 ];
 
 export function loadAppMenuData() {

@@ -31,7 +31,7 @@ export interface FilterBarItemProps {
   children: ReactNode;
   /** flex ratio (default: 1) */
   flex?: number;
-  /** minimum width (default: 200px) */
+  /** base width (default: 250px) */
   width?: string;
   /** extra class */
   className?: string;
@@ -40,14 +40,25 @@ export interface FilterBarItemProps {
 FilterBar.Item = function FilterBarItem({
   title,
   children,
-  flex = 1,
-  width = '250px',
+  flex,
+  width,
   className,
 }: FilterBarItemProps) {
+  const resolvedWidth = width ?? '250px';
+  const hasExplicitWidth = width !== undefined;
+  const resolvedFlex =
+    flex === undefined
+      ? hasExplicitWidth
+        ? `0 0 ${resolvedWidth}`
+        : 1
+      : hasExplicitWidth
+        ? `${flex} 1 ${resolvedWidth}`
+        : flex;
+
   return (
     <div
       className={`${styles.filterItem} ${className || ''}`}
-      style={{ flex, width }}
+      style={{ flex: resolvedFlex, width: resolvedWidth }}
     >
       <div className={styles.filterItemTitle}>{title}</div>
       {children}

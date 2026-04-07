@@ -238,6 +238,7 @@ function ComboboxDemoPage() {
           </div>
         </div>
       </section>
+
     </div>
   );
 }

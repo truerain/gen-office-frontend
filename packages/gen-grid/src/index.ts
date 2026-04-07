@@ -37,3 +37,5 @@ export {
 } from './helpers/columnHelpers';
 export { PopupEditor } from './features/editing/PopupEditor';
 export type { PopupEditorSelection } from './features/editing/PopupEditor';
+export { ModalEditor } from './features/editing/ModalEditor';
+export type { ModalEditorSelection } from './features/editing/ModalEditor';

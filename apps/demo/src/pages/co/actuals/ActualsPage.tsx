@@ -154,7 +154,7 @@ export default function CoActualsPage(_props: PageComponentProps) {
             </Button>
           }
         >
-          <FilterBar.Item title="Fiscal Month" flex={0} width="220px">
+          <FilterBar.Item title="Fiscal Month" flex={0} width="160px">
             <MonthPicker
               value={toMonthDate(draftFilters.fiscalYr, draftFilters.fiscalPrd)}
               onChange={(next) => {
@@ -167,7 +167,7 @@ export default function CoActualsPage(_props: PageComponentProps) {
               }
             />
           </FilterBar.Item>
-          <FilterBar.Item title="Organization" flex={0} width="220px">
+          <FilterBar.Item title="Organization" flex={0} width="160px">
             <Input
               value={draftFilters.orgCd}
               onChange={(event) =>
@@ -177,7 +177,7 @@ export default function CoActualsPage(_props: PageComponentProps) {
               clearable
             />
           </FilterBar.Item>
-          <FilterBar.Item title="Account" flex={1} width="300px">
+          <FilterBar.Item title="Account" flex={0} width="180px">
             <Input
               value={draftFilters.acctCd}
               onChange={(event) =>

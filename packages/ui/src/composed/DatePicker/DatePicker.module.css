@@ -221,6 +221,12 @@
   font-weight: 600;
 }
 
+.monthCell[data-in-range='true']:not([data-selected='true']) {
+  border-color: var(--color-border-strong);
+  background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  color: var(--color-fg-primary);
+}
+
 .monthActions {
   display: flex;
   justify-content: flex-end;

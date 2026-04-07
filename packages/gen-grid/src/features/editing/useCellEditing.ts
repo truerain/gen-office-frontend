@@ -200,10 +200,13 @@ export function useCellEditing<TData>(args: {
           if (!editMode && !editCell) return;
           if (isEditing) return;
           if (editCell && (editCell.rowId !== rowId || editCell.columnId !== columnId)) {
-            if (!keepEditingOnNavigate) {
-              suppressNextAutoEditOnceRef.current = true;
-              suppressNextFocusEditRef.current = { rowId, columnId };
+            // Mouse navigation should end current edit first, including custom renderEditor.
+            if (keepEditingOnNavigate) {
+              cancelEditing({ preserve: false });
+              return;
             }
+            suppressNextAutoEditOnceRef.current = true;
+            suppressNextFocusEditRef.current = { rowId, columnId };
             pendingEditCellRef.current = { rowId, columnId };
             return;
           }
@@ -385,14 +388,18 @@ export function useCellEditing<TData>(args: {
     if (!editMode && !editCell) return;
 
     if (editMode && editCell) {
-      pendingEditCellRef.current = activeCell;
+      // Safety net: if active cell moved while an editor is open (e.g. custom renderEditor),
+      // end previous edit so the old editor cannot remain mounted.
+      if (!isSameCoord(editCell, activeCell)) {
+        cancelEditing({ preserve: false });
+      }
       return;
     }
 
     if (editMode && !editCell) {
       enterEdit(activeCell);
     }
-  }, [activeCell, editCell, editMode, enterEdit, keepEditingOnNavigate]);
+  }, [activeCell, cancelEditing, editCell, editMode, enterEdit, keepEditingOnNavigate, isSameCoord]);
 
   React.useEffect(() => {
     if (editMode) return;

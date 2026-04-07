@@ -33,4 +33,5 @@ export * from './composed/DatePicker';
 export * from './composed/Combobox';
 export * from './composed/TreeCombobox';
 export * from './composed/PopupInput';
+export * from './composed/ModalInput';
 export * from './composed/RichTextEditor';

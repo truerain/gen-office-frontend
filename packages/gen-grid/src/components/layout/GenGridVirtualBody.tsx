@@ -29,6 +29,19 @@ function mergeHandlers<T extends (...args: any[]) => void>(...fns: Array<T | und
   };
 }
 
+function isCellNavigationKey(key: string) {
+  return (
+    key === 'ArrowLeft' ||
+    key === 'ArrowRight' ||
+    key === 'ArrowUp' ||
+    key === 'ArrowDown' ||
+    key === 'Home' ||
+    key === 'End' ||
+    key === 'PageUp' ||
+    key === 'PageDown'
+  );
+}
+
 type GenGridVirtualBodyProps<TData> = {
   table: Table<TData>;
   'readonly'?: boolean;
@@ -527,18 +540,12 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
                           !!target &&
                           !!target.closest('input,select,textarea,button,[contenteditable="true"]');
                         if (isEditorTarget) return;
-                        if (
-                          e.key === 'ArrowLeft' ||
-                          e.key === 'ArrowRight' ||
-                          e.key === 'ArrowUp' ||
-                          e.key === 'ArrowDown' ||
-                          e.key === 'Home' ||
-                          e.key === 'End' ||
-                          e.key === 'PageUp' ||
-                          e.key === 'PageDown'
-                        ) {
+                        // Keyboard navigation across cells should close the current editor first,
+                        // including custom renderEditor implementations.
+                        if (isCellNavigationKey(e.key)) {
                           e.preventDefault();
                           e.stopPropagation();
+                          editing.cancelEditing({ preserve: false });
                           nav.handleKeyDown(e);
                         }
                       })

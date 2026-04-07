@@ -21,6 +21,7 @@ const componentNameByMenuId: Record<string, string> = {
   '990700': 'DashboardDemoPage',
   '990800': 'ChartDemoPage',
   '990900': 'PaginationDemoPage',
+  '991000': 'PopupInputDemoPage',
 };
 
 const iconByMenuId: Record<string, string> = {
@@ -45,6 +46,7 @@ const iconByMenuId: Record<string, string> = {
   '990700': 'LayoutDashboard',
   '990800': 'BarChart3',
   '990900': 'Rows4',
+  '991000': 'Search',
 };
 
 export type SystemMenuData = {
