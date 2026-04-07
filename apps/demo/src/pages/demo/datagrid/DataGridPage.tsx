@@ -4,6 +4,28 @@ import { GenGrid, ModalEditor } from '@gen-office/gen-grid';
 import type { ModalEditorSelection } from '@gen-office/gen-grid';
 import styles from './DataGridPage.module.css';
 
+/*<ModalEditor<MyRow, UserDto>
+  editor={editor}
+  title="사용자 검색"
+  searchPlaceholder="이름/사번"
+  fetchItems={async (keyword) => {
+    const list = await userApi.search({ q: keyword }); // 서버 조회
+    return list.map((u) => ({
+      value: String(u.userId),
+      label: u.empName,
+      description: `${u.empNo} · ${u.orgName}`,
+      data: u,
+      keywords: [u.empName, u.empNo, u.orgName],
+    }));
+  }}
+  listColumns={[
+    { key: 'name', header: '이름', render: (item) => item.label },
+    { key: 'empNo', header: '사번', render: (item) => item.data?.empNo ?? '-' },
+    { key: 'org', header: '조직', render: (item) => item.data?.orgName ?? '-' },
+  ]}
+  mapSelectionToValue={(selection) => selection?.value ?? ''}
+/>*/
+
 type Employee = {
   id: string;
   name: string;
