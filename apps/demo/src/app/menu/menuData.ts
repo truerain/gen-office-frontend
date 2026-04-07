@@ -22,6 +22,7 @@ const componentNameByMenuId: Record<string, string> = {
   '990800': 'ChartDemoPage',
   '990900': 'PaginationDemoPage',
   '991000': 'PopupInputDemoPage',
+  '991100': 'SimpleFilterBarDemoPage',
 };
 
 const iconByMenuId: Record<string, string> = {
@@ -47,6 +48,7 @@ const iconByMenuId: Record<string, string> = {
   '990800': 'BarChart3',
   '990900': 'Rows4',
   '991000': 'Search',
+  '991100': 'Filter',
 };
 
 export type SystemMenuData = {

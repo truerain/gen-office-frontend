@@ -239,6 +239,17 @@ const menus: AppMenu[] = [
     sortOrder: 10,
     execComponent: 'PopupInputDemoPage',
   },
+  {
+    menuId: 991100,
+    menuName: 'Simple FilterBar Demo',
+    menuNameEng: 'Simple FilterBar Demo',
+    menuIcon: 'Filter',
+    parentMenuId: 990000,
+    displayYn: 'Y',
+    useYn: 'Y',
+    sortOrder: 11,
+    execComponent: 'SimpleFilterBarDemoPage',
+  },
 ];
 
 export function loadAppMenuData() {

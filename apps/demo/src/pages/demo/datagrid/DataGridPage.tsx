@@ -66,13 +66,26 @@ function toSelection(employee: Employee): ModalEditorSelection<Employee> {
   };
 }
 
+function fetchAssignees(keyword: string): Promise<ModalEditorSelection<Employee>[]> {
+  const normalized = keyword.trim().toLowerCase();
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const filtered = employees.filter((employee) => {
+        if (!normalized) return true;
+        return (
+          employee.name.toLowerCase().includes(normalized) ||
+          employee.id.toLowerCase().includes(normalized) ||
+          employee.dept.toLowerCase().includes(normalized) ||
+          employee.email.toLowerCase().includes(normalized)
+        );
+      });
+      resolve(filtered.map((employee) => toSelection(employee)));
+    }, 200);
+  });
+}
+
 function DataGridPage() {
   const [rows, setRows] = useState<DemoRow[]>(initialRows);
-
-  const assigneeOptions = useMemo(
-    () => employees.map((employee) => toSelection(employee)),
-    []
-  );
 
   const columns = useMemo<ColumnDef<DemoRow>[]>(
     () => [
@@ -110,7 +123,8 @@ function DataGridPage() {
               placeholder="Select assignee"
               searchPlaceholder="Type name, id, department..."
               modalHeight={320}
-              items={assigneeOptions}
+              fetchItems={fetchAssignees}
+              searchOnInputChange={true}
               listColumns={[
                 {
                   key: 'name',
@@ -163,7 +177,7 @@ function DataGridPage() {
         },
       },
     ],
-    [assigneeOptions]
+    []
   );
 
   return (

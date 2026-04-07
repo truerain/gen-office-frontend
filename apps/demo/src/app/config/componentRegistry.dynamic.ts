@@ -70,6 +70,7 @@ const componentPaths: Record<string, ComponentLoader> = {
   PaginationDemoPage: () => import('@/pages/demo/pagination'),
   SliderDemoPage: () => import('@/pages/demo/slider'),
   ComboboxDemoPage: () => import('@/pages/demo/combobox'),
+  SimpleFilterBarDemoPage: () => import('@/pages/demo/simple-filter-bar'),
   PopupInputDemoPage: () => import('@/pages/demo/popup-input'),
 };
 

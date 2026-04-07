@@ -24,6 +24,7 @@ type ModalEditorProps<TRow, TSelectionData = unknown> = {
   readOnly?: boolean;
   items?: ModalEditorSelection<TSelectionData>[];
   fetchItems?: (keyword: string) => Promise<ModalEditorSelection<TSelectionData>[]>;
+  searchOnInputChange?: boolean;
   mapSelectionToValue?: (selection: ModalEditorSelection<TSelectionData> | null) => unknown;
   confirmOnDoubleClick?: boolean;
   autoFocusSearch?: boolean;
@@ -39,6 +40,7 @@ export function ModalEditor<TRow, TSelectionData = unknown>({
   readOnly = false,
   items,
   fetchItems,
+  searchOnInputChange = false,
   mapSelectionToValue,
   confirmOnDoubleClick = true,
   autoFocusSearch = true,
@@ -88,6 +90,7 @@ export function ModalEditor<TRow, TSelectionData = unknown>({
         readOnly={readOnly}
         items={items as ModalInputSelection<TSelectionData>[] | undefined}
         fetchItems={fetchItems as ((keyword: string) => Promise<ModalInputSelection<TSelectionData>[]>) | undefined}
+        searchOnInputChange={searchOnInputChange}
         confirmOnDoubleClick={confirmOnDoubleClick}
         autoFocusSearch={autoFocusSearch}
         modalHeight={modalHeight}

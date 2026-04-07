@@ -47,6 +47,7 @@ export function ModalInput<TData = unknown>({
   onCommitValue,
   items = [],
   fetchItems,
+  searchOnInputChange = false,
   title = 'Select item',
   modalDescription,
   placeholder,
@@ -174,6 +175,10 @@ export function ModalInput<TData = unknown>({
           onSelectionChange?.(null);
           onDisplayValueChange?.(nextValue);
           onValueChange?.(nextValue);
+          if (searchOnInputChange && fetchItems) {
+            if (!open) setOpen(true);
+            setSearchValue(nextValue);
+          }
         }}
         placeholder={placeholder}
         disabled={disabled}

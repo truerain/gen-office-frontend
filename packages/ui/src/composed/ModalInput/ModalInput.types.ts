@@ -27,6 +27,7 @@ export interface ModalInputProps<TData = unknown> {
   onCommitValue?: (value: string, selection: ModalInputSelection<TData> | null) => void;
   items?: ModalInputSelection<TData>[];
   fetchItems?: (keyword: string) => Promise<ModalInputSelection<TData>[]>;
+  searchOnInputChange?: boolean;
   title?: string;
   modalDescription?: string;
   placeholder?: string;

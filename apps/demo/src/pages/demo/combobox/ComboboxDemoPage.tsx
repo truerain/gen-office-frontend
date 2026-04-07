@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Combobox, TreeCombobox } from '@gen-office/ui';
+import { Combobox, ModalInput, TreeCombobox, type ModalInputSelection } from '@gen-office/ui';
 import styles from './ComboboxDemoPage.module.css';
 
 const options = [
@@ -46,6 +46,42 @@ const categoryTreeOptions = [
   { id: 'desk', parentId: 'furniture', value: 'desk', label: 'Desk' },
 ];
 
+type EmployeeData = {
+  empNo: string;
+  dept: string;
+};
+
+const employeeItems: ModalInputSelection<EmployeeData>[] = [
+  {
+    value: '1001',
+    label: '김하늘',
+    description: 'Finance',
+    data: { empNo: '1001', dept: 'Finance' },
+    keywords: ['finance', 'kim'],
+  },
+  {
+    value: '1002',
+    label: '박지수',
+    description: 'HR',
+    data: { empNo: '1002', dept: 'HR' },
+    keywords: ['hr', 'park'],
+  },
+  {
+    value: '1003',
+    label: '이도윤',
+    description: 'IT',
+    data: { empNo: '1003', dept: 'IT' },
+    keywords: ['it', 'lee'],
+  },
+  {
+    value: '1004',
+    label: '최서연',
+    description: 'Sales',
+    data: { empNo: '1004', dept: 'Sales' },
+    keywords: ['sales', 'choi'],
+  },
+];
+
 function ComboboxDemoPage() {
   const [basicValue, setBasicValue] = useState<string | undefined>('seoul');
   const [inputValue, setInputValue] = useState('');
@@ -55,6 +91,9 @@ function ComboboxDemoPage() {
   const [treeValue, setTreeValue] = useState<string | undefined>();
   const [treeControlledValue, setTreeControlledValue] = useState<string | undefined>();
   const [treeExpanded, setTreeExpanded] = useState<(string | number)[]>(['electronics', 'home']);
+  const [employeeSelection, setEmployeeSelection] = useState<ModalInputSelection<EmployeeData> | null>(
+    null
+  );
 
   const selectedLabel = useMemo(() => {
     return options.find((option) => option.value === basicValue)?.label ?? 'None';
@@ -199,6 +238,38 @@ function ComboboxDemoPage() {
             />
             <div className={styles.meta}>Grouped by continent</div>
             <div className={styles.meta}>Selected: {groupedCountryLabel}</div>
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <h2>ModalInput</h2>
+        <div className={styles.grid}>
+          <div className={styles.card}>
+            <h3>Employee Picker</h3>
+            <ModalInput<EmployeeData>
+              label="Employee"
+              placeholder="Select employee"
+              title="Select Employee"
+              modalDescription="Search and select an employee from the list."
+              searchPlaceholder="Search by name, id, or department"
+              items={employeeItems}
+              selection={employeeSelection}
+              onSelectionChange={setEmployeeSelection}
+              listColumns={[
+                { key: 'empNo', header: 'ID', width: '96px', render: (item) => item.value },
+                { key: 'name', header: 'Name', width: '1.5fr', render: (item) => item.label },
+                {
+                  key: 'dept',
+                  header: 'Department',
+                  width: '1fr',
+                  render: (item) => item.data?.dept ?? '-',
+                },
+              ]}
+              fullWidth
+            />
+            <div className={styles.meta}>Selected: {employeeSelection?.label ?? 'None'}</div>
+            <div className={styles.meta}>Value: {employeeSelection?.value ?? 'None'}</div>
           </div>
         </div>
       </section>

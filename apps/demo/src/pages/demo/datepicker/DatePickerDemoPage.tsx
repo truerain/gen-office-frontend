@@ -91,8 +91,6 @@ function DatePickerDemoPage() {
             <RangeMonthPicker
               value={rangeMonth}
               onChange={setRangeMonth}
-              fromMonth={new Date(2024, 0, 1)}
-              toMonth={new Date(2028, 11, 1)}
               format={(date) =>
                 `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
               }
