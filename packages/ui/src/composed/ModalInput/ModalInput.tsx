@@ -6,11 +6,13 @@ import { Input } from '../../core/Input';
 import {
   Dialog,
   DialogBody,
+  DialogClose,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '../../core/Dialog';
+import { X } from 'lucide-react';
 import type {
   ModalInputListColumn,
   ModalInputProps,
@@ -73,6 +75,7 @@ export function ModalInput<TData = unknown>({
   loadingMessage = 'Loading...',
   confirmOnDoubleClick = true,
   autoFocusSearch = true,
+  modalWidth,
   modalHeight = 560,
   listColumns,
   className,
@@ -86,7 +89,11 @@ export function ModalInput<TData = unknown>({
   const [draftSelection, setDraftSelection] = useState<ModalInputSelection<TData> | null>(null);
   const [remoteItems, setRemoteItems] = useState<ModalInputSelection<TData>[]>([]);
   const [loading, setLoading] = useState(false);
+  const [position, setPosition] = useState<{ left: number; top: number } | null>(null);
   const requestSeqRef = useRef(0);
+  const skipNextFocusOpenRef = useRef(false);
+  const dragStateRef = useRef<{ pointerId: number; offsetX: number; offsetY: number } | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
 
   const open = openProp ?? internalOpen;
   const resolvedSelection = selection !== undefined ? selection : internalSelection;
@@ -122,6 +129,12 @@ export function ModalInput<TData = unknown>({
       });
   }, [fetchItems, open, searchValue]);
 
+  useEffect(() => {
+    if (open) return;
+    setPosition(null);
+    dragStateRef.current = null;
+  }, [open]);
+
   const sourceItems = fetchItems ? remoteItems : items;
   const filteredItems = useMemo(
     () => (fetchItems ? sourceItems : localFilter(sourceItems, searchValue)),
@@ -142,6 +155,8 @@ export function ModalInput<TData = unknown>({
   };
 
   const clearSelection = () => {
+    // Input clear keeps focus on the input. Prevent openOnInputFocus from reopening modal once.
+    skipNextFocusOpenRef.current = true;
     if (selection === undefined) {
       setInternalSelection(null);
     }
@@ -154,6 +169,7 @@ export function ModalInput<TData = unknown>({
 
   const toCssSize = (size: number | string) =>
     typeof size === 'number' ? `${size}px` : size;
+  const resolvedModalWidth = modalWidth != null ? toCssSize(modalWidth) : undefined;
   const resolvedModalHeight = toCssSize(modalHeight);
   const hasTableColumns = Array.isArray(listColumns) && listColumns.length > 0;
   const gridTemplateColumns = hasTableColumns
@@ -161,6 +177,48 @@ export function ModalInput<TData = unknown>({
         .map((column) => column.width ?? 'minmax(0, 1fr)')
         .join(' ')
     : undefined;
+
+  const handleHeaderPointerDown: React.PointerEventHandler<HTMLDivElement> = (event) => {
+    if (event.button !== 0) return;
+
+    const target = event.target as HTMLElement;
+    if (target.closest('button, input, textarea, select, a, [role="button"]')) {
+      return;
+    }
+
+    const node = contentRef.current;
+    if (!node) return;
+
+    const rect = node.getBoundingClientRect();
+    dragStateRef.current = {
+      pointerId: event.pointerId,
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top,
+    };
+    setPosition({ left: rect.left, top: rect.top });
+    event.currentTarget.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  };
+
+  const handleHeaderPointerMove: React.PointerEventHandler<HTMLDivElement> = (event) => {
+    const dragState = dragStateRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) return;
+
+    setPosition({
+      left: event.clientX - dragState.offsetX,
+      top: event.clientY - dragState.offsetY,
+    });
+  };
+
+  const handleHeaderPointerUp: React.PointerEventHandler<HTMLDivElement> = (event) => {
+    const dragState = dragStateRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) return;
+
+    dragStateRef.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
 
   return (
     <div className={cn(styles.root, fullWidth && styles.fullWidth, className)}>
@@ -194,6 +252,10 @@ export function ModalInput<TData = unknown>({
         fullWidth={fullWidth}
         className={inputClassName}
         onFocus={() => {
+          if (skipNextFocusOpenRef.current) {
+            skipNextFocusOpenRef.current = false;
+            return;
+          }
           if (!disabled && openOnInputFocus) setOpen(true);
         }}
         onKeyDown={(event) => {
@@ -217,12 +279,41 @@ export function ModalInput<TData = unknown>({
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
+          ref={contentRef}
           className={cn(styles.dialog, dialogClassName)}
-          showClose={true}
+          showClose={false}
           data-gen-grid-editor-overlay="true"
+          style={
+            {
+              ...(resolvedModalWidth
+                ? {
+                    width: resolvedModalWidth,
+                    maxWidth: resolvedModalWidth,
+                  }
+                : {}),
+              ...(position
+                ? {
+                    left: `${position.left}px`,
+                    top: `${position.top}px`,
+                    transform: 'none',
+                  }
+                : {}),
+            }
+          }
         >
-          <DialogHeader>
-            <DialogTitle>{title}</DialogTitle>
+          <DialogHeader
+            className={cn(styles.dialogHeader, styles.draggableHeader)}
+            onPointerDown={handleHeaderPointerDown}
+            onPointerMove={handleHeaderPointerMove}
+            onPointerUp={handleHeaderPointerUp}
+            onPointerCancel={handleHeaderPointerUp}
+          >
+            <div className={styles.headerRow}>
+              <DialogTitle className={styles.dialogTitle}>{title}</DialogTitle>
+              <DialogClose className={styles.dialogCloseButton} aria-label="Close">
+                <X size={16} aria-hidden={true} />
+              </DialogClose>
+            </div>
           </DialogHeader>
           <DialogBody>
             <div className={styles.content} style={{ height: resolvedModalHeight }}>

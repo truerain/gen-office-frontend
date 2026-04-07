@@ -39,6 +39,50 @@
   max-width: min(42rem, calc(100vw - 2rem));
 }
 
+.dialogHeader {
+  padding: 0.625rem 1rem;
+}
+
+.draggableHeader {
+  cursor: move;
+  user-select: none;
+  touch-action: none;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.dialogTitle {
+  padding-left: 0;
+}
+
+.dialogCloseButton {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.25rem;
+  color: var(--color-fg-secondary);
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.dialogCloseButton:hover {
+  background-color: var(--dialog-close-hover-bg);
+  color: var(--color-fg-primary);
+}
+
+.dialogCloseButton:focus-visible {
+  outline: 2px solid rgba(165, 0, 52, 0.3);
+  outline-offset: 1px;
+}
+
 .content {
   display: flex;
   flex-direction: column;

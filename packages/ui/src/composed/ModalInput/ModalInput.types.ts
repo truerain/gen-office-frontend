@@ -53,6 +53,7 @@ export interface ModalInputProps<TData = unknown> {
   loadingMessage?: string;
   confirmOnDoubleClick?: boolean;
   autoFocusSearch?: boolean;
+  modalWidth?: number | string;
   modalHeight?: number | string;
   listColumns?: ModalInputListColumn<TData>[];
   className?: string;

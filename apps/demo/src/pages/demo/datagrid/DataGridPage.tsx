@@ -59,7 +59,7 @@ const initialRows: DemoRow[] = [
 function toSelection(employee: Employee): ModalEditorSelection<Employee> {
   return {
     value: employee.id,
-    label: employee.name,
+    label: `${employee.name} (${employee.id})`,
     description: `${employee.id} · ${employee.dept}`,
     keywords: [employee.name, employee.id, employee.dept, employee.email],
     data: employee,
@@ -130,7 +130,7 @@ function DataGridPage() {
                   key: 'name',
                   header: 'Name',
                   width: 'minmax(180px, 1.5fr)',
-                  render: (item) => item.label,
+                  render: (item) => item.data?.name ?? item.label,
                 },
                 {
                   key: 'empId',

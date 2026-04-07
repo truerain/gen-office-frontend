@@ -8,6 +8,7 @@ import {
 import styles from './SimpleFilterBarDemoPage.module.css';
 
 type EmployeeData = {
+  name: string;
   dept: string;
   email: string;
 };
@@ -29,30 +30,30 @@ const defaultFilters: DemoFilters = {
 const employeeItems: ModalInputSelection<EmployeeData>[] = [
   {
     value: 'E1001',
-    label: 'Olivia Harper',
+    label: 'Olivia Harper (E1001)',
     description: 'Finance',
-    data: { dept: 'Finance', email: 'olivia.harper@corp.local' },
+    data: { name: 'Olivia Harper', dept: 'Finance', email: 'olivia.harper@corp.local' },
     keywords: ['finance', 'olivia'],
   },
   {
     value: 'E1002',
-    label: 'Noah Kim',
+    label: 'Noah Kim (E1002)',
     description: 'Sales',
-    data: { dept: 'Sales', email: 'noah.kim@corp.local' },
+    data: { name: 'Noah Kim', dept: 'Sales', email: 'noah.kim@corp.local' },
     keywords: ['sales', 'noah'],
   },
   {
     value: 'E1003',
-    label: 'Emma Park',
+    label: 'Emma Park (E1003)',
     description: 'Operations',
-    data: { dept: 'Operations', email: 'emma.park@corp.local' },
+    data: { name: 'Emma Park', dept: 'Operations', email: 'emma.park@corp.local' },
     keywords: ['operations', 'emma'],
   },
   {
     value: 'E1004',
-    label: 'Liam Choi',
+    label: 'Liam Choi (E1004)',
     description: 'Engineering',
-    data: { dept: 'Engineering', email: 'liam.choi@corp.local' },
+    data: { name: 'Liam Choi', dept: 'Engineering', email: 'liam.choi@corp.local' },
     keywords: ['engineering', 'liam'],
   },
 ];
@@ -161,7 +162,6 @@ function SimpleFilterBarDemoPage() {
             <ModalInput<EmployeeData>
               placeholder="Select assignee"
               title="Select Assignee"
-              modalDescription="Choose one assignee from employee list."
               searchPlaceholder="Search by name, id, department"
               fetchItems={fetchEmployeeItems}
               readOnly={false}
@@ -169,9 +169,15 @@ function SimpleFilterBarDemoPage() {
               searchOnInputChange={true}
               selection={selected}
               onSelectionChange={(selection) => onChange(selection?.value ?? '')}
+              modalHeight={360}
               listColumns={[
                 { key: 'id', header: 'ID', width: '96px', render: (item) => item.value },
-                { key: 'name', header: 'Name', width: '1.5fr', render: (item) => item.label },
+                {
+                  key: 'name',
+                  header: 'Name',
+                  width: '1.5fr',
+                  render: (item) => item.data?.name ?? item.label,
+                },
                 {
                   key: 'dept',
                   header: 'Department',
@@ -179,6 +185,7 @@ function SimpleFilterBarDemoPage() {
                   render: (item) => item.data?.dept ?? '-',
                 },
               ]}
+              confirmLabel='확인'
               fullWidth
             />
           );
