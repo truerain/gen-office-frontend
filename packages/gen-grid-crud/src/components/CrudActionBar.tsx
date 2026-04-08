@@ -197,10 +197,10 @@ export function CrudActionBar<TData>(props: {
     if (typeof totalRowCount === 'number' && Number.isFinite(totalRowCount)) {
       const resolvedTotal = Math.max(0, Math.floor(totalRowCount));
       const totalText = resolvedTotal.toLocaleString();
-      return `${t('crud.rows')}: ${viewText}/${totalText}`;
+      return `${t('common.total_rows')}: ${viewText}/${totalText}`;
     }
 
-    return `${t('crud.rows')}: ${viewText}`;
+    return `${t('common.total_rows')}: ${viewText}`;
   }, [state.viewData.length, t, totalRowCount]);
 
   const renderAction = (action: CrudActionItem<TData>) => {
