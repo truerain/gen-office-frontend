@@ -95,6 +95,15 @@ export function useCellEditing<TData>(args: {
     pendingEditCellRef.current = null;
   }, []);
 
+  const blurActiveEditor = React.useCallback(() => {
+    if (typeof document === 'undefined') return false;
+    const active = document.activeElement as HTMLElement | null;
+    if (!active) return false;
+    if (!active.closest('input,select,textarea,[contenteditable="true"]')) return false;
+    active.blur();
+    return true;
+  }, []);
+
   const captureEditStartSnapshot = React.useCallback(
     (coord: CellCoord) => {
       editStartSnapshotRef.current = {
@@ -202,7 +211,9 @@ export function useCellEditing<TData>(args: {
           if (editCell && (editCell.rowId !== rowId || editCell.columnId !== columnId)) {
             // Mouse navigation should end current edit first, including custom renderEditor.
             if (keepEditingOnNavigate) {
-              cancelEditing({ preserve: false });
+              pendingEditCellRef.current = { rowId, columnId };
+              // Do not cancel on click navigation: let blur drive commit.
+              blurActiveEditor();
               return;
             }
             suppressNextAutoEditOnceRef.current = true;
@@ -306,6 +317,7 @@ export function useCellEditing<TData>(args: {
       startEditing,
       editMode,
       activeCell,
+      blurActiveEditor,
       keepEditingOnNavigate,
     ]
   );
