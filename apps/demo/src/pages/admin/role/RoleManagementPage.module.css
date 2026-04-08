@@ -1,9 +1,6 @@
 /* apps/demo/src/pages/admin/role/RoleManagementPage.module.css */
 
 .page {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
   overflow: hidden;
 }
 

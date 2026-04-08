@@ -24,6 +24,7 @@ import { useAppStore } from "@/app/store/appStore";
 import { useAlertDialog } from "@/shared/ui/AlertDialogContext";
 import { resolveApiErrorMessage } from "@/shared/api/errorMessage";
 
+import layoutStyles from "../_shared/AdminPageLayout.module.css";
 import styles from "./NoticeManagementPage.module.css";
 import { createNoticeManagementColumns } from "./NoticeManagementColumns";
 import { commitNoticeChanges } from "./NoticeManagementCrud";
@@ -250,7 +251,7 @@ export default function NoticeManagementPage() {
   };
 
   return (
-    <div className={styles.page}>
+    <div className={`${layoutStyles.page} ${styles.page}`}>
       <PageHeader
         title="Notice Management"
         description="Manage the notice list and edit notice details."

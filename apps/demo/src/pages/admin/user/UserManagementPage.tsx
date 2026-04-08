@@ -5,7 +5,7 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RefreshCcw, Users } from 'lucide-react';
+import { RefreshCcw, Upload, Users } from 'lucide-react';
 
 import {
   GenGridCrud,
@@ -21,6 +21,7 @@ import type { User, UserListParams } from '@/pages/admin/user/model/types';
 import { useAppStore } from '@/app/store/appStore';
 import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 
+import layoutStyles from '../_shared/AdminPageLayout.module.css';
 import styles from './UserManagementPage.module.css';
 import { createUserManagementColumns } from './UserManagementColumns';
 import { commitUserChanges } from './UserManagementCrud';
@@ -154,7 +155,7 @@ export default function UserManagementPage(_props: PageComponentProps) {
   };
 
   return (
-    <div className={styles.page} data-grid-dirty={gridDirty ? 'true' : 'false'}>
+    <div className={`${layoutStyles.page} ${styles.page}`} data-grid-dirty={gridDirty ? 'true' : 'false'}>
       <PageHeader
         title="사용자 관리"
         description="사용자 정보를 조회/관리합니다."
@@ -163,7 +164,7 @@ export default function UserManagementPage(_props: PageComponentProps) {
           { label: 'User Management', icon: <Users size={16} /> },
         ]}
       />
-      <div className={styles.filter}>
+      <div className={`${layoutStyles.filter} ${styles.filter}`}>
         <SimpleFilterBar
           value={draftFilters}
           fields={filterFields}
@@ -172,7 +173,6 @@ export default function UserManagementPage(_props: PageComponentProps) {
           searchLabel="검색"
         />
       </div>
-      <div className={styles.workarea}>
         <GenGridCrud<User>
           key={`user-${dataUpdatedAt}`}
           title={"사용자목록"}
@@ -213,6 +213,7 @@ export default function UserManagementPage(_props: PageComponentProps) {
               {
                 key: 'download-template',
                 label: 'Upload Template',
+                icon: <Upload aria-hidden size={16} />,
                 side: 'right',
                 style: 'icon',
                 order: 30,
@@ -281,7 +282,6 @@ export default function UserManagementPage(_props: PageComponentProps) {
             enableStickyFooterRow: true,
           }}
         />
-      </div>
     </div>
   );
 }

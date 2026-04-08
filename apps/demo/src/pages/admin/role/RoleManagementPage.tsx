@@ -28,6 +28,7 @@ import { useAppStore } from '@/app/store/appStore';
 import { useAlertDialog } from '@/shared/ui/AlertDialogContext';
 import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 
+import layoutStyles from '../_shared/AdminPageLayout.module.css';
 import styles from './RoleManagementPage.module.css';
 import { createRoleMenuColumns } from './RoleMenuColumns';
 import { createRoleManagementColumns } from './RoleManagementColumns';
@@ -193,7 +194,7 @@ export default function RoleManagementPage(_props: PageComponentProps) {
   };
 
   return (
-    <div className={styles.page} data-grid-dirty={gridDirty ? 'true' : 'false'}>
+    <div className={`${layoutStyles.page} ${styles.page}`} data-grid-dirty={gridDirty ? 'true' : 'false'}>
       <PageHeader
         title={t('admin.role.title', { defaultValue: 'Role Management' })}
         description={t('admin.role.description', { defaultValue: 'Manage system roles.' })}

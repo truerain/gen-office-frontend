@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { CircleDot, ListFilter, ListPlus, ListX, RotateCcw, Save } from 'lucide-react';
+import { CircleDot, ListFilter, ListPlus, ListX, RotateCcw, Save, SquareMinus, SquarePlus } from 'lucide-react';
 
 import { Button } from '@gen-office/ui';
 import type {
@@ -87,7 +87,7 @@ export function CrudActionBar<TData>(props: {
       add: {
         key: 'add',
         label: labelAdd,
-        icon: <ListPlus aria-hidden size={16} />,
+        icon: <SquarePlus aria-hidden size={16} />,
         side: 'left',
         order: 10,
         variant: actionButtonStyle === 'icon' ? 'ghost' : 'secondary',
@@ -97,7 +97,7 @@ export function CrudActionBar<TData>(props: {
       delete: {
         key: 'delete',
         label: labelDelete,
-        icon: <ListX aria-hidden size={16} />,
+        icon: <SquareMinus aria-hidden size={16} />,
         side: 'left',
         order: 20,
         variant: actionButtonStyle === 'icon' ? 'ghost' : 'secondary',
@@ -142,7 +142,7 @@ export function CrudActionBar<TData>(props: {
       excel: {
         key: 'excel',
         label: labelExcel,
-        icon: <ExcelSvgIcon aria-hidden width={32} height={16} />,
+        icon: <ExcelSvgIcon aria-hidden width={24} height={24} />,
         side: 'right',
         order: 30,
         variant: actionButtonStyle === 'icon' ? 'ghost' : 'secondary',
@@ -192,12 +192,16 @@ export function CrudActionBar<TData>(props: {
 
   const totalRowsText = React.useMemo(() => {
     const viewCount = state.viewData.length;
-    const resolvedTotal =
-      typeof totalRowCount === 'number' && Number.isFinite(totalRowCount)
-        ? Math.max(0, Math.floor(totalRowCount))
-        : viewCount;
-    return `(${viewCount.toLocaleString()}/${resolvedTotal.toLocaleString()})`;
-  }, [state.viewData.length, totalRowCount]);
+    const viewText = viewCount.toLocaleString();
+
+    if (typeof totalRowCount === 'number' && Number.isFinite(totalRowCount)) {
+      const resolvedTotal = Math.max(0, Math.floor(totalRowCount));
+      const totalText = resolvedTotal.toLocaleString();
+      return `${t('crud.rows')}: ${viewText}/${totalText}`;
+    }
+
+    return `${t('crud.rows')}: ${viewText}`;
+  }, [state.viewData.length, t, totalRowCount]);
 
   const renderAction = (action: CrudActionItem<TData>) => {
     const style = action.style ?? actionButtonStyle;
@@ -227,16 +231,15 @@ export function CrudActionBar<TData>(props: {
     <div className={styles.root}>
       <div className={styles.leftActions}>
         {title && (
-          <div className={styles.title}>
-            <span><CircleDot size={8} /> </span>
+          <div className={`${styles.section} ${styles.title}`}>
             {title}
           </div>
         )}
-        <div className={styles.total}>
+        <div className={`${styles.section} ${styles.total}`}>
           <span>{totalRowsText}</span>
         </div>
 
-        <div className={styles.actions}>
+        <div className={`${styles.section} ${styles.actions}`}>
           {leftActions.map(renderAction)}
         </div>
       </div>

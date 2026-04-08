@@ -16,6 +16,7 @@ import { useAppStore } from '@/app/store/appStore';
 import { useAlertDialog } from '@/shared/ui/AlertDialogContext';
 import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 
+import layoutStyles from '../_shared/AdminPageLayout.module.css';
 import { createMenuManagementColumns } from './MenuManagementColumns';
 import { commitMenuChanges, createMenuRow } from './MenuManagementCrud';
 import styles from './MenuManagementPage.module.css';
@@ -161,7 +162,7 @@ function MenuManagementPage(props: PageComponentProps) {
   );
 
   return (
-    <div className={styles.page}>
+    <div className={`${layoutStyles.page} ${styles.page}`}>
       <PageHeader
         title={currentAppMenu?.label || pageTitle}
         description={

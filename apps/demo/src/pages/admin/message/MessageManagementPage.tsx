@@ -12,6 +12,7 @@ import type { MessageListParams } from '@/pages/admin/message/model/types';
 import { useAppStore } from '@/app/store/appStore';
 import { useAlertDialog } from '@/shared/ui/AlertDialogContext';
 
+import layoutStyles from '../_shared/AdminPageLayout.module.css';
 import styles from './MessageManagementPage.module.css';
 import { createMessageManagementColumns } from './MessageManagementColumns';
 import {
@@ -100,7 +101,7 @@ export default function MessageManagementPage(_props: PageComponentProps) {
   };
 
   return (
-    <div className={styles.page} data-grid-dirty={gridDirty ? 'true' : 'false'}>
+    <div className={`${layoutStyles.page} ${styles.page}`} data-grid-dirty={gridDirty ? 'true' : 'false'}>
       <PageHeader
         title="Message Management"
         description="Manage i18n messages by namespace, code, and language."
@@ -109,7 +110,7 @@ export default function MessageManagementPage(_props: PageComponentProps) {
           { label: 'Message Management', icon: <Languages size={16} /> },
         ]}
       />
-      <div className={styles.filter}>
+      <div className={`${layoutStyles.filter} ${styles.filter}`}>
         <SimpleFilterBar
           value={draftFilters}
           fields={filterFields}
@@ -118,7 +119,7 @@ export default function MessageManagementPage(_props: PageComponentProps) {
           searchLabel="검색"
         />
       </div>
-      <div className={styles.workarea}>
+      <div className={`${layoutStyles.workarea} ${styles.workarea}`}>
         <GenGridCrud<MessageGridRow>
           title="Message List"
           data={rows}

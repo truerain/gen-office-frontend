@@ -22,6 +22,7 @@ import type {
 import { useAppStore } from '@/app/store/appStore';
 import { useAlertDialog } from '@/shared/ui/AlertDialogContext';
 
+import layoutStyles from '../_shared/AdminPageLayout.module.css';
 import styles from './LkupManagementPage.module.css';
 
 import {
@@ -211,7 +212,7 @@ export default function LkupManagementPage(_props: PageComponentProps) {
   };
 
   return (
-    <div className={styles.page} data-grid-dirty={masterGridDirty || detailGridDirty ? 'true' : 'false'}>
+    <div className={`${layoutStyles.page} ${styles.page}`} data-grid-dirty={masterGridDirty || detailGridDirty ? 'true' : 'false'}>
       <PageHeader
         title="Common Code Management"
         description="Manage lookup classes and detail codes."
@@ -229,7 +230,7 @@ export default function LkupManagementPage(_props: PageComponentProps) {
           showResizeLine
           left={
             <div className={styles.pane}>
-              <div className={styles.filter}>
+              <div className={`${layoutStyles.filter} ${styles.filter}`}>
                 <SimpleFilterBar
                   value={draftMasterFilters}
                   fields={filterFields}

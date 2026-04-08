@@ -17,6 +17,7 @@ import {
   USER_SEARCH_POPUP_CONTENT_CLASS_NAME,
 } from '@/shared/ui/popup/UserSearchPopup';
 
+import layoutStyles from '../_shared/AdminPageLayout.module.css';
 import styles from './UserRoleManagementPage.module.css';
 import { createUserRoleManagementColumns } from './UserRoleManagementColumns';
 import {
@@ -196,7 +197,7 @@ export default function UserRoleManagementPage(_props: PageComponentProps) {
   };
 
   return (
-    <div className={styles.page} data-grid-dirty={gridDirty ? 'true' : 'false'}>
+    <div className={`${layoutStyles.page} ${styles.page}`} data-grid-dirty={gridDirty ? 'true' : 'false'}>
       <PageHeader
         title="User Role Management"
         description="Manage user-role mappings."
@@ -205,7 +206,7 @@ export default function UserRoleManagementPage(_props: PageComponentProps) {
           { label: 'User Role Management', icon: <UserCog size={16} /> },
         ]}
       />
-      <div className={styles.filter}>
+      <div className={`${layoutStyles.filter} ${styles.filter}`}>
         <SimpleFilterBar
           value={draftFilters}
           fields={filterFields}
@@ -214,7 +215,7 @@ export default function UserRoleManagementPage(_props: PageComponentProps) {
           searchLabel="검색"
         />
       </div>
-      <div className={styles.workarea}>
+      <div className={`${layoutStyles.workarea} ${styles.workarea}`}>
         <GenGridCrud<UserRoleGridRow>
           title="User Role List"
           key={`userRole-${dataUpdatedAt}`}
