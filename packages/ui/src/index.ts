@@ -18,6 +18,7 @@ export * from './core/Tree';
 export * from './core/Popover';
 export * from './core/Calendar';
 export * from './core/Slider';
+export * from './core/Tabs';
 
 // composed
 export * from './composed/AlertDialog';

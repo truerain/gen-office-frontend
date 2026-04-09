@@ -29,6 +29,39 @@
   border-radius: var(--border-radius-lg);
 }
 
+.tabsRoot {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+
+.tabsList {
+  align-self: flex-start;
+}
+
+.tabPanel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 0;
+}
+
+.planPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--border-radius-md);
+  background: var(--base-neutral-50);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
 .error {
   margin: 8px;
   padding: 12px;

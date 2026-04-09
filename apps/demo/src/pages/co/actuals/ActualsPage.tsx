@@ -6,7 +6,19 @@ import {
   RangeChartDialog,
   useRangeChartContextMenu,
 } from '@gen-office/gen-grid-chart';
-import { Button, FilterBar, Input, MonthPicker, Radio, RadioGroup, SimpleDialog } from '@gen-office/ui';
+import {
+  Button,
+  FilterBar,
+  Input,
+  MonthPicker,
+  Radio,
+  RadioGroup,
+  SimpleDialog,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 import { usePageContext } from '@/contexts';
@@ -145,127 +157,142 @@ export default function CoActualsPage(_props: PageComponentProps) {
           { label: 'Actuals Inquiry', icon: <Calculator size={16} /> },
         ]}
       />
-      <div className={styles.filter}>
-        <FilterBar
-          actions={
-            <Button onClick={handleSearch} variant="primary" size="md">
-              <Search size={16} />
-              Search
-            </Button>
-          }
-        >
-          <FilterBar.Item title="Fiscal Month" flex={0} width="160px">
-            <MonthPicker
-              value={toMonthDate(draftFilters.fiscalYr, draftFilters.fiscalPrd)}
-              onChange={(next) => {
-                const { fiscalYr, fiscalPrd } = fromMonthDate(next);
-                setDraftFilters((prev) => ({ ...prev, fiscalYr, fiscalPrd }));
-              }}
-              placeholder="YYYY-MM"
-              format={(date) =>
-                `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-              }
-            />
-          </FilterBar.Item>
-          <FilterBar.Item title="Organization" flex={0} width="160px">
-            <Input
-              value={draftFilters.orgCd}
-              onChange={(event) =>
-                setDraftFilters((prev) => ({ ...prev, orgCd: event.target.value }))
-              }
-              placeholder="HQ"
-              clearable
-            />
-          </FilterBar.Item>
-          <FilterBar.Item title="Account" flex={0} width="180px">
-            <Input
-              value={draftFilters.acctCd}
-              onChange={(event) =>
-                setDraftFilters((prev) => ({ ...prev, acctCd: event.target.value }))
-              }
-              placeholder="500100"
-              clearable
-            />
-          </FilterBar.Item>
-        </FilterBar>
-      </div>
-      <div className={styles.workarea}>
-        {isError && (
-          <div className={styles.error}>
-            <div className={styles.errorTitle}>Failed to load actuals.</div>
-            <div className={styles.errorMessage}>
-              {resolveApiErrorMessage(error, { defaultMessage: 'Unknown error' })}
-            </div>
-            <button type="button" onClick={() => void refetch()}>
-              Retry
-            </button>
+      <Tabs defaultValue="actuals" className={styles.tabsRoot}>
+        <TabsList className={styles.tabsList} variant="underline">
+          <TabsTrigger value="plan">{"제품별 배부내역"}</TabsTrigger>
+          <TabsTrigger value="actuals">{"원장내역"}</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="plan" className={styles.tabPanel}>
+          <div className={styles.planPlaceholder}>
+            {"계획 탭 샘플 화면입니다. 이후 계획 데이터 그리드를 연결할 수 있습니다."}
           </div>
-        )}
-        <GenGridCrud<CoActual>
-          title="Actuals List"
-          readonly
-          data={gridRows}
-          columns={columns}
-          getRowId={(row, index) => makeRowId(row, index)}
-          onCommit={async () => ({ ok: true })}
-          excelExport={{
-            mode: 'frontend',
-            frontend: { onlySelected: false },
-          }}
-          actionBar={{
-            position: 'top',
-            defaultStyle: 'icon',
-            includeBuiltIns: ['filter', 'excel'],
-            customActions: [
-              {
-                key: 'settings',
-                label: 'Settings',
-                icon: <Settings aria-hidden size={16} />,
-                side: 'right',
-                style: 'icon',
-                order: 10,
-                onClick: () => {
-                  setSettingsOpen(true);
+        </TabsContent>
+
+        <TabsContent value="actuals" className={styles.tabPanel}>
+          <div className={styles.filter}>
+            <FilterBar
+              actions={
+                <Button onClick={handleSearch} variant="primary" size="md">
+                  <Search size={16} />
+                  Search
+                </Button>
+              }
+            >
+              <FilterBar.Item title="Fiscal Month" flex={0} width="160px">
+                <MonthPicker
+                  value={toMonthDate(draftFilters.fiscalYr, draftFilters.fiscalPrd)}
+                  onChange={(next) => {
+                    const { fiscalYr, fiscalPrd } = fromMonthDate(next);
+                    setDraftFilters((prev) => ({ ...prev, fiscalYr, fiscalPrd }));
+                  }}
+                  placeholder="YYYY-MM"
+                  format={(date) =>
+                    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+                  }
+                />
+              </FilterBar.Item>
+              <FilterBar.Item title="Organization" flex={0} width="160px">
+                <Input
+                  value={draftFilters.orgCd}
+                  onChange={(event) =>
+                    setDraftFilters((prev) => ({ ...prev, orgCd: event.target.value }))
+                  }
+                  placeholder="HQ"
+                  clearable
+                />
+              </FilterBar.Item>
+              <FilterBar.Item title="Account" flex={0} width="180px">
+                <Input
+                  value={draftFilters.acctCd}
+                  onChange={(event) =>
+                    setDraftFilters((prev) => ({ ...prev, acctCd: event.target.value }))
+                  }
+                  placeholder="500100"
+                  clearable
+                />
+              </FilterBar.Item>
+            </FilterBar>
+          </div>
+          <div className={styles.workarea}>
+            {isError && (
+              <div className={styles.error}>
+                <div className={styles.errorTitle}>Failed to load actuals.</div>
+                <div className={styles.errorMessage}>
+                  {resolveApiErrorMessage(error, { defaultMessage: 'Unknown error' })}
+                </div>
+                <button type="button" onClick={() => void refetch()}>
+                  Retry
+                </button>
+              </div>
+            )}
+            <GenGridCrud<CoActual>
+              title="Actuals List"
+              readonly
+              data={gridRows}
+              columns={columns}
+              getRowId={(row, index) => makeRowId(row, index)}
+              onCommit={async () => ({ ok: true })}
+              excelExport={{
+                mode: 'frontend',
+                frontend: { onlySelected: false },
+              }}
+              actionBar={{
+                position: 'top',
+                defaultStyle: 'icon',
+                includeBuiltIns: ['filter', 'excel'],
+                customActions: [
+                  {
+                    key: 'settings',
+                    label: 'Settings',
+                    icon: <Settings aria-hidden size={16} />,
+                    side: 'right',
+                    style: 'icon',
+                    order: 10,
+                    onClick: () => {
+                      setSettingsOpen(true);
+                    },
+                  },
+                  {
+                    key: 'refresh',
+                    label: 'Refresh',
+                    icon: <RefreshCcw aria-hidden size={16} />,
+                    side: 'right',
+                    style: 'icon',
+                    order: 20,
+                    onClick: () => {
+                      void refetch();
+                    },
+                  },
+                ],
+              }}
+              onStateChange={({ dirty }) => {
+                setGridDirty(dirty);
+              }}
+              gridProps={{
+                dataVersion: dataUpdatedAt,
+                rowHeight: 34,
+                overscan: 8,
+                enablePinning: true,
+                enableColumnSizing: true,
+                enableVirtualization: true,
+                enablePagination: false,
+                enableRowStatus: true,
+                enableRowNumber: false,
+                checkboxSelection: true,
+                editOnActiveCell: false,
+                keepEditingOnNavigate: true,
+                enableFooterRow: false,
+                enableStickyFooterRow: true,
+                enableActiveRowHighlight: true,
+                contextMenu: {
+                  customActions: [rangeChart.contextMenuAction],
                 },
-              },
-              {
-                key: 'refresh',
-                label: 'Refresh',
-                icon: <RefreshCcw aria-hidden size={16} />,
-                side: 'right',
-                style: 'icon',
-                order: 20,
-                onClick: () => {
-                  void refetch();
-                },
-              },
-            ],
-          }}
-          onStateChange={({ dirty }) => {
-            setGridDirty(dirty);
-          }}
-          gridProps={{
-            dataVersion: dataUpdatedAt,
-            rowHeight: 34,
-            overscan: 8,
-            enablePinning: true,
-            enableColumnSizing: true,
-            enableVirtualization: true,
-            enablePagination: false,
-            enableRowStatus: true,
-            enableRowNumber: false,
-            checkboxSelection: true,
-            editOnActiveCell: false,
-            keepEditingOnNavigate: true,
-            enableFooterRow: false,
-            enableStickyFooterRow: true,
-            enableActiveRowHighlight: true,
-            contextMenu: {
-              customActions: [rangeChart.contextMenuAction],
-            },
-          }}
-        />
-      </div>
+              }}
+            />
+          </div>
+        </TabsContent>
+      </Tabs>
 
       <SimpleDialog
         open={settingsOpen}
