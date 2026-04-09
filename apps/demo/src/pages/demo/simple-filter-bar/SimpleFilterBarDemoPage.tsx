@@ -16,7 +16,9 @@ type EmployeeData = {
 type DemoFilters = {
   keyword: string;
   status: string;
+  statusList: string[];
   assigneeId: string;
+  assigneeIds: string[];
 };
 
 const ALL_STATUS = 'ALL';
@@ -24,7 +26,9 @@ const ALL_STATUS = 'ALL';
 const defaultFilters: DemoFilters = {
   keyword: '',
   status: ALL_STATUS,
+  statusList: [],
   assigneeId: '',
+  assigneeIds: [],
 };
 
 const employeeItems: ModalInputSelection<EmployeeData>[] = [
@@ -110,8 +114,18 @@ function fetchDemoRows(filters: DemoFilters): Promise<DemoRow[]> {
             row.id.toLowerCase().includes(keyword) ||
             row.title.toLowerCase().includes(keyword);
           const matchStatus = filters.status === ALL_STATUS || row.status === filters.status;
-          const matchAssignee = !filters.assigneeId || row.assigneeId === filters.assigneeId;
-          return matchKeyword && matchStatus && matchAssignee;
+          const matchStatusMulti =
+            filters.statusList.length === 0 || filters.statusList.includes(row.status);
+          const matchAssigneeSingle = !filters.assigneeId || row.assigneeId === filters.assigneeId;
+          const matchAssigneeMulti =
+            filters.assigneeIds.length === 0 || filters.assigneeIds.includes(row.assigneeId);
+          return (
+            matchKeyword &&
+            matchStatus &&
+            matchStatusMulti &&
+            matchAssigneeSingle &&
+            matchAssigneeMulti
+          );
         })
       );
     }, 250);
@@ -150,8 +164,21 @@ function SimpleFilterBarDemoPage() {
         flex: 0,
       },
       {
+        key: 'statusList',
+        title: 'Status (Multi)',
+        type: 'multi-combo',
+        placeholder: 'Select statuses',
+        options: [
+          { label: 'Active', value: 'ACTIVE' },
+          { label: 'Pending', value: 'PENDING' },
+          { label: 'Archived', value: 'ARCHIVED' },
+        ],
+        width: '220px',
+        flex: 0,
+      },
+      {
         key: 'assigneeId',
-        title: 'Assignee',
+        title: 'Assignee (Single)',
         type: 'custom',
         width: '320px',
         flex: 0,
@@ -160,6 +187,7 @@ function SimpleFilterBarDemoPage() {
             employeeItems.find((item) => item.value === String(value ?? '')) ?? null;
           return (
             <ModalInput<EmployeeData>
+              mode="single"
               placeholder="Select assignee"
               title="Select Assignee"
               searchPlaceholder="Search by name, id, department"
@@ -167,8 +195,8 @@ function SimpleFilterBarDemoPage() {
               readOnly={false}
               openOnInputFocus={true}
               searchOnInputChange={true}
-              selection={selected}
-              onSelectionChange={(selection) => onChange(selection?.value ?? '')}
+              selectedItem={selected}
+              onSelectedItemChange={(selectedItem) => onChange(selectedItem?.value ?? '')}
               modalHeight={360}
               listColumns={[
                 { key: 'id', header: 'ID', width: '96px', render: (item) => item.value },
@@ -186,6 +214,47 @@ function SimpleFilterBarDemoPage() {
                 },
               ]}
               confirmLabel='확인'
+              fullWidth
+            />
+          );
+        },
+      },
+      {
+        key: 'assigneeIds',
+        title: 'Assignees (Multi)',
+        type: 'custom',
+        width: '360px',
+        flex: 0,
+        render: (value, onChange) => {
+          const selectedItems = employeeItems.filter((item) =>
+            Array.isArray(value) ? value.includes(item.value) : false
+          );
+          return (
+            <ModalInput<EmployeeData>
+              mode="multi"
+              placeholder="Select assignees"
+              title="Select Assignees"
+              searchPlaceholder="Search by name, id, department"
+              fetchItems={fetchEmployeeItems}
+              readOnly={true}
+              selectedItems={selectedItems}
+              onSelectedItemsChange={(nextItems) => onChange(nextItems.map((item) => item.value))}
+              modalHeight={360}
+              listColumns={[
+                { key: 'id', header: 'ID', width: '96px', render: (item) => item.value },
+                {
+                  key: 'name',
+                  header: 'Name',
+                  width: '1.5fr',
+                  render: (item) => item.data?.name ?? item.label,
+                },
+                {
+                  key: 'dept',
+                  header: 'Department',
+                  width: '1fr',
+                  render: (item) => item.data?.dept ?? '-',
+                },
+              ]}
               fullWidth
             />
           );

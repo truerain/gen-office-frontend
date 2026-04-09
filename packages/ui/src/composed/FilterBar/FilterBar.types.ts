@@ -19,7 +19,7 @@ type FilterFieldBase<TFilters> = {
 
 export type FilterField<TFilters> =
   | (FilterFieldBase<TFilters> & {
-      type: 'text' | 'search' | 'select' | 'combo';
+      type: 'text' | 'search' | 'select' | 'combo' | 'multi-combo';
       label?: string;
       placeholder?: string;
       clearable?: boolean;

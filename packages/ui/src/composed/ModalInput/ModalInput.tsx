@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { cn } from '@gen-office/utils';
 import { Button } from '../../core/Button';
 import { Input } from '../../core/Input';
@@ -12,7 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../../core/Dialog';
-import { X } from 'lucide-react';
 import type {
   ModalInputListColumn,
   ModalInputProps,
@@ -20,87 +19,100 @@ import type {
 } from './ModalInput.types';
 import styles from './ModalInput.module.css';
 
-function localFilter<TData>(
-  list: ModalInputSelection<TData>[],
-  keyword: string
-) {
+function localFilter<TData>(list: ModalInputSelection<TData>[], keyword: string) {
   const normalized = keyword.trim().toLowerCase();
   if (!normalized) return list;
   return list.filter((item) => {
-    const haystack = [
-      item.label,
-      item.value,
-      item.description ?? '',
-      ...(item.keywords ?? []),
-    ]
+    const haystack = [item.label, item.value, item.description ?? '', ...(item.keywords ?? [])]
       .join(' ')
       .toLowerCase();
     return haystack.includes(normalized);
   });
 }
 
-export function ModalInput<TData = unknown>({
-  value,
-  displayValue,
-  selection,
-  onValueChange,
-  onDisplayValueChange,
-  onSelectionChange,
-  onCommitValue,
-  items = [],
-  fetchItems,
-  searchOnInputChange = false,
-  title = 'Select item',
-  modalDescription,
-  placeholder,
-  searchPlaceholder = 'Search...',
-  disabled,
-  readOnly = true,
-  openOnInputFocus = false,
-  open: openProp,
-  defaultOpen = false,
-  onOpenChange,
-  triggerAriaLabel = 'Open search modal',
-  triggerIcon,
-  label,
-  helperText,
-  error,
-  required,
-  fullWidth,
-  clearable = true,
-  clearLabel = 'Clear',
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
-  emptyMessage = 'No results found.',
-  loadingMessage = 'Loading...',
-  confirmOnDoubleClick = true,
-  autoFocusSearch = true,
-  modalWidth,
-  modalHeight = 560,
-  listColumns,
-  className,
-  inputClassName,
-  dialogClassName,
-  listClassName,
-}: ModalInputProps<TData>) {
+function defaultDisplayValue<TData>(
+  selectedItems: ModalInputSelection<TData>[],
+  mode: 'single' | 'multi'
+) {
+  if (selectedItems.length === 0) return '';
+  if (mode === 'single') return selectedItems[0]?.label ?? '';
+  if (selectedItems.length === 1) return selectedItems[0]?.label ?? '';
+  const first = selectedItems[0]?.label ?? '';
+  return `${first} +${selectedItems.length - 1}`;
+}
+
+export function ModalInput<TData = unknown>(props: ModalInputProps<TData>) {
+  const {
+    mode,
+    items = [],
+    fetchItems,
+    searchOnInputChange = false,
+    title = 'Select item',
+    modalDescription,
+    placeholder,
+    searchPlaceholder = 'Search...',
+    disabled,
+    readOnly = true,
+    openOnInputFocus = false,
+    open: openProp,
+    defaultOpen = false,
+    onOpenChange,
+    triggerAriaLabel = 'Open search modal',
+    triggerIcon,
+    label,
+    helperText,
+    error,
+    required,
+    fullWidth,
+    clearable = true,
+    clearLabel = 'Clear',
+    confirmLabel = 'Confirm',
+    cancelLabel = 'Cancel',
+    emptyMessage = 'No results found.',
+    loadingMessage = 'Loading...',
+    confirmOnDoubleClick = true,
+    autoFocusSearch = true,
+    modalWidth,
+    modalHeight = 560,
+    listColumns,
+    className,
+    inputClassName,
+    dialogClassName,
+    listClassName,
+    formatDisplayValue,
+  } = props;
+
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
-  const [internalSelection, setInternalSelection] = useState<ModalInputSelection<TData> | null>(null);
+  const [internalSelectedItems, setInternalSelectedItems] = useState<
+    ModalInputSelection<TData>[]
+  >([]);
   const [searchValue, setSearchValue] = useState('');
-  const [draftSelection, setDraftSelection] = useState<ModalInputSelection<TData> | null>(null);
+  const [inputValue, setInputValue] = useState('');
+  const [draftSelectedItems, setDraftSelectedItems] = useState<ModalInputSelection<TData>[]>([]);
+  const [showSelectedOnly, setShowSelectedOnly] = useState(false);
   const [remoteItems, setRemoteItems] = useState<ModalInputSelection<TData>[]>([]);
   const [loading, setLoading] = useState(false);
   const [position, setPosition] = useState<{ left: number; top: number } | null>(null);
   const requestSeqRef = useRef(0);
   const skipNextFocusOpenRef = useRef(false);
-  const dragStateRef = useRef<{ pointerId: number; offsetX: number; offsetY: number } | null>(null);
+  const dragStateRef = useRef<{ pointerId: number; offsetX: number; offsetY: number } | null>(
+    null
+  );
   const contentRef = useRef<HTMLDivElement | null>(null);
 
   const open = openProp ?? internalOpen;
-  const resolvedSelection = selection !== undefined ? selection : internalSelection;
-  const resolvedValue = String(value ?? resolvedSelection?.value ?? '');
-  const resolvedDisplayValue = String(
-    resolvedSelection?.label ?? displayValue ?? resolvedValue
-  );
+  const controlledSelectedItems =
+    mode === 'single'
+      ? props.selectedItem !== undefined
+        ? props.selectedItem
+          ? [props.selectedItem]
+          : []
+        : undefined
+      : props.selectedItems;
+  const resolvedSelectedItems = controlledSelectedItems ?? internalSelectedItems;
+  const resolvedDisplayValue =
+    formatDisplayValue?.(resolvedSelectedItems, mode) ??
+    defaultDisplayValue(resolvedSelectedItems, mode);
 
   const setOpen = (nextOpen: boolean) => {
     if (openProp === undefined) setInternalOpen(nextOpen);
@@ -108,10 +120,22 @@ export function ModalInput<TData = unknown>({
   };
 
   useEffect(() => {
+    if (readOnly) return;
+    if (open) return;
+    setInputValue(resolvedDisplayValue);
+  }, [open, readOnly, resolvedDisplayValue]);
+
+  useEffect(() => {
     if (!open) return;
-    setSearchValue(String(displayValue ?? resolvedDisplayValue ?? value ?? '').trim());
-    setDraftSelection(resolvedSelection ?? null);
-  }, [displayValue, open, resolvedDisplayValue, resolvedSelection, value]);
+    setDraftSelectedItems(resolvedSelectedItems);
+    setShowSelectedOnly(false);
+    if (mode === 'multi') {
+      setSearchValue('');
+      return;
+    }
+    const seed = readOnly ? resolvedDisplayValue : inputValue;
+    setSearchValue(seed.trim());
+  }, [inputValue, mode, open, readOnly, resolvedDisplayValue, resolvedSelectedItems]);
 
   useEffect(() => {
     if (!open || !fetchItems) return;
@@ -140,42 +164,73 @@ export function ModalInput<TData = unknown>({
     () => (fetchItems ? sourceItems : localFilter(sourceItems, searchValue)),
     [fetchItems, searchValue, sourceItems]
   );
+  const draftSelectedKeySet = useMemo(
+    () => new Set(draftSelectedItems.map((item) => item.value)),
+    [draftSelectedItems]
+  );
+  const visibleItems = useMemo(() => {
+    if (mode !== 'multi' || !showSelectedOnly) return filteredItems;
+    return filteredItems.filter((item) => draftSelectedKeySet.has(item.value));
+  }, [draftSelectedKeySet, filteredItems, mode, showSelectedOnly]);
 
-  const commitSelection = (nextSelection: ModalInputSelection<TData> | null) => {
-    if (selection === undefined) {
-      setInternalSelection(nextSelection);
+  const applySelection = (nextItems: ModalInputSelection<TData>[]) => {
+    if (controlledSelectedItems === undefined) {
+      setInternalSelectedItems(nextItems);
     }
-    onSelectionChange?.(nextSelection);
-    const nextValue = nextSelection?.value ?? '';
-    const nextDisplay = nextSelection?.label ?? '';
-    onValueChange?.(nextValue);
-    onDisplayValueChange?.(nextDisplay);
-    onCommitValue?.(nextValue, nextSelection);
+
+    if (mode === 'single') {
+      const nextItem = nextItems[0] ?? null;
+      props.onSelectedItemChange?.(nextItem);
+      return;
+    }
+
+    props.onSelectedItemsChange?.(nextItems);
+  };
+
+  const commitSelection = (nextItems: ModalInputSelection<TData>[]) => {
+    applySelection(nextItems);
+    if (mode === 'single') {
+      props.onCommit?.(nextItems[0] ?? null);
+    } else {
+      props.onCommit?.(nextItems);
+    }
     setOpen(false);
   };
 
   const clearSelection = () => {
-    // Input clear keeps focus on the input. Prevent openOnInputFocus from reopening modal once.
     skipNextFocusOpenRef.current = true;
-    if (selection === undefined) {
-      setInternalSelection(null);
+    commitSelection([]);
+    if (!readOnly) {
+      setInputValue('');
     }
-    onSelectionChange?.(null);
-    onValueChange?.('');
-    onDisplayValueChange?.('');
-    onCommitValue?.('', null);
-    setOpen(false);
   };
 
-  const toCssSize = (size: number | string) =>
-    typeof size === 'number' ? `${size}px` : size;
+  const toggleDraftSelection = (item: ModalInputSelection<TData>) => {
+    if (item.disabled) return;
+
+    if (mode === 'single') {
+      setDraftSelectedItems([item]);
+      return;
+    }
+
+    setDraftSelectedItems((prev) => {
+      if (prev.some((selected) => selected.value === item.value)) {
+        return prev.filter((selected) => selected.value !== item.value);
+      }
+      return [...prev, item];
+    });
+  };
+
+  const toCssSize = (size: number | string) => (typeof size === 'number' ? `${size}px` : size);
   const resolvedModalWidth = modalWidth != null ? toCssSize(modalWidth) : undefined;
   const resolvedModalHeight = toCssSize(modalHeight);
   const hasTableColumns = Array.isArray(listColumns) && listColumns.length > 0;
+  const showSelector = mode === 'multi';
   const gridTemplateColumns = hasTableColumns
-    ? (listColumns as ModalInputListColumn<TData>[])
-        .map((column) => column.width ?? 'minmax(0, 1fr)')
-        .join(' ')
+    ? [
+        ...(showSelector ? ['2rem'] : []),
+        ...(listColumns as ModalInputListColumn<TData>[]).map((col) => col.width ?? 'minmax(0, 1fr)'),
+      ].join(' ')
     : undefined;
 
   const handleHeaderPointerDown: React.PointerEventHandler<HTMLDivElement> = (event) => {
@@ -223,17 +278,13 @@ export function ModalInput<TData = unknown>({
   return (
     <div className={cn(styles.root, fullWidth && styles.fullWidth, className)}>
       <Input
-        value={resolvedDisplayValue}
+        value={readOnly ? resolvedDisplayValue : inputValue}
         onChange={(event) => {
           if (readOnly) return;
           const nextValue = event.target.value;
-          if (selection === undefined) {
-            setInternalSelection(null);
-          }
-          onSelectionChange?.(null);
-          onDisplayValueChange?.(nextValue);
-          onValueChange?.(nextValue);
-          if (searchOnInputChange && fetchItems) {
+          setInputValue(nextValue);
+          applySelection([]);
+          if (searchOnInputChange) {
             if (!open) setOpen(true);
             setSearchValue(nextValue);
           }
@@ -309,7 +360,14 @@ export function ModalInput<TData = unknown>({
             onPointerCancel={handleHeaderPointerUp}
           >
             <div className={styles.headerRow}>
-              <DialogTitle className={styles.dialogTitle}>{title}</DialogTitle>
+              <div className={styles.titleWrap}>
+                <DialogTitle className={styles.dialogTitle}>{title}</DialogTitle>
+                {mode === 'multi' ? (
+                  <span className={styles.selectionCount}>
+                    {draftSelectedItems.length} selected
+                  </span>
+                ) : null}
+              </div>
               <DialogClose className={styles.dialogCloseButton} aria-label="Close">
                 <X size={16} aria-hidden={true} />
               </DialogClose>
@@ -333,19 +391,37 @@ export function ModalInput<TData = unknown>({
                       event.stopPropagation();
                       setOpen(false);
                     }
-                    if (event.key === 'Enter' && filteredItems.length === 1) {
+                    if (event.key === 'Enter' && mode === 'single' && visibleItems.length === 1) {
                       event.preventDefault();
-                      const only = filteredItems[0];
-                      if (!only.disabled) commitSelection(only);
+                      const only = visibleItems[0];
+                      if (!only.disabled) commitSelection([only]);
+                    }
+                    if (event.key === 'Enter' && mode === 'multi') {
+                      event.preventDefault();
+                      commitSelection(draftSelectedItems);
                     }
                   }}
                 />
+                {mode === 'multi' ? (
+                  <label className={styles.selectedOnlyToggle}>
+                    <input
+                      type="checkbox"
+                      checked={showSelectedOnly}
+                      onChange={(event) => setShowSelectedOnly(event.target.checked)}
+                    />
+                    선택만 보기
+                  </label>
+                ) : null}
               </div>
 
-              <div className={cn(styles.listWrap, listClassName)}>
+              <div
+                className={cn(styles.listWrap, listClassName)}
+                role="listbox"
+                aria-multiselectable={mode === 'multi'}
+              >
                 {loading ? (
                   <div className={styles.empty}>{loadingMessage}</div>
-                ) : filteredItems.length === 0 ? (
+                ) : visibleItems.length === 0 ? (
                   <div className={styles.empty}>{emptyMessage}</div>
                 ) : hasTableColumns ? (
                   <div className={styles.table}>
@@ -353,6 +429,7 @@ export function ModalInput<TData = unknown>({
                       className={styles.tableHeader}
                       style={gridTemplateColumns ? { gridTemplateColumns } : undefined}
                     >
+                      {showSelector ? <div className={styles.tableHeaderCell} /> : null}
                       {(listColumns as ModalInputListColumn<TData>[]).map((column) => (
                         <div
                           key={column.key}
@@ -367,8 +444,8 @@ export function ModalInput<TData = unknown>({
                       ))}
                     </div>
                     <div className={styles.tableBody}>
-                      {filteredItems.map((item) => {
-                        const selected = draftSelection?.value === item.value;
+                      {visibleItems.map((item) => {
+                        const selected = draftSelectedKeySet.has(item.value);
                         return (
                           <button
                             key={`${item.value}:${item.label}`}
@@ -377,12 +454,18 @@ export function ModalInput<TData = unknown>({
                             data-selected={selected ? 'true' : 'false'}
                             style={gridTemplateColumns ? { gridTemplateColumns } : undefined}
                             disabled={item.disabled}
-                            onClick={() => setDraftSelection(item)}
+                            aria-selected={selected}
+                            onClick={() => toggleDraftSelection(item)}
                             onDoubleClick={() => {
-                              if (!confirmOnDoubleClick) return;
-                              commitSelection(item);
+                              if (mode !== 'single' || !confirmOnDoubleClick) return;
+                              commitSelection([item]);
                             }}
                           >
+                            {showSelector ? (
+                              <span className={styles.selector} aria-hidden={true}>
+                                {selected ? '✓' : ''}
+                              </span>
+                            ) : null}
                             {(listColumns as ModalInputListColumn<TData>[]).map((column) => (
                               <span
                                 key={`${item.value}:${column.key}`}
@@ -402,8 +485,8 @@ export function ModalInput<TData = unknown>({
                   </div>
                 ) : (
                   <div className={styles.list}>
-                    {filteredItems.map((item) => {
-                      const selected = draftSelection?.value === item.value;
+                    {visibleItems.map((item) => {
+                      const selected = draftSelectedKeySet.has(item.value);
                       return (
                         <button
                           key={`${item.value}:${item.label}`}
@@ -411,15 +494,23 @@ export function ModalInput<TData = unknown>({
                           className={styles.item}
                           data-selected={selected ? 'true' : 'false'}
                           disabled={item.disabled}
-                          onClick={() => setDraftSelection(item)}
+                          aria-selected={selected}
+                          onClick={() => toggleDraftSelection(item)}
                           onDoubleClick={() => {
-                            if (!confirmOnDoubleClick) return;
-                            commitSelection(item);
+                            if (mode !== 'single' || !confirmOnDoubleClick) return;
+                            commitSelection([item]);
                           }}
                         >
-                          <span className={styles.itemTitle}>{item.label}</span>
-                          <span className={styles.itemMeta}>
-                            {item.description ?? item.value}
+                          <span className={styles.itemBody}>
+                            {showSelector ? (
+                              <span className={styles.selector} aria-hidden={true}>
+                                {selected ? '✓' : ''}
+                              </span>
+                            ) : null}
+                            <span className={styles.itemContent}>
+                              <span className={styles.itemTitle}>{item.label}</span>
+                              <span className={styles.itemMeta}>{item.description ?? item.value}</span>
+                            </span>
                           </span>
                         </button>
                       );
@@ -437,8 +528,8 @@ export function ModalInput<TData = unknown>({
               <Button
                 type="button"
                 variant="primary"
-                onClick={() => commitSelection(draftSelection)}
-                disabled={!draftSelection}
+                onClick={() => commitSelection(draftSelectedItems)}
+                disabled={mode === 'single' && draftSelectedItems.length === 0}
               >
                 {confirmLabel}
               </Button>

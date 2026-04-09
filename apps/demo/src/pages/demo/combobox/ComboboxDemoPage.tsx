@@ -1,5 +1,11 @@
 import { useMemo, useState } from 'react';
-import { Combobox, ModalInput, TreeCombobox, type ModalInputSelection } from '@gen-office/ui';
+import {
+  Combobox,
+  ModalInput,
+  MultiCombobox,
+  TreeCombobox,
+  type ModalInputSelection,
+} from '@gen-office/ui';
 import styles from './ComboboxDemoPage.module.css';
 
 const options = [
@@ -87,13 +93,16 @@ function ComboboxDemoPage() {
   const [inputValue, setInputValue] = useState('');
   const [controlledValue, setControlledValue] = useState<string | undefined>();
   const [noMatchValue, setNoMatchValue] = useState('');
+  const [multiValues, setMultiValues] = useState<string[]>([]);
   const [groupedCountryValue, setGroupedCountryValue] = useState<string | undefined>();
   const [treeValue, setTreeValue] = useState<string | undefined>();
   const [treeControlledValue, setTreeControlledValue] = useState<string | undefined>();
   const [treeExpanded, setTreeExpanded] = useState<(string | number)[]>(['electronics', 'home']);
-  const [employeeSelection, setEmployeeSelection] = useState<ModalInputSelection<EmployeeData> | null>(
-    null
-  );
+  const [employeeSelection, setEmployeeSelection] =
+    useState<ModalInputSelection<EmployeeData> | null>(null);
+  const [employeeSelections, setEmployeeSelections] = useState<
+    ModalInputSelection<EmployeeData>[]
+  >([]);
 
   const selectedLabel = useMemo(() => {
     return options.find((option) => option.value === basicValue)?.label ?? 'None';
@@ -216,6 +225,19 @@ function ComboboxDemoPage() {
               fullWidth
             />
           </div>
+          <div className={styles.card}>
+            <h3>MultiCombobox</h3>
+            <MultiCombobox
+              label="Cities"
+              placeholder="Select multiple cities"
+              options={options}
+              values={multiValues}
+              onValuesChange={setMultiValues}
+              clearable
+              fullWidth
+            />
+            <div className={styles.meta}>Selected: {multiValues.join(', ') || 'None'}</div>
+          </div>
         </div>
       </section>
 
@@ -248,14 +270,15 @@ function ComboboxDemoPage() {
           <div className={styles.card}>
             <h3>Employee Picker</h3>
             <ModalInput<EmployeeData>
+              mode="single"
               label="Employee"
               placeholder="Select employee"
               title="Select Employee"
               modalDescription="Search and select an employee from the list."
               searchPlaceholder="Search by name, id, or department"
               items={employeeItems}
-              selection={employeeSelection}
-              onSelectionChange={setEmployeeSelection}
+              selectedItem={employeeSelection}
+              onSelectedItemChange={setEmployeeSelection}
               listColumns={[
                 { key: 'empNo', header: 'ID', width: '96px', render: (item) => item.value },
                 { key: 'name', header: 'Name', width: '1.5fr', render: (item) => item.label },
@@ -270,6 +293,33 @@ function ComboboxDemoPage() {
             />
             <div className={styles.meta}>Selected: {employeeSelection?.label ?? 'None'}</div>
             <div className={styles.meta}>Value: {employeeSelection?.value ?? 'None'}</div>
+          </div>
+          <div className={styles.card}>
+            <h3>Employee Picker (Multi)</h3>
+            <ModalInput<EmployeeData>
+              mode="multi"
+              label="Employees"
+              placeholder="Select employees"
+              title="Select Employees"
+              searchPlaceholder="Search by name, id, or department"
+              items={employeeItems}
+              selectedItems={employeeSelections}
+              onSelectedItemsChange={setEmployeeSelections}
+              listColumns={[
+                { key: 'empNo', header: 'ID', width: '96px', render: (item) => item.value },
+                { key: 'name', header: 'Name', width: '1.5fr', render: (item) => item.label },
+                {
+                  key: 'dept',
+                  header: 'Department',
+                  width: '1fr',
+                  render: (item) => item.data?.dept ?? '-',
+                },
+              ]}
+              fullWidth
+            />
+            <div className={styles.meta}>
+              Selected: {employeeSelections.map((item) => item.label).join(', ') || 'None'}
+            </div>
           </div>
         </div>
       </section>

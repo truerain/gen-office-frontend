@@ -5,6 +5,7 @@ import { SearchInput } from './SearchInput';
 import { Input } from '../../core/Input';
 import { SimpleSelect } from '../../core/Select';
 import { Combobox } from '../Combobox';
+import { MultiCombobox } from '../Combobox';
 import { Button } from '../../core/Button';
 import { Search } from 'lucide-react';
 
@@ -49,6 +50,24 @@ function renderDefaultField<TFilters>(
         <Combobox
           value={String(fieldValue ?? '')}
           onValueChange={(next) => setFieldValue(next)}
+          placeholder={field.placeholder}
+          options={(field.options ?? []).map((opt) => ({
+            label: opt.label,
+            value: String(opt.value),
+            group: opt.group,
+          }))}
+          clearable={field.clearable ?? true}
+          clearLabel={field.clearLabel}
+          fullWidth
+          maxVisibleItems={field.maxVisibleItems}
+          optionItemHeight={field.optionItemHeight}
+        />
+      );
+    case 'multi-combo':
+      return (
+        <MultiCombobox
+          values={Array.isArray(fieldValue) ? fieldValue.map((item) => String(item)) : []}
+          onValuesChange={(nextValues) => setFieldValue(nextValues)}
           placeholder={field.placeholder}
           options={(field.options ?? []).map((opt) => ({
             label: opt.label,

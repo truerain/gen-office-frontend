@@ -13,7 +13,7 @@ export type ModalEditorSelection<TData = unknown> = {
   keywords?: string[];
 };
 
-type ModalEditorProps<TRow, TSelectionData = unknown> = {
+type ModalEditorBaseProps<TRow, TSelectionData = unknown> = {
   editor: Pick<
     CellEditorRenderArgs<TRow>,
     'value' | 'onChange' | 'onCommit' | 'onCancel' | 'onTab' | 'commitValue'
@@ -25,36 +25,54 @@ type ModalEditorProps<TRow, TSelectionData = unknown> = {
   items?: ModalEditorSelection<TSelectionData>[];
   fetchItems?: (keyword: string) => Promise<ModalEditorSelection<TSelectionData>[]>;
   searchOnInputChange?: boolean;
-  mapSelectionToValue?: (selection: ModalEditorSelection<TSelectionData> | null) => unknown;
   confirmOnDoubleClick?: boolean;
   autoFocusSearch?: boolean;
   modalHeight?: number | string;
   listColumns?: ModalInputListColumn<TSelectionData>[];
 };
 
-export function ModalEditor<TRow, TSelectionData = unknown>({
-  editor,
-  title,
-  placeholder,
-  searchPlaceholder,
-  readOnly = false,
-  items,
-  fetchItems,
-  searchOnInputChange = false,
-  mapSelectionToValue,
-  confirmOnDoubleClick = true,
-  autoFocusSearch = true,
-  modalHeight,
-  listColumns,
-}: ModalEditorProps<TRow, TSelectionData>) {
-  const resolvedValue = String(editor.value ?? '');
+type SingleModalEditorProps<TRow, TSelectionData = unknown> = ModalEditorBaseProps<
+  TRow,
+  TSelectionData
+> & {
+  mode?: 'single';
+  mapSelectedItemToValue?: (selectedItem: ModalEditorSelection<TSelectionData> | null) => unknown;
+};
 
-  const handleCommitSelection = (selection: ModalEditorSelection<TSelectionData> | null) => {
-    const mappedValue = mapSelectionToValue
-      ? mapSelectionToValue(selection)
-      : (selection?.value ?? '');
-    editor.commitValue(mappedValue);
-  };
+type MultiModalEditorProps<TRow, TSelectionData = unknown> = ModalEditorBaseProps<
+  TRow,
+  TSelectionData
+> & {
+  mode: 'multi';
+  mapSelectedItemsToValue?: (selectedItems: ModalEditorSelection<TSelectionData>[]) => unknown;
+};
+
+type ModalEditorProps<TRow, TSelectionData = unknown> =
+  | SingleModalEditorProps<TRow, TSelectionData>
+  | MultiModalEditorProps<TRow, TSelectionData>;
+
+export function ModalEditor<TRow, TSelectionData = unknown>(
+  props: ModalEditorProps<TRow, TSelectionData>
+) {
+  const {
+    editor,
+    mode = 'single',
+    title,
+    placeholder,
+    searchPlaceholder,
+    readOnly = false,
+    items,
+    fetchItems,
+    searchOnInputChange = false,
+    confirmOnDoubleClick = true,
+    autoFocusSearch = true,
+    modalHeight,
+    listColumns,
+  } = props;
+  const resolvedValue = String(editor.value ?? '').trim();
+  const currentSelection =
+    items?.find((item) => item.value === resolvedValue || item.label === resolvedValue) ?? null;
+  const currentSelections = currentSelection ? [currentSelection] : [];
 
   const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (event) => {
     if (event.key === 'Escape') {
@@ -74,28 +92,60 @@ export function ModalEditor<TRow, TSelectionData = unknown>({
 
   return (
     <div onKeyDown={handleKeyDown}>
-      <ModalInput<TSelectionData>
-        value={resolvedValue}
-        onValueChange={(nextValue) => editor.onChange(nextValue)}
-        onCommitValue={(committedValue, committedSelection) => {
-          if (committedSelection) {
-            handleCommitSelection(committedSelection as ModalEditorSelection<TSelectionData>);
-            return;
+      {mode === 'single' ? (
+        <ModalInput<TSelectionData>
+          mode="single"
+          selectedItem={currentSelection}
+          onCommit={(selectedItem) => {
+            const mappedValue =
+              'mapSelectedItemToValue' in props && props.mapSelectedItemToValue
+                ? props.mapSelectedItemToValue(
+                    selectedItem as ModalEditorSelection<TSelectionData> | null
+                  )
+                : (selectedItem?.value ?? '');
+            editor.commitValue(mappedValue);
+          }}
+          title={title}
+          placeholder={placeholder}
+          searchPlaceholder={searchPlaceholder}
+          readOnly={readOnly}
+          items={items as ModalInputSelection<TSelectionData>[] | undefined}
+          fetchItems={
+            fetchItems as ((keyword: string) => Promise<ModalInputSelection<TSelectionData>[]>) | undefined
           }
-          editor.commitValue(committedValue);
-        }}
-        title={title}
-        placeholder={placeholder}
-        searchPlaceholder={searchPlaceholder}
-        readOnly={readOnly}
-        items={items as ModalInputSelection<TSelectionData>[] | undefined}
-        fetchItems={fetchItems as ((keyword: string) => Promise<ModalInputSelection<TSelectionData>[]>) | undefined}
-        searchOnInputChange={searchOnInputChange}
-        confirmOnDoubleClick={confirmOnDoubleClick}
-        autoFocusSearch={autoFocusSearch}
-        modalHeight={modalHeight}
-        listColumns={listColumns}
-      />
+          searchOnInputChange={searchOnInputChange}
+          confirmOnDoubleClick={confirmOnDoubleClick}
+          autoFocusSearch={autoFocusSearch}
+          modalHeight={modalHeight}
+          listColumns={listColumns}
+        />
+      ) : (
+        <ModalInput<TSelectionData>
+          mode="multi"
+          selectedItems={currentSelections}
+          onCommit={(selectedItems) => {
+            const nextItems = selectedItems as ModalEditorSelection<TSelectionData>[];
+            const mappedValue =
+              'mapSelectedItemsToValue' in props && props.mapSelectedItemsToValue
+                ? props.mapSelectedItemsToValue(nextItems)
+                : nextItems.map((item) => item.value);
+            editor.commitValue(mappedValue);
+          }}
+          title={title}
+          placeholder={placeholder}
+          searchPlaceholder={searchPlaceholder}
+          readOnly={readOnly}
+          items={items as ModalInputSelection<TSelectionData>[] | undefined}
+          fetchItems={
+            fetchItems as ((keyword: string) => Promise<ModalInputSelection<TSelectionData>[]>) | undefined
+          }
+          searchOnInputChange={searchOnInputChange}
+          confirmOnDoubleClick={confirmOnDoubleClick}
+          autoFocusSearch={autoFocusSearch}
+          modalHeight={modalHeight}
+          listColumns={listColumns}
+        />
+      )}
     </div>
   );
 }

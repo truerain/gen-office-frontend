@@ -17,14 +17,7 @@ export type ModalInputListColumn<TData = unknown> = {
   render: (item: ModalInputSelection<TData>) => ReactNode;
 };
 
-export interface ModalInputProps<TData = unknown> {
-  value?: string;
-  displayValue?: string;
-  selection?: ModalInputSelection<TData> | null;
-  onValueChange?: (value: string) => void;
-  onDisplayValueChange?: (displayValue: string) => void;
-  onSelectionChange?: (selection: ModalInputSelection<TData> | null) => void;
-  onCommitValue?: (value: string, selection: ModalInputSelection<TData> | null) => void;
+type ModalInputBaseProps<TData = unknown> = {
   items?: ModalInputSelection<TData>[];
   fetchItems?: (keyword: string) => Promise<ModalInputSelection<TData>[]>;
   searchOnInputChange?: boolean;
@@ -60,4 +53,26 @@ export interface ModalInputProps<TData = unknown> {
   inputClassName?: string;
   dialogClassName?: string;
   listClassName?: string;
-}
+  formatDisplayValue?: (
+    selectedItems: ModalInputSelection<TData>[],
+    mode: 'single' | 'multi'
+  ) => string;
+};
+
+export type SingleModalInputProps<TData = unknown> = ModalInputBaseProps<TData> & {
+  mode: 'single';
+  selectedItem?: ModalInputSelection<TData> | null;
+  onSelectedItemChange?: (selectedItem: ModalInputSelection<TData> | null) => void;
+  onCommit?: (selectedItem: ModalInputSelection<TData> | null) => void;
+};
+
+export type MultiModalInputProps<TData = unknown> = ModalInputBaseProps<TData> & {
+  mode: 'multi';
+  selectedItems?: ModalInputSelection<TData>[];
+  onSelectedItemsChange?: (selectedItems: ModalInputSelection<TData>[]) => void;
+  onCommit?: (selectedItems: ModalInputSelection<TData>[]) => void;
+};
+
+export type ModalInputProps<TData = unknown> =
+  | SingleModalInputProps<TData>
+  | MultiModalInputProps<TData>;

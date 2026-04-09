@@ -1,0 +1,150 @@
+.root {
+  position: relative;
+  display: inline-flex;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.inputWithTrigger {
+  padding-right: 3.75rem;
+}
+
+.triggerButton {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.25rem;
+  color: var(--color-fg-secondary);
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.triggerButton:hover {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-fg-primary);
+}
+
+.triggerButton:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.triggerButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.triggerIcon {
+  transition: transform 0.12s ease;
+}
+
+.triggerButton[data-open='true'] .triggerIcon {
+  transform: rotate(180deg);
+}
+
+.content {
+  padding: 0.25rem;
+  min-width: var(--radix-popover-trigger-width);
+  max-height: 16rem;
+  overflow: auto;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.groupSeparator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.375rem;
+  padding: 0 0.25rem;
+}
+
+.groupSeparator::after {
+  content: '';
+  flex: 1 1 auto;
+  height: 1px;
+  background-color: var(--color-border-subtle);
+}
+
+.groupLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-fg-tertiary);
+}
+
+.option {
+  all: unset;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--color-fg-primary);
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.option:hover {
+  background-color: var(--color-bg-secondary);
+}
+
+.optionActive {
+  background-color: var(--color-bg-secondary);
+}
+
+.optionSelected {
+  background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+.optionDisabled {
+  color: var(--color-fg-tertiary);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.optionCheck {
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid var(--color-border-default);
+  border-radius: 0.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  flex: 0 0 auto;
+  margin-top: 0.125rem;
+}
+
+.optionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.optionLabel {
+  line-height: 1.4;
+}
+
+.optionDescription {
+  font-size: 0.75rem;
+  color: var(--color-fg-tertiary);
+}
+
+.empty {
+  padding: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--color-fg-tertiary);
+}

@@ -56,8 +56,19 @@
   gap: 0.5rem;
 }
 
+.titleWrap {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
 .dialogTitle {
   padding-left: 0;
+}
+
+.selectionCount {
+  font-size: 0.75rem;
+  color: var(--color-fg-secondary);
 }
 
 .dialogCloseButton {
@@ -96,6 +107,20 @@
   align-items: center;
 }
 
+.selectedOnlyToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex: 0 0 auto;
+  font-size: 0.8125rem;
+  color: var(--color-fg-secondary);
+  white-space: nowrap;
+}
+
+.selectedOnlyToggle input {
+  margin: 0;
+}
+
 .listWrap {
   border: 1px solid var(--color-border-default);
   border-radius: 0.5rem;
@@ -124,6 +149,19 @@
   gap: 0.125rem;
   cursor: pointer;
   color: var(--color-fg-primary);
+}
+
+.itemBody {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.itemContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
 }
 
 .item:hover {
@@ -221,6 +259,21 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.selector {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 1px solid var(--color-border-default);
+  border-radius: 0.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex: 0 0 auto;
+  margin-left: 0.25rem;
 }
 
 .alignCenter {

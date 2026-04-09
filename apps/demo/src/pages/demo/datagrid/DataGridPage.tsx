@@ -23,7 +23,7 @@ import styles from './DataGridPage.module.css';
     { key: 'empNo', header: '사번', render: (item) => item.data?.empNo ?? '-' },
     { key: 'org', header: '조직', render: (item) => item.data?.orgName ?? '-' },
   ]}
-  mapSelectionToValue={(selection) => selection?.value ?? ''}
+  mapSelectedItemToValue={(selectedItem) => selectedItem?.value ?? ''}
 />*/
 
 type Employee = {
@@ -119,6 +119,7 @@ function DataGridPage() {
           renderEditor: (editor) => (
             <ModalEditor<DemoRow, Employee>
               editor={editor}
+              mode="single"
               title="Search Assignee"
               placeholder="Select assignee"
               searchPlaceholder="Type name, id, department..."
@@ -145,7 +146,7 @@ function DataGridPage() {
                   render: (item) => item.data?.dept ?? '-',
                 },
               ]}
-              mapSelectionToValue={(selection) => selection?.label ?? ''}
+              mapSelectedItemToValue={(selectedItem) => selectedItem?.label ?? ''}
               confirmOnDoubleClick={true}
             />
           ),
