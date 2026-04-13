@@ -93,11 +93,12 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
     } as React.CSSProperties;
   };
 
-  const getGroupVisibilityToggle = (header: any) => {
+  const resolveGroupVisibilityToggleConfig = (header: any) => {
     const meta = header?.column?.columnDef?.meta as
       | {
           groupVisibilityToggle?: {
             columnIds?: string[];
+            defaultExpanded?: boolean;
             expandLabel?: React.ReactNode;
             collapseLabel?: React.ReactNode;
             ariaLabel?: string;
@@ -126,6 +127,16 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
       .filter((column): column is NonNullable<typeof column> => Boolean(column));
     if (targetColumns.length === 0) return null;
 
+    return {
+      config,
+      targetColumns,
+    };
+  };
+
+  const getGroupVisibilityToggle = (header: any) => {
+    const resolved = resolveGroupVisibilityToggleConfig(header);
+    if (!resolved) return null;
+    const { config, targetColumns } = resolved;
     const isExpanded = targetColumns.every((column) => column.getIsVisible());
     return {
       isExpanded,
@@ -146,6 +157,34 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
       },
     };
   };
+
+  React.useEffect(() => {
+    const patch: Record<string, boolean> = {};
+
+    for (const hg of headerGroups) {
+      for (const header of hg.headers) {
+        const resolved = resolveGroupVisibilityToggleConfig(header);
+        if (!resolved) continue;
+
+        const defaultExpanded = resolved.config.defaultExpanded;
+        if (typeof defaultExpanded !== 'boolean') continue;
+
+        for (const column of resolved.targetColumns) {
+          const current = table.getState().columnVisibility?.[column.id];
+          if (typeof current === 'boolean') continue;
+          patch[column.id] = defaultExpanded;
+        }
+      }
+    }
+
+    const keys = Object.keys(patch);
+    if (keys.length === 0) return;
+
+    table.setColumnVisibility((prev) => ({
+      ...prev,
+      ...patch,
+    }));
+  }, [headerGroups, table]);
 
   return (
     <thead className={styles.thead}>

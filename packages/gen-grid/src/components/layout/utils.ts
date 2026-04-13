@@ -71,6 +71,7 @@ export type GenGridColumnMeta = {
   // group header toggle for child column visibility
   groupVisibilityToggle?: {
     columnIds?: string[];
+    defaultExpanded?: boolean;
     expandLabel?: React.ReactNode;
     collapseLabel?: React.ReactNode;
     ariaLabel?: string;

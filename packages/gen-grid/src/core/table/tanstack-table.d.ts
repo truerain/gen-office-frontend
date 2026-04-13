@@ -69,6 +69,7 @@ declare module '@tanstack/react-table' {
     }) => unknown;
     groupVisibilityToggle?: {
       columnIds?: string[];
+      defaultExpanded?: boolean;
       expandLabel?: React.ReactNode;
       collapseLabel?: React.ReactNode;
       ariaLabel?: string;
