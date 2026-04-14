@@ -87,13 +87,29 @@ export const useMDIStore = create<MDIStore>((set, get) => ({
     });
   },
 
+  closeAllClosableTabs: () => {
+    const { tabs, activeTabId } = get();
+    const preservedTabs = tabs.filter((tab) => tab.closable === false);
+    const hasActiveTab = activeTabId != null && preservedTabs.some((tab) => tab.id === activeTabId);
+    const nextActiveTabId =
+      hasActiveTab
+        ? activeTabId
+        : (preservedTabs[preservedTabs.length - 1]?.id ?? null);
+
+    set({
+      tabs: preservedTabs,
+      activeTabId: nextActiveTabId,
+    });
+  },
+
   closeOtherTabs: (id: string) => {
     const { tabs } = get();
     const targetTab = tabs.find(t => t.id === id);
     
     if (targetTab) {
+      const preservedTabs = tabs.filter((t) => t.closable === false && t.id !== id);
       set({
-        tabs: [targetTab],
+        tabs: [...preservedTabs, targetTab],
         activeTabId: id
       });
     }

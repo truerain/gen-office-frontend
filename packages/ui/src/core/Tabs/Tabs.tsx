@@ -43,10 +43,11 @@ TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
 export const TabsContent = forwardRef<
   React.ElementRef<typeof TabsPrimitive.Content>,
   TabsContentProps
->(({ className, ...props }, ref) => (
+>(({ className, forceMount = true, ...props }, ref) => (
   <TabsPrimitive.Content
     ref={ref}
     className={cn(styles.content, className)}
+    forceMount={forceMount}
     {...props}
   />
 ));

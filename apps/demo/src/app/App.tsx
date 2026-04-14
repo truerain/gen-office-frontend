@@ -259,7 +259,7 @@ function App() {
     const mdiStore = useMDIStore.getState();
     const isExistingTab = mdiStore.tabs.some((tab) => tab.id === menuId);
     if (isExistingTab) {
-      mdiStore.updateTab(menuId, { title, content, icon, closable: true });
+      //mdiStore.updateTab(menuId, { title, content, icon, closable: true });
       mdiStore.setActiveTab(menuId);
       return;
     }

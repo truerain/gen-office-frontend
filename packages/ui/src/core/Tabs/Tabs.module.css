@@ -90,12 +90,19 @@
 }
 
 .content {
+  position: relative;
   margin-top: 0.75rem;
   color: var(--color-text-primary);
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .content[data-state='inactive'] {
-  display: none;
+  position: absolute;
+  inset: 0;
+  margin-top: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .content:focus-visible {

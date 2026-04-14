@@ -1,5 +1,5 @@
 // packages/mdi/src/types/index.ts
-import { ReactNode } from 'react';
+import { ReactNode, MouseEvent } from 'react';
 
 /**
  * MDI 탭 인터페이스
@@ -72,6 +72,7 @@ export interface TabProps {
   
   /** 클릭 핸들러 */
   onClick: () => void;
+  onContextMenu?: (event: MouseEvent) => void;
   
   /** 닫기 핸들러 */
   onClose: () => void;
@@ -132,6 +133,8 @@ export interface MDIActions {
   
   /** 모든 탭 닫기 */
   closeAllTabs: () => void;
+  
+  closeAllClosableTabs: () => void;
   
   /** 다른 탭 모두 닫기 */
   closeOtherTabs: (id: string) => void;

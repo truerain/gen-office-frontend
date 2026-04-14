@@ -2,10 +2,10 @@
 
 .tabBar {
   display: flex;
+  align-items: stretch;
   background-color: var(--color-bg-secondary);
   border-bottom: 1px solid var(--color-border-default);
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: hidden;
   scrollbar-width: thin;
 }
 
@@ -14,20 +14,28 @@
   border-top: 1px solid var(--color-border-default);
 }
 
-.tabBar::-webkit-scrollbar {
+.tabListWrap {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+.tabListWrap::-webkit-scrollbar {
   height: 6px;
 }
 
-.tabBar::-webkit-scrollbar-track {
+.tabListWrap::-webkit-scrollbar-track {
   background: var(--color-bg-secondary);
 }
 
-.tabBar::-webkit-scrollbar-thumb {
+.tabListWrap::-webkit-scrollbar-thumb {
   background: var(--color-border-default);
   border-radius: 3px;
 }
 
-.tabBar::-webkit-scrollbar-thumb:hover {
+.tabListWrap::-webkit-scrollbar-thumb:hover {
   background: var(--color-fg-secondary);
 }
 
@@ -41,4 +49,38 @@
 .tabBar.bottom .tabList > * {
   border-top: none;
   border-bottom: 1px solid var(--color-border-default);
+}
+
+.contextMenu {
+  position: fixed;
+  z-index: 1000;
+  min-width: 160px;
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border-default);
+  background-color: var(--color-bg-primary);
+  box-shadow: var(--shadow-lg);
+}
+
+.contextMenuItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-fg-primary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.contextMenuItem:hover:not(:disabled) {
+  background-color: var(--color-bg-secondary);
+}
+
+.contextMenuItem:disabled {
+  color: var(--color-fg-secondary);
+  cursor: not-allowed;
 }

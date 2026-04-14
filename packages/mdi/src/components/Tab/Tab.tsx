@@ -5,7 +5,7 @@ import { Button } from '@gen-office/ui';
 import { cn } from '@gen-office/utils';
 import styles from './Tab.module.css';
 
-export const Tab = ({ tab, isActive, onClick, onClose, className }: TabProps) => {
+export const Tab = ({ tab, isActive, onClick, onContextMenu, onClose, className }: TabProps) => {
   const handleClose = (e: React.MouseEvent) => {
     e.stopPropagation();
     onClose();
@@ -19,6 +19,7 @@ export const Tab = ({ tab, isActive, onClick, onClose, className }: TabProps) =>
         className
       )}
       onClick={onClick}
+      onContextMenu={onContextMenu}
       role="tab"
       aria-selected={isActive}
       aria-controls={`tabpanel-${tab.id}`}

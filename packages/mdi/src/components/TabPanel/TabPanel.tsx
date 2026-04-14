@@ -14,7 +14,8 @@ export const TabPanel = ({ tab, isActive, className }: TabPanelProps) => {
       role="tabpanel"
       id={`tabpanel-${tab.id}`}
       aria-labelledby={`tab-${tab.id}`}
-      hidden={!isActive}
+      aria-hidden={!isActive}
+      data-active={isActive ? 'true' : 'false'}
     >
       {tab.content}
     </div>

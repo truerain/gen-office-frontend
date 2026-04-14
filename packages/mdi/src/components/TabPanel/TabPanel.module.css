@@ -1,12 +1,18 @@
 /* packages/mdi/src/components/TabPanel/TabPanel.module.css */
 
 .tabPanel {
-  flex: 1;
+  position: absolute;
+  inset: 0;
   overflow: auto;
   background-color: var(--color-bg-primary);
   padding: 0 var(--spacing-md);
+  visibility: visible;
+  pointer-events: auto;
+  z-index: 1;
 }
 
 .tabPanel.hidden {
-  display: none;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 0;
 }
