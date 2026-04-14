@@ -160,6 +160,33 @@ function isSameOrder(a: readonly string[], b: readonly string[]) {
   return true;
 }
 
+function reorderPinnedIdsByColumnOrder(ids: readonly string[] | undefined, columnOrder: readonly string[]) {
+  const indexById = new Map<string, number>();
+  columnOrder.forEach((id, index) => indexById.set(id, index));
+  return [...(ids ?? [])].sort((a, b) => {
+    const ai = indexById.get(a);
+    const bi = indexById.get(b);
+    if (ai == null && bi == null) return 0;
+    if (ai == null) return 1;
+    if (bi == null) return -1;
+    return ai - bi;
+  });
+}
+
+function alignPinningWithColumnOrder(
+  pinning: ColumnPinningState,
+  columnOrder: readonly string[]
+): ColumnPinningState {
+  return {
+    left: reorderPinnedIdsByColumnOrder(pinning.left, columnOrder),
+    right: reorderPinnedIdsByColumnOrder(pinning.right, columnOrder),
+  };
+}
+
+function isSamePinning(a: ColumnPinningState, b: ColumnPinningState) {
+  return isSameOrder(a.left ?? [], b.left ?? []) && isSameOrder(a.right ?? [], b.right ?? []);
+}
+
 function annotateUserCellRendererMeta<TData>(
   defs: readonly ColumnDef<TData, any>[]
 ): ColumnDef<TData, any>[] {
@@ -576,6 +603,17 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
         onColumnOrderChange(next);
       } else {
         setInnerColumnOrder(next);
+      }
+
+      if (enablePinning) {
+        const nextPinning = alignPinningWithColumnOrder(resolvedColumnPinning, next);
+        if (!isSamePinning(resolvedColumnPinning, nextPinning)) {
+          if (onColumnPinningChange) {
+            onColumnPinningChange(nextPinning);
+          } else {
+            setInnerColumnPinning(nextPinning);
+          }
+        }
       }
     },
 
