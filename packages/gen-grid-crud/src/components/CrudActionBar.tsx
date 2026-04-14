@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { ListFilter, RotateCcw, Save, SquareMinus, SquarePlus } from 'lucide-react';
+import { Columns3, ListFilter, RotateCcw, Save, SquareMinus, SquarePlus } from 'lucide-react';
 
 import {
   Button,
@@ -30,7 +30,13 @@ import { useTranslation } from 'react-i18next';
 
 import styles from './CrudActionBar.module.css';
 
-const DEFAULT_BUILT_INS: readonly CrudBuiltInActionKey[] = ['add', 'delete', 'save', 'filter'];
+const DEFAULT_BUILT_INS: readonly CrudBuiltInActionKey[] = [
+  'add',
+  'delete',
+  'save',
+  'columnReorder',
+  'filter',
+];
 
 function ExcelSvgIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -105,6 +111,7 @@ export function CrudActionBar<TData>(props: {
   const labelFilter = t('crud.filter');
   const labelExcel = t('crud.excel', { defaultValue: 'Excel' });
   const labelReset = t('crud.reset', { defaultValue: 'Reset' });
+  const labelColumnReorder = t('crud.column_reorder', { defaultValue: 'Column Reorder' });
 
   const ctx = React.useMemo<CrudActionContext<TData>>(
     () => ({ state, api: actionApi }),
@@ -160,6 +167,21 @@ export function CrudActionBar<TData>(props: {
         disabled: (c) => !c.api.toggleFilter,
         onClick: (c) => c.api.toggleFilter?.(),
       },
+      columnReorder: {
+        key: 'columnReorder',
+        label: labelColumnReorder,
+        icon: <Columns3 aria-hidden size={16} />,
+        side: 'right',
+        order: 20,
+        variant:
+          state.columnReorderEnabled
+            ? 'primary'
+            : actionButtonStyle === 'icon'
+              ? 'ghost'
+              : 'secondary',
+        disabled: (c) => !c.api.toggleColumnReorder || c.state.isCommitting,
+        onClick: (c) => c.api.toggleColumnReorder?.(),
+      },
       reset: {
         key: 'reset',
         label: labelReset,
@@ -188,11 +210,13 @@ export function CrudActionBar<TData>(props: {
     builtIns,
     filterEnabled,
     labelAdd,
+    labelColumnReorder,
     labelDelete,
     labelExcel,
     labelFilter,
     labelReset,
     labelSave,
+    state.columnReorderEnabled,
   ]);
 
   const allActions = React.useMemo(

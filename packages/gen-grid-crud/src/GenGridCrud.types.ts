@@ -43,6 +43,7 @@ export type CrudUiState<TData> = {
 
   isCommitting: boolean;
   fieldErrors: CrudFieldErrorMap;
+  columnReorderEnabled?: boolean;
 };
 
 export type CrudCellEditEvent<TData> = {
@@ -70,7 +71,14 @@ export type CrudActionButtonStyle = 'text' | 'icon';
 export type CrudActionControlStyle = 'combo' | 'checkbox';
 export type CrudActionStyle = CrudActionButtonStyle | CrudActionControlStyle;
 export type CrudActionSide = 'left' | 'right';
-export type CrudBuiltInActionKey = 'add' | 'delete' | 'save' | 'filter' | 'reset' | 'excel';
+export type CrudBuiltInActionKey =
+  | 'add'
+  | 'delete'
+  | 'save'
+  | 'filter'
+  | 'reset'
+  | 'excel'
+  | 'columnReorder';
 
 export type ExcelExportMode = 'frontend' | 'backend';
 
@@ -138,6 +146,7 @@ export type CrudActionApi = {
   save?: () => Promise<void>;
   reset: () => void;
   toggleFilter?: () => void;
+  toggleColumnReorder?: () => void;
   exportExcel?: () => Promise<void>;
   exportAdditional?: (key: string) => Promise<void>;
 };

@@ -241,7 +241,7 @@ export default function CrudActionControlsDemoPage(_props: PageComponentProps) {
             actionBar={{
               position: 'top',
               defaultStyle: 'icon',
-              includeBuiltIns: ['excel'],
+              includeBuiltIns: ['excel', 'columnReorder'],
               customActions: [
                 {
                   key: 'exclude-zero',

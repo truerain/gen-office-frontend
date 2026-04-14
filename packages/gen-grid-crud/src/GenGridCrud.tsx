@@ -86,6 +86,40 @@ function getFirstEditableColumnId<TData>(columns: readonly ColumnDef<TData, any>
   return null;
 }
 
+function resolveLeafColumnIds<TData>(columns: readonly ColumnDef<TData, any>[]): string[] {
+  const ids: string[] = [];
+  const walk = (defs: readonly ColumnDef<TData, any>[]) => {
+    for (const def of defs as any[]) {
+      const childColumns = Array.isArray(def?.columns) ? def.columns : null;
+      if (childColumns && childColumns.length > 0) {
+        walk(childColumns);
+        continue;
+      }
+      const id = typeof def?.id === 'string'
+        ? def.id
+        : typeof def?.accessorKey === 'string'
+          ? def.accessorKey
+          : null;
+      if (id) ids.push(id);
+    }
+  };
+  walk(columns);
+  return ids;
+}
+
+function buildInitialColumnOrder<TData>(args: {
+  columns: readonly ColumnDef<TData, any>[];
+  enableRowStatus?: boolean;
+  checkboxSelection?: boolean;
+  enableRowNumber?: boolean;
+}): string[] {
+  const systemIds: string[] = [];
+  if (args.enableRowStatus) systemIds.push('__row_status__');
+  if (args.checkboxSelection) systemIds.push('__select__');
+  if (args.enableRowNumber) systemIds.push('__rowNumber__');
+  return [...systemIds, ...resolveLeafColumnIds(args.columns)];
+}
+
 function buildPendingDiffFromPending<TData>(
   pending: { created: Map<CrudRowId, TData>; updated: Map<CrudRowId, Partial<TData>>; deleted: Set<CrudRowId> }
 ): CrudPendingDiff<TData> {
@@ -163,6 +197,10 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   const resolvedActionBarPosition = actionBar?.position ?? actionBarPosition;
   const resolvedActionButtonStyle = actionBar?.defaultStyle ?? actionButtonStyle;
   const includedBuiltInActions = actionBar?.includeBuiltIns;
+  const hasColumnReorderBuiltIn = React.useMemo(() => {
+    const defaults: readonly string[] = ['add', 'delete', 'save', 'columnReorder', 'filter'];
+    return (includedBuiltInActions ?? defaults).includes('columnReorder');
+  }, [includedBuiltInActions]);
   const customActions = actionBar?.customActions;
   const [deleteBlockedDialogOpen, setDeleteBlockedDialogOpen] = React.useState(false);
 
@@ -201,11 +239,30 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     gridProps?.enableFiltering ?? false
   );
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const baseColumnOrder = React.useMemo(
+    () =>
+      buildInitialColumnOrder<TData>({
+        columns,
+        enableRowStatus: Boolean(gridProps?.enableRowStatus),
+        checkboxSelection: Boolean(gridProps?.checkboxSelection),
+        enableRowNumber: Boolean(gridProps?.enableRowNumber),
+      }),
+    [columns, gridProps?.enableRowNumber, gridProps?.enableRowStatus, gridProps?.checkboxSelection]
+  );
+  const initialColumnOrderRef = React.useRef<string[]>(baseColumnOrder);
+  const [columnOrder, setColumnOrder] = React.useState<string[]>(baseColumnOrder);
+  const [columnReorderEnabled, setColumnReorderEnabled] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     if (gridProps?.enableFiltering == null) return;
     setFilterEnabled(Boolean(gridProps.enableFiltering));
   }, [gridProps?.enableFiltering]);
+
+  React.useEffect(() => {
+    if (columnReorderEnabled) return;
+    initialColumnOrderRef.current = baseColumnOrder;
+    setColumnOrder(baseColumnOrder);
+  }, [baseColumnOrder, columnReorderEnabled]);
 
   const handleRowSelectionChange = React.useCallback(
     (next: RowSelectionState) => {
@@ -248,6 +305,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     return [
       String(gridProps?.dataVersion ?? ""),
       String(pendingApi.dirty),
+      String(columnReorderEnabled),
       String(Object.keys(fieldErrors).length),
       selectedKey,
       `${activeRowKey}:${activeColKey}`,
@@ -261,6 +319,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     pendingApi.changes,
     pendingApi.dirty,
     fieldErrors,
+    columnReorderEnabled,
     gridProps?.dataVersion,
     isCommitting,
   ]);
@@ -466,6 +525,17 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     setFilterEnabled((prev) => !prev);
   }, []);
 
+  const handleToggleColumnReorder = React.useCallback(() => {
+    setColumnReorderEnabled((prev) => {
+      if (prev) {
+        setColumnOrder(initialColumnOrderRef.current);
+        return false;
+      }
+      initialColumnOrderRef.current = columnOrder;
+      return true;
+    });
+  }, [columnOrder]);
+
   const flushActiveEditor = React.useCallback(async () => {
     if (typeof document === 'undefined') return;
     const active = document.activeElement as HTMLElement | null;
@@ -511,6 +581,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       deletePolicy,
       isCommitting: latest.isCommitting,
       fieldErrors: {},
+      columnReorderEnabled,
     };
 
     const ok = await beforeCommit?.(stateForGuard);
@@ -549,6 +620,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     flushActiveEditor,
     setFieldErrors,
     isCommittingControlled,
+    columnReorderEnabled,
   ]);
 
   const handleExportExcel = React.useCallback(async () => {
@@ -567,6 +639,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       deletePolicy,
       isCommitting,
       fieldErrors,
+      columnReorderEnabled,
     };
 
     await exportCrudExcel({
@@ -595,6 +668,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     deletePolicy,
     isCommitting,
     fieldErrors,
+    columnReorderEnabled,
     title,
     columns,
     getPendingRowId,
@@ -629,6 +703,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
         deletePolicy,
         isCommitting,
         fieldErrors,
+        columnReorderEnabled,
       };
 
       const source =
@@ -663,6 +738,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       deletePolicy,
       isCommitting,
       fieldErrors,
+      columnReorderEnabled,
       columns,
       title,
       t,
@@ -792,6 +868,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       deletePolicy,
       isCommitting,
       fieldErrors,
+      columnReorderEnabled,
     });
   }, [
     onStateChange,
@@ -805,6 +882,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     deleteMode,
     deletePolicy,
     fieldErrors,
+    columnReorderEnabled,
     isCommitting,
   ]);
 
@@ -815,6 +893,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       save: handleSave,
       reset: handleReset,
       toggleFilter: handleToggleFilter,
+      toggleColumnReorder: handleToggleColumnReorder,
       exportExcel: excelExport ? handleExportExcel : undefined,
       exportAdditional:
         additionalExports && additionalExports.length > 0
@@ -828,6 +907,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       handleSave,
       handleReset,
       handleToggleFilter,
+      handleToggleColumnReorder,
       excelExport,
       handleExportExcel,
       additionalExports,
@@ -852,6 +932,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
           deletePolicy,
           isCommitting,
           fieldErrors,
+          columnReorderEnabled,
         }}
         actionApi={actionApi}
         totalRowCount={gridProps?.totalRowCount}
@@ -869,6 +950,16 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       enableFiltering: filterEnabled,
       columnFilters,
       onColumnFiltersChange: setColumnFilters,
+      enableColumnReorder: hasColumnReorderBuiltIn
+        ? columnReorderEnabled
+        : gridProps?.enableColumnReorder,
+      columnOrder: hasColumnReorderBuiltIn ? columnOrder : gridProps?.columnOrder,
+      onColumnOrderChange: hasColumnReorderBuiltIn
+        ? (next: string[]) => {
+            setColumnOrder(next);
+            gridProps?.onColumnOrderChange?.(next);
+          }
+        : gridProps?.onColumnOrderChange,
       getCellClassName: (args: {
         row: TData;
         rowId: string;
@@ -899,7 +990,17 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
         return fallback;
       },
     }),
-    [gridProps, readonlyProp, filterEnabled, columnFilters, fieldErrors, t]
+    [
+      gridProps,
+      readonlyProp,
+      filterEnabled,
+      columnFilters,
+      hasColumnReorderBuiltIn,
+      columnReorderEnabled,
+      columnOrder,
+      fieldErrors,
+      t,
+    ]
   );
 
   return (

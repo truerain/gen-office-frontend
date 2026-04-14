@@ -4,6 +4,9 @@ import * as React from 'react';
 import { flexRender, type Table } from '@tanstack/react-table';
 import { FilterCellPopover } from '../../features/filtering/FilterCellPopover';
 import { getCellStyle } from './cellStyles';
+import { ROW_STATUS_COLUMN_ID } from '../../features/row-status/rowStatus';
+import { SELECTION_COLUMN_ID } from '../../features/row-selection/rowSelection';
+import { ROW_NUMBER_COLUMN_ID } from '../../features/row-number/useRowNumberColumn';
 
 import styles from './GenGridHeader.module.css';
 import pinning from './GenGridPinning.module.css';
@@ -13,6 +16,7 @@ type GenGridHeaderProps<TData> = {
 
   enablePinning?: boolean;
   enableColumnSizing?: boolean;
+  enableColumnReorder?: boolean;
   enableFiltering?: boolean;
 
   onAutoSizeColumn?: (columnId: string) => void;
@@ -20,12 +24,92 @@ type GenGridHeaderProps<TData> = {
 };
 
 export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
-  const { table, enablePinning, enableColumnSizing, enableFiltering, onAutoSizeColumn, renderFilterCell } = props;
+  const {
+    table,
+    enablePinning,
+    enableColumnSizing,
+    enableColumnReorder,
+    enableFiltering,
+    onAutoSizeColumn,
+    renderFilterCell,
+  } = props;
 
   const headerGroups = table.getHeaderGroups();
   const leafHeaderGroup = headerGroups[headerGroups.length - 1];
   const totalHeaderRows = headerGroups.length;
   const renderedLeafColumnIds = new Set<string>();
+  const systemColumnIds = React.useMemo(
+    () =>
+      new Set<string>([
+        ROW_STATUS_COLUMN_ID,
+        SELECTION_COLUMN_ID,
+        ROW_NUMBER_COLUMN_ID,
+        '__row_number__',
+      ]),
+    []
+  );
+  const [draggingColumnId, setDraggingColumnId] = React.useState<string | null>(null);
+  const [dropTarget, setDropTarget] = React.useState<{
+    columnId: string;
+    side: 'before' | 'after';
+    blocked: boolean;
+  } | null>(null);
+
+  const resolveZone = React.useCallback((columnId: string): 'left' | 'center' | 'right' => {
+    const pinned = table.getColumn(columnId)?.getIsPinned?.();
+    if (pinned === 'left') return 'left';
+    if (pinned === 'right') return 'right';
+    return 'center';
+  }, [table]);
+
+  const canReorderPair = React.useCallback((sourceId: string, targetId: string): boolean => {
+    if (sourceId === targetId) return false;
+    if (systemColumnIds.has(sourceId) || systemColumnIds.has(targetId)) return false;
+    return resolveZone(sourceId) === resolveZone(targetId);
+  }, [resolveZone, systemColumnIds]);
+
+  const moveColumnOrder = React.useCallback(
+    (currentOrder: string[], sourceId: string, targetId: string, side: 'before' | 'after') => {
+      const allIds = table.getAllLeafColumns().map((column) => column.id);
+      const allIdSet = new Set(allIds);
+      const seen = new Set<string>();
+      const normalized = [...currentOrder, ...allIds].filter((id) => {
+        if (!allIdSet.has(id)) return false;
+        if (seen.has(id)) return false;
+        seen.add(id);
+        return true;
+      });
+
+      if (!canReorderPair(sourceId, targetId)) return normalized;
+      const targetIndexInNormalized = normalized.indexOf(targetId);
+      const sourceIndexInNormalized = normalized.indexOf(sourceId);
+      if (targetIndexInNormalized < 0 || sourceIndexInNormalized < 0) return normalized;
+
+      const withoutSource = normalized.filter((id) => id !== sourceId);
+      const targetIndex = withoutSource.indexOf(targetId);
+      if (targetIndex < 0) return normalized;
+
+      const insertIndex = side === 'before' ? targetIndex : targetIndex + 1;
+      withoutSource.splice(insertIndex, 0, sourceId);
+      return withoutSource;
+    },
+    [canReorderPair, table]
+  );
+
+  const clearDragState = React.useCallback(() => {
+    setDraggingColumnId(null);
+    setDropTarget(null);
+  }, []);
+
+  React.useEffect(() => {
+    const handleGlobalDragEnd = () => {
+      clearDragState();
+    };
+    window.addEventListener('dragend', handleGlobalDragEnd, true);
+    return () => {
+      window.removeEventListener('dragend', handleGlobalDragEnd, true);
+    };
+  }, [clearDragState]);
 
   const getHeaderPinning = (header: any): { side?: 'left' | 'right'; offset?: number } => {
     if (!enablePinning) return {};
@@ -214,6 +298,17 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
             const sortState = col.getIsSorted();
             const rowSpan = isLeafHeader ? Math.max(1, totalHeaderRows - idx) : 1;
             const groupToggle = getGroupVisibilityToggle(header);
+            const columnId = col.id;
+            const reorderEnabledForCell =
+              Boolean(enableColumnReorder) &&
+              isLeafHeader &&
+              header.colSpan === 1 &&
+              !systemColumnIds.has(columnId);
+            const isDragging = draggingColumnId === columnId;
+            const isDropTarget = dropTarget?.columnId === columnId;
+            const isDropBefore = isDropTarget && dropTarget?.side === 'before';
+            const isDropAfter = isDropTarget && dropTarget?.side === 'after';
+            const isDropBlocked = isDropTarget && Boolean(dropTarget?.blocked);
 
             return (
               <th
@@ -223,6 +318,11 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
                   isSelectCol ? styles.selectCol : '',
                   canSort ? styles.sortable : '',
                   sortState ? styles.sorted : '',
+                  reorderEnabledForCell ? styles.reorderable : '',
+                  isDragging ? styles.dragging : '',
+                  isDropBefore ? styles.dropBefore : '',
+                  isDropAfter ? styles.dropAfter : '',
+                  isDropBlocked ? styles.dropBlocked : '',
                   headerPinning.side ? pinning.pinned : '',
                   headerPinning.side === 'left' ? pinning.pinnedLeft : '',
                   headerPinning.side === 'right' ? pinning.pinnedRight : '',
@@ -232,8 +332,83 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
                 style={getHeaderCellStyle(header, headerPinning)}
                 colSpan={header.colSpan}
                 rowSpan={rowSpan > 1 ? rowSpan : undefined}
+                aria-grabbed={reorderEnabledForCell ? isDragging : undefined}
+                onDragOver={(event) => {
+                  if (!enableColumnReorder) return;
+                  if (!draggingColumnId) return;
+                  if (!isLeafHeader || header.colSpan !== 1) return;
+
+                  const rect = event.currentTarget.getBoundingClientRect();
+                  const side: 'before' | 'after' =
+                    event.clientX < rect.left + rect.width / 2 ? 'before' : 'after';
+                  const blocked = !canReorderPair(draggingColumnId, columnId);
+                  event.preventDefault();
+                  if (event.dataTransfer) {
+                    event.dataTransfer.dropEffect = blocked ? 'none' : 'move';
+                  }
+                  setDropTarget((prev) => {
+                    if (
+                      prev?.columnId === columnId &&
+                      prev.side === side &&
+                      prev.blocked === blocked
+                    ) {
+                      return prev;
+                    }
+                    return { columnId, side, blocked };
+                  });
+                }}
+                onDragLeave={(event) => {
+                  const next = event.relatedTarget as Node | null;
+                  if (next && event.currentTarget.contains(next)) return;
+                  setDropTarget((prev) => (prev?.columnId === columnId ? null : prev));
+                }}
+                onDrop={(event) => {
+                  if (!enableColumnReorder) return;
+                  if (!draggingColumnId) return;
+                  event.preventDefault();
+
+                  const rect = event.currentTarget.getBoundingClientRect();
+                  const side: 'before' | 'after' =
+                    event.clientX < rect.left + rect.width / 2 ? 'before' : 'after';
+                  const blocked = !canReorderPair(draggingColumnId, columnId);
+                  if (blocked) {
+                    clearDragState();
+                    return;
+                  }
+
+                  table.setColumnOrder((currentOrder) =>
+                    moveColumnOrder(
+                      currentOrder ?? [],
+                      draggingColumnId,
+                      columnId,
+                      side
+                    )
+                  );
+                  clearDragState();
+                }}
+                onDragEnd={clearDragState}
               >
                 <div className={styles.thInner} onClick={canSort ? col.getToggleSortingHandler() : undefined}>
+                  {reorderEnabledForCell ? (
+                    <button
+                      type="button"
+                      className={styles.dragHandle}
+                      draggable
+                      aria-label="Reorder column"
+                      onClick={(e) => e.stopPropagation()}
+                      onDragStart={(event) => {
+                        setDraggingColumnId(columnId);
+                        setDropTarget(null);
+                        event.stopPropagation();
+                        if (event.dataTransfer) {
+                          event.dataTransfer.effectAllowed = 'move';
+                          event.dataTransfer.setData('text/plain', columnId);
+                        }
+                      }}
+                    >
+                      ⋮⋮
+                    </button>
+                  ) : null}
                   {flexRender(col.columnDef.header, header.getContext())}
                   {groupToggle ? (
                     <button

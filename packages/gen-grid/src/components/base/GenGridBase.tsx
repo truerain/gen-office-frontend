@@ -41,6 +41,7 @@ export type GenGridBaseProps<TData> = {
   enableFiltering?: boolean;
   enablePinning?: boolean;
   enableColumnSizing?: boolean;
+  enableColumnReorder?: boolean;
   fitColumns?: 'none' | 'fill';
 
   checkboxSelection?: boolean;
@@ -131,6 +132,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     enableFiltering,
     enablePinning,
     enableColumnSizing,
+    enableColumnReorder,
     fitColumns,
 
     checkboxSelection,
@@ -586,6 +588,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
             table={table}
             enablePinning={enablePinning}
             enableColumnSizing={columnSizingEnabled}
+            enableColumnReorder={enableColumnReorder}
             enableFiltering={enableFiltering}
             onAutoSizeColumn={autoSizeColumn}
             renderFilterCell={() => null}

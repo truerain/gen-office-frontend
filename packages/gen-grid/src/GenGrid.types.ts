@@ -103,6 +103,14 @@ type CommonGridOptions<TData> = {
   enableFiltering?: boolean;
   enablePinning?: boolean;
   enableColumnSizing?: boolean;
+  /** enable column reorder by drag and drop on header */
+  enableColumnReorder?: boolean;
+  /** controlled column order */
+  columnOrder?: string[];
+  /** controlled column order change callback */
+  onColumnOrderChange?: (next: string[]) => void;
+  /** initial column order for uncontrolled mode */
+  defaultColumnOrder?: string[];
   /** when 'fill', stretch table width to container when total column width is smaller */
   fitColumns?: 'none' | 'fill';
 

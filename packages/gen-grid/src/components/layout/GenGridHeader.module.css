@@ -63,6 +63,64 @@
   gap: 8px;
 }
 
+.reorderable .thInner {
+  justify-content: flex-start;
+}
+
+.dragHandle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 4px;
+  padding: 0;
+  cursor: grab;
+  user-select: none;
+  background: transparent;
+  color: var(--grid-header-text);
+  opacity: 0.75;
+  line-height: 1;
+}
+
+.dragHandle:hover {
+  opacity: 1;
+  background: var(--grid-header-bg-hover);
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.dragging {
+  opacity: 0.7;
+}
+
+.dropBefore::before,
+.dropAfter::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  background: var(--grid-header-sort-icon);
+  z-index: calc(var(--grid-z-header) + 5);
+  pointer-events: none;
+}
+
+.dropBefore::before {
+  left: -1px;
+}
+
+.dropAfter::before {
+  right: -1px;
+}
+
+.dropBlocked::before {
+  background: var(--grid-row-status-deleted-fg);
+}
+
 /* sorting */
 .sortable {
   cursor: pointer;

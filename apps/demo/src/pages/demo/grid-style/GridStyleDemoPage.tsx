@@ -318,7 +318,7 @@ export default function GridStyleDemoPage(_props: PageComponentProps) {
           onCommit={async () => ({ ok: true, nextData: data })}
           actionBar={{
             defaultStyle: 'icon',
-            includeBuiltIns: ['excel'],
+            includeBuiltIns: ['excel', 'columnReorder'],
             customActions: [
               {
                 key: 'expand-all',

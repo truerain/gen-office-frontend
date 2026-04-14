@@ -101,6 +101,10 @@ export type GenGridTableProps<TData> = {
   enableColumnSizing?: boolean;
   columnSizing?: ColumnSizingState;
   onColumnSizingChange?: (next: ColumnSizingState) => void;
+  // order
+  columnOrder?: string[];
+  onColumnOrderChange?: (next: string[]) => void;
+  defaultColumnOrder?: string[];
 
   // actions
   actions?: GenGridTableActions<TData>;
@@ -108,6 +112,53 @@ export type GenGridTableProps<TData> = {
   tree?: GenGridTreeOptions<TData>;
 
 };
+
+function resolveColumnDefId<TData>(def: ColumnDef<TData, any>): string | null {
+  const typed = def as ColumnDef<TData, any> & { accessorKey?: unknown };
+  if (typeof typed.id === 'string' && typed.id.length > 0) return typed.id;
+  if (typeof typed.accessorKey === 'string' && typed.accessorKey.length > 0) return typed.accessorKey;
+  return null;
+}
+
+function collectLeafColumnIds<TData>(defs: readonly ColumnDef<TData, any>[]): string[] {
+  const ids: string[] = [];
+  const walk = (arr: readonly ColumnDef<TData, any>[]) => {
+    for (const def of arr) {
+      const typed = def as ColumnDef<TData, any> & { columns?: readonly ColumnDef<TData, any>[] };
+      if (typed.columns?.length) {
+        walk(typed.columns);
+        continue;
+      }
+      const id = resolveColumnDefId(def);
+      if (id) ids.push(id);
+    }
+  };
+  walk(defs);
+  return ids;
+}
+
+function normalizeColumnOrder(order: readonly string[] | undefined, leafIds: readonly string[]): string[] {
+  const valid = new Set(leafIds);
+  const next: string[] = [];
+  for (const id of order ?? []) {
+    if (!valid.has(id)) continue;
+    if (next.includes(id)) continue;
+    next.push(id);
+  }
+  for (const id of leafIds) {
+    if (next.includes(id)) continue;
+    next.push(id);
+  }
+  return next;
+}
+
+function isSameOrder(a: readonly string[], b: readonly string[]) {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i += 1) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
 
 function annotateUserCellRendererMeta<TData>(
   defs: readonly ColumnDef<TData, any>[]
@@ -191,6 +242,9 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     enableColumnSizing,
     columnSizing,
     onColumnSizingChange,
+    columnOrder,
+    onColumnOrderChange,
+    defaultColumnOrder,
 
     actions,
     tableMeta,
@@ -213,6 +267,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
   const [innerGlobalFilter, setInnerGlobalFilter] = React.useState<string>('');
   const [innerColumnSizing, setInnerColumnSizing] = React.useState<ColumnSizingState>({});
   const [innerColumnVisibility, setInnerColumnVisibility] = React.useState<VisibilityState>({});
+  const [innerColumnOrder, setInnerColumnOrder] = React.useState<string[]>(() => defaultColumnOrder ?? []);
 
   // ---------- user pinned from meta ----------
   const leafDefs = React.useMemo(() => getLeafColumnDefs(columns), [columns]);
@@ -284,6 +339,17 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     enableRowNumber,
     rowNumberColumn,
   ]);
+  const leafColumnIds = React.useMemo(() => collectLeafColumnIds(resolvedColumns), [resolvedColumns]);
+  const resolvedColumnOrder = React.useMemo(
+    () => normalizeColumnOrder(columnOrder ?? innerColumnOrder, leafColumnIds),
+    [columnOrder, innerColumnOrder, leafColumnIds]
+  );
+
+  React.useEffect(() => {
+    if (columnOrder != null) return;
+    if (isSameOrder(innerColumnOrder, resolvedColumnOrder)) return;
+    setInnerColumnOrder(resolvedColumnOrder);
+  }, [columnOrder, innerColumnOrder, resolvedColumnOrder]);
 
   const enableAnyFiltering = !!enableFiltering || !!enableGlobalFilter;
   React.useEffect(() => {
@@ -423,6 +489,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
       columnPinning: resolvedColumnPinning,
       columnSizing: resolvedColumnSizing,
       columnVisibility: resolvedColumnVisibility,
+      columnOrder: resolvedColumnOrder,
     },
 
     onSortingChange: (updater) => {
@@ -499,6 +566,16 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
         onColumnVisibilityChange(next);
       } else {
         setInnerColumnVisibility(next);
+      }
+    },
+
+    onColumnOrderChange: (updater) => {
+      const rawNext = typeof updater === 'function' ? updater(resolvedColumnOrder) : updater;
+      const next = normalizeColumnOrder(rawNext, leafColumnIds);
+      if (onColumnOrderChange) {
+        onColumnOrderChange(next);
+      } else {
+        setInnerColumnOrder(next);
       }
     },
 
