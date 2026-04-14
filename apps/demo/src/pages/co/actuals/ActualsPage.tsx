@@ -254,6 +254,17 @@ export default function CoActualsPage(_props: PageComponentProps) {
                     },
                   },
                   {
+                    key: 'settings',
+                    label: 'Settings',
+                    icon: <Settings aria-hidden size={16} />,
+                    side: 'right',
+                    style: 'icon',
+                    order: 10,
+                    onClick: () => {
+                      setSettingsOpen(true);
+                    },
+                  },
+                  {
                     key: 'refresh',
                     label: 'Refresh',
                     icon: <RefreshCcw aria-hidden size={16} />,

@@ -72,6 +72,7 @@ const componentPaths: Record<string, ComponentLoader> = {
   ComboboxDemoPage: () => import('@/pages/demo/combobox'),
   SimpleFilterBarDemoPage: () => import('@/pages/demo/simple-filter-bar'),
   PopupInputDemoPage: () => import('@/pages/demo/popup-input'),
+  CrudActionControlsDemoPage: () => import('@/pages/demo/crud-action-controls'),
 };
 
 /**

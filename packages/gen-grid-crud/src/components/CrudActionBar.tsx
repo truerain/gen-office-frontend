@@ -2,13 +2,26 @@
 
 import * as React from 'react';
 
-import { CircleDot, ListFilter, ListPlus, ListX, RotateCcw, Save, SquareMinus, SquarePlus } from 'lucide-react';
+import { ListFilter, RotateCcw, Save, SquareMinus, SquarePlus } from 'lucide-react';
 
-import { Button } from '@gen-office/ui';
+import {
+  Button,
+  Checkbox,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@gen-office/ui';
 import type {
   CrudActionApi,
+  CrudActionButtonItem,
   CrudActionButtonStyle,
   CrudActionContext,
+  CrudActionComboItem,
+  CrudActionComboValue,
+  CrudActionCheckboxItem,
+  CrudActionCheckboxValue,
   CrudActionItem,
   CrudBuiltInActionKey,
   CrudUiState,
@@ -45,6 +58,24 @@ function resolveRule<TData>(
 
 function getLabelString(label: React.ReactNode, fallback: string): string {
   return typeof label === 'string' ? label : fallback;
+}
+
+function resolveComboValue<TData>(
+  value: CrudActionComboValue<TData> | undefined,
+  ctx: CrudActionContext<TData>
+): string | undefined {
+  if (typeof value === 'function') return value(ctx);
+  if (typeof value === 'string') return value;
+  return undefined;
+}
+
+function resolveCheckboxValue<TData>(
+  checked: CrudActionCheckboxValue<TData> | undefined,
+  ctx: CrudActionContext<TData>
+): boolean {
+  if (typeof checked === 'function') return checked(ctx);
+  if (typeof checked === 'boolean') return checked;
+  return false;
 }
 
 export function CrudActionBar<TData>(props: {
@@ -205,25 +236,91 @@ export function CrudActionBar<TData>(props: {
 
   const renderAction = (action: CrudActionItem<TData>) => {
     const style = action.style ?? actionButtonStyle;
-    const isIcon = style === 'icon';
     const labelNode = action.label ?? action.key;
     const ariaLabel = getLabelString(labelNode, action.key);
     const disabled = resolveRule(action.disabled, false, ctx);
+    const wrapperClassName = action.itemClassName
+      ? `${styles.actionItem} ${action.itemClassName}`
+      : styles.actionItem;
 
+    if (style === 'combo') {
+      const comboAction = action as CrudActionComboItem<TData>;
+      const value = resolveComboValue(comboAction.value, ctx);
+      return (
+        <div key={action.key} className={wrapperClassName} style={action.itemStyle}>
+          <div className={styles.controlAction}>
+            {comboAction.label ? <span className={styles.controlLabel}>{comboAction.label}</span> : null}
+            <Select
+              value={value}
+              onValueChange={(nextValue) => void comboAction.onValueChange?.(nextValue, ctx)}
+              disabled={disabled}
+            >
+              <SelectTrigger
+                className={
+                  comboAction.triggerClassName
+                    ? `${styles.comboTrigger} ${comboAction.triggerClassName}`
+                    : styles.comboTrigger
+                }
+                style={comboAction.triggerStyle}
+                aria-label={ariaLabel}
+                title={ariaLabel}
+              >
+                <SelectValue placeholder={comboAction.placeholder ?? 'Select'} />
+              </SelectTrigger>
+              <SelectContent>
+                {comboAction.options.map((option) => (
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    disabled={option.disabled}
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      );
+    }
+
+    if (style === 'checkbox') {
+      const checkboxAction = action as CrudActionCheckboxItem<TData>;
+      const checked = resolveCheckboxValue(checkboxAction.checked, ctx);
+      return (
+        <div key={action.key} className={wrapperClassName} style={action.itemStyle}>
+          <label className={styles.checkboxAction} title={ariaLabel}>
+            <Checkbox
+              checked={checked}
+              disabled={disabled}
+              onCheckedChange={(nextChecked) =>
+                void checkboxAction.onCheckedChange?.(nextChecked === true, ctx)
+              }
+              aria-label={ariaLabel}
+            />
+            <span className={styles.checkboxLabel}>{labelNode}</span>
+          </label>
+        </div>
+      );
+    }
+
+    const buttonAction = action as CrudActionButtonItem<TData>;
+    const isIcon = style === 'icon';
     return (
-      <Button
-        key={action.key}
-        type="button"
-        variant={action.variant ?? (isIcon ? 'ghost' : 'secondary')}
-        size={isIcon ? 'icon' : 'sm'}
-        disabled={disabled}
-        onClick={() => void action.onClick?.(ctx)}
-        aria-label={ariaLabel}
-        title={ariaLabel}
-        leftIcon={!isIcon ? action.icon : undefined}
-      >
-        {isIcon ? (action.icon ?? labelNode) : labelNode}
-      </Button>
+      <div key={action.key} className={wrapperClassName} style={action.itemStyle}>
+        <Button
+          type="button"
+          variant={buttonAction.variant ?? (isIcon ? 'ghost' : 'secondary')}
+          size={isIcon ? 'icon' : 'sm'}
+          disabled={disabled}
+          onClick={() => void buttonAction.onClick?.(ctx)}
+          aria-label={ariaLabel}
+          title={ariaLabel}
+          leftIcon={!isIcon ? buttonAction.icon : undefined}
+        >
+          {isIcon ? (buttonAction.icon ?? labelNode) : labelNode}
+        </Button>
+      </div>
     );
   };
 

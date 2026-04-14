@@ -23,6 +23,7 @@ const componentNameByMenuId: Record<string, string> = {
   '990900': 'PaginationDemoPage',
   '991000': 'PopupInputDemoPage',
   '991100': 'SimpleFilterBarDemoPage',
+  '991200': 'CrudActionControlsDemoPage',
 };
 
 const iconByMenuId: Record<string, string> = {
@@ -49,6 +50,7 @@ const iconByMenuId: Record<string, string> = {
   '990900': 'Rows4',
   '991000': 'Search',
   '991100': 'Filter',
+  '991200': 'SlidersHorizontal',
 };
 
 export type SystemMenuData = {

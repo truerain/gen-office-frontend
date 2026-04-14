@@ -99,3 +99,45 @@
 .root :global(button) {
   white-space: nowrap;
 }
+
+.actionItem {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.controlAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.controlLabel {
+  color: var(--color-fg-secondary);
+  font-size: var(--grid-font-size);
+  white-space: nowrap;
+}
+
+.comboTrigger {
+  min-width: 6.5rem;
+  width: auto;
+}
+
+.checkboxAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.checkboxLabel {
+  color: var(--color-fg-default);
+  font-size: var(--grid-font-size);
+  line-height: 1;
+}

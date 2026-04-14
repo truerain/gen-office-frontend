@@ -67,6 +67,8 @@ export type CrudActiveRowChangeEvent<TData> = {
 };
 
 export type CrudActionButtonStyle = 'text' | 'icon';
+export type CrudActionControlStyle = 'combo' | 'checkbox';
+export type CrudActionStyle = CrudActionButtonStyle | CrudActionControlStyle;
 export type CrudActionSide = 'left' | 'right';
 export type CrudBuiltInActionKey = 'add' | 'delete' | 'save' | 'filter' | 'reset' | 'excel';
 
@@ -145,18 +147,53 @@ export type CrudActionContext<TData> = {
   api: CrudActionApi;
 };
 
-export type CrudActionItem<TData> = {
+type CrudActionBase<TData> = {
   key: string;
   label?: React.ReactNode;
-  icon?: React.ReactNode;
-  style?: CrudActionButtonStyle;
-  variant?: ButtonVariant;
   side?: CrudActionSide;
   order?: number;
   visible?: boolean | ((ctx: CrudActionContext<TData>) => boolean);
   disabled?: boolean | ((ctx: CrudActionContext<TData>) => boolean);
+  itemClassName?: string;
+  itemStyle?: React.CSSProperties;
+};
+
+export type CrudActionButtonItem<TData> = CrudActionBase<TData> & {
+  style?: CrudActionButtonStyle;
+  icon?: React.ReactNode;
+  variant?: ButtonVariant;
   onClick?: (ctx: CrudActionContext<TData>) => void | Promise<void>;
 };
+
+export type CrudActionComboOption = {
+  value: string;
+  label: React.ReactNode;
+  disabled?: boolean;
+};
+
+export type CrudActionComboValue<TData> = string | undefined | ((ctx: CrudActionContext<TData>) => string | undefined);
+export type CrudActionCheckboxValue<TData> = boolean | ((ctx: CrudActionContext<TData>) => boolean);
+
+export type CrudActionComboItem<TData> = CrudActionBase<TData> & {
+  style: 'combo';
+  options: readonly CrudActionComboOption[];
+  placeholder?: string;
+  value?: CrudActionComboValue<TData>;
+  triggerClassName?: string;
+  triggerStyle?: React.CSSProperties;
+  onValueChange?: (value: string, ctx: CrudActionContext<TData>) => void | Promise<void>;
+};
+
+export type CrudActionCheckboxItem<TData> = CrudActionBase<TData> & {
+  style: 'checkbox';
+  checked?: CrudActionCheckboxValue<TData>;
+  onCheckedChange?: (checked: boolean, ctx: CrudActionContext<TData>) => void | Promise<void>;
+};
+
+export type CrudActionItem<TData> =
+  | CrudActionButtonItem<TData>
+  | CrudActionComboItem<TData>
+  | CrudActionCheckboxItem<TData>;
 
 export type CrudActionBarOptions<TData> = {
   enabled?: boolean;

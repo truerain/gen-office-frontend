@@ -250,6 +250,17 @@ const menus: AppMenu[] = [
     sortOrder: 11,
     execComponent: 'SimpleFilterBarDemoPage',
   },
+  {
+    menuId: 991200,
+    menuName: 'Crud Action Controls Demo',
+    menuNameEng: 'Crud Action Controls Demo',
+    menuIcon: 'SlidersHorizontal',
+    parentMenuId: 990000,
+    displayYn: 'Y',
+    useYn: 'Y',
+    sortOrder: 12,
+    execComponent: 'CrudActionControlsDemoPage',
+  },
 ];
 
 export function loadAppMenuData() {
