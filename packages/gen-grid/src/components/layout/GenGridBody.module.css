@@ -75,6 +75,39 @@
     "Courier New", monospace;
 }
 
+.semanticAmountNegativeText {
+  color: var(--grid-cell-negative-text, #d92d20);
+}
+
+.semanticAmountTriangleContent {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.semanticAmountTriangleContent::before {
+  content: '';
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 7px solid currentColor;
+}
+
+.semanticPercentDelta::after {
+  font-weight: 700;
+}
+
+.semanticPercentDeltaUp::after {
+  content: ' \2191';
+  color: var(--grid-cell-positive-text, #16a34a);
+}
+
+.semanticPercentDeltaDown::after {
+  content: ' \2193';
+  color: var(--grid-cell-negative-text, #d92d20);
+}
+
 .cellContent {
   overflow: hidden;
   white-space: nowrap;

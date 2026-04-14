@@ -3,6 +3,25 @@ import type * as React from 'react';
 import type { GenGridFieldValidationMeta } from '../../validation/types';
 
 export type GenGridColumnMeta = {
+  semanticType?: 'amount' | 'percent';
+  amountOptions?: {
+    negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
+    negativeColor?: boolean;
+  };
+  percentOptions?: {
+    mode?: 'plain' | 'delta';
+    negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
+    negativeColor?: boolean;
+    deltaFrom?:
+      | string
+      | ((args: {
+          row: unknown;
+          rowId: string;
+          columnId: string;
+          value: unknown;
+        }) => unknown);
+    invertDirection?: boolean;
+  };
   editable?:
     | boolean
     | ((args: { row: unknown; rowId: string; columnId: string }) => boolean);
@@ -24,6 +43,7 @@ export type GenGridColumnMeta = {
     row: unknown;
     rowId: string;
     columnId: string;
+    commitValue?: (nextValue: unknown) => void;
   }) => React.ReactNode;
   tooltip?: string;
   getCellTooltip?: (args: {

@@ -13,6 +13,10 @@ type SourceRow = {
   category: string;
   accountName: string;
   amount: number;
+  marginRate: number;
+  targetMarginRate: number;
+  defectRate: number;
+  baselineDefectRate: number;
 };
 
 type ViewRow = SourceRow & {
@@ -20,14 +24,86 @@ type ViewRow = SourceRow & {
 };
 
 const sourceRows: SourceRow[] = [
-  { id: '1', category: 'Revenue', accountName: 'Domestic Sales', amount: 1250 },
-  { id: '2', category: 'Revenue', accountName: 'Export Sales', amount: 0 },
-  { id: '3', category: 'COGS', accountName: 'Material Cost', amount: 880 },
-  { id: '4', category: 'COGS', accountName: 'Outsourcing Cost', amount: 100 },
-  { id: '5', category: 'OPEX', accountName: 'Travel Expense', amount: 0 },
-  { id: '6', category: 'OPEX', accountName: 'IT Service', amount: 340 },
-  { id: '7', category: 'OPEX', accountName: 'Education Expense', amount: 90 },
-  { id: '8', category: 'Other', accountName: 'Adjustment', amount: -30 },
+  {
+    id: '1',
+    category: 'Revenue',
+    accountName: 'Domestic Sales',
+    amount: 1250,
+    marginRate: 0.262,
+    targetMarginRate: 0.24,
+    defectRate: 0.011,
+    baselineDefectRate: 0.012,
+  },
+  {
+    id: '2',
+    category: 'Revenue',
+    accountName: 'Export Sales',
+    amount: 0,
+    marginRate: 0.187,
+    targetMarginRate: 0.2,
+    defectRate: 0.018,
+    baselineDefectRate: 0.014,
+  },
+  {
+    id: '3',
+    category: 'COGS',
+    accountName: 'Material Cost',
+    amount: 880,
+    marginRate: 0.143,
+    targetMarginRate: 0.15,
+    defectRate: 0.021,
+    baselineDefectRate: 0.023,
+  },
+  {
+    id: '4',
+    category: 'COGS',
+    accountName: 'Outsourcing Cost',
+    amount: 100,
+    marginRate: 0.133,
+    targetMarginRate: 0.12,
+    defectRate: 0.016,
+    baselineDefectRate: 0.017,
+  },
+  {
+    id: '5',
+    category: 'OPEX',
+    accountName: 'Travel Expense',
+    amount: 0,
+    marginRate: 0.081,
+    targetMarginRate: 0.09,
+    defectRate: 0.015,
+    baselineDefectRate: 0.018,
+  },
+  {
+    id: '6',
+    category: 'OPEX',
+    accountName: 'IT Service',
+    amount: 340,
+    marginRate: 0.209,
+    targetMarginRate: 0.19,
+    defectRate: 0.012,
+    baselineDefectRate: 0.015,
+  },
+  {
+    id: '7',
+    category: 'OPEX',
+    accountName: 'Education Expense',
+    amount: 90,
+    marginRate: 0.051,
+    targetMarginRate: 0.06,
+    defectRate: 0.024,
+    baselineDefectRate: 0.021,
+  },
+  {
+    id: '8',
+    category: 'Other',
+    accountName: 'Adjustment',
+    amount: -30,
+    marginRate: -0.014,
+    targetMarginRate: 0.01,
+    defectRate: 0.031,
+    baselineDefectRate: 0.028,
+  },
 ];
 
 type UnitValue = '1' | '10' | '100';
@@ -60,14 +136,79 @@ export default function CrudActionControlsDemoPage(_props: PageComponentProps) {
       {
         accessorKey: 'amount',
         header: 'Raw Amount',
-        size: 120,
-        meta: { align: 'right', mono: true },
+        size: 130,
+        meta: {
+          align: 'right',
+          mono: true,
+          semanticType: 'amount',
+          amountOptions: { negativeStyle: 'both' },
+        },
       },
       {
         accessorKey: 'displayAmount',
         header: `Display Amount (${unitLabelByValue[unit]})`,
+        size: 180,
+        meta: {
+          align: 'right',
+          mono: true,
+          semanticType: 'amount',
+          amountOptions: { negativeStyle: 'triangle' },
+        },
+      },
+      {
+        accessorKey: 'marginRate',
+        header: 'Margin %',
+        size: 110,
+        meta: {
+          align: 'right',
+          mono: true,
+          semanticType: 'percent',
+          percentOptions: { mode: 'plain', negativeStyle: 'triangle', negativeColor: true },
+
+          numberFormat: {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+          },
+        },
+      },
+      {
+        id: 'marginRateDelta',
+        accessorFn: (row) => row.marginRate,
+        header: 'Margin % vs Target',
         size: 160,
-        meta: { align: 'right', mono: true },
+        meta: {
+          align: 'right',
+          mono: true,
+          semanticType: 'percent',
+          percentOptions: {
+            mode: 'delta',
+            deltaFrom: 'targetMarginRate',
+          },
+          numberFormat: {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+          },
+        },
+      },
+      {
+        id: 'defectRateDelta',
+        accessorFn: (row) => row.defectRate,
+        header: 'Defect % vs Baseline',
+        size: 170,
+        meta: {
+          align: 'right',
+          mono: true,
+          semanticType: 'percent',
+          percentOptions: {
+            mode: 'delta',
+            deltaFrom: 'baselineDefectRate',
+            invertDirection: true,
+          },
+          numberFormat: {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+          },
+        },
       },
     ],
     [unit]

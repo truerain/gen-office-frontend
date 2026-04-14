@@ -5,6 +5,25 @@ import type * as React from 'react';
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData, TValue> {
+    semanticType?: 'amount' | 'percent';
+    amountOptions?: {
+      negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
+      negativeColor?: boolean;
+    };
+    percentOptions?: {
+      mode?: 'plain' | 'delta';
+      negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
+      negativeColor?: boolean;
+      deltaFrom?:
+        | string
+        | ((args: {
+            row: TData;
+            rowId: string;
+            columnId: string;
+            value: unknown;
+          }) => unknown);
+      invertDirection?: boolean;
+    };
     editable?:
       | boolean
       | ((args: { row: TData; rowId: string; columnId: string }) => boolean);
