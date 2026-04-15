@@ -463,7 +463,9 @@ export function useActiveCellNavigation<TData>(args: {
             return;
           }
           e.preventDefault();
-          setActive(rowId, columnId, { focus: true, allowNonNavigable: true });
+          if (!isActive) {
+            setActive(rowId, columnId, { focus: true, allowNonNavigable: true });
+          }
         },
 
         onKeyDown: (e: React.KeyboardEvent) => {

@@ -206,8 +206,6 @@ export function useCellEditing<TData>(args: {
           if (e.button !== 0) return;
           if (isInteractiveTarget(e.target)) return;
 
-          if (!editMode && !editCell) return;
-          if (isEditing) return;
           if (editCell && (editCell.rowId !== rowId || editCell.columnId !== columnId)) {
             // Mouse navigation should end current edit first, including custom renderEditor.
             if (keepEditingOnNavigate) {
@@ -221,19 +219,31 @@ export function useCellEditing<TData>(args: {
             pendingEditCellRef.current = { rowId, columnId };
             return;
           }
-          if (canEdit(rowId, columnId)) {
-            startEditing({ rowId, columnId });
+          if(activeCell && activeCell.rowId === rowId && activeCell.columnId === columnId) {
+            if (canEdit(rowId, columnId)) {
+              startEditing({ rowId, columnId });
+            }
           }
         },
+        onDoubleClick: () => {
+          clearSelectedRanges?.();
+          // 더블클릭하면 해당 셀로 active 맞추고 편집 시작
+          onActiveCellChange({ rowId, columnId });
+          startEditing({ rowId, columnId });
+        },
+        /*
         onClickCapture: (e: any) => {
+          console.log('onClickCapture', { rowId, columnId });
           if (isInteractiveTarget(e.target)) return;
           if (e?.detail !== 2) return;
+
           clearSelectedRanges?.();
           onActiveCellChange({ rowId, columnId });
           if (canEdit(rowId, columnId)) {
             startEditing({ rowId, columnId });
           }
         },
+        */
         onFocus: () => {
           if (suppressNextAutoEditOnceRef.current) {
             suppressNextAutoEditOnceRef.current = false;
@@ -260,13 +270,6 @@ export function useCellEditing<TData>(args: {
             startEditing({ rowId, columnId });
           }
         },
-        onDoubleClick: () => {
-          clearSelectedRanges?.();
-          // 더블클릭하면 해당 셀로 active 맞추고 편집 시작
-          onActiveCellChange({ rowId, columnId });
-          startEditing({ rowId, columnId });
-        },
-
         onKeyDown: (e: any) => {
           // 편집 중이면 Esc로 취소 (Enter는 editor에서 commit 예정)
           if (isEditing) {
