@@ -1,7 +1,6 @@
 /* Gen-Office Global Styles */
 @import './reset.css';
 @import './variables.css';
-@import './fonts/lg-smart.css';
 
 body {
   font-family: var(--font-family-primary);
