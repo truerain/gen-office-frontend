@@ -84,3 +84,21 @@ export const formatApiMonth = (date: Date | undefined): string | undefined => {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   return `${year}${month}`;
 }
+
+export const yyyymmToDate = (value: string): Date | undefined => {
+  if (!/^\d{6}$/.test(value)) return undefined;
+
+  const year = Number(value.slice(0, 4));
+  const month = Number(value.slice(4, 6));
+  if (month < 1 || month > 12) return undefined;
+
+  const date = new Date(year, month - 1, 1); // local-safe constructor
+  return Number.isNaN(date.getTime()) ? undefined : date;
+};
+
+export const dateToYyyymm = (date: Date | undefined): string | undefined => {
+  if (!date || Number.isNaN(date.getTime())) return undefined;
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${year}${month}`;
+};
