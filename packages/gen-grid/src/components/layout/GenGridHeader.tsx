@@ -54,6 +54,7 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
     side: 'before' | 'after';
     blocked: boolean;
   } | null>(null);
+  const initializedGroupVisibilityColumnsRef = React.useRef<Set<string>>(new Set());
 
   const resolveZone = React.useCallback((columnId: string): 'left' | 'center' | 'right' => {
     const pinned = table.getColumn(columnId)?.getIsPinned?.();
@@ -244,6 +245,7 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
 
   React.useEffect(() => {
     const patch: Record<string, boolean> = {};
+    const initialized = initializedGroupVisibilityColumnsRef.current;
 
     for (const hg of headerGroups) {
       for (const header of hg.headers) {
@@ -254,9 +256,14 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
         if (typeof defaultExpanded !== 'boolean') continue;
 
         for (const column of resolved.targetColumns) {
+          if (initialized.has(column.id)) continue;
           const current = table.getState().columnVisibility?.[column.id];
-          if (typeof current === 'boolean') continue;
+          if (typeof current === 'boolean') {
+            initialized.add(column.id);
+            continue;
+          }
           patch[column.id] = defaultExpanded;
+          initialized.add(column.id);
         }
       }
     }
