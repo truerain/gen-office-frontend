@@ -17,6 +17,16 @@
   border-radius: var(--border-radius-lg);
 }
 
+.actualsMeta {
+  display: flex;
+  gap: 12px;
+  padding: 0 12px 10px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow-x: auto;
+}
+
 .workarea {
   flex: 1;
   min-height: 0;

@@ -165,6 +165,7 @@ function buildMockRows(total: number): ActualMockRow[] {
 }
 
 const actualRows: ActualMockRow[] = buildMockRows(TOTAL_ACTUAL_ROWS);
+let actualsRequestSeq = 0;
 
 function filterActualRows(
   request: Request
@@ -187,22 +188,38 @@ function filterActualRows(
 export const coActualsHandlers = [
   http.get('/api/co/actual', ({ request }) => {
     const items = filterActualRows(request);
+    actualsRequestSeq += 1;
+    const delta = actualsRequestSeq - 1;
+    const data = items.map((row) => ({
+      ...row,
+      currActAmt: row.currActAmt + delta * 1000,
+      planAmt: row.planAmt + delta * 1000,
+      prevActAmt: row.prevActAmt + delta * 1000,
+    }));
 
     return HttpResponse.json({
       success: true,
       code: 'S0000',
       message: 'ok',
-      data: items,
+      data,
     });
   }),
   http.get('/api/co/actuals', ({ request }) => {
     const items = filterActualRows(request);
+    actualsRequestSeq += 1;
+    const delta = actualsRequestSeq - 1;
+    const data = items.map((row) => ({
+      ...row,
+      currActAmt: row.currActAmt + delta * 1000,
+      planAmt: row.planAmt + delta * 1000,
+      prevActAmt: row.prevActAmt + delta * 1000,
+    }));
 
     return HttpResponse.json({
       success: true,
       code: 'S0000',
       message: 'ok',
-      data: items,
+      data,
     });
   }),
 ];

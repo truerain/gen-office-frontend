@@ -85,6 +85,7 @@ export const createActualsColumns = (
               //columnIds: [...monthKeys],
               expandLabel: '+',
               collapseLabel: '-',
+              defaultExpanded: false,
               ariaLabel: '월별 컬럼 접기 또는 펼치기',
             },
           } as any,

@@ -11,6 +11,8 @@ import { ROW_NUMBER_COLUMN_ID } from '../../features/row-number/useRowNumberColu
 import styles from './GenGridHeader.module.css';
 import pinning from './GenGridPinning.module.css';
 
+const groupVisibilityStateCache = new Map<string, Record<string, boolean>>();
+
 type GenGridHeaderProps<TData> = {
   table: Table<TData>;
 
@@ -55,6 +57,11 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
     blocked: boolean;
   } | null>(null);
   const initializedGroupVisibilityColumnsRef = React.useRef<Set<string>>(new Set());
+  const groupVisibilityCacheKey = React.useMemo(() => {
+    const routeKey = typeof window === 'undefined' ? 'server' : window.location.pathname;
+    const leafColumnKey = table.getAllLeafColumns().map((column) => column.id).join('|');
+    return `${routeKey}::${leafColumnKey}`;
+  }, [headerGroups, table]);
 
   const resolveZone = React.useCallback((columnId: string): 'left' | 'center' | 'right' => {
     const pinned = table.getColumn(columnId)?.getIsPinned?.();
@@ -232,13 +239,17 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
         event.preventDefault();
         event.stopPropagation();
         const nextVisible = !isExpanded;
+        const cached = groupVisibilityStateCache.get(groupVisibilityCacheKey) ?? {};
+        const nextCache = { ...cached };
         table.setColumnVisibility((prev) => {
           const next = { ...prev };
           targetColumns.forEach((column) => {
             next[column.id] = nextVisible;
+            nextCache[column.id] = nextVisible;
           });
           return next;
         });
+        groupVisibilityStateCache.set(groupVisibilityCacheKey, nextCache);
       },
     };
   };
@@ -246,6 +257,8 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
   React.useEffect(() => {
     const patch: Record<string, boolean> = {};
     const initialized = initializedGroupVisibilityColumnsRef.current;
+    const cached = groupVisibilityStateCache.get(groupVisibilityCacheKey) ?? {};
+    const nextCache = { ...cached };
 
     for (const hg of headerGroups) {
       for (const header of hg.headers) {
@@ -257,16 +270,28 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
 
         for (const column of resolved.targetColumns) {
           if (initialized.has(column.id)) continue;
+
+          const cachedVisibility = cached[column.id];
+          if (typeof cachedVisibility === 'boolean') {
+            patch[column.id] = cachedVisibility;
+            initialized.add(column.id);
+            continue;
+          }
+
           const current = table.getState().columnVisibility?.[column.id];
           if (typeof current === 'boolean') {
+            nextCache[column.id] = current;
             initialized.add(column.id);
             continue;
           }
           patch[column.id] = defaultExpanded;
+          nextCache[column.id] = defaultExpanded;
           initialized.add(column.id);
         }
       }
     }
+
+    groupVisibilityStateCache.set(groupVisibilityCacheKey, nextCache);
 
     const keys = Object.keys(patch);
     if (keys.length === 0) return;
@@ -275,7 +300,31 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
       ...prev,
       ...patch,
     }));
-  }, [headerGroups, table]);
+  }, [groupVisibilityCacheKey, headerGroups, table]);
+
+  React.useEffect(() => {
+    const cached = groupVisibilityStateCache.get(groupVisibilityCacheKey) ?? {};
+    const nextCache = { ...cached };
+    let changed = false;
+
+    for (const hg of headerGroups) {
+      for (const header of hg.headers) {
+        const resolved = resolveGroupVisibilityToggleConfig(header);
+        if (!resolved) continue;
+        for (const column of resolved.targetColumns) {
+          const current = table.getState().columnVisibility?.[column.id];
+          if (typeof current !== 'boolean') continue;
+          if (nextCache[column.id] === current) continue;
+          nextCache[column.id] = current;
+          changed = true;
+        }
+      }
+    }
+
+    if (changed) {
+      groupVisibilityStateCache.set(groupVisibilityCacheKey, nextCache);
+    }
+  }, [groupVisibilityCacheKey, headerGroups, table]);
 
   return (
     <thead className={styles.thead}>

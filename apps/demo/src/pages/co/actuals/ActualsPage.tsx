@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Calculator, RefreshCcw, Search, Settings } from 'lucide-react';
 
 import { GenGridCrud } from '@gen-office/gen-grid-crud';
@@ -90,6 +90,7 @@ export default function CoActualsPage(_props: PageComponentProps) {
   const [gridDirty, setGridDirty] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ActualsViewMode>('summary');
+  const [searchResetSeq, setSearchResetSeq] = useState(0);
 
   const rangeChart = useRangeChartContextMenu<CoActual>({
     categoryColumnId: 'acctName',
@@ -116,6 +117,24 @@ export default function CoActualsPage(_props: PageComponentProps) {
     () => buildGridRows(actuals, TARGET_GRID_ROWS),
     [actuals]
   );
+  const actualsFingerprint = useMemo(() => {
+    if (actuals.length === 0) return 'empty';
+    const sample = actuals.slice(0, 5);
+    const amountSum = sample.reduce(
+      (sum, row) => sum + Number(row.currActAmt ?? 0) + Number(row.planAmt ?? 0) + Number(row.prevActAmt ?? 0),
+      0
+    );
+    const first = sample[0];
+    return `${actuals.length}|${first?.acctCd ?? ''}|${amountSum}`;
+  }, [actuals]);
+  const lastFingerprintRef = useRef<string>('');
+  const [actualsChangeCount, setActualsChangeCount] = useState(0);
+
+  useEffect(() => {
+    if (lastFingerprintRef.current === actualsFingerprint) return;
+    lastFingerprintRef.current = actualsFingerprint;
+    setActualsChangeCount((prev) => prev + 1);
+  }, [actualsFingerprint]);
   const columns = useMemo(
     () =>
       createActualsColumns(viewMode, {
@@ -142,9 +161,14 @@ export default function CoActualsPage(_props: PageComponentProps) {
       draftFilters.fiscalPrd.trim() === filters.fiscalPrd.trim() &&
       draftFilters.orgCd.trim() === filters.orgCd.trim() &&
       draftFilters.acctCd.trim() === filters.acctCd.trim();
+    setSearchResetSeq((prev) => prev + 1);
+
+    if (same) {
+      void refetch();
+      return;
+    }
 
     setFilters(draftFilters);
-    if (same) void refetch();
   };
 
   return (
@@ -213,6 +237,11 @@ export default function CoActualsPage(_props: PageComponentProps) {
                 />
               </FilterBar.Item>
             </FilterBar>
+            <div className={styles.actualsMeta}>
+              <span>actuals changes: {actualsChangeCount}</span>
+              <span>rows: {actuals.length}</span>
+              <span>fingerprint: {actualsFingerprint}</span>
+            </div>
           </div>
           <div className={styles.workarea}>
             {isError && (
@@ -227,6 +256,7 @@ export default function CoActualsPage(_props: PageComponentProps) {
               </div>
             )}
             <GenGridCrud<CoActual>
+              key={`actuals-grid-${searchResetSeq}`}
               title="Actuals List"
               readonly
               data={gridRows}
@@ -242,17 +272,6 @@ export default function CoActualsPage(_props: PageComponentProps) {
                 defaultStyle: 'icon',
                 includeBuiltIns: ['filter', 'excel'],
                 customActions: [
-                  {
-                    key: 'settings',
-                    label: 'Settings',
-                    icon: <Settings aria-hidden size={16} />,
-                    side: 'right',
-                    style: 'icon',
-                    order: 10,
-                    onClick: () => {
-                      setSettingsOpen(true);
-                    },
-                  },
                   {
                     key: 'settings',
                     label: 'Settings',
