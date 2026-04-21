@@ -98,6 +98,7 @@
 }
 
 .content[data-state='inactive'] {
+  display: none;
   position: absolute;
   inset: 0;
   margin-top: 0;

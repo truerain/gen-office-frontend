@@ -19,7 +19,7 @@ function createMonthlyColumn(monthKey: (typeof monthKeys)[number], index: number
     id: monthKey,
     header: `${index + 1}월`,
     accessorKey: monthKey,
-    size: 120,
+    size: 200,
     cell: ({ getValue }) => formatAmount(getValue()),
     meta: { align: 'right' },
   };
@@ -94,7 +94,7 @@ export const createActualsColumns = (
               id: 'currActAmt',
               header: '합계',
               accessorKey: 'currActAmt',
-              size: 150,
+              size: 200,
               cell: ({ getValue }) => formatAmount(getValue()),
               meta: { align: 'right' },
             },
