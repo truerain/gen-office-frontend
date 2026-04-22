@@ -3,25 +3,55 @@ import type * as React from 'react';
 import type { GenGridFieldValidationMeta } from '../../validation/types';
 
 export type GenGridColumnMeta = {
-  semanticType?: 'amount' | 'percent';
-  amountOptions?: {
-    negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
-    negativeColor?: boolean;
-  };
-  percentOptions?: {
-    mode?: 'plain' | 'delta';
-    negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
-    negativeColor?: boolean;
-    deltaFrom?:
-      | string
-      | ((args: {
-          row: unknown;
-          rowId: string;
-          columnId: string;
-          value: unknown;
-        }) => unknown);
-    invertDirection?: boolean;
-  };
+  semanticType?:
+    | 'amount'
+    | 'percent'
+    | ((args: { row: unknown; rowId: string; columnId: string; value: unknown }) => 'amount' | 'percent' | undefined);
+  amountOptions?:
+    | {
+        negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
+        negativeColor?: boolean;
+      }
+    | ((args: {
+        row: unknown;
+        rowId: string;
+        columnId: string;
+        value: unknown;
+      }) => { negativeStyle?: 'none' | 'text' | 'triangle' | 'both'; negativeColor?: boolean } | undefined);
+  percentOptions?:
+    | {
+        mode?: 'plain' | 'delta';
+        negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
+        negativeColor?: boolean;
+        deltaFrom?:
+          | string
+          | ((args: {
+              row: unknown;
+              rowId: string;
+              columnId: string;
+              value: unknown;
+            }) => unknown);
+        invertDirection?: boolean;
+      }
+    | ((args: {
+        row: unknown;
+        rowId: string;
+        columnId: string;
+        value: unknown;
+      }) => {
+        mode?: 'plain' | 'delta';
+        negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
+        negativeColor?: boolean;
+        deltaFrom?:
+          | string
+          | ((args: {
+              row: unknown;
+              rowId: string;
+              columnId: string;
+              value: unknown;
+            }) => unknown);
+        invertDirection?: boolean;
+      } | undefined);
   editable?:
     | boolean
     | ((args: { row: unknown; rowId: string; columnId: string }) => boolean);

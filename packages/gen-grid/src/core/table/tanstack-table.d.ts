@@ -5,25 +5,48 @@ import type * as React from 'react';
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData, TValue> {
-    semanticType?: 'amount' | 'percent';
-    amountOptions?: {
-      negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
-      negativeColor?: boolean;
-    };
-    percentOptions?: {
-      mode?: 'plain' | 'delta';
-      negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
-      negativeColor?: boolean;
-      deltaFrom?:
-        | string
-        | ((args: {
-            row: TData;
-            rowId: string;
-            columnId: string;
-            value: unknown;
-          }) => unknown);
-      invertDirection?: boolean;
-    };
+    semanticType?:
+      | 'amount'
+      | 'percent'
+      | ((args: { row: TData; rowId: string; columnId: string; value: unknown }) => 'amount' | 'percent' | undefined);
+    amountOptions?:
+      | {
+          negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
+          negativeColor?: boolean;
+        }
+      | ((args: { row: TData; rowId: string; columnId: string; value: unknown }) => {
+          negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
+          negativeColor?: boolean;
+        } | undefined);
+    percentOptions?:
+      | {
+          mode?: 'plain' | 'delta';
+          negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
+          negativeColor?: boolean;
+          deltaFrom?:
+            | string
+            | ((args: {
+                row: TData;
+                rowId: string;
+                columnId: string;
+                value: unknown;
+              }) => unknown);
+          invertDirection?: boolean;
+        }
+      | ((args: { row: TData; rowId: string; columnId: string; value: unknown }) => {
+          mode?: 'plain' | 'delta';
+          negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
+          negativeColor?: boolean;
+          deltaFrom?:
+            | string
+            | ((args: {
+                row: TData;
+                rowId: string;
+                columnId: string;
+                value: unknown;
+              }) => unknown);
+          invertDirection?: boolean;
+        } | undefined);
     editable?:
       | boolean
       | ((args: { row: TData; rowId: string; columnId: string }) => boolean);

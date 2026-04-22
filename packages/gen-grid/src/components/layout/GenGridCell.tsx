@@ -386,6 +386,15 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
   const table = cell.getContext().table;
   const pinned = cell.column.getIsPinned();
   const meta = getMeta(cell.column.columnDef) as (GenGridColumnMeta & Record<string, any>) | undefined;
+  const metaResolverArgs = React.useMemo(
+    () => ({
+      row: cell.row.original,
+      rowId,
+      columnId: colId,
+      value: cellValue,
+    }),
+    [cell.row.original, rowId, colId, cellValue]
+  );
 
   const isSystemCol = colId === SELECTION_COLUMN_ID || colId === ROW_NUMBER_COLUMN_ID;
   const treeMeta = ((table.options.meta as any)?.genGridTree ?? null) as GenGridTreeMeta | null;
@@ -400,31 +409,83 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
   const treeIsOrphan = isTreeColumn ? Boolean(treeMeta?.orphanRowIds?.includes(rowId)) : false;
   const treeIndentPx = Math.max(0, Number(treeMeta?.indentPx ?? 12) || 0);
 
+  const semanticType = React.useMemo(() => {
+    const rawSemanticType = meta?.semanticType as
+      | 'amount'
+      | 'percent'
+      | ((args: { row: TData; rowId: string; columnId: string; value: unknown }) => 'amount' | 'percent' | undefined)
+      | undefined;
+    if (typeof rawSemanticType === 'function') {
+      return rawSemanticType(metaResolverArgs);
+    }
+    return rawSemanticType;
+  }, [meta?.semanticType, metaResolverArgs]);
+
+  const resolvedAmountOptions = React.useMemo(() => {
+    const rawAmountOptions = meta?.amountOptions as
+      | { negativeStyle?: 'none' | 'text' | 'triangle' | 'both'; negativeColor?: boolean }
+      | ((args: { row: TData; rowId: string; columnId: string; value: unknown }) => {
+          negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
+          negativeColor?: boolean;
+        } | undefined)
+      | undefined;
+    if (typeof rawAmountOptions === 'function') {
+      return rawAmountOptions(metaResolverArgs);
+    }
+    return rawAmountOptions;
+  }, [meta?.amountOptions, metaResolverArgs]);
+
+  const resolvedPercentOptions = React.useMemo(() => {
+    const rawPercentOptions = meta?.percentOptions as
+      | {
+          mode?: 'plain' | 'delta';
+          negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
+          negativeColor?: boolean;
+          deltaFrom?:
+            | string
+            | ((args: { row: TData; rowId: string; columnId: string; value: unknown }) => unknown);
+          invertDirection?: boolean;
+        }
+      | ((args: { row: TData; rowId: string; columnId: string; value: unknown }) => {
+          mode?: 'plain' | 'delta';
+          negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
+          negativeColor?: boolean;
+          deltaFrom?:
+            | string
+            | ((args: { row: TData; rowId: string; columnId: string; value: unknown }) => unknown);
+          invertDirection?: boolean;
+        } | undefined)
+      | undefined;
+    if (typeof rawPercentOptions === 'function') {
+      return rawPercentOptions(metaResolverArgs);
+    }
+    return rawPercentOptions;
+  }, [meta?.percentOptions, metaResolverArgs]);
+
   const effectiveMeta = React.useMemo(() => {
     if (!meta) return meta;
     if (meta.format) return meta;
-    if (meta.semanticType === 'amount') {
+    if (semanticType === 'amount') {
       return { ...meta, format: 'number' as const };
     }
-    if (meta.semanticType === 'percent') {
+    if (semanticType === 'percent') {
       return { ...meta, format: 'percent' as const };
     }
     return meta;
-  }, [meta]);
+  }, [meta, semanticType]);
 
-  const semanticType = meta?.semanticType;
   const isNegativeStyleSupported = semanticType === 'amount' || semanticType === 'percent';
   const amountNegativeStyle =
     semanticType === 'amount'
-      ? (meta?.amountOptions?.negativeStyle ?? 'both')
+      ? (resolvedAmountOptions?.negativeStyle ?? 'both')
       : semanticType === 'percent'
-        ? (meta?.percentOptions?.negativeStyle ?? 'none')
+        ? (resolvedPercentOptions?.negativeStyle ?? 'none')
         : 'none';
   const amountNegativeColor =
     semanticType === 'amount'
-      ? (meta?.amountOptions?.negativeColor ?? true)
+      ? (resolvedAmountOptions?.negativeColor ?? true)
       : semanticType === 'percent'
-        ? (meta?.percentOptions?.negativeColor ?? false)
+        ? (resolvedPercentOptions?.negativeColor ?? false)
         : false;
   const numericCellValue = toFiniteNumber(cellValue);
   const isAmountNegative = isNegativeStyleSupported && numericCellValue != null && numericCellValue < 0;
@@ -432,7 +493,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
   const amountNegativeTriangle =
     isAmountNegative && (amountNegativeStyle === 'triangle' || amountNegativeStyle === 'both');
 
-  const percentMode = meta?.semanticType === 'percent' ? (meta?.percentOptions?.mode ?? 'plain') : 'plain';
+  const percentMode = semanticType === 'percent' ? (resolvedPercentOptions?.mode ?? 'plain') : 'plain';
   const isPercentDeltaNegative =
     semanticType === 'percent' &&
     percentMode === 'delta' &&
