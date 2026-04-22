@@ -195,6 +195,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
 
   const actionBarEnabled = actionBar?.enabled ?? showActionBar;
   const resolvedActionBarPosition = actionBar?.position ?? actionBarPosition;
+  const resolvedActionBarWidthMode = actionBar?.widthMode ?? 'container';
+  const resolvedActionBarShowTotalRows = actionBar?.showTotalRows ?? true;
   const resolvedActionButtonStyle = actionBar?.defaultStyle ?? actionButtonStyle;
   const includedBuiltInActions = actionBar?.includeBuiltIns;
   const hasColumnReorderBuiltIn = React.useMemo(() => {
@@ -203,6 +205,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   }, [includedBuiltInActions]);
   const customActions = actionBar?.customActions;
   const [deleteBlockedDialogOpen, setDeleteBlockedDialogOpen] = React.useState(false);
+  const gridAreaRef = React.useRef<HTMLDivElement | null>(null);
+  const [gridTableWidth, setGridTableWidth] = React.useState<number | null>(null);
 
   const [rowSelectionUncontrolled, setRowSelectionUncontrolled] = React.useState<readonly CrudRowId[]>([]);
   const rowSelectionIds = rowSelectionControlledIds ?? rowSelectionUncontrolled;
@@ -238,6 +242,49 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   const [filterEnabled, setFilterEnabled] = React.useState<boolean>(
     gridProps?.enableFiltering ?? false
   );
+
+  React.useEffect(() => {
+    if (!actionBarEnabled || resolvedActionBarWidthMode !== 'grid') {
+      setGridTableWidth(null);
+      return;
+    }
+
+    const gridAreaEl = gridAreaRef.current;
+    if (!gridAreaEl) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      const tableEl = gridAreaEl.querySelector('table');
+      if (!tableEl) {
+        setGridTableWidth(null);
+        return;
+      }
+      const nextWidth = Math.round(tableEl.getBoundingClientRect().width);
+      setGridTableWidth(nextWidth > 0 ? nextWidth : null);
+    });
+
+    const mutationObserver = new MutationObserver(() => {
+      const tableEl = gridAreaEl.querySelector('table');
+      if (!tableEl) return;
+      resizeObserver.observe(tableEl);
+      const nextWidth = Math.round(tableEl.getBoundingClientRect().width);
+      setGridTableWidth(nextWidth > 0 ? nextWidth : null);
+    });
+
+    const tableEl = gridAreaEl.querySelector('table');
+    if (tableEl) {
+      resizeObserver.observe(tableEl);
+      const initialWidth = Math.round(tableEl.getBoundingClientRect().width);
+      setGridTableWidth(initialWidth > 0 ? initialWidth : null);
+    }
+
+    resizeObserver.observe(gridAreaEl);
+    mutationObserver.observe(gridAreaEl, { childList: true, subtree: true });
+
+    return () => {
+      mutationObserver.disconnect();
+      resizeObserver.disconnect();
+    };
+  }, [actionBarEnabled, resolvedActionBarWidthMode]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const baseColumnOrder = React.useMemo(
     () =>
@@ -917,30 +964,40 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
 
   const actionBarNode =
     actionBarEnabled ? (
-      <CrudActionBar<TData>
-        title={title}
-        state={{
-          baseData: data,
-          viewData: diff.viewData,
-          changes: pendingApi.changes,
-          pendingDiff,
-          dirty: pendingApi.dirty,
-          rowSelection: rowSelectionIds,
-          activeRowId: activeCell?.rowId,
-          activeColumnId: activeCell?.columnId,
-          deleteMode,
-          deletePolicy,
-          isCommitting,
-          fieldErrors,
-          columnReorderEnabled,
-        }}
-        actionApi={actionApi}
-        totalRowCount={gridProps?.totalRowCount}
-        filterEnabled={filterEnabled}
-        actionButtonStyle={resolvedActionButtonStyle}
-        includeBuiltIns={includedBuiltInActions}
-        customActions={customActions}
-      />
+      <div
+        style={
+          resolvedActionBarWidthMode === 'grid' && gridTableWidth != null
+            ? { width: `${gridTableWidth}px`, minWidth: `${gridTableWidth}px` }
+            : undefined
+        }
+      >
+        <CrudActionBar<TData>
+          className={resolvedActionBarWidthMode === 'grid' ? styles.actionBarGridWidth : undefined}
+          title={title}
+          showTotalRows={resolvedActionBarShowTotalRows}
+          state={{
+            baseData: data,
+            viewData: diff.viewData,
+            changes: pendingApi.changes,
+            pendingDiff,
+            dirty: pendingApi.dirty,
+            rowSelection: rowSelectionIds,
+            activeRowId: activeCell?.rowId,
+            activeColumnId: activeCell?.columnId,
+            deleteMode,
+            deletePolicy,
+            isCommitting,
+            fieldErrors,
+            columnReorderEnabled,
+          }}
+          actionApi={actionApi}
+          totalRowCount={gridProps?.totalRowCount}
+          filterEnabled={filterEnabled}
+          actionButtonStyle={resolvedActionButtonStyle}
+          includeBuiltIns={includedBuiltInActions}
+          customActions={customActions}
+        />
+      </div>
     ) : null;
 
   const mergedGridProps = React.useMemo(
@@ -1009,7 +1066,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
         <div className={styles.actionBarTop}>{actionBarNode}</div>
       )}
 
-      <div className={styles.gridArea}>
+      <div className={styles.gridArea} ref={gridAreaRef}>
         <GenGrid<TData>
           data={gridData}
           onCellValueChange={handleCellValueChange}

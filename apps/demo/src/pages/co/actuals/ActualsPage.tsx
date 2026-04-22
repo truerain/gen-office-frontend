@@ -269,7 +269,9 @@ export default function CoActualsPage(_props: PageComponentProps) {
               }}
               actionBar={{
                 position: 'top',
+                widthMode: 'grid',
                 defaultStyle: 'icon',
+                showTotalRows: false,
                 includeBuiltIns: ['filter', 'excel'],
                 customActions: [
                   {
@@ -302,6 +304,7 @@ export default function CoActualsPage(_props: PageComponentProps) {
               gridProps={{
                 dataVersion: dataUpdatedAt,
                 rowHeight: 34,
+                rowSpanning: true,
                 overscan: 8,
                 enablePinning: true,
                 enableColumnSizing: true,
@@ -315,6 +318,12 @@ export default function CoActualsPage(_props: PageComponentProps) {
                 enableFooterRow: false,
                 enableStickyFooterRow: true,
                 enableActiveRowHighlight: true,
+                getCellStyle: ({ row, columnId }) => {
+                  if (columnId !== 'acctName') return undefined;
+                  return {
+                    textAlign: row.acctCd === 'ACCT060-0001' ? 'right' : 'left',
+                  };
+                },
                 contextMenu: {
                   customActions: [rangeChart.contextMenuAction],
                 },

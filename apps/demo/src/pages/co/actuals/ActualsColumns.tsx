@@ -34,7 +34,7 @@ export const createActualsColumns = (
     header: '계정코드',
     accessorKey: 'acctCd',
     size: 120,
-    meta: { align: 'center', pinned: 'left' },
+    meta: { align: 'center', pinned: 'left', headerSpan: 2 },
   },
   {
     id: 'acctName',

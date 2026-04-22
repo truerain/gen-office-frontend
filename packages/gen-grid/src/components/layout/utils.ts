@@ -87,6 +87,8 @@ export type GenGridColumnMeta = {
     value: unknown;
   }) => unknown;
   rowSpanComparator?: (a: unknown, b: unknown, args: { columnId: string }) => boolean;
+  // header horizontal span (merge adjacent leaf headers in the same row)
+  headerSpan?: number;
 
   // group header toggle for child column visibility
   groupVisibilityToggle?: {

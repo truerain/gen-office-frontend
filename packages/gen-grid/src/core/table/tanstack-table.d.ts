@@ -86,6 +86,7 @@ declare module '@tanstack/react-table' {
       rowId: string;
       columnId: string;
     }) => unknown;
+    headerSpan?: number;
     groupVisibilityToggle?: {
       columnIds?: string[];
       defaultExpanded?: boolean;

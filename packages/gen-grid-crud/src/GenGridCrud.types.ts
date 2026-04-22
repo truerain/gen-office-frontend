@@ -207,6 +207,10 @@ export type CrudActionItem<TData> =
 export type CrudActionBarOptions<TData> = {
   enabled?: boolean;
   position?: 'top' | 'bottom' | 'both';
+  /** action bar width follows container(100%) or rendered grid(table) width */
+  widthMode?: 'container' | 'grid';
+  /** show total rows text in action bar */
+  showTotalRows?: boolean;
   defaultStyle?: CrudActionButtonStyle;
   includeBuiltIns?: readonly CrudBuiltInActionKey[];
   customActions?: readonly CrudActionItem<TData>[];

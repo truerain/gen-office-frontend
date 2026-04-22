@@ -86,6 +86,8 @@ function resolveCheckboxValue<TData>(
 
 export function CrudActionBar<TData>(props: {
   title?: string;
+  className?: string;
+  showTotalRows?: boolean;
   state: CrudUiState<TData>;
   actionApi: CrudActionApi;
   totalRowCount?: number;
@@ -96,6 +98,8 @@ export function CrudActionBar<TData>(props: {
 }) {
   const {
     title,
+    className,
+    showTotalRows = true,
     state,
     actionApi,
     totalRowCount,
@@ -349,16 +353,18 @@ export function CrudActionBar<TData>(props: {
   };
 
   return (
-    <div className={styles.root}>
+    <div className={[styles.root, className ?? ''].filter(Boolean).join(' ')}>
       <div className={styles.leftActions}>
         {title && (
           <div className={`${styles.section} ${styles.title}`}>
             {title}
           </div>
         )}
-        <div className={`${styles.section} ${styles.total}`}>
-          <span>{totalRowsText}</span>
-        </div>
+        {showTotalRows ? (
+          <div className={`${styles.section} ${styles.total}`}>
+            <span>{totalRowsText}</span>
+          </div>
+        ) : null}
 
         <div className={`${styles.section} ${styles.actions}`}>
           {leftActions.map(renderAction)}
