@@ -173,10 +173,6 @@ function toFiniteNumber(value: unknown): number | null {
   return null;
 }
 
-function isRecordLike(value: unknown): value is Record<string, unknown> {
-  return value != null && typeof value === 'object';
-}
-
 function ContentEditableEditor({
   value,
   onChange,
@@ -437,33 +433,19 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     isAmountNegative && (amountNegativeStyle === 'triangle' || amountNegativeStyle === 'both');
 
   const percentMode = meta?.semanticType === 'percent' ? (meta?.percentOptions?.mode ?? 'plain') : 'plain';
+  const isPercentDeltaNegative =
+    semanticType === 'percent' &&
+    percentMode === 'delta' &&
+    numericCellValue != null &&
+    numericCellValue < 0;
+  const showNegativeTriangle = amountNegativeTriangle && !isPercentDeltaNegative;
   let percentDeltaDirection: 'up' | 'down' | null = null;
 
   if (semanticType === 'percent' && percentMode === 'delta' && numericCellValue != null) {
-    const deltaFrom = meta?.percentOptions?.deltaFrom;
-    let baselineValue: unknown;
-
-    if (typeof deltaFrom === 'function') {
-      baselineValue = deltaFrom({
-        row: cell.row.original,
-        rowId,
-        columnId: colId,
-        value: cellValue,
-      });
-    } else if (typeof deltaFrom === 'string' && isRecordLike(cell.row.original)) {
-      baselineValue = cell.row.original[deltaFrom];
-    } else {
-      baselineValue = null;
-    }
-
-    const baselineNumber = toFiniteNumber(baselineValue);
-    if (baselineNumber != null) {
-      const rawDelta = numericCellValue - baselineNumber;
-      if (rawDelta !== 0) {
-        const invertDirection = Boolean(meta?.percentOptions?.invertDirection);
-        const isUp = rawDelta > 0;
-        percentDeltaDirection = invertDirection ? (isUp ? 'down' : 'up') : (isUp ? 'up' : 'down');
-      }
+    if (numericCellValue > 0) {
+      percentDeltaDirection = 'up';
+    } else if (numericCellValue < 0) {
+      percentDeltaDirection = 'down';
     }
   }
 
@@ -748,7 +730,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
 
   const hasColumnCellRenderer = Boolean((cell.column.columnDef.meta as any)?.__genGridHasUserCellRenderer);
   const displayValue =
-    amountNegativeTriangle && numericCellValue != null
+    (showNegativeTriangle || isPercentDeltaNegative) && numericCellValue != null
       ? Math.abs(numericCellValue)
       : cell.getValue();
   const displayContent = meta?.renderCell
@@ -895,7 +877,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
           <span 
             className={[
               isRowSpanCovered ? bodyStyles.rowSpanCoveredContent : '',
-              !isTreeColumn && amountNegativeTriangle ? bodyStyles.semanticAmountTriangleContent : '',
+              !isTreeColumn && showNegativeTriangle ? bodyStyles.semanticAmountTriangleContent : '',
             ]
               .filter(Boolean)
               .join(' ')}

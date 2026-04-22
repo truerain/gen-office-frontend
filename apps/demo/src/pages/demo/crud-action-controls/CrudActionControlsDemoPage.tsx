@@ -183,6 +183,7 @@ export default function CrudActionControlsDemoPage(_props: PageComponentProps) {
           percentOptions: {
             mode: 'delta',
             deltaFrom: 'targetMarginRate',
+            negativeColor: true,
           },
           numberFormat: {
             minimumFractionDigits: 1,

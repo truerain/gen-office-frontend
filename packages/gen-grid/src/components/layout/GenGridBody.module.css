@@ -99,12 +99,12 @@
 }
 
 .semanticPercentDeltaUp::after {
-  content: ' \2191';
+  content: ' p\2191';
   color: var(--grid-cell-positive-text, #16a34a);
 }
 
 .semanticPercentDeltaDown::after {
-  content: ' \2193';
+  content: ' p\2193';
   color: var(--grid-cell-negative-text, #d92d20);
 }
 
