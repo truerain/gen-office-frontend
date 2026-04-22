@@ -838,7 +838,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
           isHeader: false,
         }),
         ...(pickRowStyleForCell(rowStyle) ?? {}),
-        ...(hideBottomBorder ? { borderBottomColor: 'transparent' } : {}),
+        ...(hideBottomBorder ? { borderBottomWidth: 0, borderBottomStyle: 'none' } : {}),
         ...(getCellStyleByRule?.({
           row: cell.row.original,
           rowId,
