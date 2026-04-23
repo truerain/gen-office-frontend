@@ -1,5 +1,7 @@
 // packages/gen-grid/src/index.ts
 
+import './core/table/tanstack-table';
+
 // 1. main component
 export { GenGrid } from './GenGrid';
 
@@ -23,6 +25,7 @@ export type {
   GenGridFieldValidationMeta,
 } from './validation/types';
 export type { GenGridHandle } from './types/GenGridHandle';
+export type { GenGridTableActions } from './core/table/tanstack-table';
 
 // 3. provider
 export { GenGridProvider, useGenGridContext } from './core/context/GenGridProvider';

@@ -1,7 +1,5 @@
-// packages/datagrid/src/gen-grid/tanstack-table.d.ts
 import '@tanstack/react-table';
 import type * as React from 'react';
-
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData, TValue> {
@@ -47,6 +45,13 @@ declare module '@tanstack/react-table' {
               }) => unknown);
           invertDirection?: boolean;
         } | undefined);
+    width?: number;
+    pinned?: 'left' | 'right';
+    editValidator?: (
+      value: any,
+      row: TData
+    ) => string | null | undefined | { valid: boolean; error?: string };
+    system?: string;
     editable?:
       | boolean
       | ((args: { row: TData; rowId: string; columnId: string }) => boolean);
@@ -109,6 +114,14 @@ declare module '@tanstack/react-table' {
       rowId: string;
       columnId: string;
     }) => unknown;
+    rowSpan?: boolean | ((args: { row: TData; rowId: string; columnId: string }) => boolean);
+    rowSpanValueGetter?: (args: {
+      row: TData;
+      rowId: string;
+      columnId: string;
+      value: unknown;
+    }) => unknown;
+    rowSpanComparator?: (a: unknown, b: unknown, args: { columnId: string }) => boolean;
     headerSpan?: number;
     groupVisibilityToggle?: {
       columnIds?: string[];
@@ -123,11 +136,6 @@ declare module '@tanstack/react-table' {
 export type GenGridTableActions<TData> = {
   setData: (updater: React.SetStateAction<TData[]>) => TData[];
   deleteRow: (rowId: string) => void;
-
-  // 필요하면 확장
-  // addRow?: (row: TData, opts?: { atIndex?: number }) => void;
-  // updateCell?: (rowId: string, columnId: string, value: unknown) => void;
-  // reset?: () => void;
 };
 
 declare module '@tanstack/react-table' {
