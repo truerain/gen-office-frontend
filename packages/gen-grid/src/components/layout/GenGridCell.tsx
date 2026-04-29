@@ -794,7 +794,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     (showNegativeTriangle || isPercentDeltaNegative) && numericCellValue != null
       ? Math.abs(numericCellValue)
       : cell.getValue();
-  const displayContent = meta?.renderCell
+  const displayContentRaw = meta?.renderCell
     ? meta.renderCell({
         value: displayValue,
         row: cell.row.original,
@@ -807,6 +807,11 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
       : effectiveMeta?.format
         ? (formatCellValue(displayValue, effectiveMeta) as any)
         : flexRender(cell.column.columnDef.cell, cell.getContext());
+  const shouldNormalizeNegativeSign = showNegativeTriangle || isPercentDeltaNegative;
+  const displayContent =
+    shouldNormalizeNegativeSign && typeof displayContentRaw === 'string'
+      ? displayContentRaw.replace(/^\s*[-−]\s*/, '')
+      : displayContentRaw;
 
   const nonEditingContent =
     !isTreeColumn
