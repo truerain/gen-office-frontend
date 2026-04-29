@@ -21,7 +21,7 @@ function createMonthlyColumn(monthKey: (typeof monthKeys)[number], index: number
     accessorKey: monthKey,
     size: 200,
     cell: ({ getValue }) => formatAmount(getValue()),
-    meta: { align: 'right' },
+    meta: { align: 'right', semanticType: 'amount', amountOptions: { negativeStyle: 'triangle' } },
   };
 }
 

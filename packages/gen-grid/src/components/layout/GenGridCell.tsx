@@ -794,6 +794,15 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     (showNegativeTriangle || isPercentDeltaNegative) && numericCellValue != null
       ? Math.abs(numericCellValue)
       : cell.getValue();
+  const cellContext = cell.getContext();
+  const normalizedCellContext =
+    (showNegativeTriangle || isPercentDeltaNegative) && numericCellValue != null
+      ? {
+          ...cellContext,
+          getValue: () => displayValue,
+          renderValue: () => displayValue,
+        }
+      : cellContext;
   const displayContentRaw = meta?.renderCell
     ? meta.renderCell({
         value: displayValue,
@@ -803,10 +812,10 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
         commitValue: onCommitValue,
       })
     : hasColumnCellRenderer
-      ? flexRender(cell.column.columnDef.cell, cell.getContext())
+      ? flexRender(cell.column.columnDef.cell, normalizedCellContext as any)
       : effectiveMeta?.format
         ? (formatCellValue(displayValue, effectiveMeta) as any)
-        : flexRender(cell.column.columnDef.cell, cell.getContext());
+        : flexRender(cell.column.columnDef.cell, normalizedCellContext as any);
   const shouldNormalizeNegativeSign = showNegativeTriangle || isPercentDeltaNegative;
   const displayContent =
     shouldNormalizeNegativeSign && typeof displayContentRaw === 'string'

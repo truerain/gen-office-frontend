@@ -141,6 +141,19 @@ function resolveColumnTooltip<TData>(args: {
   return typeof meta?.tooltip === 'string' ? meta.tooltip : undefined;
 }
 
+function toFiniteNumber(value: unknown): number | null {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null;
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    const parsed = Number(trimmed.replace(/,/g, ''));
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
 export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>) {
   const {
     table,
@@ -334,6 +347,23 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
             const inSelectedRange = rangeSelection.isCellInRange(row.id, colId);
             const rangeHandlers = rangeSelection.getRangeHandlers(row.id, colId);
             const cellValue = cell.getValue?.();
+            const numericCellValue = toFiniteNumber(cellValue);
+            const semanticType = meta?.semanticType as 'amount' | 'percent' | undefined;
+            const amountNegativeStyle = meta?.amountOptions?.negativeStyle ?? 'both';
+            const normalizeNegativeForTriangle =
+              semanticType === 'amount' &&
+              amountNegativeStyle === 'triangle' &&
+              numericCellValue != null &&
+              numericCellValue < 0;
+            const normalizedValue = normalizeNegativeForTriangle ? Math.abs(numericCellValue) : cellValue;
+            const cellContext = cell.getContext();
+            const normalizedCellContext = normalizeNegativeForTriangle
+              ? {
+                  ...cellContext,
+                  getValue: () => normalizedValue,
+                  renderValue: () => normalizedValue,
+                }
+              : cellContext;
 
             let content: React.ReactNode = null;
             if (cell.getIsGrouped()) {
@@ -359,7 +389,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
 )}
                   </span>
                   <span className={bodyStyles.groupLabel}>
-                    {String(cell.getValue?.() ?? '')}
+                    {String(normalizedValue ?? '')}
                   </span>
                   <span className={bodyStyles.groupCount}>
                     ({row.subRows?.length ?? 0})
@@ -368,11 +398,13 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
               );
 
             } else if (cell.getIsAggregated()) {
-              content = cell.column.columnDef.aggregatedCell ? flexRender(cell.column.columnDef.aggregatedCell, cell.getContext()) : String(cell.getValue?.() ?? '');
+              content = cell.column.columnDef.aggregatedCell
+                ? flexRender(cell.column.columnDef.aggregatedCell, normalizedCellContext as any)
+                : String(normalizedValue ?? '');
             } else if (cell.getIsPlaceholder()) {
               content = null;
             } else {
-              content = flexRender(cell.column.columnDef.cell, cell.getContext());
+              content = flexRender(cell.column.columnDef.cell, normalizedCellContext as any);
             }
 
             return (
