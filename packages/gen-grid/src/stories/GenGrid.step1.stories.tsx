@@ -45,7 +45,7 @@ const columns: ColumnDef<Person>[] = [
 ];
 
 const meta: Meta<typeof GenGrid<Person>> = {
-  title: 'gen-grid/Step1.Basic',
+  title: 'gen-grid/Step1/Basic',
   component: GenGrid<Person>
 };
 
@@ -160,4 +160,80 @@ function GroupToggleReloadScenario() {
 
 export const GroupToggleReloadStability: Story = {
   render: () => <GroupToggleReloadScenario />,
+};
+
+type ThreeLevelHeaderRow = {
+  id: string;
+  org: string;
+  team: string;
+  member: string;
+  kpiA: number;
+  kpiB: number;
+  scoreA: number;
+  scoreB: number;
+};
+
+const threeLevelHeaderData: ThreeLevelHeaderRow[] = Array.from({ length: 12 }).map((_, i) => ({
+  id: String(i + 1),
+  org: `Org-${(i % 3) + 1}`,
+  team: `Team-${(i % 4) + 1}`,
+  member: `Member-${i + 1}`,
+  kpiA: 60 + (i % 20),
+  kpiB: 70 + (i % 20),
+  scoreA: 80 + (i % 10),
+  scoreB: 75 + (i % 10),
+}));
+
+const threeLevelHeaderColumns: ColumnDef<ThreeLevelHeaderRow>[] = [
+  { accessorKey: 'org', header: 'Org' },
+  {
+    header: 'Organization',
+    columns: [
+          { accessorKey: 'team', header: 'Team' },
+          { accessorKey: 'member', header: 'Member' },
+    ],
+  },
+  {
+    header: 'Metrics',
+    columns: [
+      {
+        header: 'KPI',
+        columns: [
+          {
+            accessorKey: 'kpiA',
+            header: 'KPI A',
+            meta: { headerSpan: 2 } as any,
+          },
+          { accessorKey: 'kpiB', header: 'KPI B' },
+        ],
+      },
+      {
+        header: 'Score',
+        columns: [
+          { accessorKey: 'scoreA', header: 'Score A' },
+          { accessorKey: 'scoreB', header: 'Score B' },
+        ],
+      },
+    ],
+  },
+];
+
+export const ThreeLevelHeaderSpanRegression: Story = {
+  render: () => (
+    <div style={{ padding: 16 }}>
+      <GenGrid<ThreeLevelHeaderRow>
+        caption="3-level header spanning regression check (1->2->3)"
+        data={threeLevelHeaderData}
+        columns={threeLevelHeaderColumns}
+        getRowId={(row) => row.id}
+        height={360}
+        maxHeight={360}
+        enableStickyHeader
+        headerHeight={40}
+        rowHeight={36}
+        onDataChange={() => {}}
+        enableColumnSizing
+      />
+    </div>
+  ),
 };

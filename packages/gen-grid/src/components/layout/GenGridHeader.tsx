@@ -352,17 +352,18 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
               const col = header.column;
               const subHeaders: any[] = Array.isArray((header as any).subHeaders) ? (header as any).subHeaders : [];
               const headerPinning = getHeaderPinning(header);
-              const hasParentColumn = Boolean((col as any).parent);
-              const isStandaloneLeafPlaceholder =
-                header.isPlaceholder && !hasParentColumn && header.colSpan === 1;
-              const isLeafHeader = subHeaders.length === 0 || isStandaloneLeafPlaceholder;
+              const leafColumnCount =
+                typeof col.getLeafColumns === 'function' ? col.getLeafColumns().length : subHeaders.length || 1;
+              const isPromotedLeafPlaceholder =
+                header.isPlaceholder && header.colSpan === 1 && leafColumnCount === 1;
+              const isLeafHeader = subHeaders.length === 0 || isPromotedLeafPlaceholder;
 
-              if (header.isPlaceholder && !isStandaloneLeafPlaceholder) return null;
+              if (header.isPlaceholder && !isPromotedLeafPlaceholder) return null;
 
               const columnId = col.id;
               let mergedLeafHeaders: any[] | undefined;
               let resolvedColSpan = header.colSpan;
-              if (isLeafHeader && header.colSpan === 1 && !systemColumnIds.has(columnId)) {
+              if (isLeafHeader && !header.isPlaceholder && header.colSpan === 1 && !systemColumnIds.has(columnId)) {
                 const meta = col.columnDef.meta as { headerSpan?: number } | undefined;
                 const requestedSpan = Math.floor(Number(meta?.headerSpan));
                 if (Number.isFinite(requestedSpan) && requestedSpan > 1) {
@@ -379,12 +380,8 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
                     const nextSubHeaders: any[] = Array.isArray((nextHeader as any).subHeaders)
                       ? (nextHeader as any).subHeaders
                       : [];
-                    const nextHasParent = Boolean((nextColumn as any).parent);
-                    const nextStandaloneLeafPlaceholder =
-                      nextHeader.isPlaceholder && !nextHasParent && nextHeader.colSpan === 1;
-                    const nextIsLeafHeader =
-                      nextSubHeaders.length === 0 || nextStandaloneLeafPlaceholder;
-                    if (nextHeader.isPlaceholder && !nextStandaloneLeafPlaceholder) break;
+                    const nextIsLeafHeader = nextSubHeaders.length === 0;
+                    if (nextHeader.isPlaceholder) break;
                     if (!nextIsLeafHeader || nextHeader.colSpan !== 1) break;
                     if (systemColumnIds.has(nextColumn.id)) break;
                     const nextPinState = nextColumn.getIsPinned?.() ?? false;
@@ -410,7 +407,10 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
               const isSelectCol = header.column.id === '__select__';
               const canSort = col.getCanSort();
               const sortState = col.getIsSorted();
-              const rowSpan = isLeafHeader ? Math.max(1, totalHeaderRows - idx) : 1;
+              const fallbackRowSpan = isLeafHeader ? Math.max(1, totalHeaderRows - idx) : 1;
+              const normalizedHeaderRowSpan =
+                Number.isFinite(header.rowSpan) && header.rowSpan > 0 ? header.rowSpan : 1;
+              const rowSpan = isLeafHeader ? Math.max(normalizedHeaderRowSpan, fallbackRowSpan) : 1;
               const groupToggle = getGroupVisibilityToggle(header);
               const reorderEnabledForCell =
                 Boolean(enableColumnReorder) &&
