@@ -165,6 +165,7 @@ export const GroupToggleReloadStability: Story = {
 type ThreeLevelHeaderRow = {
   id: string;
   org: string;
+  org2: string;
   team: string;
   member: string;
   kpiA: number;
@@ -176,6 +177,7 @@ type ThreeLevelHeaderRow = {
 const threeLevelHeaderData: ThreeLevelHeaderRow[] = Array.from({ length: 12 }).map((_, i) => ({
   id: String(i + 1),
   org: `Org-${(i % 3) + 1}`,
+  org2: `Org2-${(i % 2) + 1}`,
   team: `Team-${(i % 4) + 1}`,
   member: `Member-${i + 1}`,
   kpiA: 60 + (i % 20),
@@ -185,7 +187,8 @@ const threeLevelHeaderData: ThreeLevelHeaderRow[] = Array.from({ length: 12 }).m
 }));
 
 const threeLevelHeaderColumns: ColumnDef<ThreeLevelHeaderRow>[] = [
-  { accessorKey: 'org', header: 'Org' },
+  { accessorKey: 'org', header: 'Org' , meta: { headerSpan: 2 } as any },
+  { accessorKey: 'org2', header: 'Org 2'},
   {
     header: 'Organization',
     columns: [

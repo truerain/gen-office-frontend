@@ -363,7 +363,7 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
               const columnId = col.id;
               let mergedLeafHeaders: any[] | undefined;
               let resolvedColSpan = header.colSpan;
-              if (isLeafHeader && !header.isPlaceholder && header.colSpan === 1 && !systemColumnIds.has(columnId)) {
+              if (isLeafHeader && header.colSpan === 1 && !systemColumnIds.has(columnId)) {
                 const meta = col.columnDef.meta as { headerSpan?: number } | undefined;
                 const requestedSpan = Math.floor(Number(meta?.headerSpan));
                 if (Number.isFinite(requestedSpan) && requestedSpan > 1) {
@@ -380,8 +380,14 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
                     const nextSubHeaders: any[] = Array.isArray((nextHeader as any).subHeaders)
                       ? (nextHeader as any).subHeaders
                       : [];
-                    const nextIsLeafHeader = nextSubHeaders.length === 0;
-                    if (nextHeader.isPlaceholder) break;
+                    const nextLeafColumnCount =
+                      typeof nextColumn.getLeafColumns === 'function'
+                        ? nextColumn.getLeafColumns().length
+                        : nextSubHeaders.length || 1;
+                    const nextIsPromotedLeafPlaceholder =
+                      nextHeader.isPlaceholder && nextHeader.colSpan === 1 && nextLeafColumnCount === 1;
+                    const nextIsLeafHeader = nextSubHeaders.length === 0 || nextIsPromotedLeafPlaceholder;
+                    if (nextHeader.isPlaceholder && !nextIsPromotedLeafPlaceholder) break;
                     if (!nextIsLeafHeader || nextHeader.colSpan !== 1) break;
                     if (systemColumnIds.has(nextColumn.id)) break;
                     const nextPinState = nextColumn.getIsPinned?.() ?? false;
