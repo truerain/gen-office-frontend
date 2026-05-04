@@ -610,6 +610,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
                 onCommitEdit={() => editing.commitEditing()}
                 onApplyValue={(nextValue) => editing.applyValue({ rowId: row.id, columnId: colId }, nextValue)}
                 onCancelEdit={editing.cancelEditing}
+                consumeInitialEditValue={editing.consumeInitialEditValue}
                 onTab={(dir) => editing.moveEditByTab(dir)}
               />
             );

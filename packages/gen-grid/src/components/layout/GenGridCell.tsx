@@ -52,6 +52,7 @@ export type GenGridCellProps<TData> = {
   onCommitEdit: () => void;
   onApplyValue: (nextValue: unknown) => void;
   onCancelEdit: (opts?: { preserve?: boolean }) => void;
+  consumeInitialEditValue?: (coord: { rowId: string; columnId: string }) => unknown;
 
   /** ✅ Tab / Shift+Tab 편집 이동 */
   onTab?: (dir: 1 | -1) => void;
@@ -377,6 +378,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     onCommitEdit,
     onApplyValue,
     onCancelEdit,
+    consumeInitialEditValue,
     onTab,
   } = props;
 
@@ -536,7 +538,8 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
 
   React.useEffect(() => {
     if (isEditing) {
-      const nextValue = cell.getValue();
+      const initialEditValue = consumeInitialEditValue?.({ rowId, columnId: colId });
+      const nextValue = initialEditValue === undefined ? cell.getValue() : initialEditValue;
       // eslint-disable-next-line no-console
       setDraft(nextValue);
     }

@@ -42,6 +42,7 @@ export function useCellEditing<TData>(args: {
   const liveEditCoordRef = React.useRef<CellCoord | null>(null);
   const editStartSnapshotRef = React.useRef<{ coord: CellCoord; value: unknown } | null>(null);
   const continueEditingAfterNavigationRef = React.useRef(false);
+  const initialEditValueRef = React.useRef<{ coord: CellCoord; value: unknown } | null>(null);
 
   const isSameCoord = React.useCallback((a: CellCoord | null, b: CellCoord | null) => {
     if (!a || !b) return false;
@@ -70,6 +71,12 @@ export function useCellEditing<TData>(args: {
       key === 'PageDown' ||
       key === 'Tab'
     );
+  }, []);
+
+  const isPrintableEditKey = React.useCallback((e: React.KeyboardEvent) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return false;
+    if (e.key.length !== 1) return false;
+    return /[\p{L}\p{N}]/u.test(e.key);
   }, []);
 
   const canEdit = React.useCallback(
@@ -154,9 +161,12 @@ export function useCellEditing<TData>(args: {
   );
 
   const startEditing = React.useCallback(
-    (coord?: CellCoord) => {
+    (coord?: CellCoord, opts?: { initialValue?: unknown }) => {
       const c = coord ?? activeCell;
       if (!c) return;
+      if (opts && 'initialValue' in opts) {
+        initialEditValueRef.current = { coord: c, value: opts.initialValue };
+      }
       enterEdit(c);
     },
     [activeCell, enterEdit]
@@ -308,6 +318,14 @@ export function useCellEditing<TData>(args: {
               startEditing({ rowId, columnId });
             }
           }
+
+          if (isPrintableEditKey(e)) {
+            if (canEdit(rowId, columnId)) {
+              e.stopPropagation();
+              e.preventDefault();
+              startEditing({ rowId, columnId }, { initialValue: e.key });
+            }
+          }
         },
       };
     },
@@ -316,6 +334,7 @@ export function useCellEditing<TData>(args: {
       canEdit,
       editCell,
       editOnActiveCell,
+      isPrintableEditKey,
       isNavigationKey,
       onActiveCellChange,
       clearSelectedRanges,
@@ -555,6 +574,12 @@ export function useCellEditing<TData>(args: {
     commitEditing,
     getCellEditProps,
     moveEditByTab,
+    consumeInitialEditValue: (coord: CellCoord) => {
+      const initial = initialEditValueRef.current;
+      if (!initial || !isSameCoord(initial.coord, coord)) return undefined;
+      initialEditValueRef.current = null;
+      return initial.value;
+    },
 
     /** editor 렌더에서 바로 업데이트 전달 */
     commitValue: (coord: CellCoord, nextValue: unknown) => {
