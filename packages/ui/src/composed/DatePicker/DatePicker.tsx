@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Calendar as CalendarIcon, Check, X } from 'lucide-react';
+import { Calendar as CalendarIcon } from 'lucide-react';
 import type { PropsSingle } from 'react-day-picker';
 import { Calendar } from '../../core/Calendar';
-import { Button } from '../../core/Button';
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '../../core/Popover';
 import type { CalendarProps } from '../../core/Calendar/Calendar.types';
 import type { DatePickerProps } from './DatePicker.types';
@@ -27,7 +26,7 @@ export function DatePicker({
   locale,
   format,
   formatOptions,
-  clearable = true,
+  clearable: _clearable,
   parse,
   calendarProps,
   className,
@@ -51,7 +50,10 @@ export function DatePicker({
   }, [open, value]);
 
   const handleSelect: PropsSingle['onSelect'] = (next) => {
-    setDraftValue(next ?? undefined);
+    const nextValue = next ?? undefined;
+    setDraftValue(nextValue);
+    onChange?.(nextValue);
+    setOpen(false);
   };
 
   const parseInput = (rawValue: string) => {
@@ -72,10 +74,6 @@ export function DatePicker({
       return true;
     }
     return false;
-  };
-
-  const handleClear = () => {
-    setDraftValue(undefined);
   };
 
   const selectedValue = open ? draftValue : value;
@@ -124,32 +122,6 @@ export function DatePicker({
             locale={locale as CalendarProps['locale']}
             {...calendarProps}
           />
-          <div className={styles.monthActions}>
-            {clearable && (
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                aria-label="Clear date"
-                onClick={handleClear}
-                disabled={!draftValue}
-              >
-                <X className={styles.monthActionIcon} />
-              </Button>
-            )}
-            <Button
-              type="button"
-              size="icon"
-              variant="primary"
-              aria-label="Confirm date"
-              onClick={() => {
-                onChange?.(draftValue);
-                setOpen(false);
-              }}
-            >
-              <Check className={styles.monthActionIcon} />
-            </Button>
-          </div>
         </div>
       </PopoverContent>
     </Popover>
