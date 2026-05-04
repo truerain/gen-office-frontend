@@ -577,7 +577,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
                         if (isCellNavigationKey(e.key)) {
                           e.preventDefault();
                           e.stopPropagation();
-                          editing.cancelEditing({ preserve: false });
+                          editing.finishEditingForNavigation();
                           nav.handleKeyDown(e);
                         }
                       })
@@ -607,10 +607,18 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
                   (navProps as any).onFocus,
                   (editProps as any).onFocus
                 ) as any,
-                onKeyDown: mergeHandlers(
-                  (navProps as any).onKeyDown,
-                  (editProps as any).onKeyDown
-                ) as any,
+                onKeyDown: ((e: React.KeyboardEvent<HTMLTableCellElement>) => {
+                  (editProps as any).onKeyDown?.(e);
+                  if (e.defaultPrevented || e.isPropagationStopped()) return;
+                  if (keepEditingOnNavigate && isEditing && isCellNavigationKey(e.key)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    editing.finishEditingForNavigation();
+                    nav.handleKeyDown(e);
+                    return;
+                  }
+                  (navProps as any).onKeyDown?.(e);
+                }) as any,
                 onDoubleClick: mergeHandlers(
                   (navProps as any).onDoubleClick,
                   (editProps as any).onDoubleClick
