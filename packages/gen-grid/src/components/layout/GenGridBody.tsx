@@ -298,6 +298,15 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
             const inSelectedRange = rangeSelection.isCellInRange(row.id, colId);
             const rangeHandlers = rangeSelection.getRangeHandlers(row.id, colId);
             const cellValue = cell.getValue?.();
+            const metaCellClassName =
+              typeof meta?.cellClassName === 'function'
+                ? meta.cellClassName({
+                    row: row.original,
+                    rowId: row.id,
+                    columnId: colId,
+                    value: cellValue,
+                  })
+                : meta?.cellClassName;
             const numericCellValue = toFiniteNumber(cellValue);
             const semanticType = meta?.semanticType as 'amount' | 'percent' | undefined;
             const amountNegativeStyle = meta?.amountOptions?.negativeStyle ?? 'both';
@@ -368,6 +377,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
                   pinned === 'left' ? pinningStyles.pinnedLeft : '',
                   pinned === 'right' ? pinningStyles.pinnedRight : '',
                   inSelectedRange ? bodyStyles.selectedRange : '',
+                  metaCellClassName ?? '',
                   getCellClassName?.({
                     row: row.original,
                     rowId: row.id,

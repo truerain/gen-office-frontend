@@ -518,6 +518,15 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
       : meta?.align === 'center'
         ? bodyStyles.alignCenter
         : bodyStyles.alignLeft;
+  const metaCellClassName =
+    typeof meta?.cellClassName === 'function'
+      ? meta.cellClassName({
+          row: cell.row.original,
+          rowId,
+          columnId: colId,
+          value: cellValue,
+        })
+      : meta?.cellClassName;
 
   const [draft, setDraft] = React.useState<unknown>(cell.getValue());
   const normalizeEditValue = React.useCallback(
@@ -881,6 +890,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
         !isEditing && percentMode === 'delta' ? bodyStyles.semanticPercentDelta : '',
         !isEditing && percentDeltaDirection === 'up' ? bodyStyles.semanticPercentDeltaUp : '',
         !isEditing && percentDeltaDirection === 'down' ? bodyStyles.semanticPercentDeltaDown : '',
+        metaCellClassName ?? '',
         getCellClassName?.({
           row: cell.row.original,
           rowId,

@@ -57,6 +57,9 @@ export type GenGridColumnMeta = {
     | ((args: { row: unknown; rowId: string; columnId: string }) => boolean);
   align?: 'left' | 'center' | 'right';
   mono?: boolean;
+  cellClassName?:
+    | string
+    | ((args: { row: unknown; rowId: string; columnId: string; value: unknown }) => string | undefined);
 
   // renderer
   format?: 'text' | 'number' | 'currency' | 'percent' | 'date' | 'datetime' | 'boolean';

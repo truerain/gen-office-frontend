@@ -57,6 +57,9 @@ declare module '@tanstack/react-table' {
       | ((args: { row: TData; rowId: string; columnId: string }) => boolean);
     align?: 'left' | 'center' | 'right';
     mono?: boolean;
+    cellClassName?:
+      | string
+      | ((args: { row: TData; rowId: string; columnId: string; value: unknown }) => string | undefined);
     format?: 'text' | 'number' | 'currency' | 'percent' | 'date' | 'datetime' | 'boolean';
     formatLocale?: string;
     numberFormat?: Intl.NumberFormatOptions;

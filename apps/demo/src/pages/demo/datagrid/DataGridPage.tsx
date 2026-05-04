@@ -101,6 +101,9 @@ function DataGridPage() {
             { label: 'In Progress', value: 'In Progress' },
             { label: 'Done', value: 'Done' },
           ],
+          cellClassName: ({value}) => {
+            if(value === 'Open') return styles.statusCell;
+          },
         },
       },
       {
