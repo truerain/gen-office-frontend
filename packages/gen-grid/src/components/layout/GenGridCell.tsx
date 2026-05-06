@@ -52,6 +52,7 @@ export type GenGridCellProps<TData> = {
   onCommitEdit: () => void;
   onApplyValue: (nextValue: unknown) => void;
   onCancelEdit: (opts?: { preserve?: boolean }) => void;
+  consumeInitialEditValue?: (coord: { rowId: string; columnId: string }) => unknown;
 
   /** ✅ Tab / Shift+Tab 편집 이동 */
   onTab?: (dir: 1 | -1) => void;
@@ -377,6 +378,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     onCommitEdit,
     onApplyValue,
     onCancelEdit,
+    consumeInitialEditValue,
     onTab,
   } = props;
 
@@ -516,6 +518,15 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
       : meta?.align === 'center'
         ? bodyStyles.alignCenter
         : bodyStyles.alignLeft;
+  const metaCellClassName =
+    typeof meta?.cellClassName === 'function'
+      ? meta.cellClassName({
+          row: cell.row.original,
+          rowId,
+          columnId: colId,
+          value: cellValue,
+        })
+      : meta?.cellClassName;
 
   const [draft, setDraft] = React.useState<unknown>(cell.getValue());
   const normalizeEditValue = React.useCallback(
@@ -536,7 +547,8 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
 
   React.useEffect(() => {
     if (isEditing) {
-      const nextValue = cell.getValue();
+      const initialEditValue = consumeInitialEditValue?.({ rowId, columnId: colId });
+      const nextValue = initialEditValue === undefined ? cell.getValue() : initialEditValue;
       // eslint-disable-next-line no-console
       setDraft(nextValue);
     }
@@ -878,6 +890,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
         !isEditing && percentMode === 'delta' ? bodyStyles.semanticPercentDelta : '',
         !isEditing && percentDeltaDirection === 'up' ? bodyStyles.semanticPercentDeltaUp : '',
         !isEditing && percentDeltaDirection === 'down' ? bodyStyles.semanticPercentDeltaDown : '',
+        metaCellClassName ?? '',
         getCellClassName?.({
           row: cell.row.original,
           rowId,

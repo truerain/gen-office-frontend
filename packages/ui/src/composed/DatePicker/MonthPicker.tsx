@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Calendar as CalendarIcon, Check, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { Button } from '../../core/Button';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '../../core/Popover';
 import type { MonthPickerProps } from './MonthPicker.types';
 import styles from './DatePicker.module.css';
@@ -41,7 +40,7 @@ export function MonthPicker({
   align = 'start',
   locale,
   format,
-  clearable = true,
+  clearable: _clearable,
   parse,
   className,
 }: MonthPickerProps) {
@@ -189,40 +188,14 @@ export function MonthPicker({
                   disabled={disabledMonth}
                   onClick={() => {
                     setDraftValue(candidate);
+                    onChange?.(candidate);
+                    setOpen(false);
                   }}
                 >
                   {monthLabelFormatter(month, locale)}
                 </button>
               );
             })}
-          </div>
-
-          <div className={styles.monthActions}>
-            {clearable && (
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                aria-label="Clear month"
-                onClick={() => setDraftValue(undefined)}
-                disabled={!draftValue}
-              >
-                <X className={styles.monthActionIcon} />
-              </Button>
-            )}
-            <Button
-              type="button"
-              size="icon"
-              variant="primary"
-              aria-label="Confirm month"
-              onClick={() => {
-                onChange?.(draftValue);
-                setOpen(false);
-              }}
-              disabled={!isWithinRange(draftValue)}
-            >
-              <Check className={styles.monthActionIcon} />
-            </Button>
           </div>
         </div>
       </PopoverContent>

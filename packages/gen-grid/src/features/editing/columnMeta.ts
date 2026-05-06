@@ -22,6 +22,9 @@ declare module '@tanstack/react-table' {
     editable?:
       | boolean
       | ((args: { row: TData; rowId: string; columnId: string }) => boolean);
+    cellClassName?:
+      | string
+      | ((args: { row: TData; rowId: string; columnId: string; value: unknown }) => string | undefined);
     getEditOptions?: (row: TData) => { label: string; value: string | number }[];
     renderEditor?: (props: CellEditorRenderArgs<TData>) => React.ReactNode;
     validation?: GenGridFieldValidationMeta<TData>;

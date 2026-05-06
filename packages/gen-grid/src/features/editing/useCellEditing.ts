@@ -41,6 +41,8 @@ export function useCellEditing<TData>(args: {
   const suppressNextAutoEditOnceRef = React.useRef(false);
   const liveEditCoordRef = React.useRef<CellCoord | null>(null);
   const editStartSnapshotRef = React.useRef<{ coord: CellCoord; value: unknown } | null>(null);
+  const continueEditingAfterNavigationRef = React.useRef(false);
+  const initialEditValueRef = React.useRef<{ coord: CellCoord; value: unknown } | null>(null);
 
   const isSameCoord = React.useCallback((a: CellCoord | null, b: CellCoord | null) => {
     if (!a || !b) return false;
@@ -69,6 +71,12 @@ export function useCellEditing<TData>(args: {
       key === 'PageDown' ||
       key === 'Tab'
     );
+  }, []);
+
+  const isPrintableEditKey = React.useCallback((e: React.KeyboardEvent) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return false;
+    if (e.key.length !== 1) return false;
+    return /[\p{L}\p{N}]/u.test(e.key);
   }, []);
 
   const canEdit = React.useCallback(
@@ -145,6 +153,7 @@ export function useCellEditing<TData>(args: {
       if (!preserve) setEditMode(false);
       clearPending();
       liveEditCoordRef.current = null;
+      continueEditingAfterNavigationRef.current = false;
       setEditCell(null);
       editStartSnapshotRef.current = null;
     },
@@ -152,9 +161,12 @@ export function useCellEditing<TData>(args: {
   );
 
   const startEditing = React.useCallback(
-    (coord?: CellCoord) => {
+    (coord?: CellCoord, opts?: { initialValue?: unknown }) => {
       const c = coord ?? activeCell;
       if (!c) return;
+      if (opts && 'initialValue' in opts) {
+        initialEditValueRef.current = { coord: c, value: opts.initialValue };
+      }
       enterEdit(c);
     },
     [activeCell, enterEdit]
@@ -306,6 +318,14 @@ export function useCellEditing<TData>(args: {
               startEditing({ rowId, columnId });
             }
           }
+
+          if (isPrintableEditKey(e)) {
+            if (canEdit(rowId, columnId)) {
+              e.stopPropagation();
+              e.preventDefault();
+              startEditing({ rowId, columnId }, { initialValue: e.key });
+            }
+          }
         },
       };
     },
@@ -314,6 +334,7 @@ export function useCellEditing<TData>(args: {
       canEdit,
       editCell,
       editOnActiveCell,
+      isPrintableEditKey,
       isNavigationKey,
       onActiveCellChange,
       clearSelectedRanges,
@@ -380,6 +401,7 @@ export function useCellEditing<TData>(args: {
 
       // activeCell도 같이 이동 (스크롤 active 표시)
       onActiveCellChange(next);
+      enterEdit(next);
 
       // 편집 대상 변경
       enterEdit(next);
@@ -406,7 +428,7 @@ export function useCellEditing<TData>(args: {
       // Safety net: if active cell moved while an editor is open (e.g. custom renderEditor),
       // end previous edit so the old editor cannot remain mounted.
       if (!isSameCoord(editCell, activeCell)) {
-        cancelEditing({ preserve: false });
+        stopEditing({ preserve: false });
       }
       return;
     }
@@ -414,7 +436,7 @@ export function useCellEditing<TData>(args: {
     if (editMode && !editCell) {
       enterEdit(activeCell);
     }
-  }, [activeCell, cancelEditing, editCell, editMode, enterEdit, keepEditingOnNavigate, isSameCoord]);
+  }, [activeCell, editCell, editMode, enterEdit, keepEditingOnNavigate, isSameCoord, stopEditing]);
 
   React.useEffect(() => {
     if (editMode) return;
@@ -526,10 +548,20 @@ export function useCellEditing<TData>(args: {
           return;
         }
       }
+      if (continueEditingAfterNavigationRef.current) {
+        stopEditing({ preserve: true });
+        return;
+      }
     }
     // If there is no pending target cell, finish edit and return to navigation mode.
     stopEditing({ preserve: false });
   }, [canEdit, clearPending, enterEdit, keepEditingOnNavigate, stopEditing]);
+
+  const finishEditingForNavigation = React.useCallback(() => {
+    continueEditingAfterNavigationRef.current = Boolean(keepEditingOnNavigate);
+    if (blurActiveEditor()) return;
+    stopEditing({ preserve: Boolean(keepEditingOnNavigate) });
+  }, [blurActiveEditor, keepEditingOnNavigate, stopEditing]);
 
   return {
     editCell,
@@ -538,9 +570,16 @@ export function useCellEditing<TData>(args: {
     startEditing,
     stopEditing,
     cancelEditing,
+    finishEditingForNavigation,
     commitEditing,
     getCellEditProps,
     moveEditByTab,
+    consumeInitialEditValue: (coord: CellCoord) => {
+      const initial = initialEditValueRef.current;
+      if (!initial || !isSameCoord(initial.coord, coord)) return undefined;
+      initialEditValueRef.current = null;
+      return initial.value;
+    },
 
     /** editor 렌더에서 바로 업데이트 전달 */
     commitValue: (coord: CellCoord, nextValue: unknown) => {
@@ -554,6 +593,10 @@ export function useCellEditing<TData>(args: {
             enterEdit(pending);
             return;
           }
+        }
+        if (continueEditingAfterNavigationRef.current) {
+          stopEditing({ preserve: true });
+          return;
         }
       }
       // Blur/commit without navigation target should exit edit mode.
