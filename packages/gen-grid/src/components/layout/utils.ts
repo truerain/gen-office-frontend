@@ -117,6 +117,10 @@ export type GenGridColumnMeta = {
     value: unknown;
   }) => unknown;
   rowSpanComparator?: (a: unknown, b: unknown, args: { columnId: string }) => boolean;
+  // body horizontal span (merge adjacent cells in the same row)
+  bodyColSpan?:
+    | number
+    | ((args: { row: unknown; rowId: string; columnId: string; table: unknown }) => number);
   // header horizontal span (merge adjacent leaf headers in the same row)
   headerSpan?: number;
 

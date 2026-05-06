@@ -154,6 +154,25 @@ function toFiniteNumber(value: unknown): number | null {
   return null;
 }
 
+function resolveBodyColSpan<TData>(args: {
+  meta: any;
+  row: TData;
+  rowId: string;
+  columnId: string;
+  table: Table<TData>;
+  maxSpan: number;
+}) {
+  const { meta, row, rowId, columnId, table, maxSpan } = args;
+  const rule = meta?.bodyColSpan as
+    | number
+    | ((args: { row: TData; rowId: string; columnId: string; table: unknown }) => number)
+    | undefined;
+  if (rule == null) return 1;
+  const raw = typeof rule === 'function' ? rule({ row, rowId, columnId, table }) : rule;
+  const normalized = Number.isFinite(raw) ? Math.floor(Number(raw)) : 1;
+  return Math.max(1, Math.min(maxSpan, normalized));
+}
+
 export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>) {
   const {
     table,
@@ -503,8 +522,39 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
                 : undefined
             }
           >
-            {row.getVisibleCells().map((cell) => {
+            {(() => {
+              const visibleCells = row.getVisibleCells();
+              const coveredColumnIds = new Set<string>();
+              return visibleCells.map((cell, cellIndex) => {
               const colId = cell.column.id;
+              if (coveredColumnIds.has(colId)) return null;
+              const meta = getMeta(cell.column.columnDef) as any;
+              const pinned = cell.column.getIsPinned();
+              let maxColSpan = visibleCells.length - cellIndex;
+              for (let i = cellIndex + 1; i < visibleCells.length; i++) {
+                const nextPinned = visibleCells[i]!.column.getIsPinned();
+                if (nextPinned !== pinned) {
+                  maxColSpan = i - cellIndex;
+                  break;
+                }
+              }
+              const isBodyColSpanEnabled = !isSystemCol(colId) && !meta?.system;
+              const cellColSpan = isBodyColSpanEnabled
+                ? resolveBodyColSpan({
+                    meta,
+                    row: row.original,
+                    rowId: row.id,
+                    columnId: colId,
+                    table,
+                    maxSpan: Math.max(1, maxColSpan),
+                  })
+                : 1;
+              if (cellColSpan > 1) {
+                for (let i = 1; i < cellColSpan; i++) {
+                  const coveredCell = visibleCells[cellIndex + i];
+                  if (coveredCell) coveredColumnIds.add(coveredCell.column.id);
+                }
+              }
               const rowSpanCovered =
                 Boolean(rowSpanModel?.enabled) && rowSpanModel!.isCovered(row.id, colId);
               const isVisualMode = rowSpanningMode === 'visual';
@@ -617,7 +667,6 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
                 ) as any,
                 onClick: mergeHandlers((navProps as any).onClick, (editProps as any).onClick) as any,
               };
-              const meta = getMeta(cell.column.columnDef) as any;
               const cellTooltip = resolveColumnTooltip({
                 meta,
                 row: cell.row.original,
@@ -643,6 +692,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
                   getCellStyle={getCellStyleByRule}
                   cellProps={{
                     ...mergedProps,
+                    colSpan: cellColSpan > 1 ? cellColSpan : undefined,
                     title: cellTooltip ?? mergedProps.title,
                     ['data-gen-grid-cell-tooltip' as any]: cellTooltip ?? undefined,
                   }}
@@ -656,7 +706,8 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
                   onTab={(dir) => editing.moveEditByTab(dir)}
                 />
               );
-            })}
+              });
+            })()}
 
           </tr>
         );

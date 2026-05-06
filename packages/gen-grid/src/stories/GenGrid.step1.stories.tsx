@@ -240,3 +240,54 @@ export const ThreeLevelHeaderSpanRegression: Story = {
     </div>
   ),
 };
+
+type BodyColSpanRow = {
+  id: string;
+  type: 'group' | 'item';
+  name: string;
+  detail: string;
+  amount: number;
+  note: string;
+};
+
+const bodyColSpanData: BodyColSpanRow[] = [
+  { id: 'g-1', type: 'group', name: 'Q1 Summary', detail: 'North + East', amount: 0, note: 'merged' },
+  { id: '1', type: 'item', name: 'Alpha', detail: 'North', amount: 120, note: 'normal' },
+  { id: '2', type: 'item', name: 'Beta', detail: 'East', amount: 95, note: 'normal' },
+  { id: 'g-2', type: 'group', name: 'Q2 Summary', detail: 'West + South', amount: 0, note: 'merged' },
+  { id: '3', type: 'item', name: 'Gamma', detail: 'West', amount: 140, note: 'normal' },
+  { id: '4', type: 'item', name: 'Delta', detail: 'South', amount: 110, note: 'normal' },
+];
+
+const bodyColSpanColumns: ColumnDef<BodyColSpanRow>[] = [
+  {
+    accessorKey: 'name',
+    header: 'Name',
+    meta: {
+      bodyColSpan: ({ row }: { row: BodyColSpanRow }) => (row.type === 'group' ? 3 : 1),
+    } as any,
+  },
+  { accessorKey: 'detail', header: 'Detail' },
+  { accessorKey: 'amount', header: 'Amount' },
+  { accessorKey: 'note', header: 'Note' },
+];
+
+export const BodyColSpanConditional: Story = {
+  render: () => (
+    <div style={{ padding: 16 }}>
+      <GenGrid<BodyColSpanRow>
+        caption="Body colspan: conditional merge on group rows"
+        data={bodyColSpanData}
+        columns={bodyColSpanColumns}
+        getRowId={(row) => row.id}
+        height={320}
+        maxHeight={320}
+        enableStickyHeader
+        headerHeight={40}
+        rowHeight={36}
+        onDataChange={() => {}}
+        enableColumnSizing
+      />
+    </div>
+  ),
+};

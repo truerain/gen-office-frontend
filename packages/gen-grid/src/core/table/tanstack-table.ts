@@ -122,6 +122,9 @@ declare module '@tanstack/react-table' {
       value: unknown;
     }) => unknown;
     rowSpanComparator?: (a: unknown, b: unknown, args: { columnId: string }) => boolean;
+    bodyColSpan?:
+      | number
+      | ((args: { row: TData; rowId: string; columnId: string; table: unknown }) => number);
     headerSpan?: number;
     groupVisibilityToggle?: {
       columnIds?: string[];
