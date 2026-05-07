@@ -291,3 +291,52 @@ export const BodyColSpanConditional: Story = {
     </div>
   ),
 };
+
+type FillFitRow = {
+  id: string;
+  name: string;
+  dept: string;
+  title: string;
+  score: number;
+  amount: number;
+};
+
+const fillFitData: FillFitRow[] = Array.from({ length: 20 }).map((_, i) => ({
+  id: String(i + 1),
+  name: `User ${i + 1}`,
+  dept: ['HR', 'Sales', 'Dev', 'Ops'][i % 4],
+  title: ['Manager', 'Lead', 'Engineer'][i % 3],
+  score: 70 + (i % 25),
+  amount: 1000 + i * 37,
+}));
+
+const fillFitColumns: ColumnDef<FillFitRow>[] = [
+  { accessorKey: 'name', header: 'Name', size: 260 },
+  { accessorKey: 'dept', header: 'Dept', size: 220 },
+  { accessorKey: 'title', header: 'Title', size: 240 },
+  { accessorKey: 'score', header: 'Score', size: 200 },
+  { accessorKey: 'amount', header: 'Amount', size: 260 },
+];
+
+export const FitColumnsFillNoHorizontalScroll: Story = {
+  render: () => (
+    <div style={{ padding: 16 }}>
+      <div style={{ width: 720, border: '1px solid #d8dde6' }}>
+        <GenGrid<FillFitRow>
+          caption="fitColumns='fill': proportional shrink when total width exceeds container"
+          data={fillFitData}
+          columns={fillFitColumns}
+          getRowId={(row) => row.id}
+          height={320}
+          maxHeight={320}
+          enableStickyHeader
+          headerHeight={40}
+          rowHeight={36}
+          onDataChange={() => {}}
+          enableColumnSizing
+          fitColumns="fill"
+        />
+      </div>
+    </div>
+  ),
+};

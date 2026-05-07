@@ -185,6 +185,68 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     return () => ro.disconnect();
   }, []);
 
+  React.useLayoutEffect(() => {
+    if (!shouldFillColumns) return;
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const fitColumnsToContainer = () => {
+      const visibleColumns = table.getVisibleLeafColumns();
+      if (visibleColumns.length === 0) return;
+
+      const containerWidth = Math.floor(container.clientWidth);
+      if (!Number.isFinite(containerWidth) || containerWidth <= 0) return;
+
+      const sizes = visibleColumns.map((column) => ({
+        id: column.id,
+        size: Math.max(1, Math.floor(column.getSize())),
+      }));
+      const totalWidth = sizes.reduce((sum, column) => sum + column.size, 0);
+
+      if (totalWidth <= containerWidth) return;
+
+      const ratio = containerWidth / totalWidth;
+      const scaled = sizes.map((column) => {
+        const next = Math.max(1, Math.floor(column.size * ratio));
+        return {
+          id: column.id,
+          width: next,
+          remainder: column.size * ratio - next,
+        };
+      });
+
+      let remaining = containerWidth - scaled.reduce((sum, column) => sum + column.width, 0);
+      if (remaining > 0) {
+        const order = [...scaled].sort((a, b) => b.remainder - a.remainder);
+        for (let i = 0; i < order.length && remaining > 0; i += 1) {
+          order[i].width += 1;
+          remaining -= 1;
+        }
+      }
+
+      const nextSizing: Record<string, number> = {};
+      let hasChange = false;
+      for (const column of scaled) {
+        const current = table.getColumn(column.id)?.getSize() ?? column.width;
+        if (Math.abs(current - column.width) >= 1) {
+          hasChange = true;
+        }
+        nextSizing[column.id] = column.width;
+      }
+      if (!hasChange) return;
+
+      table.setColumnSizing((prev) => ({
+        ...prev,
+        ...nextSizing,
+      }));
+    };
+
+    fitColumnsToContainer();
+    const ro = new ResizeObserver(() => fitColumnsToContainer());
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, [shouldFillColumns, table]);
+
   const hasFooterRowContent = React.useMemo(() => {
     if (!footerRowEnabled) return false;
     const groups = table.getFooterGroups();
