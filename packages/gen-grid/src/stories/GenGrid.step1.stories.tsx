@@ -321,7 +321,7 @@ const fillFitColumns: ColumnDef<FillFitRow>[] = [
 export const FitColumnsFillNoHorizontalScroll: Story = {
   render: () => (
     <div style={{ padding: 16 }}>
-      <div style={{ width: 720, border: '1px solid #d8dde6' }}>
+      <div style={{ width: 420, border: '1px solid #d8dde6' }}>
         <GenGrid<FillFitRow>
           caption="fitColumns='fill': proportional shrink when total width exceeds container"
           data={fillFitData}

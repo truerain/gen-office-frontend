@@ -44,6 +44,7 @@ export interface ChartBorderTokens {
   tooltipRadius: number;
   tooltipBorderWidth: number;
   seriesStrokeWidth: number;
+  seriesStrokeColor: string;
   gridWidth: number;
   axisWidth: number;
 }
@@ -61,4 +62,3 @@ export interface ChartTokens {
   border: ChartBorderTokens;
   motion: ChartMotionTokens;
 }
-

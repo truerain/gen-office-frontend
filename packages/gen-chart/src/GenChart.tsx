@@ -7,6 +7,7 @@ import { scaleBand, scaleLinear, scaleOrdinal } from '@visx/scale';
 import { AreaClosed, Bar, LinePath, Pie } from '@visx/shape';
 import { Text } from '@visx/text';
 import { hierarchy } from 'd3-hierarchy';
+import { curveLinear, curveMonotoneX, curveStep } from 'd3-shape';
 
 import { resolveChartTokens } from './tokens';
 import type {
@@ -59,6 +60,12 @@ function legendJustify(align: 'start' | 'center' | 'end') {
   if (align === 'center') return 'center';
   if (align === 'end') return 'flex-end';
   return 'flex-start';
+}
+
+function resolveSeriesCurve(curve: CartesianSeriesDef<unknown>['curve']) {
+  if (curve === 'monotoneX') return curveMonotoneX;
+  if (curve === 'step') return curveStep;
+  return curveLinear;
 }
 
 function renderTooltip<T>(
@@ -366,6 +373,10 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
             return props.series.map((series) => {
             const points = pointsBySeries.get(series.id) ?? [];
             const color = series.color ?? colorScale(series.id);
+            const seriesStrokeWidth = series.strokeWidth ?? tokens.border.seriesStrokeWidth;
+            const seriesStrokeColor = series.strokeColor ?? tokens.border.seriesStrokeColor ?? color;
+            const seriesNegativeStrokeColor =
+              series.strokeColor ?? tokens.border.seriesStrokeColor ?? (series.negativeColor ?? '#dc2626');
             if (series.type === 'line') {
               return (
                 <LinePath<Point<T>>
@@ -373,8 +384,9 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                   data={points}
                   x={(d: Point<T>) => d.x}
                   y={(d: Point<T>) => d.y}
-                  stroke={color}
-                  strokeWidth={tokens.border.seriesStrokeWidth}
+                  curve={resolveSeriesCurve(series.curve)}
+                  stroke={seriesStrokeColor}
+                  strokeWidth={seriesStrokeWidth}
                 />
               );
             }
@@ -386,10 +398,11 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                   x={(d: Point<T>) => d.x}
                   y={(d: Point<T>) => d.y}
                   yScale={yScale}
+                  curve={resolveSeriesCurve(series.curve)}
                   fill={color}
                   fillOpacity={0.24}
-                  stroke={color}
-                  strokeWidth={tokens.border.seriesStrokeWidth}
+                  stroke={seriesStrokeColor}
+                  strokeWidth={seriesStrokeWidth}
                 />
               );
             }
@@ -425,6 +438,10 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                           width={barWidth}
                           height={stackedBarHeight}
                           fill={value < 0 ? (series.negativeColor ?? '#dc2626') : color}
+                          stroke={
+                            value < 0 ? seriesNegativeStrokeColor : seriesStrokeColor
+                          }
+                          strokeWidth={seriesStrokeWidth}
                           opacity={0.9}
                         />
                       );
@@ -445,6 +462,10 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                         width={stackedBarWidth}
                         height={barHeight}
                         fill={value < 0 ? (series.negativeColor ?? '#dc2626') : color}
+                        stroke={
+                          value < 0 ? seriesNegativeStrokeColor : seriesStrokeColor
+                        }
+                        strokeWidth={seriesStrokeWidth}
                         opacity={0.9}
                       />
                     );
@@ -462,6 +483,10 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                         width={barWidth}
                         height={groupedBarHeight}
                         fill={point.value < 0 ? (series.negativeColor ?? '#dc2626') : color}
+                        stroke={
+                          point.value < 0 ? seriesNegativeStrokeColor : seriesStrokeColor
+                        }
+                        strokeWidth={seriesStrokeWidth}
                         opacity={0.9}
                       />
                     );
@@ -480,6 +505,10 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                       width={groupedBarWidth}
                       height={barHeight}
                       fill={point.value < 0 ? (series.negativeColor ?? '#dc2626') : color}
+                      stroke={
+                        point.value < 0 ? seriesNegativeStrokeColor : seriesStrokeColor
+                      }
+                      strokeWidth={seriesStrokeWidth}
                       opacity={0.9}
                     />
                   );

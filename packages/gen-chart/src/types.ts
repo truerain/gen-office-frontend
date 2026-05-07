@@ -63,6 +63,8 @@ export interface CartesianSeriesDef<T> {
   y: (d: T, index: number) => number | null | undefined;
   label?: string;
   color?: string;
+  strokeColor?: string;
+  strokeWidth?: number;
   negativeColor?: string;
   stackId?: string;
   curve?: 'linear' | 'monotoneX' | 'step';
