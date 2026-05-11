@@ -430,7 +430,7 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
               const isDropAfter = isDropTarget && dropTarget?.side === 'after';
               const isDropBlocked = isDropTarget && Boolean(dropTarget?.blocked);
               const meta = getMeta(col.columnDef) as { align?: 'left' | 'center' | 'right'; headerAlign?: 'left' | 'center' | 'right' } | undefined;
-              const resolvedHeaderAlign = meta?.headerAlign ?? meta?.align ?? 'center';
+              const resolvedHeaderAlign = meta?.headerAlign ?? 'center';
               const headerAlignClass =
                 resolvedHeaderAlign === 'right'
                   ? styles.headerAlignRight
