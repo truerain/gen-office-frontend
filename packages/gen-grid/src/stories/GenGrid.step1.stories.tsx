@@ -340,3 +340,67 @@ export const FitColumnsFillNoHorizontalScroll: Story = {
     </div>
   ),
 };
+
+type NegativeTriangleRow = {
+  id: string;
+  item: string;
+  amount: number;
+  amountBoth: number;
+};
+
+const negativeTriangleData: NegativeTriangleRow[] = [
+  { id: '1', item: 'Alpha', amount: -1200, amountBoth: -1200 },
+  { id: '2', item: 'Beta', amount: 850, amountBoth: 850 },
+  { id: '3', item: 'Gamma', amount: -95, amountBoth: -95 },
+  { id: '4', item: 'Delta', amount: 430, amountBoth: 430 },
+];
+
+const negativeTriangleColumns: ColumnDef<NegativeTriangleRow>[] = [
+  { accessorKey: 'item', header: 'Item', size: 180 },
+  {
+    accessorKey: 'amount',
+    header: "Amount (triangle)",
+    size: 180,
+    meta: {
+      semanticType: 'amount',
+      amountOptions: {
+        negativeStyle: 'triangle',
+        negativeColor: true,
+      },
+      align: 'right',
+    } as any,
+  },
+  {
+    accessorKey: 'amountBoth',
+    header: "Amount (both)",
+    size: 180,
+    meta: {
+      semanticType: 'amount',
+      amountOptions: {
+        negativeStyle: 'both',
+        negativeColor: true,
+      },
+      align: 'right',
+    } as any,
+  },
+];
+
+export const AmountNegativeTriangleMarker: Story = {
+  render: () => (
+    <div style={{ padding: 16 }}>
+      <GenGrid<NegativeTriangleRow>
+        caption="Amount negativeStyle triangle marker"
+        data={negativeTriangleData}
+        columns={negativeTriangleColumns}
+        getRowId={(row) => row.id}
+        height={260}
+        maxHeight={260}
+        enableStickyHeader
+        headerHeight={40}
+        rowHeight={36}
+        onDataChange={() => {}}
+        enableColumnSizing
+      />
+    </div>
+  ),
+};

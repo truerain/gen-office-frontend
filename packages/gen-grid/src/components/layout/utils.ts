@@ -56,6 +56,7 @@ export type GenGridColumnMeta = {
     | boolean
     | ((args: { row: unknown; rowId: string; columnId: string }) => boolean);
   align?: 'left' | 'center' | 'right';
+  headerAlign?: 'left' | 'center' | 'right';
   mono?: boolean;
   cellClassName?:
     | string

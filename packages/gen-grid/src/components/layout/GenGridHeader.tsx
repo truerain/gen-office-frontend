@@ -4,6 +4,7 @@ import * as React from 'react';
 import { flexRender, type Table } from '@tanstack/react-table';
 import { FilterCellPopover } from '../../features/filtering/FilterCellPopover';
 import { getCellStyle } from './cellStyles';
+import { getMeta } from './utils';
 import { ROW_STATUS_COLUMN_ID } from '../../features/row-status/rowStatus';
 import { SELECTION_COLUMN_ID } from '../../features/row-selection/rowSelection';
 import { ROW_NUMBER_COLUMN_ID } from '../../features/row-number/useRowNumberColumn';
@@ -428,6 +429,14 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
               const isDropBefore = isDropTarget && dropTarget?.side === 'before';
               const isDropAfter = isDropTarget && dropTarget?.side === 'after';
               const isDropBlocked = isDropTarget && Boolean(dropTarget?.blocked);
+              const meta = getMeta(col.columnDef) as { align?: 'left' | 'center' | 'right'; headerAlign?: 'left' | 'center' | 'right' } | undefined;
+              const resolvedHeaderAlign = meta?.headerAlign ?? meta?.align ?? 'center';
+              const headerAlignClass =
+                resolvedHeaderAlign === 'right'
+                  ? styles.headerAlignRight
+                  : resolvedHeaderAlign === 'left'
+                    ? styles.headerAlignLeft
+                    : styles.headerAlignCenter;
 
               return (
                 <th
@@ -510,7 +519,10 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
                   }}
                   onDragEnd={clearDragState}
                 >
-                  <div className={styles.thInner} onClick={canSort ? col.getToggleSortingHandler() : undefined}>
+                  <div
+                    className={[styles.thInner, headerAlignClass].filter(Boolean).join(' ')}
+                    onClick={canSort ? col.getToggleSortingHandler() : undefined}
+                  >
                     {reorderEnabledForCell ? (
                       <button
                         type="button"

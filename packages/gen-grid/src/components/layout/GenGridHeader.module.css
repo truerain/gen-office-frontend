@@ -63,8 +63,28 @@
   gap: 8px;
 }
 
+.thInner.headerAlignLeft {
+  justify-content: flex-start;
+}
+
+.thInner.headerAlignCenter {
+  justify-content: center;
+}
+
+.thInner.headerAlignRight {
+  justify-content: flex-end;
+}
+
 .reorderable .thInner {
   justify-content: flex-start;
+}
+
+.reorderable .thInner.headerAlignCenter {
+  justify-content: center;
+}
+
+.reorderable .thInner.headerAlignRight {
+  justify-content: flex-end;
 }
 
 .dragHandle {

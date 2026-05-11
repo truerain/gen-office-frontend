@@ -56,6 +56,7 @@ declare module '@tanstack/react-table' {
       | boolean
       | ((args: { row: TData; rowId: string; columnId: string }) => boolean);
     align?: 'left' | 'center' | 'right';
+    headerAlign?: 'left' | 'center' | 'right';
     mono?: boolean;
     cellClassName?:
       | string

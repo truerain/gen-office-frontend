@@ -80,18 +80,20 @@
 }
 
 .semanticAmountTriangleContent {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
 
 .semanticAmountTriangleContent::before {
-  content: '';
-  width: 0;
-  height: 0;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 7px solid currentColor;
+  content: '△';
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.08;
+  vertical-align: middle;
+  transform: none;
 }
 
 .semanticPercentDelta::after {
