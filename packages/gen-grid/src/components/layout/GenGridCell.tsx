@@ -802,6 +802,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     renderDefaultEditor();
 
   const hasColumnCellRenderer = Boolean((cell.column.columnDef.meta as any)?.__genGridHasUserCellRenderer);
+  const commitValueForDisplay = isEditing ? onCommitValue : onApplyValue;
   const displayValue =
     (showNegativeTriangle || isPercentDeltaNegative) && numericCellValue != null
       ? Math.abs(numericCellValue)
@@ -821,7 +822,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
         row: cell.row.original,
         rowId,
         columnId: colId,
-        commitValue: onCommitValue,
+        commitValue: commitValueForDisplay,
       })
     : hasColumnCellRenderer
       ? flexRender(cell.column.columnDef.cell, normalizedCellContext as any)
@@ -941,7 +942,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
             row: cell.row.original,
             rowId,
             columnId: colId,
-            commitValue: onCommitValue,
+            commitValue: commitValueForDisplay,
           });
           return;
         }
