@@ -605,7 +605,7 @@ export function useCellEditing<TData>(args: {
 
     /** value만 즉시 반영하고 편집 상태는 유지 */
     applyValue: (coord: CellCoord, nextValue: unknown) => {
-      if (!isSameCoord(liveEditCoordRef.current, coord)) return;
+      //if (!isSameCoord(liveEditCoordRef.current, coord)) return;
       updateValue?.(coord, nextValue);
     },
   };
