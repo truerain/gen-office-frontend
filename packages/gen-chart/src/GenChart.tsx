@@ -440,6 +440,8 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
               series.strokeColor ?? tokens.border.seriesStrokeColor ?? (series.negativeColor ?? '#dc2626');
             const getValueLabel = (point: Point<T>) =>
               series.valueLabelFormatter?.(point.value, point.datum, point.index) ?? new Intl.NumberFormat('ko-KR').format(point.value);
+            const shouldShowValueLabel = (point: Point<T>) =>
+              Boolean(series.showValueLabel) && !(series.hideZeroValueLabel && point.value === 0);
             if (series.type === 'line') {
               return (
                 <React.Fragment key={series.id}>
@@ -452,6 +454,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                     strokeWidth={seriesStrokeWidth}
                   />
                   {series.showValueLabel ? points.map((point) => (
+                    shouldShowValueLabel(point) ? (
                     <Text
                       key={`${series.id}-value-${point.index}`}
                       y={clampLabelY(point.y - 8)}
@@ -463,6 +466,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                     >
                       {getValueLabel(point)}
                     </Text>
+                    ) : null
                   )) : null}
                 </React.Fragment>
               );
@@ -482,6 +486,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                     strokeWidth={seriesStrokeWidth}
                   />
                   {series.showValueLabel ? points.map((point) => (
+                    shouldShowValueLabel(point) ? (
                     <Text
                       key={`${series.id}-value-${point.index}`}
                       y={clampLabelY(point.y - 8)}
@@ -493,6 +498,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                     >
                       {getValueLabel(point)}
                     </Text>
+                    ) : null
                   )) : null}
                 </React.Fragment>
               );
@@ -535,7 +541,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                             strokeWidth={seriesStrokeWidth}
                             opacity={0.9}
                           />
-                          {series.showValueLabel ? (
+                          {shouldShowValueLabel(point) ? (
                             <Text x={clampLabelX(Math.max(xStart, xEnd) + 4)} y={clampLabelY(point.y)} verticalAnchor="middle" fill={tokens.color.textMuted} fontSize={11}>
                               {getValueLabel(point)}
                             </Text>
@@ -566,7 +572,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                           strokeWidth={seriesStrokeWidth}
                           opacity={0.9}
                         />
-                        {series.showValueLabel ? (
+                        {shouldShowValueLabel(point) ? (
                           <Text x={clampLabelX(x + stackedBarWidth / 2)} y={clampLabelY(Math.min(yStart, yEnd) - 4)} textAnchor="middle" verticalAnchor="end" fill={tokens.color.textMuted} fontSize={11}>
                             {getValueLabel(point)}
                           </Text>
@@ -593,7 +599,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                           strokeWidth={seriesStrokeWidth}
                           opacity={0.9}
                         />
-                        {series.showValueLabel ? (
+                        {shouldShowValueLabel(point) ? (
                           <Text x={clampLabelX(Math.max(zeroX, point.x) + 4)} y={clampLabelY(y + groupedBarHeight / 2)} verticalAnchor="middle" fill={tokens.color.textMuted} fontSize={11}>
                             {getValueLabel(point)}
                           </Text>
@@ -622,7 +628,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                         strokeWidth={seriesStrokeWidth}
                         opacity={0.9}
                       />
-                      {series.showValueLabel ? (
+                      {shouldShowValueLabel(point) ? (
                         <Text x={clampLabelX(x + groupedBarWidth / 2)} y={clampLabelY(Math.min(zeroY, point.y) - 4)} textAnchor="middle" verticalAnchor="end" fill={tokens.color.textMuted} fontSize={11}>
                           {getValueLabel(point)}
                         </Text>

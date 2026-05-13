@@ -70,6 +70,7 @@ export interface CartesianSeriesDef<T> {
   yAxisId?: string;
   label?: string;
   showValueLabel?: boolean;
+  hideZeroValueLabel?: boolean;
   valueLabelFormatter?: (value: number, datum: T, index: number) => string;
   color?: string;
   strokeColor?: string;
