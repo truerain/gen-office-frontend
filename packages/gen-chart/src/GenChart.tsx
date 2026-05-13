@@ -39,6 +39,8 @@ type TooltipState<T> = {
 };
 
 const LEGEND_BAND = 28;
+const TOOLTIP_MAX_WIDTH = 220;
+const TOOLTIP_MARGIN = 8;
 
 function resolveLegend(legend: boolean | GenChartLegendOptions | undefined) {
   if (legend === false) return { enabled: false, position: 'top' as const, align: 'start' as const };
@@ -114,12 +116,15 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
   const [tooltip, setTooltip] = React.useState<TooltipState<T> | null>(null);
   const rightAxisEntries = Object.entries(props.yAxes ?? {}).filter(([, axis]) => (axis.position ?? 'right') === 'right');
   const hasRightAxis = rightAxisEntries.some(([, axis]) => axis.show !== false);
+  const isLeftAxisVisible = (props.yAxis?.show ?? true) !== false;
+  const leftAxisPadding = isLeftAxisVisible ? 44 : 16;
+  const rightAxisPadding = hasRightAxis ? 44 : 16;
 
   const basePadding = {
     top: props.padding?.top ?? 16,
-    right: props.padding?.right ?? (hasRightAxis ? 44 : 16),
+    right: props.padding?.right ?? rightAxisPadding,
     bottom: props.padding?.bottom ?? 36,
-    left: props.padding?.left ?? 44,
+    left: props.padding?.left ?? leftAxisPadding,
   };
 
   const padding = {
@@ -277,6 +282,8 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
     : 14;
   const groupedBarHeight = Math.max(4, (yBand.bandwidth() / Math.max(1, groupedBarSeries.length)) * 0.92);
   const stackedBarHeight = Math.max(4, yBand.bandwidth() * 0.92);
+  const clampLabelX = (x: number) => Math.max(6, Math.min(innerWidth - 6, x));
+  const clampLabelY = (y: number) => Math.max(10, Math.min(innerHeight - 4, y));
 
   const onMove = React.useCallback((event: React.MouseEvent<SVGRectElement>) => {
     if (!tooltipOptions.enabled) return;
@@ -359,9 +366,17 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
 
     const raw = bestSeries.y(bestPoint.datum, bestPoint.index);
     const value = typeof raw === 'number' && Number.isFinite(raw) ? raw : null;
+    const tooltipX = Math.max(
+      TOOLTIP_MARGIN,
+      Math.min(props.width - TOOLTIP_MAX_WIDTH - TOOLTIP_MARGIN, padding.left + bestAnchorX + 12),
+    );
+    const tooltipY = Math.max(
+      TOOLTIP_MARGIN,
+      Math.min(props.height - 52, padding.top + bestAnchorY - 44),
+    );
     setTooltip({
-      x: padding.left + bestAnchorX + 12,
-      y: padding.top + bestAnchorY - 44,
+      x: tooltipX,
+      y: tooltipY,
       context: {
         label: bestSeries.label ?? bestSeries.id,
         value,
@@ -380,6 +395,8 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
     padding.top,
     pointsBySeries,
     props.series,
+    props.width,
+    props.height,
     tooltipOptions.enabled,
     valueXScale,
     xBand,
@@ -400,7 +417,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
           ))}
         </div>
       ) : null}
-      <svg width={props.width} height={props.height} role="img">
+      <svg width={props.width} height={props.height} role="img" style={{ display: 'block', overflow: 'hidden' }}>
         <Group left={padding.left} top={padding.top}>
           {grid.show ? (
             <GridRows
@@ -437,8 +454,8 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                   {series.showValueLabel ? points.map((point) => (
                     <Text
                       key={`${series.id}-value-${point.index}`}
-                      x={point.x}
-                      y={point.y - 8}
+                      y={clampLabelY(point.y - 8)}
+                      x={clampLabelX(point.x)}
                       textAnchor="middle"
                       verticalAnchor="end"
                       fill={tokens.color.textMuted}
@@ -467,8 +484,8 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                   {series.showValueLabel ? points.map((point) => (
                     <Text
                       key={`${series.id}-value-${point.index}`}
-                      x={point.x}
-                      y={point.y - 8}
+                      y={clampLabelY(point.y - 8)}
+                      x={clampLabelX(point.x)}
                       textAnchor="middle"
                       verticalAnchor="end"
                       fill={tokens.color.textMuted}
@@ -519,7 +536,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                             opacity={0.9}
                           />
                           {series.showValueLabel ? (
-                            <Text x={Math.max(xStart, xEnd) + 4} y={point.y} verticalAnchor="middle" fill={tokens.color.textMuted} fontSize={11}>
+                            <Text x={clampLabelX(Math.max(xStart, xEnd) + 4)} y={clampLabelY(point.y)} verticalAnchor="middle" fill={tokens.color.textMuted} fontSize={11}>
                               {getValueLabel(point)}
                             </Text>
                           ) : null}
@@ -550,7 +567,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                           opacity={0.9}
                         />
                         {series.showValueLabel ? (
-                          <Text x={x + stackedBarWidth / 2} y={Math.min(yStart, yEnd) - 4} textAnchor="middle" verticalAnchor="end" fill={tokens.color.textMuted} fontSize={11}>
+                          <Text x={clampLabelX(x + stackedBarWidth / 2)} y={clampLabelY(Math.min(yStart, yEnd) - 4)} textAnchor="middle" verticalAnchor="end" fill={tokens.color.textMuted} fontSize={11}>
                             {getValueLabel(point)}
                           </Text>
                         ) : null}
@@ -577,7 +594,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                           opacity={0.9}
                         />
                         {series.showValueLabel ? (
-                          <Text x={Math.max(zeroX, point.x) + 4} y={y + groupedBarHeight / 2} verticalAnchor="middle" fill={tokens.color.textMuted} fontSize={11}>
+                          <Text x={clampLabelX(Math.max(zeroX, point.x) + 4)} y={clampLabelY(y + groupedBarHeight / 2)} verticalAnchor="middle" fill={tokens.color.textMuted} fontSize={11}>
                             {getValueLabel(point)}
                           </Text>
                         ) : null}
@@ -606,7 +623,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                         opacity={0.9}
                       />
                       {series.showValueLabel ? (
-                        <Text x={x + groupedBarWidth / 2} y={Math.min(zeroY, point.y) - 4} textAnchor="middle" verticalAnchor="end" fill={tokens.color.textMuted} fontSize={11}>
+                        <Text x={clampLabelX(x + groupedBarWidth / 2)} y={clampLabelY(Math.min(zeroY, point.y) - 4)} textAnchor="middle" verticalAnchor="end" fill={tokens.color.textMuted} fontSize={11}>
                           {getValueLabel(point)}
                         </Text>
                       ) : null}
