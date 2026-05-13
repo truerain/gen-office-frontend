@@ -284,6 +284,25 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
   const stackedBarHeight = Math.max(4, yBand.bandwidth() * 0.92);
   const clampLabelX = (x: number) => Math.max(6, Math.min(innerWidth - 6, x));
   const clampLabelY = (y: number) => Math.max(10, Math.min(innerHeight - 4, y));
+  const placedLabelRows = new Map<number, number[]>();
+  const resolveLabelPlacement = (x: number, y: number) => {
+    const clampedX = clampLabelX(x);
+    const baseY = clampLabelY(y);
+    if (!props.avoidValueLabelOverlap) return { x: clampedX, y: baseY, hidden: false };
+    const bucket = Math.round(clampedX / 8);
+    const rows = placedLabelRows.get(bucket) ?? [];
+    const offsets = [0, -12, 12, -24, 24];
+    for (const offset of offsets) {
+      const candidateY = clampLabelY(baseY + offset);
+      const isOverlap = rows.some((rowY) => Math.abs(rowY - candidateY) < 10);
+      if (!isOverlap) {
+        rows.push(candidateY);
+        placedLabelRows.set(bucket, rows);
+        return { x: clampedX, y: candidateY, hidden: false };
+      }
+    }
+    return { x: clampedX, y: baseY, hidden: true };
+  };
 
   const onMove = React.useCallback((event: React.MouseEvent<SVGRectElement>) => {
     if (!tooltipOptions.enabled) return;
@@ -442,6 +461,13 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
               series.valueLabelFormatter?.(point.value, point.datum, point.index) ?? new Intl.NumberFormat('ko-KR').format(point.value);
             const shouldShowValueLabel = (point: Point<T>) =>
               Boolean(series.showValueLabel) && !(series.hideZeroValueLabel && point.value === 0);
+            const labelStyle = {
+              fill: series.valueLabelStyle?.color ?? tokens.color.textMuted,
+              fontSize: series.valueLabelStyle?.fontSize ?? 11,
+              fontWeight: series.valueLabelStyle?.fontWeight,
+              opacity: series.valueLabelStyle?.opacity,
+            };
+            const labelOffsetY = series.valueLabelOffsetY ?? -8;
             if (series.type === 'line') {
               return (
                 <React.Fragment key={series.id}>
@@ -454,19 +480,26 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                     strokeWidth={seriesStrokeWidth}
                   />
                   {series.showValueLabel ? points.map((point) => (
-                    shouldShowValueLabel(point) ? (
+                    (() => {
+                      if (!shouldShowValueLabel(point)) return null;
+                      const placement = resolveLabelPlacement(point.x, point.y + labelOffsetY);
+                      if (placement.hidden) return null;
+                      return (
                     <Text
                       key={`${series.id}-value-${point.index}`}
-                      y={clampLabelY(point.y - 8)}
-                      x={clampLabelX(point.x)}
+                      y={placement.y}
+                      x={placement.x}
                       textAnchor="middle"
                       verticalAnchor="end"
-                      fill={tokens.color.textMuted}
-                      fontSize={11}
+                      fill={labelStyle.fill}
+                      fontSize={labelStyle.fontSize}
+                      fontWeight={labelStyle.fontWeight}
+                      opacity={labelStyle.opacity}
                     >
                       {getValueLabel(point)}
                     </Text>
-                    ) : null
+                      );
+                    })()
                   )) : null}
                 </React.Fragment>
               );
@@ -486,19 +519,26 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                     strokeWidth={seriesStrokeWidth}
                   />
                   {series.showValueLabel ? points.map((point) => (
-                    shouldShowValueLabel(point) ? (
+                    (() => {
+                      if (!shouldShowValueLabel(point)) return null;
+                      const placement = resolveLabelPlacement(point.x, point.y + labelOffsetY);
+                      if (placement.hidden) return null;
+                      return (
                     <Text
                       key={`${series.id}-value-${point.index}`}
-                      y={clampLabelY(point.y - 8)}
-                      x={clampLabelX(point.x)}
+                      y={placement.y}
+                      x={placement.x}
                       textAnchor="middle"
                       verticalAnchor="end"
-                      fill={tokens.color.textMuted}
-                      fontSize={11}
+                      fill={labelStyle.fill}
+                      fontSize={labelStyle.fontSize}
+                      fontWeight={labelStyle.fontWeight}
+                      opacity={labelStyle.opacity}
                     >
                       {getValueLabel(point)}
                     </Text>
-                    ) : null
+                      );
+                    })()
                   )) : null}
                 </React.Fragment>
               );
@@ -541,11 +581,16 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                             strokeWidth={seriesStrokeWidth}
                             opacity={0.9}
                           />
-                          {shouldShowValueLabel(point) ? (
-                            <Text x={clampLabelX(Math.max(xStart, xEnd) + 4)} y={clampLabelY(point.y)} verticalAnchor="middle" fill={tokens.color.textMuted} fontSize={11}>
-                              {getValueLabel(point)}
-                            </Text>
-                          ) : null}
+                          {(() => {
+                            if (!shouldShowValueLabel(point)) return null;
+                            const placement = resolveLabelPlacement(Math.max(xStart, xEnd) + 4, point.y + (series.valueLabelOffsetY ?? 0));
+                            if (placement.hidden) return null;
+                            return (
+                              <Text x={placement.x} y={placement.y} verticalAnchor="middle" fill={labelStyle.fill} fontSize={labelStyle.fontSize} fontWeight={labelStyle.fontWeight} opacity={labelStyle.opacity}>
+                                {getValueLabel(point)}
+                              </Text>
+                            );
+                          })()}
                         </React.Fragment>
                       );
                     }
@@ -572,11 +617,16 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                           strokeWidth={seriesStrokeWidth}
                           opacity={0.9}
                         />
-                        {shouldShowValueLabel(point) ? (
-                          <Text x={clampLabelX(x + stackedBarWidth / 2)} y={clampLabelY(Math.min(yStart, yEnd) - 4)} textAnchor="middle" verticalAnchor="end" fill={tokens.color.textMuted} fontSize={11}>
-                            {getValueLabel(point)}
-                          </Text>
-                        ) : null}
+                        {(() => {
+                          if (!shouldShowValueLabel(point)) return null;
+                          const placement = resolveLabelPlacement(x + stackedBarWidth / 2, Math.min(yStart, yEnd) - 4 + (series.valueLabelOffsetY ?? 0));
+                          if (placement.hidden) return null;
+                          return (
+                            <Text x={placement.x} y={placement.y} textAnchor="middle" verticalAnchor="end" fill={labelStyle.fill} fontSize={labelStyle.fontSize} fontWeight={labelStyle.fontWeight} opacity={labelStyle.opacity}>
+                              {getValueLabel(point)}
+                            </Text>
+                          );
+                        })()}
                       </React.Fragment>
                     );
                   }
@@ -599,11 +649,16 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                           strokeWidth={seriesStrokeWidth}
                           opacity={0.9}
                         />
-                        {shouldShowValueLabel(point) ? (
-                          <Text x={clampLabelX(Math.max(zeroX, point.x) + 4)} y={clampLabelY(y + groupedBarHeight / 2)} verticalAnchor="middle" fill={tokens.color.textMuted} fontSize={11}>
-                            {getValueLabel(point)}
-                          </Text>
-                        ) : null}
+                        {(() => {
+                          if (!shouldShowValueLabel(point)) return null;
+                          const placement = resolveLabelPlacement(Math.max(zeroX, point.x) + 4, y + groupedBarHeight / 2 + (series.valueLabelOffsetY ?? 0));
+                          if (placement.hidden) return null;
+                          return (
+                            <Text x={placement.x} y={placement.y} verticalAnchor="middle" fill={labelStyle.fill} fontSize={labelStyle.fontSize} fontWeight={labelStyle.fontWeight} opacity={labelStyle.opacity}>
+                              {getValueLabel(point)}
+                            </Text>
+                          );
+                        })()}
                       </React.Fragment>
                     );
                   }
@@ -628,11 +683,16 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                         strokeWidth={seriesStrokeWidth}
                         opacity={0.9}
                       />
-                      {shouldShowValueLabel(point) ? (
-                        <Text x={clampLabelX(x + groupedBarWidth / 2)} y={clampLabelY(Math.min(zeroY, point.y) - 4)} textAnchor="middle" verticalAnchor="end" fill={tokens.color.textMuted} fontSize={11}>
-                          {getValueLabel(point)}
-                        </Text>
-                      ) : null}
+                      {(() => {
+                        if (!shouldShowValueLabel(point)) return null;
+                        const placement = resolveLabelPlacement(x + groupedBarWidth / 2, Math.min(zeroY, point.y) - 4 + (series.valueLabelOffsetY ?? 0));
+                        if (placement.hidden) return null;
+                        return (
+                          <Text x={placement.x} y={placement.y} textAnchor="middle" verticalAnchor="end" fill={labelStyle.fill} fontSize={labelStyle.fontSize} fontWeight={labelStyle.fontWeight} opacity={labelStyle.opacity}>
+                            {getValueLabel(point)}
+                          </Text>
+                        );
+                      })()}
                     </React.Fragment>
                   );
                 })}

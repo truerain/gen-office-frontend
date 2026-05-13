@@ -72,6 +72,13 @@ export interface CartesianSeriesDef<T> {
   showValueLabel?: boolean;
   hideZeroValueLabel?: boolean;
   valueLabelFormatter?: (value: number, datum: T, index: number) => string;
+  valueLabelOffsetY?: number;
+  valueLabelStyle?: {
+    color?: string;
+    fontSize?: number;
+    fontWeight?: number | string;
+    opacity?: number;
+  };
   color?: string;
   strokeColor?: string;
   strokeWidth?: number;
@@ -83,6 +90,7 @@ export interface CartesianSeriesDef<T> {
 export interface CartesianChartProps<T> extends GenChartBaseProps<T> {
   kind: 'line' | 'bar' | 'area' | 'composed';
   barOrientation?: 'vertical' | 'horizontal';
+  avoidValueLabelOverlap?: boolean;
   data: T[];
   x: (d: T, index: number) => string | number | Date;
   series: CartesianSeriesDef<T>[];

@@ -12,7 +12,7 @@ type SalesRow = {
 const salesData: SalesRow[] = [
   { month: 'Jan', revenue: 120, expense: 80, margin: 40 },
   { month: 'Feb', revenue: 140, expense: 95, margin: 45 },
-  { month: 'Mar', revenue: 110, expense: 85, margin: 25 },
+  { month: 'Mar', revenue: 78, expense: 85, margin: 25 },
   { month: 'Apr', revenue: 160, expense: 100, margin: 60 },
   { month: 'May', revenue: 170, expense: 120, margin: 50 },
   { month: 'Jun', revenue: 150, expense: 105, margin: 45 },
@@ -113,6 +113,50 @@ export const DualYAxisLine: Story = {
       series={[
         { id: 'revenue', type: 'line', y: (d) => d.revenue, yAxisId: 'left', showValueLabel: false, label: 'Revenue', strokeColor: '#2563eb', curve: 'monotoneX' },
         { id: 'margin', type: 'line', y: (d) => d.margin, yAxisId: 'right', showValueLabel: true, label: 'Margin', strokeColor: '#f43f5e', curve: 'monotoneX' },
+      ]}
+      legend
+      tooltip
+    />
+  ),
+};
+
+export const ValueLabelStyledWithOverlapAvoidance: Story = {
+  render: () => (
+    <GenChart<SalesRow>
+      kind="line"
+      width={760}
+      height={360}
+      avoidValueLabelOverlap
+      data={salesData}
+      x={(d) => d.month}
+      yAxis={{ min: 0, max: 180 }}
+      series={[
+        {
+          id: 'revenue',
+          type: 'line',
+          y: (d) => d.revenue,
+          label: 'Revenue',
+          strokeColor: '#2563eb',
+          curve: 'monotoneX',
+          showValueLabel: true,
+          hideZeroValueLabel: true,
+          valueLabelStyle: { color: '#1e3a8a', fontSize: 12, fontWeight: 700 },
+          valueLabelOffsetY: -10,
+          valueLabelFormatter: (value) => `${value}`,
+        },
+        {
+          id: 'expense',
+          type: 'line',
+          y: (d) => d.expense,
+          label: 'Expense',
+          strokeColor: '#dc2626',
+          curve: 'monotoneX',
+          showValueLabel: true,
+          hideZeroValueLabel: true,
+          valueLabelStyle: { color: '#7f1d1d', fontSize: 11, fontWeight: 600, opacity: 0.9 },
+          valueLabelOffsetY: 8,
+          valueLabelFormatter: (value) => `${value}`,
+        },
       ]}
       legend
       tooltip
