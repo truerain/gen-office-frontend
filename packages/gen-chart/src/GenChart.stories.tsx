@@ -69,3 +69,53 @@ export const ComposedLineBar: Story = {
     />
   ),
 };
+
+export const LineTopXAxis: Story = {
+  render: () => (
+    <GenChart<SalesRow>
+      kind="line"
+      width={760}
+      height={360}
+      data={salesData}
+      x={(d) => d.month}
+      xAxis={{ position: 'top', showAllTicks: true, showTicks: false }}
+      yAxis={{max: 230, show: false}}
+      series={[
+        { id: 'revenue', type: 'bar', y: (d) => d.revenue, label: 'Revenue', showValueLabel: true, strokeColor: '#2563eb' },
+        { id: 'margin', type: 'line', y: (d) => d.margin, label: 'Margin', strokeColor: '#f43f5e', curve: 'monotoneX' },
+      ]}
+      grid={false}
+      legend
+      tooltip
+    />
+  ),
+};
+
+export const DualYAxisLine: Story = {
+  render: () => (
+    <GenChart<SalesRow>
+      kind="line"
+      width={760}
+      height={360}
+      data={salesData}
+      x={(d) => d.month}
+      yAxis={{ min: 0, max: 220, tickCount: 6, tickFormat: (v) => `${v}` }}
+      yAxes={{
+        right: {
+          position: 'right',
+          min: 0,
+          max: 70,
+          tickCount: 8,
+          tickFormat: (v) => `${v}%`,
+          show: false
+        },
+      }}
+      series={[
+        { id: 'revenue', type: 'line', y: (d) => d.revenue, yAxisId: 'left', showValueLabel: false, label: 'Revenue', strokeColor: '#2563eb', curve: 'monotoneX' },
+        { id: 'margin', type: 'line', y: (d) => d.margin, yAxisId: 'right', showValueLabel: true, label: 'Margin', strokeColor: '#f43f5e', curve: 'monotoneX' },
+      ]}
+      legend
+      tooltip
+    />
+  ),
+};

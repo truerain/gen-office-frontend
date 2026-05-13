@@ -20,18 +20,23 @@ export interface ChartPadding {
 
 export interface GenChartAxisOptions {
   show?: boolean;
+  showTicks?: boolean;
   tickCount?: number;
   showAllTicks?: boolean;
   tickFormat?: (value: unknown) => string;
   min?: number | 'auto' | 'dataMin';
   max?: number | 'auto' | 'dataMax';
-  position?: 'default' | 'zero';
+  position?: 'default' | 'zero' | 'top' | 'left' | 'right';
 }
 
 export interface GenChartLegendOptions {
   enabled?: boolean;
   position?: 'top' | 'bottom';
   align?: 'start' | 'center' | 'end';
+}
+
+export interface GenChartGridOptions {
+  show?: boolean;
 }
 
 export interface GenChartTooltipContext<T = unknown> {
@@ -53,6 +58,7 @@ export interface GenChartBaseProps<T = unknown> {
   padding?: ChartPadding;
   theme?: ChartTheme;
   tokens?: DeepPartial<ChartTokens>;
+  grid?: boolean | GenChartGridOptions;
   tooltip?: boolean | GenChartTooltipOptions<T>;
   legend?: boolean | GenChartLegendOptions;
 }
@@ -61,7 +67,10 @@ export interface CartesianSeriesDef<T> {
   id: string;
   type: 'line' | 'bar' | 'area';
   y: (d: T, index: number) => number | null | undefined;
+  yAxisId?: string;
   label?: string;
+  showValueLabel?: boolean;
+  valueLabelFormatter?: (value: number, datum: T, index: number) => string;
   color?: string;
   strokeColor?: string;
   strokeWidth?: number;
@@ -78,6 +87,7 @@ export interface CartesianChartProps<T> extends GenChartBaseProps<T> {
   series: CartesianSeriesDef<T>[];
   xAxis?: GenChartAxisOptions;
   yAxis?: GenChartAxisOptions;
+  yAxes?: Record<string, GenChartAxisOptions>;
 }
 
 export interface PieDonutChartProps<T> extends GenChartBaseProps<T> {

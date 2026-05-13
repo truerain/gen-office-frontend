@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { AxisBottom, AxisLeft } from '@visx/axis';
+import { AxisBottom, AxisLeft, AxisRight, AxisTop } from '@visx/axis';
 import { GridRows } from '@visx/grid';
 import { Group } from '@visx/group';
 import { Treemap } from '@visx/hierarchy';
@@ -13,6 +13,7 @@ import { resolveChartTokens } from './tokens';
 import type {
   CartesianChartProps,
   CartesianSeriesDef,
+  GenChartGridOptions,
   GenChartLegendOptions,
   GenChartProps,
   GenChartTooltipContext,
@@ -28,6 +29,7 @@ type Point<T> = {
   x: number;
   y: number;
   value: number;
+  yAxisId: string;
 };
 
 type TooltipState<T> = {
@@ -54,6 +56,13 @@ function resolveTooltip<T>(tooltip: boolean | GenChartTooltipOptions<T> | undefi
   if (tooltip === true) return { enabled: true as const, config: undefined };
   if (!tooltip) return { enabled: false as const, config: undefined };
   return { enabled: tooltip.enabled !== false, config: tooltip };
+}
+
+function resolveGrid(grid: boolean | GenChartGridOptions | undefined) {
+  if (grid === false) return { show: false as const };
+  if (grid === true) return { show: true as const };
+  if (!grid) return { show: true as const };
+  return { show: grid.show !== false };
 }
 
 function legendJustify(align: 'start' | 'center' | 'end') {
@@ -96,14 +105,19 @@ function renderTooltip<T>(
 }
 
 function CartesianRenderer<T>(props: CartesianChartProps<T>) {
+  const defaultYAxisId = 'left';
+  const getSeriesYAxisId = (series: CartesianSeriesDef<T>) => series.yAxisId ?? defaultYAxisId;
   const tokens = resolveChartTokens(props.theme, props.tokens);
+  const grid = resolveGrid(props.grid);
   const legend = resolveLegend(props.legend);
   const tooltipOptions = resolveTooltip(props.tooltip);
   const [tooltip, setTooltip] = React.useState<TooltipState<T> | null>(null);
+  const rightAxisEntries = Object.entries(props.yAxes ?? {}).filter(([, axis]) => (axis.position ?? 'right') === 'right');
+  const hasRightAxis = rightAxisEntries.some(([, axis]) => axis.show !== false);
 
   const basePadding = {
     top: props.padding?.top ?? 16,
-    right: props.padding?.right ?? 16,
+    right: props.padding?.right ?? (hasRightAxis ? 44 : 16),
     bottom: props.padding?.bottom ?? 36,
     left: props.padding?.left ?? 44,
   };
@@ -141,22 +155,29 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
   const groupedBarSeries = barSeries.filter((series) => !series.stackId);
   const barOrientation = props.barOrientation ?? 'vertical';
 
-  const yValues: number[] = [];
+  const yAxisValues = new Map<string, number[]>();
+  const pushYAxisValue = (axisId: string, value: number) => {
+    const list = yAxisValues.get(axisId) ?? [];
+    list.push(value);
+    yAxisValues.set(axisId, list);
+  };
   props.series.forEach((series) => {
+    const axisId = getSeriesYAxisId(series);
     props.data.forEach((datum, index) => {
       const value = series.y(datum, index);
-      if (typeof value === 'number' && Number.isFinite(value)) yValues.push(value);
+      if (typeof value === 'number' && Number.isFinite(value)) pushYAxisValue(axisId, value);
     });
   });
   if (stackedBarSeries.length > 0) {
-    const stackTotals = new Map<string, { pos: number; neg: number }>();
+    const stackTotals = new Map<string, { pos: number; neg: number; axisId: string }>();
     stackedBarSeries.forEach((series) => {
       const stackId = String(series.stackId);
+      const axisId = getSeriesYAxisId(series);
       props.data.forEach((datum, index) => {
         const value = series.y(datum, index);
         if (typeof value !== 'number' || !Number.isFinite(value)) return;
-        const key = `${stackId}:${index}`;
-        const prev = stackTotals.get(key) ?? { pos: 0, neg: 0 };
+        const key = `${axisId}:${stackId}:${index}`;
+        const prev = stackTotals.get(key) ?? { pos: 0, neg: 0, axisId };
         if (value >= 0) {
           prev.pos += value;
         } else {
@@ -166,22 +187,37 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
       });
     });
     stackTotals.forEach((total) => {
-      yValues.push(total.pos, total.neg);
+      pushYAxisValue(total.axisId, total.pos);
+      pushYAxisValue(total.axisId, total.neg);
     });
   }
-  const minYFromData = yValues.length ? Math.min(...yValues, 0) : 0;
-  const maxYFromData = yValues.length ? Math.max(...yValues) : 1;
-  const minY = typeof props.yAxis?.min === 'number' ? props.yAxis.min : minYFromData;
-  const maxYCandidate = typeof props.yAxis?.max === 'number' ? props.yAxis.max : maxYFromData;
-  const maxY = maxYCandidate <= minY ? minY + 1 : maxYCandidate;
+  const resolveYAxisOptions = (axisId: string) => (axisId === defaultYAxisId ? props.yAxis : props.yAxes?.[axisId]);
+  const yScaleByAxis = new Map<string, ReturnType<typeof scaleLinear<number>>>();
+  const yDomainByAxis = new Map<string, { min: number; max: number }>();
+  const allAxisIds = new Set<string>([defaultYAxisId]);
+  props.series.forEach((series) => allAxisIds.add(getSeriesYAxisId(series)));
+  rightAxisEntries.forEach(([axisId]) => allAxisIds.add(axisId));
 
-  const yScale = scaleLinear<number>({
-    domain: [minY, maxY],
-    range: [innerHeight, 0],
-    nice: true,
+  allAxisIds.forEach((axisId) => {
+    const values = yAxisValues.get(axisId) ?? [];
+    const minYFromData = values.length ? Math.min(...values, 0) : 0;
+    const maxYFromData = values.length ? Math.max(...values) : 1;
+    const axisOptions = resolveYAxisOptions(axisId);
+    const minY = typeof axisOptions?.min === 'number' ? axisOptions.min : minYFromData;
+    const maxYCandidate = typeof axisOptions?.max === 'number' ? axisOptions.max : maxYFromData;
+    const maxY = maxYCandidate <= minY ? minY + 1 : maxYCandidate;
+    yDomainByAxis.set(axisId, { min: minY, max: maxY });
+    yScaleByAxis.set(axisId, scaleLinear<number>({
+      domain: [minY, maxY],
+      range: [innerHeight, 0],
+      nice: true,
+    }));
   });
+  const yScale = yScaleByAxis.get(defaultYAxisId)
+    ?? scaleLinear<number>({ domain: [0, 1], range: [innerHeight, 0], nice: true });
+  const leftDomain = yDomainByAxis.get(defaultYAxisId) ?? { min: 0, max: 1 };
   const valueXScale = scaleLinear<number>({
-    domain: [minY, maxY],
+    domain: [leftDomain.min, leftDomain.max],
     range: [0, innerWidth],
     nice: true,
   });
@@ -191,9 +227,11 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
     padding: 0.22,
   });
   const xAxisTop =
-    props.xAxis?.position === 'zero' && minY < 0 && maxY > 0
-      ? Number(yScale(0))
-      : innerHeight;
+    props.xAxis?.position === 'top'
+      ? 0
+      : props.xAxis?.position === 'zero' && leftDomain.min < 0 && leftDomain.max > 0
+        ? Number(yScale(0))
+        : innerHeight;
 
   const colorScale = scaleOrdinal<string, string>({
     domain: props.series.map((series) => series.id),
@@ -221,14 +259,15 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
           x: isHorizontalBar ? Number(valueXScale(y)) : getX(xRaw),
           y: isHorizontalBar
             ? (yBand(String(xRaw)) ?? 0) + yBand.bandwidth() / 2
-            : Number(yScale(y)),
+            : Number((yScaleByAxis.get(getSeriesYAxisId(series)) ?? yScale)(y)),
           value: y,
+          yAxisId: getSeriesYAxisId(series),
         });
       });
       map.set(series.id, points);
     });
     return map;
-  }, [barOrientation, getX, props.data, props.series, props.x, valueXScale, yBand, yScale]);
+  }, [barOrientation, getSeriesYAxisId, getX, props.data, props.series, props.x, valueXScale, yBand, yScale, yScaleByAxis]);
 
   const groupedBarWidth = allCategory
     ? Math.max(4, (xBand.bandwidth() / Math.max(1, groupedBarSeries.length)) * 0.92)
@@ -282,8 +321,9 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
             hoverX = (xStart + xEnd) / 2;
             hoverY = point.y;
           } else {
-            const yStart = Number(yScale(start));
-            const yEnd = Number(yScale(end));
+            const seriesYScale = yScaleByAxis.get(getSeriesYAxisId(series)) ?? yScale;
+            const yStart = Number(seriesYScale(start));
+            const yEnd = Number(seriesYScale(end));
             hoverX = point.x;
             hoverY = (yStart + yEnd) / 2;
           }
@@ -335,6 +375,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
     groupedBarHeight,
     groupedBarSeries,
     groupedBarWidth,
+    getSeriesYAxisId,
     padding.left,
     padding.top,
     pointsBySeries,
@@ -344,6 +385,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
     xBand,
     yBand,
     yScale,
+    yScaleByAxis,
   ]);
 
   return (
@@ -360,13 +402,15 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
       ) : null}
       <svg width={props.width} height={props.height} role="img">
         <Group left={padding.left} top={padding.top}>
-          <GridRows
-            scale={yScale}
-            width={innerWidth}
-            stroke={tokens.color.grid}
-            strokeWidth={tokens.border.gridWidth}
-            numTicks={props.yAxis?.tickCount ?? 5}
-          />
+          {grid.show ? (
+            <GridRows
+              scale={yScale}
+              width={innerWidth}
+              stroke={tokens.color.grid}
+              strokeWidth={tokens.border.gridWidth}
+              numTicks={resolveYAxisOptions(defaultYAxisId)?.tickCount ?? 5}
+            />
+          ) : null}
 
           {(() => {
             const stackAcc = new Map<string, { pos: number; neg: number }>();
@@ -377,33 +421,63 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
             const seriesStrokeColor = series.strokeColor ?? tokens.border.seriesStrokeColor ?? color;
             const seriesNegativeStrokeColor =
               series.strokeColor ?? tokens.border.seriesStrokeColor ?? (series.negativeColor ?? '#dc2626');
+            const getValueLabel = (point: Point<T>) =>
+              series.valueLabelFormatter?.(point.value, point.datum, point.index) ?? new Intl.NumberFormat('ko-KR').format(point.value);
             if (series.type === 'line') {
               return (
-                <LinePath<Point<T>>
-                  key={series.id}
-                  data={points}
-                  x={(d: Point<T>) => d.x}
-                  y={(d: Point<T>) => d.y}
-                  curve={resolveSeriesCurve(series.curve)}
-                  stroke={seriesStrokeColor}
-                  strokeWidth={seriesStrokeWidth}
-                />
+                <React.Fragment key={series.id}>
+                  <LinePath<Point<T>>
+                    data={points}
+                    x={(d: Point<T>) => d.x}
+                    y={(d: Point<T>) => d.y}
+                    curve={resolveSeriesCurve(series.curve)}
+                    stroke={seriesStrokeColor}
+                    strokeWidth={seriesStrokeWidth}
+                  />
+                  {series.showValueLabel ? points.map((point) => (
+                    <Text
+                      key={`${series.id}-value-${point.index}`}
+                      x={point.x}
+                      y={point.y - 8}
+                      textAnchor="middle"
+                      verticalAnchor="end"
+                      fill={tokens.color.textMuted}
+                      fontSize={11}
+                    >
+                      {getValueLabel(point)}
+                    </Text>
+                  )) : null}
+                </React.Fragment>
               );
             }
             if (series.type === 'area') {
               return (
-                <AreaClosed<Point<T>>
-                  key={series.id}
-                  data={points}
-                  x={(d: Point<T>) => d.x}
-                  y={(d: Point<T>) => d.y}
-                  yScale={yScale}
-                  curve={resolveSeriesCurve(series.curve)}
-                  fill={color}
-                  fillOpacity={0.24}
-                  stroke={seriesStrokeColor}
-                  strokeWidth={seriesStrokeWidth}
-                />
+                <React.Fragment key={series.id}>
+                  <AreaClosed<Point<T>>
+                    data={points}
+                    x={(d: Point<T>) => d.x}
+                    y={(d: Point<T>) => d.y}
+                    yScale={yScale}
+                    curve={resolveSeriesCurve(series.curve)}
+                    fill={color}
+                    fillOpacity={0.24}
+                    stroke={seriesStrokeColor}
+                    strokeWidth={seriesStrokeWidth}
+                  />
+                  {series.showValueLabel ? points.map((point) => (
+                    <Text
+                      key={`${series.id}-value-${point.index}`}
+                      x={point.x}
+                      y={point.y - 8}
+                      textAnchor="middle"
+                      verticalAnchor="end"
+                      fill={tokens.color.textMuted}
+                      fontSize={11}
+                    >
+                      {getValueLabel(point)}
+                    </Text>
+                  )) : null}
+                </React.Fragment>
               );
             }
 
@@ -431,12 +505,43 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                       const barWidth = Math.max(1, Math.abs(xEnd - xStart));
                       const y = point.y - stackedBarHeight / 2;
                       return (
+                        <React.Fragment key={`${series.id}-${point.index}`}>
+                          <Bar
+                            x={Math.min(xStart, xEnd)}
+                            y={y}
+                            width={barWidth}
+                            height={stackedBarHeight}
+                            fill={value < 0 ? (series.negativeColor ?? '#dc2626') : color}
+                            stroke={
+                              value < 0 ? seriesNegativeStrokeColor : seriesStrokeColor
+                            }
+                            strokeWidth={seriesStrokeWidth}
+                            opacity={0.9}
+                          />
+                          {series.showValueLabel ? (
+                            <Text x={Math.max(xStart, xEnd) + 4} y={point.y} verticalAnchor="middle" fill={tokens.color.textMuted} fontSize={11}>
+                              {getValueLabel(point)}
+                            </Text>
+                          ) : null}
+                        </React.Fragment>
+                      );
+                    }
+
+                    const seriesYScale = yScaleByAxis.get(point.yAxisId) ?? yScale;
+                    const yStart = Number(seriesYScale(start));
+                    const yEnd = Number(seriesYScale(end));
+                    const barHeight = Math.max(1, Math.abs(yEnd - yStart));
+                    const x = allCategory
+                      ? point.x - stackedBarWidth / 2
+                      : point.x - stackedBarWidth / 2;
+
+                    return (
+                      <React.Fragment key={`${series.id}-${point.index}`}>
                         <Bar
-                          key={`${series.id}-${point.index}`}
-                          x={Math.min(xStart, xEnd)}
-                          y={y}
-                          width={barWidth}
-                          height={stackedBarHeight}
+                          x={x}
+                          y={Math.min(yStart, yEnd)}
+                          width={stackedBarWidth}
+                          height={barHeight}
                           fill={value < 0 ? (series.negativeColor ?? '#dc2626') : color}
                           stroke={
                             value < 0 ? seriesNegativeStrokeColor : seriesStrokeColor
@@ -444,30 +549,12 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                           strokeWidth={seriesStrokeWidth}
                           opacity={0.9}
                         />
-                      );
-                    }
-
-                    const yStart = Number(yScale(start));
-                    const yEnd = Number(yScale(end));
-                    const barHeight = Math.max(1, Math.abs(yEnd - yStart));
-                    const x = allCategory
-                      ? point.x - stackedBarWidth / 2
-                      : point.x - stackedBarWidth / 2;
-
-                    return (
-                      <Bar
-                        key={`${series.id}-${point.index}`}
-                        x={x}
-                        y={Math.min(yStart, yEnd)}
-                        width={stackedBarWidth}
-                        height={barHeight}
-                        fill={value < 0 ? (series.negativeColor ?? '#dc2626') : color}
-                        stroke={
-                          value < 0 ? seriesNegativeStrokeColor : seriesStrokeColor
-                        }
-                        strokeWidth={seriesStrokeWidth}
-                        opacity={0.9}
-                      />
+                        {series.showValueLabel ? (
+                          <Text x={x + stackedBarWidth / 2} y={Math.min(yStart, yEnd) - 4} textAnchor="middle" verticalAnchor="end" fill={tokens.color.textMuted} fontSize={11}>
+                            {getValueLabel(point)}
+                          </Text>
+                        ) : null}
+                      </React.Fragment>
                     );
                   }
 
@@ -476,12 +563,41 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                     const barWidth = Math.max(1, Math.abs(zeroX - point.x));
                     const y = point.y - (yBand.bandwidth() / 2) + barIndex * groupedBarHeight;
                     return (
+                      <React.Fragment key={`${series.id}-${point.index}`}>
+                        <Bar
+                          x={Math.min(zeroX, point.x)}
+                          y={y}
+                          width={barWidth}
+                          height={groupedBarHeight}
+                          fill={point.value < 0 ? (series.negativeColor ?? '#dc2626') : color}
+                          stroke={
+                            point.value < 0 ? seriesNegativeStrokeColor : seriesStrokeColor
+                          }
+                          strokeWidth={seriesStrokeWidth}
+                          opacity={0.9}
+                        />
+                        {series.showValueLabel ? (
+                          <Text x={Math.max(zeroX, point.x) + 4} y={y + groupedBarHeight / 2} verticalAnchor="middle" fill={tokens.color.textMuted} fontSize={11}>
+                            {getValueLabel(point)}
+                          </Text>
+                        ) : null}
+                      </React.Fragment>
+                    );
+                  }
+
+                  const x = allCategory
+                    ? point.x - (xBand.bandwidth() / 2) + barIndex * groupedBarWidth
+                    : point.x - groupedBarWidth / 2;
+                  const seriesYScale = yScaleByAxis.get(point.yAxisId) ?? yScale;
+                  const zeroY = Number(seriesYScale(0));
+                  const barHeight = Math.max(1, Math.abs(zeroY - point.y));
+                  return (
+                    <React.Fragment key={`${series.id}-${point.index}`}>
                       <Bar
-                        key={`${series.id}-${point.index}`}
-                        x={Math.min(zeroX, point.x)}
-                        y={y}
-                        width={barWidth}
-                        height={groupedBarHeight}
+                        x={x}
+                        y={Math.min(zeroY, point.y)}
+                        width={groupedBarWidth}
+                        height={barHeight}
                         fill={point.value < 0 ? (series.negativeColor ?? '#dc2626') : color}
                         stroke={
                           point.value < 0 ? seriesNegativeStrokeColor : seriesStrokeColor
@@ -489,28 +605,12 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                         strokeWidth={seriesStrokeWidth}
                         opacity={0.9}
                       />
-                    );
-                  }
-
-                  const x = allCategory
-                    ? point.x - (xBand.bandwidth() / 2) + barIndex * groupedBarWidth
-                    : point.x - groupedBarWidth / 2;
-                  const zeroY = Number(yScale(0));
-                  const barHeight = Math.max(1, Math.abs(zeroY - point.y));
-                  return (
-                    <Bar
-                      key={`${series.id}-${point.index}`}
-                      x={x}
-                      y={Math.min(zeroY, point.y)}
-                      width={groupedBarWidth}
-                      height={barHeight}
-                      fill={point.value < 0 ? (series.negativeColor ?? '#dc2626') : color}
-                      stroke={
-                        point.value < 0 ? seriesNegativeStrokeColor : seriesStrokeColor
-                      }
-                      strokeWidth={seriesStrokeWidth}
-                      opacity={0.9}
-                    />
+                      {series.showValueLabel ? (
+                        <Text x={x + groupedBarWidth / 2} y={Math.min(zeroY, point.y) - 4} textAnchor="middle" verticalAnchor="end" fill={tokens.color.textMuted} fontSize={11}>
+                          {getValueLabel(point)}
+                        </Text>
+                      ) : null}
+                    </React.Fragment>
                   );
                 })}
               </React.Fragment>
@@ -519,28 +619,47 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
           })()}
 
           {props.xAxis?.show !== false ? (
-            <AxisBottom
-              top={barOrientation === 'horizontal' ? innerHeight : xAxisTop}
-              scale={barOrientation === 'horizontal' ? valueXScale : (allCategory ? xBand : xLinear)}
-              stroke={tokens.color.axis}
-              tickStroke={tokens.color.axis}
-              tickLabelProps={() => ({
-                fill: tokens.color.textMuted,
-                fontSize: tokens.typography.axisTickFontSize,
-                textAnchor: 'middle',
-              })}
-              numTicks={barOrientation === 'horizontal' ? (props.yAxis?.tickCount ?? 5) : props.xAxis?.tickCount}
-              tickFormat={
-                (barOrientation === 'horizontal' ? props.yAxis?.tickFormat : props.xAxis?.tickFormat) as
-                  | ((value: any) => string)
-                  | undefined
-              }
-            />
+            barOrientation !== 'horizontal' && props.xAxis?.position === 'top' ? (
+              <AxisTop
+                top={0}
+                scale={allCategory ? xBand : xLinear}
+                hideTicks={props.xAxis?.showTicks === false}
+                stroke={tokens.color.axis}
+                tickStroke={tokens.color.axis}
+                tickLabelProps={() => ({
+                  fill: tokens.color.textMuted,
+                  fontSize: tokens.typography.axisTickFontSize,
+                  textAnchor: 'middle',
+                })}
+                numTicks={props.xAxis?.tickCount}
+                tickFormat={props.xAxis?.tickFormat as ((value: any) => string) | undefined}
+              />
+            ) : (
+              <AxisBottom
+                top={barOrientation === 'horizontal' ? innerHeight : xAxisTop}
+                scale={barOrientation === 'horizontal' ? valueXScale : (allCategory ? xBand : xLinear)}
+                hideTicks={barOrientation === 'horizontal' ? props.yAxis?.showTicks === false : props.xAxis?.showTicks === false}
+                stroke={tokens.color.axis}
+                tickStroke={tokens.color.axis}
+                tickLabelProps={() => ({
+                  fill: tokens.color.textMuted,
+                  fontSize: tokens.typography.axisTickFontSize,
+                  textAnchor: 'middle',
+                })}
+                numTicks={barOrientation === 'horizontal' ? (props.yAxis?.tickCount ?? 5) : props.xAxis?.tickCount}
+                tickFormat={
+                  (barOrientation === 'horizontal' ? props.yAxis?.tickFormat : props.xAxis?.tickFormat) as
+                    | ((value: any) => string)
+                    | undefined
+                }
+              />
+            )
           ) : null}
 
-          {props.yAxis?.show !== false ? (
+          {resolveYAxisOptions(defaultYAxisId)?.show !== false ? (
             <AxisLeft
               scale={barOrientation === 'horizontal' ? yBand : yScale}
+              hideTicks={barOrientation === 'horizontal' ? props.xAxis?.showTicks === false : resolveYAxisOptions(defaultYAxisId)?.showTicks === false}
               stroke={tokens.color.axis}
               tickStroke={tokens.color.axis}
               tickLabelProps={() => ({
@@ -548,14 +667,36 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                 fontSize: tokens.typography.axisTickFontSize,
                 textAnchor: 'end',
               })}
-              numTicks={barOrientation === 'horizontal' ? undefined : (props.yAxis?.tickCount ?? 5)}
+              numTicks={barOrientation === 'horizontal' ? undefined : (resolveYAxisOptions(defaultYAxisId)?.tickCount ?? 5)}
               tickFormat={
-                (barOrientation === 'horizontal' ? props.xAxis?.tickFormat : props.yAxis?.tickFormat) as
+                (barOrientation === 'horizontal' ? props.xAxis?.tickFormat : resolveYAxisOptions(defaultYAxisId)?.tickFormat) as
                   | ((value: any) => string)
                   | undefined
               }
             />
           ) : null}
+
+          {barOrientation !== 'horizontal'
+            ? rightAxisEntries
+              .filter(([, axis]) => axis.show !== false)
+              .map(([axisId, axis]) => (
+                <AxisRight
+                  key={`right-axis-${axisId}`}
+                  left={innerWidth}
+                  scale={yScaleByAxis.get(axisId) ?? yScale}
+                  hideTicks={axis.showTicks === false}
+                  stroke={tokens.color.axis}
+                  tickStroke={tokens.color.axis}
+                  tickLabelProps={() => ({
+                    fill: tokens.color.textMuted,
+                    fontSize: tokens.typography.axisTickFontSize,
+                    textAnchor: 'start',
+                  })}
+                  numTicks={axis.tickCount ?? 5}
+                  tickFormat={axis.tickFormat as ((value: any) => string) | undefined}
+                />
+              ))
+            : null}
 
           <rect
             x={0}
