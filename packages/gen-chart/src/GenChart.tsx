@@ -471,7 +471,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
         <div className="gen-chart-legend" style={{ justifyContent: legendJustify(legend.align) }}>
           {props.series.map((series) => (
             <span key={series.id} className="gen-chart-legend-item">
-              <i style={{ background: series.color ?? colorScale(series.id) }} />
+              <i style={{ background: typeof series.color === 'string' ? series.color : colorScale(series.id) }} />
               {series.label ?? series.id}
             </span>
           ))}
@@ -493,11 +493,16 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
             const stackAcc = new Map<string, { pos: number; neg: number }>();
             return props.series.map((series) => {
             const points = pointsBySeries.get(series.id) ?? [];
-            const color = series.color ?? colorScale(series.id);
+            const color = typeof series.color === 'string' ? series.color : colorScale(series.id);
             const seriesStrokeWidth = series.strokeWidth ?? tokens.border.seriesStrokeWidth;
             const seriesStrokeColor = series.strokeColor ?? tokens.border.seriesStrokeColor ?? color;
             const seriesNegativeStrokeColor =
               series.strokeColor ?? tokens.border.seriesStrokeColor ?? (series.negativeColor ?? '#dc2626');
+            const resolveBarFill = (point: Point<T>) => {
+              if (point.value < 0) return series.negativeColor ?? '#dc2626';
+              if (typeof series.color === 'function') return series.color(point.value, point.datum, point.index);
+              return color;
+            };
             const getValueLabel = (point: Point<T>) =>
               series.valueLabelFormatter?.(point.value, point.datum, point.index) ?? new Intl.NumberFormat('ko-KR').format(point.value);
             const shouldShowValueLabel = (point: Point<T>) =>
@@ -623,7 +628,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                             y={y}
                             width={barWidth}
                             height={stackedBarHeight}
-                            fill={value < 0 ? (series.negativeColor ?? '#dc2626') : color}
+                            fill={resolveBarFill(point)}
                             stroke={
                               value < 0 ? seriesNegativeStrokeColor : seriesStrokeColor
                             }
@@ -670,7 +675,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                           y={Math.min(yStart, yEnd)}
                           width={stackedBarWidth}
                           height={barHeight}
-                          fill={value < 0 ? (series.negativeColor ?? '#dc2626') : color}
+                          fill={resolveBarFill(point)}
                           stroke={
                             value < 0 ? seriesNegativeStrokeColor : seriesStrokeColor
                           }
@@ -722,7 +727,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                           y={y}
                           width={barWidth}
                           height={groupedBarHeight}
-                          fill={point.value < 0 ? (series.negativeColor ?? '#dc2626') : color}
+                          fill={resolveBarFill(point)}
                           stroke={
                             point.value < 0 ? seriesNegativeStrokeColor : seriesStrokeColor
                           }
@@ -767,7 +772,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                         y={Math.min(zeroY, point.y)}
                         width={groupedBarWidth}
                         height={barHeight}
-                        fill={point.value < 0 ? (series.negativeColor ?? '#dc2626') : color}
+                        fill={resolveBarFill(point)}
                         stroke={
                           point.value < 0 ? seriesNegativeStrokeColor : seriesStrokeColor
                         }
@@ -908,7 +913,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
         <div className="gen-chart-legend" style={{ justifyContent: legendJustify(legend.align) }}>
           {props.series.map((series) => (
             <span key={series.id} className="gen-chart-legend-item">
-              <i style={{ background: series.color ?? colorScale(series.id) }} />
+              <i style={{ background: typeof series.color === 'string' ? series.color : colorScale(series.id) }} />
               {series.label ?? series.id}
             </span>
           ))}

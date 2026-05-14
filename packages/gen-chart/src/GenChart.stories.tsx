@@ -188,7 +188,7 @@ export const BarNegativeValues: Story = {
           type: 'bar',
           label: 'Profit',
           y: (d) => d.profit,
-          color: '#2563eb',
+          color: (value, _, index) => (index === 0 ? '#1d4ed8' : value >= 0 ? '#60a5fa' : '#93c5fd'),
           negativeColor: '#dc2626',
           showValueLabel: true,
           valueLabelStyle: (value) => ({
@@ -201,7 +201,7 @@ export const BarNegativeValues: Story = {
           type: 'bar',
           label: 'Target',
           y: (d) => d.target,
-          color: '#0ea5e9',
+          color: (value) => (value >= 15 ? '#0f766e' : value >= 0 ? '#2dd4bf' : '#99f6e4'),
           negativeColor: '#b91c1c',
           showValueLabel: true,
           valueLabelStyle: (value) => ({

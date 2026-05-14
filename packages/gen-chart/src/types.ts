@@ -84,7 +84,7 @@ export interface CartesianSeriesDef<T> {
     fontWeight?: number | string;
     opacity?: number;
   } | undefined);
-  color?: string;
+  color?: string | ((value: number, datum: T, index: number) => string);
   strokeColor?: string;
   strokeWidth?: number;
   negativeColor?: string;
