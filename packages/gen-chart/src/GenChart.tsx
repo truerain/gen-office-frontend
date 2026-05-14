@@ -285,7 +285,17 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
   const clampLabelX = (x: number) => Math.max(6, Math.min(innerWidth - 6, x));
   const clampLabelY = (y: number) => Math.max(10, Math.min(innerHeight - 4, y));
   const placedLabelRows = new Map<number, number[]>();
-  const resolveLabelPlacement = (x: number, y: number) => {
+  const placedLabelRects: Array<{ left: number; right: number; top: number; bottom: number }> = [];
+  const resolveLabelPlacement = (
+    x: number,
+    y: number,
+    opts?: {
+      label?: string;
+      fontSize?: number;
+      textAnchor?: 'start' | 'middle' | 'end';
+      verticalAnchor?: 'start' | 'middle' | 'end';
+    },
+  ) => {
     const clampedX = clampLabelX(x);
     const baseY = clampLabelY(y);
     if (!props.avoidValueLabelOverlap) return { x: clampedX, y: baseY, hidden: false };
@@ -295,6 +305,37 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
     for (const offset of offsets) {
       const candidateY = clampLabelY(baseY + offset);
       const isOverlap = rows.some((rowY) => Math.abs(rowY - candidateY) < 10);
+      if (isOverlap) continue;
+      if (opts?.label) {
+        const fontSize = opts.fontSize ?? 11;
+        const estimatedWidth = Math.max(12, opts.label.length * fontSize * 0.58);
+        const estimatedHeight = fontSize + 4;
+        const textAnchor = opts.textAnchor ?? 'middle';
+        const verticalAnchor = opts.verticalAnchor ?? 'end';
+        const left =
+          textAnchor === 'middle' ? clampedX - estimatedWidth / 2 : textAnchor === 'end' ? clampedX - estimatedWidth : clampedX;
+        const top =
+          verticalAnchor === 'middle'
+            ? candidateY - estimatedHeight / 2
+            : verticalAnchor === 'start'
+              ? candidateY
+              : candidateY - estimatedHeight;
+        const rect = {
+          left,
+          right: left + estimatedWidth,
+          top,
+          bottom: top + estimatedHeight,
+        };
+        const hasRectOverlap = placedLabelRects.some(
+          (placed) =>
+            rect.left < placed.right &&
+            rect.right > placed.left &&
+            rect.top < placed.bottom &&
+            rect.bottom > placed.top,
+        );
+        if (hasRectOverlap) continue;
+        placedLabelRects.push(rect);
+      }
       if (!isOverlap) {
         rows.push(candidateY);
         placedLabelRows.set(bucket, rows);
@@ -461,11 +502,17 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
               series.valueLabelFormatter?.(point.value, point.datum, point.index) ?? new Intl.NumberFormat('ko-KR').format(point.value);
             const shouldShowValueLabel = (point: Point<T>) =>
               Boolean(series.showValueLabel) && !(series.hideZeroValueLabel && point.value === 0);
-            const labelStyle = {
-              fill: series.valueLabelStyle?.color ?? tokens.color.textMuted,
-              fontSize: series.valueLabelStyle?.fontSize ?? 11,
-              fontWeight: series.valueLabelStyle?.fontWeight,
-              opacity: series.valueLabelStyle?.opacity,
+            const resolveValueLabelStyle = (point: Point<T>) => {
+              const rawStyle =
+                typeof series.valueLabelStyle === 'function'
+                  ? series.valueLabelStyle(point.value, point.datum, point.index)
+                  : series.valueLabelStyle;
+              return {
+                fill: rawStyle?.color ?? tokens.color.textMuted,
+                fontSize: rawStyle?.fontSize ?? 11,
+                fontWeight: rawStyle?.fontWeight,
+                opacity: rawStyle?.opacity,
+              };
             };
             const labelOffsetY = series.valueLabelOffsetY ?? -8;
             if (series.type === 'line') {
@@ -484,6 +531,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                       if (!shouldShowValueLabel(point)) return null;
                       const placement = resolveLabelPlacement(point.x, point.y + labelOffsetY);
                       if (placement.hidden) return null;
+                      const labelStyle = resolveValueLabelStyle(point);
                       return (
                     <Text
                       key={`${series.id}-value-${point.index}`}
@@ -523,6 +571,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                       if (!shouldShowValueLabel(point)) return null;
                       const placement = resolveLabelPlacement(point.x, point.y + labelOffsetY);
                       if (placement.hidden) return null;
+                      const labelStyle = resolveValueLabelStyle(point);
                       return (
                     <Text
                       key={`${series.id}-value-${point.index}`}
@@ -583,11 +632,22 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                           />
                           {(() => {
                             if (!shouldShowValueLabel(point)) return null;
-                            const placement = resolveLabelPlacement(Math.max(xStart, xEnd) + 4, point.y + (series.valueLabelOffsetY ?? 0));
+                            const labelStyle = resolveValueLabelStyle(point);
+                            const label = getValueLabel(point);
+                            const placement = resolveLabelPlacement(
+                              Math.max(xStart, xEnd) + 4,
+                              point.y + (series.valueLabelOffsetY ?? 0),
+                              {
+                                label,
+                                fontSize: Number(labelStyle.fontSize ?? 11),
+                                textAnchor: 'start',
+                                verticalAnchor: 'middle',
+                              },
+                            );
                             if (placement.hidden) return null;
                             return (
                               <Text x={placement.x} y={placement.y} verticalAnchor="middle" fill={labelStyle.fill} fontSize={labelStyle.fontSize} fontWeight={labelStyle.fontWeight} opacity={labelStyle.opacity}>
-                                {getValueLabel(point)}
+                                {label}
                               </Text>
                             );
                           })()}
@@ -619,11 +679,31 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                         />
                         {(() => {
                           if (!shouldShowValueLabel(point)) return null;
-                          const placement = resolveLabelPlacement(x + stackedBarWidth / 2, Math.min(yStart, yEnd) - 4 + (series.valueLabelOffsetY ?? 0));
+                          const isNegative = value < 0;
+                          const labelY =
+                            (isNegative ? Math.max(yStart, yEnd) + 12 : Math.min(yStart, yEnd) - 4) +
+                            (series.valueLabelOffsetY ?? 0);
+                          const labelStyle = resolveValueLabelStyle(point);
+                          const label = getValueLabel(point);
+                          const placement = resolveLabelPlacement(x + stackedBarWidth / 2, labelY, {
+                            label,
+                            fontSize: Number(labelStyle.fontSize ?? 11),
+                            textAnchor: 'middle',
+                            verticalAnchor: isNegative ? 'start' : 'end',
+                          });
                           if (placement.hidden) return null;
                           return (
-                            <Text x={placement.x} y={placement.y} textAnchor="middle" verticalAnchor="end" fill={labelStyle.fill} fontSize={labelStyle.fontSize} fontWeight={labelStyle.fontWeight} opacity={labelStyle.opacity}>
-                              {getValueLabel(point)}
+                            <Text
+                              x={placement.x}
+                              y={placement.y}
+                              textAnchor="middle"
+                              verticalAnchor={isNegative ? 'start' : 'end'}
+                              fill={labelStyle.fill}
+                              fontSize={labelStyle.fontSize}
+                              fontWeight={labelStyle.fontWeight}
+                              opacity={labelStyle.opacity}
+                            >
+                              {label}
                             </Text>
                           );
                         })()}
@@ -651,11 +731,22 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                         />
                         {(() => {
                           if (!shouldShowValueLabel(point)) return null;
-                          const placement = resolveLabelPlacement(Math.max(zeroX, point.x) + 4, y + groupedBarHeight / 2 + (series.valueLabelOffsetY ?? 0));
+                          const labelStyle = resolveValueLabelStyle(point);
+                          const label = getValueLabel(point);
+                          const placement = resolveLabelPlacement(
+                            Math.max(zeroX, point.x) + 4,
+                            y + groupedBarHeight / 2 + (series.valueLabelOffsetY ?? 0),
+                            {
+                              label,
+                              fontSize: Number(labelStyle.fontSize ?? 11),
+                              textAnchor: 'start',
+                              verticalAnchor: 'middle',
+                            },
+                          );
                           if (placement.hidden) return null;
                           return (
                             <Text x={placement.x} y={placement.y} verticalAnchor="middle" fill={labelStyle.fill} fontSize={labelStyle.fontSize} fontWeight={labelStyle.fontWeight} opacity={labelStyle.opacity}>
-                              {getValueLabel(point)}
+                              {label}
                             </Text>
                           );
                         })()}
@@ -685,11 +776,31 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                       />
                       {(() => {
                         if (!shouldShowValueLabel(point)) return null;
-                        const placement = resolveLabelPlacement(x + groupedBarWidth / 2, Math.min(zeroY, point.y) - 4 + (series.valueLabelOffsetY ?? 0));
+                        const isNegative = point.value < 0;
+                        const labelY =
+                          (isNegative ? Math.max(zeroY, point.y) + 12 : Math.min(zeroY, point.y) - 4) +
+                          (series.valueLabelOffsetY ?? 0);
+                        const labelStyle = resolveValueLabelStyle(point);
+                        const label = getValueLabel(point);
+                        const placement = resolveLabelPlacement(x + groupedBarWidth / 2, labelY, {
+                          label,
+                          fontSize: Number(labelStyle.fontSize ?? 11),
+                          textAnchor: 'middle',
+                          verticalAnchor: isNegative ? 'start' : 'end',
+                        });
                         if (placement.hidden) return null;
                         return (
-                          <Text x={placement.x} y={placement.y} textAnchor="middle" verticalAnchor="end" fill={labelStyle.fill} fontSize={labelStyle.fontSize} fontWeight={labelStyle.fontWeight} opacity={labelStyle.opacity}>
-                            {getValueLabel(point)}
+                          <Text
+                            x={placement.x}
+                            y={placement.y}
+                            textAnchor="middle"
+                            verticalAnchor={isNegative ? 'start' : 'end'}
+                            fill={labelStyle.fill}
+                            fontSize={labelStyle.fontSize}
+                            fontWeight={labelStyle.fontWeight}
+                            opacity={labelStyle.opacity}
+                          >
+                            {label}
                           </Text>
                         );
                       })()}

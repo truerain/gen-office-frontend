@@ -15,7 +15,16 @@ const salesData: SalesRow[] = [
   { month: 'Mar', revenue: 78, expense: 85, margin: 25 },
   { month: 'Apr', revenue: 160, expense: 100, margin: 60 },
   { month: 'May', revenue: 170, expense: 120, margin: 50 },
-  { month: 'Jun', revenue: 150, expense: 105, margin: 45 },
+  { month: 'Jun', revenue: 150, expense: null, margin: 45 },
+];
+
+const pnlData: Array<{ month: string; profit: number; target: number }> = [
+  { month: 'Jan', profit: 26, target: 18 },
+  { month: 'Feb', profit: -12, target: -6 },
+  { month: 'Mar', profit: 18, target: 12 },
+  { month: 'Apr', profit: -24, target: -14 },
+  { month: 'May', profit: 32, target: 22 },
+  { month: 'Jun', profit: -8, target: -4 },
 ];
 
 const meta: Meta<typeof GenChart<SalesRow>> = {
@@ -156,6 +165,95 @@ export const ValueLabelStyledWithOverlapAvoidance: Story = {
           valueLabelStyle: { color: '#7f1d1d', fontSize: 11, fontWeight: 600, opacity: 0.9 },
           valueLabelOffsetY: 8,
           valueLabelFormatter: (value) => `${value}`,
+        },
+      ]}
+      legend
+      tooltip
+    />
+  ),
+};
+
+export const BarNegativeValues: Story = {
+  render: () => (
+    <GenChart<{ month: string; profit: number; target: number }>
+      kind="bar"
+      width={760}
+      height={360}
+      data={pnlData}
+      x={(d) => d.month}
+      yAxis={{ min: -30, max: 40, tickCount: 8 }}
+      series={[
+        {
+          id: 'profit',
+          type: 'bar',
+          label: 'Profit',
+          y: (d) => d.profit,
+          color: '#2563eb',
+          negativeColor: '#dc2626',
+          showValueLabel: true,
+          valueLabelStyle: (value) => ({
+            color: value < 0 ? '#7f1d1d' : '#1e3a8a',
+            fontWeight: 700,
+          }),
+        },
+        {
+          id: 'target',
+          type: 'bar',
+          label: 'Target',
+          y: (d) => d.target,
+          color: '#0ea5e9',
+          negativeColor: '#b91c1c',
+          showValueLabel: true,
+          valueLabelStyle: (value) => ({
+            color: value < 0 ? '#7f1d1d' : '#0c4a6e',
+            fontWeight: 600,
+            opacity: 0.9,
+          }),
+        },
+      ]}
+      legend
+      tooltip
+    />
+  ),
+};
+
+export const BarNegativeValuesOverlapAvoidance: Story = {
+  render: () => (
+    <GenChart<{ month: string; profit: number; target: number }>
+      kind="bar"
+      width={760}
+      height={360}
+      avoidValueLabelOverlap
+      data={pnlData}
+      x={(d) => d.month}
+      yAxis={{ min: -30, max: 40, tickCount: 8 }}
+      series={[
+        {
+          id: 'profit',
+          type: 'bar',
+          label: 'Profit',
+          y: (d) => d.profit,
+          color: '#2563eb',
+          negativeColor: '#dc2626',
+          showValueLabel: true,
+          valueLabelStyle: (value) => ({
+            color: value < 0 ? '#7f1d1d' : '#1e3a8a',
+            fontWeight: 700,
+          }),
+        },
+        {
+          id: 'target',
+          type: 'bar',
+          label: 'Target',
+          y: (d) => d.target,
+          color: '#0ea5e9',
+          negativeColor: '#b91c1c',
+          showValueLabel: true,
+          valueLabelStyle: (value) => ({
+            color: value < 0 ? '#7f1d1d' : '#0c4a6e',
+            fontWeight: 600,
+            opacity: 0.9,
+          }),
         },
       ]}
       legend
