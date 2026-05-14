@@ -19,6 +19,7 @@ declare module '@tanstack/react-table' {
     percentOptions?:
       | {
           mode?: 'plain' | 'delta';
+          showSuffix?: boolean;
           negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
           negativeColor?: boolean;
           deltaFrom?:
@@ -33,6 +34,7 @@ declare module '@tanstack/react-table' {
         }
       | ((args: { row: TData; rowId: string; columnId: string; value: unknown }) => {
           mode?: 'plain' | 'delta';
+          showSuffix?: boolean;
           negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
           negativeColor?: boolean;
           deltaFrom?:

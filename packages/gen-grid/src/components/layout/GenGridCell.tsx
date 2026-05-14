@@ -475,6 +475,15 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     }
     return meta;
   }, [meta, semanticType]);
+  const effectiveMetaForFormat = React.useMemo(() => {
+    if (!effectiveMeta) return effectiveMeta;
+    if (effectiveMeta.format !== 'percent') return effectiveMeta;
+    if (!resolvedPercentOptions) return effectiveMeta;
+    return {
+      ...effectiveMeta,
+      percentOptions: resolvedPercentOptions as GenGridColumnMeta['percentOptions'],
+    };
+  }, [effectiveMeta, resolvedPercentOptions]);
 
   const isNegativeStyleSupported = semanticType === 'amount' || semanticType === 'percent';
   const amountNegativeStyle =
@@ -827,7 +836,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     : hasColumnCellRenderer
       ? flexRender(cell.column.columnDef.cell, normalizedCellContext as any)
       : effectiveMeta?.format
-        ? (formatCellValue(displayValue, effectiveMeta) as any)
+        ? (formatCellValue(displayValue, effectiveMetaForFormat) as any)
         : flexRender(cell.column.columnDef.cell, normalizedCellContext as any);
   const shouldNormalizeNegativeSign = showNegativeTriangle || isPercentDeltaNegative;
   const displayContent =

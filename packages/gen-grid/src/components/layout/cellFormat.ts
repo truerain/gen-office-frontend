@@ -36,6 +36,14 @@ export function formatCellValue(value: unknown, meta?: GenGridColumnMeta) {
     case 'percent': {
       const n = toNumber(value);
       if (n == null) return value as any;
+      const percentOptions =
+        meta.percentOptions && typeof meta.percentOptions !== 'function'
+          ? meta.percentOptions
+          : undefined;
+      const showSuffix = percentOptions?.showSuffix ?? true;
+      if (!showSuffix) {
+        return new Intl.NumberFormat(locale, meta.numberFormat).format(n * 100);
+      }
       return new Intl.NumberFormat(locale, {
         style: 'percent',
         ...(meta.numberFormat ?? {}),

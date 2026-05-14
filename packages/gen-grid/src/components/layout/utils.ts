@@ -21,6 +21,7 @@ export type GenGridColumnMeta = {
   percentOptions?:
     | {
         mode?: 'plain' | 'delta';
+        showSuffix?: boolean;
         negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
         negativeColor?: boolean;
         deltaFrom?:
@@ -40,6 +41,7 @@ export type GenGridColumnMeta = {
         value: unknown;
       }) => {
         mode?: 'plain' | 'delta';
+        showSuffix?: boolean;
         negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
         negativeColor?: boolean;
         deltaFrom?:
