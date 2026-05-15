@@ -11,6 +11,7 @@ import type {
   CrudUiState,
   CrudPendingDiff,
   CrudActionApi,
+  CrudBuiltInActionKey,
   CrudCellPatch,
   CrudFieldErrorMap,
 } from './GenGridCrud.types';
@@ -193,12 +194,18 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     gridProps,
   } = props;
 
+  const resolvedReadonly = readonlyProp ?? (gridProps as any)?.readonly ?? false;
   const actionBarEnabled = actionBar?.enabled ?? showActionBar;
   const resolvedActionBarPosition = actionBar?.position ?? actionBarPosition;
   const resolvedActionBarWidthMode = actionBar?.widthMode ?? 'container';
   const resolvedActionBarShowTotalRows = actionBar?.showTotalRows ?? true;
   const resolvedActionButtonStyle = actionBar?.defaultStyle ?? actionButtonStyle;
-  const includedBuiltInActions = actionBar?.includeBuiltIns;
+  const includedBuiltInActions = React.useMemo<readonly CrudBuiltInActionKey[] | undefined>(() => {
+    const builtIns = actionBar?.includeBuiltIns;
+    if (!resolvedReadonly) return builtIns;
+    const source = builtIns ?? ['add', 'delete', 'save', 'columnReorder', 'filter'];
+    return source.filter((key) => key !== 'add' && key !== 'delete' && key !== 'save');
+  }, [actionBar?.includeBuiltIns, resolvedReadonly]);
   const hasColumnReorderBuiltIn = React.useMemo(() => {
     const defaults: readonly string[] = ['add', 'delete', 'save', 'columnReorder', 'filter'];
     return (includedBuiltInActions ?? defaults).includes('columnReorder');
@@ -935,9 +942,9 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
 
   const actionApi = React.useMemo<CrudActionApi>(
     () => ({
-      add: createRow ? handleAdd : undefined,
-      deleteSelected: handleDelete,
-      save: handleSave,
+      add: !resolvedReadonly && createRow ? handleAdd : undefined,
+      deleteSelected: resolvedReadonly ? undefined : handleDelete,
+      save: resolvedReadonly ? undefined : handleSave,
       reset: handleReset,
       toggleFilter: handleToggleFilter,
       toggleColumnReorder: handleToggleColumnReorder,
@@ -948,6 +955,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
           : undefined,
     }),
     [
+      resolvedReadonly,
       createRow,
       handleAdd,
       handleDelete,
@@ -976,6 +984,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
           title={title}
           showTotalRows={resolvedActionBarShowTotalRows}
           state={{
+            readonly: resolvedReadonly,
             baseData: data,
             viewData: diff.viewData,
             changes: pendingApi.changes,
@@ -1003,7 +1012,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   const mergedGridProps = React.useMemo(
     () => ({
       ...gridProps,
-      readonly: readonlyProp ?? (gridProps as any)?.readonly,
+      readonly: resolvedReadonly,
       enableFiltering: filterEnabled,
       columnFilters,
       onColumnFiltersChange: setColumnFilters,
@@ -1049,7 +1058,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     }),
     [
       gridProps,
-      readonlyProp,
+      resolvedReadonly,
       filterEnabled,
       columnFilters,
       hasColumnReorderBuiltIn,

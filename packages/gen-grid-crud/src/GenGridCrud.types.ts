@@ -29,6 +29,7 @@ export type CrudCommitResult<TData> =
   | { ok: false; error: unknown; fieldErrors?: Record<string, string> };
 
 export type CrudUiState<TData> = {
+  readonly?: boolean;
   baseData: readonly TData[];
   viewData: readonly TData[];
   changes: readonly CrudChange<TData>[];
