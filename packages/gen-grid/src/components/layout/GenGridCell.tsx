@@ -658,8 +658,9 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
             placeholder={meta?.editPlaceholder}
             onChange={(e) => {
               const next = e.target.value;
-              // eslint-disable-next-line no-console
-              setDraft(normalizeEditValue(next));
+              const normalized = normalizeEditValue(next);
+              setDraft(normalized);
+              commitDraft(normalized);
             }}
           />
         );
