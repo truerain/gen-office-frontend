@@ -629,19 +629,19 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
         return (
           <input
             autoFocus
-            onBlur={() => commitDraft()}
+            onBlur={(e) => commitDraft(e.currentTarget.value)}
             onKeyDown={(e: React.KeyboardEvent) => {
               if (e.key === 'Tab') {
                 e.preventDefault();
                 e.stopPropagation();
-                commitDraft();
+                commitDraft((e.currentTarget as HTMLInputElement).value);
                 onTab?.(e.shiftKey ? -1 : 1);
                 return;
               }
               if (e.key === 'Enter') {
                 e.preventDefault();
                 e.stopPropagation();
-                commitDraft();
+                commitDraft((e.currentTarget as HTMLInputElement).value);
                 return;
               }
               if (e.key === 'Escape') {

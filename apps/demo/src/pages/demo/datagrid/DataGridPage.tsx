@@ -65,6 +65,7 @@ function fetchAssignees(keyword: string): Promise<ModalEditorSelection<Employee>
 
 function DataGridPage() {
   const [rows, setRows] = useState<DemoRow[]>(initialRows);
+  const [lastDateEditEvent, setLastDateEditEvent] = useState<string>('No date edit yet');
 
   const columns = useMemo<ColumnDef<DemoRow>[]>(
     () => [
@@ -172,10 +173,27 @@ function DataGridPage() {
 
       <section className={styles.section}>
         <h2>GenGrid + ModalEditor</h2>
+        <div className={styles.testGuide}>
+          <strong>Date edit verification</strong>
+          <ol>
+            <li>Direct typing: edit Updated At and press Enter.</li>
+            <li>Date picker select: open calendar and choose a date.</li>
+            <li>Keyboard move: edit Updated At and press Tab.</li>
+          </ol>
+          <p className={styles.eventText}>Last date event: {lastDateEditEvent}</p>
+        </div>
         <div className={styles.gridWrap}>
           <GenGrid<DemoRow>
             data={rows}
             onDataChange={setRows}
+            onCellValueChange={(coord, value) => {
+              if (coord.columnId !== 'updatedAt') return;
+              const row = rows.find((item) => item.id === coord.rowId);
+              const prev = row?.updatedAt ?? '';
+              setLastDateEditEvent(
+                `${coord.rowId} | ${prev || '(empty)'} -> ${String(value || '(empty)')}`
+              );
+            }}
             columns={columns}
             getRowId={(row) => row.id}
             dataVersion={rows.length}

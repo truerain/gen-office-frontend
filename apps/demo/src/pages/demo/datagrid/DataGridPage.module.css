@@ -28,6 +28,25 @@
   background: var(--color-bg-primary);
 }
 
+.testGuide {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border-muted);
+  border-radius: 0.5rem;
+  background: var(--color-bg-secondary);
+}
+
+.testGuide ol {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.eventText {
+  margin: 0.5rem 0 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: 0.875rem;
+}
+
 .statusCell {
   font-weight: 500;
   color: red;
