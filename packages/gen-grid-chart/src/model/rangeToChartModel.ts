@@ -72,10 +72,10 @@ export function buildRangeChartModel<TData>(
     valueCategoryLabels?: readonly string[];
     getSeriesLabel?: (params: { rowIndex: number; rowData: TData }) => string;
     transformSeriesValue?: (params: {
-      seriesId: string;
-      value: number;
+      row: TData;
       rowIndex: number;
-      rowData: TData;
+      valueColumnId: string;
+      value: number;
     }) => number | null;
     barSeriesLayout?: BarSeriesLayout;
     messageWhenInvalid?: string;
@@ -172,10 +172,10 @@ export function buildRangeChartModel<TData>(
         if (value == null || !row) return;
         const transformed = options?.transformSeriesValue
           ? options.transformSeriesValue({
-              seriesId: seriesItem.id,
-              value,
+              row: row.original as TData,
               rowIndex: rowOffset,
-              rowData: row.original as TData,
+              valueColumnId: columnId,
+              value,
             })
           : value;
         if (typeof transformed === 'number' && Number.isFinite(transformed)) {
@@ -291,10 +291,10 @@ export function buildRangeChartModel<TData>(
       if (value == null) continue;
       const transformed = options?.transformSeriesValue
         ? options.transformSeriesValue({
-            seriesId: columnId,
-            value,
+            row: row.original as TData,
             rowIndex: rowOffset,
-            rowData: row.original as TData,
+            valueColumnId: columnId,
+            value,
           })
         : value;
       if (typeof transformed !== 'number' || !Number.isFinite(transformed)) continue;

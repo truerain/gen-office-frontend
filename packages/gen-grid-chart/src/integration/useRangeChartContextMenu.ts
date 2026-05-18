@@ -25,10 +25,10 @@ export type UseRangeChartContextMenuOptions<TData> = {
   valueCategoryLabels?: readonly string[];
   getSeriesLabel?: (params: { rowIndex: number; rowData: TData }) => string;
   transformSeriesValue?: (params: {
-    seriesId: string;
-    value: number;
+    row: TData;
     rowIndex: number;
-    rowData: TData;
+    valueColumnId: string;
+    value: number;
   }) => number | null;
   getCategoryColumnIndex?: (ctx: GenGridContextMenuActionContext<TData>) => number;
   messageWhenCategoryMissing?: string;
