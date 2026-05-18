@@ -64,6 +64,13 @@
   outline: none;
 }
 
+/* Allow editor popovers/dropdowns (e.g. select) to escape cell bounds. */
+.tbody td[data-editing-cell="true"] {
+  overflow: visible;
+  position: relative;
+  z-index: 4;
+}
+
 /* align/mono */
 .alignLeft { text-align: left; }
 .alignCenter { text-align: center; }
