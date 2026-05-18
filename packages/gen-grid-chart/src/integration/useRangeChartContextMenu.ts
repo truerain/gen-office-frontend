@@ -24,6 +24,12 @@ export type UseRangeChartContextMenuOptions<TData> = {
   valueCategoryColumnIds?: readonly string[];
   valueCategoryLabels?: readonly string[];
   getSeriesLabel?: (params: { rowIndex: number; rowData: TData }) => string;
+  transformSeriesValue?: (params: {
+    seriesId: string;
+    value: number;
+    rowIndex: number;
+    rowData: TData;
+  }) => number | null;
   getCategoryColumnIndex?: (ctx: GenGridContextMenuActionContext<TData>) => number;
   messageWhenCategoryMissing?: string;
   messageWhenInvalid?: string;
@@ -113,6 +119,7 @@ export function useRangeChartContextMenu<TData>(
       valueCategoryColumnIds: options.valueCategoryColumnIds,
       valueCategoryLabels: options.valueCategoryLabels,
       getSeriesLabel: options.getSeriesLabel,
+      transformSeriesValue: options.transformSeriesValue,
       barSeriesLayout,
       messageWhenInvalid: options.messageWhenInvalid,
     });

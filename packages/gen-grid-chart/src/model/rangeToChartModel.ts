@@ -71,6 +71,12 @@ export function buildRangeChartModel<TData>(
     valueCategoryColumnIds?: readonly string[];
     valueCategoryLabels?: readonly string[];
     getSeriesLabel?: (params: { rowIndex: number; rowData: TData }) => string;
+    transformSeriesValue?: (params: {
+      seriesId: string;
+      value: number;
+      rowIndex: number;
+      rowData: TData;
+    }) => number | null;
     barSeriesLayout?: BarSeriesLayout;
     messageWhenInvalid?: string;
   }
@@ -161,8 +167,20 @@ export function buildRangeChartModel<TData>(
         label: categoryLabelsByColumnId.get(columnId) ?? resolveColumnHeader(ctx, columnId),
       };
       series.forEach((seriesItem, rowOffset) => {
-        const value = toFiniteNumber(sourceRows[rowOffset]?.getValue(columnId));
-        if (value != null) chartRow[seriesItem.id] = value;
+        const row = sourceRows[rowOffset];
+        const value = toFiniteNumber(row?.getValue(columnId));
+        if (value == null || !row) return;
+        const transformed = options?.transformSeriesValue
+          ? options.transformSeriesValue({
+              seriesId: seriesItem.id,
+              value,
+              rowIndex: rowOffset,
+              rowData: row.original as TData,
+            })
+          : value;
+        if (typeof transformed === 'number' && Number.isFinite(transformed)) {
+          chartRow[seriesItem.id] = transformed;
+        }
       });
       return chartRow;
     });
@@ -271,7 +289,16 @@ export function buildRangeChartModel<TData>(
     for (const columnId of numericColumns) {
       const value = toFiniteNumber(row.getValue(columnId));
       if (value == null) continue;
-      chartRow[columnId] = value;
+      const transformed = options?.transformSeriesValue
+        ? options.transformSeriesValue({
+            seriesId: columnId,
+            value,
+            rowIndex: rowOffset,
+            rowData: row.original as TData,
+          })
+        : value;
+      if (typeof transformed !== 'number' || !Number.isFinite(transformed)) continue;
+      chartRow[columnId] = transformed;
       hasAnyNumeric = true;
     }
     if (hasAnyNumeric) {
