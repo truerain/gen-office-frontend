@@ -18,10 +18,16 @@ export type UseRangeChartContextMenuOptions<TData> = {
   chartKinds?: readonly RangeChartKind[];
   barModes?: readonly BarSeriesLayout[];
   categoryColumnId?: string;
+  categoryColumnIds?: readonly string[];
   categoryColumnIndex?: number;
+  seriesColumnIds?: readonly string[];
+  valueCategoryColumnIds?: readonly string[];
+  valueCategoryLabels?: readonly string[];
+  getSeriesLabel?: (params: { rowIndex: number; rowData: TData }) => string;
   getCategoryColumnIndex?: (ctx: GenGridContextMenuActionContext<TData>) => number;
   messageWhenCategoryMissing?: string;
   messageWhenInvalid?: string;
+  dialogTitle?: string;
   dialogTitleWhenError?: string;
 };
 
@@ -52,8 +58,9 @@ function chartKindLabel(kind: RangeChartKind): string {
 export function useRangeChartContextMenu<TData>(
   options: UseRangeChartContextMenuOptions<TData> = {}
 ): UseRangeChartContextMenuResult<TData> {
+  const defaultDialogTitle = options.dialogTitle ?? 'Selection Chart';
   const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState(options.dialogTitleWhenError ?? 'Selection Chart');
+  const [title, setTitle] = useState(defaultDialogTitle);
   const [error, setError] = useState<string | null>(null);
   const [rows, setRows] = useState<RangeChartRow[]>([]);
   const [series, setSeries] = useState<RangeChartSeries[]>([]);
@@ -75,16 +82,24 @@ export function useRangeChartContextMenu<TData>(
     nextChartKind: RangeChartKind,
     barSeriesLayout: BarSeriesLayout
   ) => {
-    if (options.categoryColumnId && !ctx.table.getColumn(options.categoryColumnId)) {
+    const categoryColumnIds = options.categoryColumnIds?.length
+      ? options.categoryColumnIds
+      : options.categoryColumnId
+        ? [options.categoryColumnId]
+        : [];
+    const missingCategoryColumnId = categoryColumnIds.find(
+      (columnId) => !ctx.table.getColumn(columnId)
+    );
+    if (missingCategoryColumnId) {
       setError(
         options.messageWhenCategoryMissing ??
-          `Category column "${options.categoryColumnId}" was not found.`
+          `Category column "${missingCategoryColumnId}" was not found.`
       );
       setRows([]);
       setSeries([]);
       setChartKind(nextChartKind);
       setLayout(barSeriesLayout);
-      setTitle(options.dialogTitleWhenError ?? 'Selection Chart');
+      setTitle(options.dialogTitleWhenError ?? defaultDialogTitle);
       setOpen(true);
       return;
     }
@@ -92,7 +107,12 @@ export function useRangeChartContextMenu<TData>(
     const categoryColumnIndex = resolveCategoryColumnIndex(ctx);
     const built = buildRangeChartModel(ctx, {
       categoryColumnId: options.categoryColumnId,
+      categoryColumnIds: options.categoryColumnIds,
       categoryColumnIndex,
+      seriesColumnIds: options.seriesColumnIds,
+      valueCategoryColumnIds: options.valueCategoryColumnIds,
+      valueCategoryLabels: options.valueCategoryLabels,
+      getSeriesLabel: options.getSeriesLabel,
       barSeriesLayout,
       messageWhenInvalid: options.messageWhenInvalid,
     });
@@ -103,7 +123,7 @@ export function useRangeChartContextMenu<TData>(
       setSeries([]);
       setChartKind(nextChartKind);
       setLayout(barSeriesLayout);
-      setTitle(options.dialogTitleWhenError ?? 'Selection Chart');
+      setTitle(options.dialogTitleWhenError ?? defaultDialogTitle);
       setOpen(true);
       return;
     }
@@ -113,7 +133,7 @@ export function useRangeChartContextMenu<TData>(
     setSeries(built.model.series);
     setChartKind(nextChartKind);
     setLayout(built.model.barSeriesLayout);
-    setTitle(`${built.model.title} [${chartKindLabel(nextChartKind)}]`);
+    setTitle(options.dialogTitle ?? `${built.model.title} [${chartKindLabel(nextChartKind)}]`);
     setOpen(true);
   };
 

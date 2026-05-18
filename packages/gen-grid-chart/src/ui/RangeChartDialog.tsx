@@ -126,8 +126,10 @@ export function RangeChartDialog({
       title={title}
       className={styles.dialog}
       resizable
-      initialHeight={280}
-      minResizableHeight={280}
+      initialWidth={800}
+      initialHeight={400}
+      minResizableWidth={640}
+      minResizableHeight={400}
       bodyScrollable={false}
       bodyRef={bodyRef}
     >

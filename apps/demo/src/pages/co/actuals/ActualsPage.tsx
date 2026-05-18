@@ -93,9 +93,11 @@ export default function CoActualsPage(_props: PageComponentProps) {
   const [searchResetSeq, setSearchResetSeq] = useState(0);
 
   const rangeChart = useRangeChartContextMenu<CoActual>({
-    categoryColumnId: 'acctName',
+    dialogTitle: 'Actuals Chart',
+    valueCategoryColumnIds: ['prevActAmt', 'currActAmt', 'planAmt', 'm01', 'm02', 'm03', 'm04', 'm05', 'm06', 'm07', 'm08', 'm09', 'm10', 'm11', 'm12'],
+    getSeriesLabel: ({ rowData }) => `${rowData.acctName} (${rowData.acctCd})`,
     chartKinds: ['column', 'bar', 'line', 'area', 'pie', 'donut'],
-    messageWhenCategoryMissing: 'Category column "Account Name (acctName)" was not found.',
+    messageWhenCategoryMissing: 'Required chart category columns were not found.',
     messageWhenInvalid:
       'Select at least one numeric column. For multi-selection charts, all selected ranges must share the same column range.',
     barModes: ['grouped', 'stacked', 'stacked100'],

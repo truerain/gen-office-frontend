@@ -65,7 +65,12 @@ export function buildRangeChartModel<TData>(
   ctx: GenGridContextMenuActionContext<TData>,
   options?: {
     categoryColumnId?: string;
+    categoryColumnIds?: readonly string[];
     categoryColumnIndex?: number;
+    seriesColumnIds?: readonly string[];
+    valueCategoryColumnIds?: readonly string[];
+    valueCategoryLabels?: readonly string[];
+    getSeriesLabel?: (params: { rowIndex: number; rowData: TData }) => string;
     barSeriesLayout?: BarSeriesLayout;
     messageWhenInvalid?: string;
   }
@@ -103,36 +108,140 @@ export function buildRangeChartModel<TData>(
     };
   }
 
-  const categoryColumnId = options?.categoryColumnId
-    ? options.categoryColumnId
-    : (() => {
-        const categoryColumnIndex = options?.categoryColumnIndex ?? 0;
-        if (categoryColumnIndex < 0 || categoryColumnIndex >= selectedColumnIds.length) {
-          return null;
-        }
-        return selectedColumnIds[categoryColumnIndex]!;
-      })();
+  const valueCategoryColumnIds = options?.valueCategoryColumnIds?.length
+    ? [...options.valueCategoryColumnIds]
+    : [];
+  if (valueCategoryColumnIds.length > 0) {
+    const missingValueCategoryColumnId = valueCategoryColumnIds.find(
+      (columnId) => !ctx.table.getColumn(columnId)
+    );
+    if (missingValueCategoryColumnId) {
+      return {
+        ok: false,
+        message:
+          options?.messageWhenInvalid ?? `Category value column "${missingValueCategoryColumnId}" not found.`,
+      };
+    }
 
-  if (!categoryColumnId) {
+    const selectedValueCategoryColumnIds = valueCategoryColumnIds.filter((columnId) =>
+      selectedColumnIds.includes(columnId)
+    );
+    if (selectedValueCategoryColumnIds.length === 0) {
+      return {
+        ok: false,
+        message:
+          options?.messageWhenInvalid ??
+          'Select at least one category value column included in valueCategoryColumnIds.',
+      };
+    }
+
+    const series: RangeChartSeries[] = sourceRows.map((row, rowOffset) => {
+      const rawLabel = options?.getSeriesLabel
+        ? options.getSeriesLabel({ rowIndex: rowOffset, rowData: row.original as TData })
+        : `Row ${rowOffset + 1}`;
+      const label = String(rawLabel ?? `Row ${rowOffset + 1}`).trim() || `Row ${rowOffset + 1}`;
+      return {
+        id: `__row_${rowOffset}`,
+        label,
+      };
+    });
+
+    const categoryLabelsByColumnId = new Map<string, string>();
+    if (
+      options?.valueCategoryLabels &&
+      options.valueCategoryLabels.length === valueCategoryColumnIds.length
+    ) {
+      valueCategoryColumnIds.forEach((columnId, index) => {
+        categoryLabelsByColumnId.set(columnId, options.valueCategoryLabels![index] ?? columnId);
+      });
+    }
+
+    const resultRows: RangeChartRow[] = selectedValueCategoryColumnIds.map((columnId) => {
+      const chartRow: RangeChartRow = {
+        label: categoryLabelsByColumnId.get(columnId) ?? resolveColumnHeader(ctx, columnId),
+      };
+      series.forEach((seriesItem, rowOffset) => {
+        const value = toFiniteNumber(sourceRows[rowOffset]?.getValue(columnId));
+        if (value != null) chartRow[seriesItem.id] = value;
+      });
+      return chartRow;
+    });
+
+    const hasAnyNumeric = resultRows.some((row) =>
+      series.some((seriesItem) => typeof row[seriesItem.id] === 'number')
+    );
+    if (!hasAnyNumeric) {
+      return {
+        ok: false,
+        message: options?.messageWhenInvalid ?? 'No numeric values found in selected range.',
+      };
+    }
+
+    return {
+      ok: true,
+      model: {
+        title: `${resultRows.map((row) => row.label).join(', ')} trend`,
+        rows: resultRows,
+        series,
+        categoryHeader: 'Category',
+        barSeriesLayout: options?.barSeriesLayout ?? 'grouped',
+      },
+    };
+  }
+
+  const categoryColumnIds =
+    options?.categoryColumnIds && options.categoryColumnIds.length > 0
+      ? [...options.categoryColumnIds]
+      : options?.categoryColumnId
+        ? [options.categoryColumnId]
+        : (() => {
+            const categoryColumnIndex = options?.categoryColumnIndex ?? 0;
+            if (categoryColumnIndex < 0 || categoryColumnIndex >= selectedColumnIds.length) {
+              return [];
+            }
+            return [selectedColumnIds[categoryColumnIndex]!];
+          })();
+
+  if (!categoryColumnIds.length) {
     return {
       ok: false,
       message: options?.messageWhenInvalid ?? 'Invalid chart category column index.',
     };
   }
 
-  const categoryColumn = ctx.table.getColumn(categoryColumnId);
-  if (!categoryColumn) {
+  const missingCategoryColumnId = categoryColumnIds.find(
+    (categoryColumnId) => !ctx.table.getColumn(categoryColumnId)
+  );
+  if (missingCategoryColumnId) {
     return {
       ok: false,
-      message: options?.messageWhenInvalid ?? `Category column "${categoryColumnId}" not found.`,
+      message:
+        options?.messageWhenInvalid ?? `Category column "${missingCategoryColumnId}" not found.`,
     };
   }
 
-  const numericColumns = selectedColumnIds
-    .filter((columnId) => columnId !== categoryColumnId)
-    .filter((columnId) =>
-      sourceRows.some((row) => toFiniteNumber(row.getValue(columnId)) != null)
+  const categoryColumnIdSet = new Set(categoryColumnIds);
+  const seriesColumnCandidates =
+    options?.seriesColumnIds && options.seriesColumnIds.length > 0
+      ? [...options.seriesColumnIds]
+      : selectedColumnIds.filter((columnId) => !categoryColumnIdSet.has(columnId));
+
+  if (options?.seriesColumnIds?.length) {
+    const missingSeriesColumnId = options.seriesColumnIds.find(
+      (columnId) => !ctx.table.getColumn(columnId)
     );
+    if (missingSeriesColumnId) {
+      return {
+        ok: false,
+        message:
+          options?.messageWhenInvalid ?? `Series column "${missingSeriesColumnId}" not found.`,
+      };
+    }
+  }
+
+  const numericColumns = seriesColumnCandidates.filter((columnId) =>
+    sourceRows.some((row) => toFiniteNumber(row.getValue(columnId)) != null)
+  );
 
   if (numericColumns.length === 0) {
     return {
@@ -150,8 +259,12 @@ export function buildRangeChartModel<TData>(
   const resultRows: RangeChartRow[] = [];
   for (let rowOffset = 0; rowOffset < sourceRows.length; rowOffset++) {
     const row = sourceRows[rowOffset]!;
-    const categoryValue = row.getValue(categoryColumnId);
-    const label = String(categoryValue ?? `Row ${rowOffset + 1}`).trim() || `Row ${rowOffset + 1}`;
+    const categoryValues = categoryColumnIds.map((categoryColumnId) => {
+      const categoryValue = row.getValue(categoryColumnId);
+      return String(categoryValue ?? '').trim();
+    });
+    const joinedCategory = categoryValues.filter(Boolean).join(' / ');
+    const label = joinedCategory || `Row ${rowOffset + 1}`;
 
     const chartRow: RangeChartRow = { label };
     let hasAnyNumeric = false;
@@ -173,7 +286,10 @@ export function buildRangeChartModel<TData>(
     };
   }
 
-  const categoryHeader = resolveColumnHeader(ctx, categoryColumnId);
+  const categoryHeader = categoryColumnIds
+    .map((categoryColumnId) => resolveColumnHeader(ctx, categoryColumnId))
+    .join(' / ');
+
   if (barSeriesLayout === 'stacked100') {
     for (const row of resultRows) {
       let positiveSum = 0;
