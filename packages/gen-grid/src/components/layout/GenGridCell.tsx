@@ -425,8 +425,13 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
 
   const resolvedAmountOptions = React.useMemo(() => {
     const rawAmountOptions = meta?.amountOptions as
-      | { negativeStyle?: 'none' | 'text' | 'triangle' | 'both'; negativeColor?: boolean }
+      | {
+          mode?: 'plain' | 'delta';
+          negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
+          negativeColor?: boolean;
+        }
       | ((args: { row: TData; rowId: string; columnId: string; value: unknown }) => {
+          mode?: 'plain' | 'delta';
           negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
           negativeColor?: boolean;
         } | undefined)
@@ -503,6 +508,12 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
   const amountNegativeText = isAmountNegative && amountNegativeColor;
   const amountNegativeTriangle =
     isAmountNegative && (amountNegativeStyle === 'triangle' || amountNegativeStyle === 'both');
+  const amountMode = semanticType === 'amount' ? (resolvedAmountOptions?.mode ?? 'plain') : 'plain';
+  const isAmountDeltaNegative =
+    semanticType === 'amount' &&
+    amountMode === 'delta' &&
+    numericCellValue != null &&
+    numericCellValue < 0;
 
   const percentMode = semanticType === 'percent' ? (resolvedPercentOptions?.mode ?? 'plain') : 'plain';
   const isPercentDeltaNegative =
@@ -510,14 +521,22 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     percentMode === 'delta' &&
     numericCellValue != null &&
     numericCellValue < 0;
-  const showNegativeTriangle = amountNegativeTriangle && !isPercentDeltaNegative;
-  let percentDeltaDirection: 'up' | 'down' | null = null;
+  const showNegativeTriangle = amountNegativeTriangle && !isPercentDeltaNegative && !isAmountDeltaNegative;
+  let deltaDirection: 'up' | 'down' | null = null;
+
+  if (semanticType === 'amount' && amountMode === 'delta' && numericCellValue != null) {
+    if (numericCellValue > 0) {
+      deltaDirection = 'up';
+    } else if (numericCellValue < 0) {
+      deltaDirection = 'down';
+    }
+  }
 
   if (semanticType === 'percent' && percentMode === 'delta' && numericCellValue != null) {
     if (numericCellValue > 0) {
-      percentDeltaDirection = 'up';
+      deltaDirection = 'up';
     } else if (numericCellValue < 0) {
-      percentDeltaDirection = 'down';
+      deltaDirection = 'down';
     }
   }
 
@@ -814,12 +833,12 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
   const hasColumnCellRenderer = Boolean((cell.column.columnDef.meta as any)?.__genGridHasUserCellRenderer);
   const commitValueForDisplay = isEditing ? onCommitValue : onApplyValue;
   const displayValue =
-    (showNegativeTriangle || isPercentDeltaNegative) && numericCellValue != null
+    (showNegativeTriangle || isPercentDeltaNegative || isAmountDeltaNegative) && numericCellValue != null
       ? Math.abs(numericCellValue)
       : cell.getValue();
   const cellContext = cell.getContext();
   const normalizedCellContext =
-    (showNegativeTriangle || isPercentDeltaNegative) && numericCellValue != null
+    (showNegativeTriangle || isPercentDeltaNegative || isAmountDeltaNegative) && numericCellValue != null
       ? {
           ...cellContext,
           getValue: () => displayValue,
@@ -839,7 +858,8 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
       : effectiveMeta?.format
         ? (formatCellValue(displayValue, effectiveMetaForFormat) as any)
         : flexRender(cell.column.columnDef.cell, normalizedCellContext as any);
-  const shouldNormalizeNegativeSign = showNegativeTriangle || isPercentDeltaNegative;
+  const shouldNormalizeNegativeSign =
+    showNegativeTriangle || isPercentDeltaNegative || isAmountDeltaNegative;
   const displayContent =
     shouldNormalizeNegativeSign && typeof displayContentRaw === 'string'
       ? displayContentRaw.replace(/^\s*[-−]\s*/, '')
@@ -898,9 +918,20 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
         isInSelectedRange ? bodyStyles.selectedRange : '',
         isRowSpanCovered ? bodyStyles.rowSpanCovered : '',
         !isEditing && amountNegativeText ? bodyStyles.semanticAmountNegativeText : '',
+        !isEditing && amountMode === 'delta' ? bodyStyles.semanticAmountDelta : '',
+        !isEditing && semanticType === 'amount' && deltaDirection === 'up'
+          ? bodyStyles.semanticAmountDeltaUp
+          : '',
+        !isEditing && semanticType === 'amount' && deltaDirection === 'down'
+          ? bodyStyles.semanticAmountDeltaDown
+          : '',
         !isEditing && percentMode === 'delta' ? bodyStyles.semanticPercentDelta : '',
-        !isEditing && percentDeltaDirection === 'up' ? bodyStyles.semanticPercentDeltaUp : '',
-        !isEditing && percentDeltaDirection === 'down' ? bodyStyles.semanticPercentDeltaDown : '',
+        !isEditing && semanticType === 'percent' && deltaDirection === 'up'
+          ? bodyStyles.semanticPercentDeltaUp
+          : '',
+        !isEditing && semanticType === 'percent' && deltaDirection === 'down'
+          ? bodyStyles.semanticPercentDeltaDown
+          : '',
         metaCellClassName ?? '',
         getCellClassName?.({
           row: cell.row.original,

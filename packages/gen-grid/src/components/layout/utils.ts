@@ -9,6 +9,7 @@ export type GenGridColumnMeta = {
     | ((args: { row: unknown; rowId: string; columnId: string; value: unknown }) => 'amount' | 'percent' | undefined);
   amountOptions?:
     | {
+        mode?: 'plain' | 'delta';
         negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
         negativeColor?: boolean;
       }
@@ -17,7 +18,11 @@ export type GenGridColumnMeta = {
         rowId: string;
         columnId: string;
         value: unknown;
-      }) => { negativeStyle?: 'none' | 'text' | 'triangle' | 'both'; negativeColor?: boolean } | undefined);
+      }) => {
+        mode?: 'plain' | 'delta';
+        negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
+        negativeColor?: boolean;
+      } | undefined);
   percentOptions?:
     | {
         mode?: 'plain' | 'delta';

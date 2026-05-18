@@ -9,10 +9,12 @@ declare module '@tanstack/react-table' {
       | ((args: { row: TData; rowId: string; columnId: string; value: unknown }) => 'amount' | 'percent' | undefined);
     amountOptions?:
       | {
+          mode?: 'plain' | 'delta';
           negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
           negativeColor?: boolean;
         }
       | ((args: { row: TData; rowId: string; columnId: string; value: unknown }) => {
+          mode?: 'plain' | 'delta';
           negativeStyle?: 'none' | 'text' | 'triangle' | 'both';
           negativeColor?: boolean;
         } | undefined);
