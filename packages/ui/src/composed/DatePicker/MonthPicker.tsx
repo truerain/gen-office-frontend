@@ -74,6 +74,12 @@ export function MonthPicker({
   }, [label, isEditing]);
 
   useEffect(() => {
+    if (open) return;
+    setIsEditing(false);
+    setInputValue(label);
+  }, [label, open]);
+
+  useEffect(() => {
     if (open) {
       setDraftValue(value);
       const fallbackYear = new Date().getFullYear();
@@ -125,7 +131,11 @@ export function MonthPicker({
             placeholder={placeholder}
             disabled={disabled}
             onFocus={() => setIsEditing(true)}
-            onBlur={() => {
+            onBlur={(event) => {
+              const nextTarget = event.relatedTarget as HTMLElement | null;
+              if (open && nextTarget?.closest('[data-month-picker-popover="true"]')) {
+                return;
+              }
               setIsEditing(false);
               const committed = commitInput();
               if (!committed) setInputValue(label);
@@ -152,6 +162,7 @@ export function MonthPicker({
       <PopoverContent
         align={align}
         className={`${styles.monthPopover} ${className ?? ''}`.trim()}
+        data-month-picker-popover="true"
         data-gen-grid-editor-overlay={editorOverlay ? 'true' : undefined}
       >
         <div className={styles.monthContent}>
@@ -191,6 +202,8 @@ export function MonthPicker({
                   onClick={() => {
                     setDraftValue(candidate);
                     onChange?.(candidate);
+                    setIsEditing(false);
+                    setInputValue(format ? format(candidate) : defaultFormatter(candidate, locale));
                     setOpen(false);
                   }}
                 >

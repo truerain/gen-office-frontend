@@ -30,7 +30,7 @@ const employees: Employee[] = [
 ];
 
 const initialRows: DemoRow[] = [
-  { id: 'T-1001', title: 'Monthly closing checklist', assignee: 'Olivia Harper (E1001)', status: '', plannedMonth: '2026-04', updatedAt: '2026-04-01' },
+  { id: 'T-1001', title: 'Monthly closing checklist', assignee: 'Olivia Harper (E1001)', status: '', plannedMonth: '', updatedAt: '2026-04-01' },
   { id: 'T-1002', title: 'Prepare launch memo', assignee: 'Noah Kim (E1002)', status: 'In Progress', plannedMonth: '2026-05', updatedAt: '2026-04-03' },
   { id: 'T-1003', title: 'Onboarding workflow review', assignee: 'Emma Park (E1003)', status: 'Done', plannedMonth: '2026-03', updatedAt: '2026-03-29' },
   { id: 'T-1004', title: 'Grid editor QA', assignee: 'Liam Choi (E1004)', status: 'Open', plannedMonth: '2026-06', updatedAt: '2026-04-05' },

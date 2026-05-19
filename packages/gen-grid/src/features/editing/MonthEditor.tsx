@@ -3,7 +3,7 @@ import type { MonthPickerProps } from '@gen-office/ui';
 import type { CellEditorRenderArgs } from './columnMeta';
 
 type MonthEditorProps<TRow> = {
-  editor: Pick<CellEditorRenderArgs<TRow>, 'value' | 'onChange'>;
+  editor: Pick<CellEditorRenderArgs<TRow>, 'value' | 'onChange' | 'applyValue'>;
   placeholder?: string;
   fromMonth?: Date;
   toMonth?: Date;
@@ -49,7 +49,9 @@ export function MonthEditor<TRow>({
         parse={parse}
         editorOverlay={true}
         onChange={(next) => {
-          editor.onChange(formatYearMonth(next));
+          const nextValue = formatYearMonth(next);
+          editor.onChange(nextValue);
+          editor.applyValue(nextValue);
         }}
       />
     </div>
