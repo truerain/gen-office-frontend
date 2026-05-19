@@ -29,6 +29,9 @@ type ModalEditorBaseProps<TRow, TSelectionData = unknown> = {
   autoFocusSearch?: boolean;
   modalHeight?: number | string;
   listColumns?: ModalInputListColumn<TSelectionData>[];
+  clearable?: boolean;
+  confirmLabel?: string;
+  cancelLabel?: string;
 };
 
 type SingleModalEditorProps<TRow, TSelectionData = unknown> = ModalEditorBaseProps<
@@ -68,6 +71,9 @@ export function ModalEditor<TRow, TSelectionData = unknown>(
     autoFocusSearch = true,
     modalHeight,
     listColumns,
+    clearable,
+    confirmLabel,
+    cancelLabel,
   } = props;
   const resolvedValue = String(editor.value ?? '').trim();
   const currentSelection =
@@ -132,6 +138,9 @@ export function ModalEditor<TRow, TSelectionData = unknown>(
           autoFocusSearch={autoFocusSearch}
           modalHeight={modalHeight}
           listColumns={listColumns}
+          clearable={clearable}
+          confirmLabel={confirmLabel}
+          cancelLabel={cancelLabel}
         />
       ) : (
         <ModalInput<TSelectionData>
@@ -159,6 +168,9 @@ export function ModalEditor<TRow, TSelectionData = unknown>(
           autoFocusSearch={autoFocusSearch}
           modalHeight={modalHeight}
           listColumns={listColumns}
+          clearable={clearable}
+          confirmLabel={confirmLabel}
+          cancelLabel={cancelLabel}
         />
       )}
     </div>

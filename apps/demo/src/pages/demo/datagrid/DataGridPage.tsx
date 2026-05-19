@@ -187,6 +187,9 @@ function DataGridPage() {
               ]}
               mapSelectedItemToValue={(selectedItem) => selectedItem?.label ?? ''}
               confirmOnDoubleClick={true}
+              clearable={true}
+              confirmLabel='적용'
+              cancelLabel='취소'
             />
           ),
         },
