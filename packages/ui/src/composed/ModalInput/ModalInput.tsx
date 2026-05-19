@@ -51,6 +51,7 @@ export function ModalInput<TData = unknown>(props: ModalInputProps<TData>) {
     modalDescription,
     placeholder,
     searchPlaceholder = 'Search...',
+    clearSearchOnOpen = false,
     disabled,
     readOnly = true,
     openOnInputFocus = false,
@@ -101,14 +102,17 @@ export function ModalInput<TData = unknown>(props: ModalInputProps<TData>) {
   const contentRef = useRef<HTMLDivElement | null>(null);
 
   const open = openProp ?? internalOpen;
-  const controlledSelectedItems =
-    mode === 'single'
-      ? props.selectedItem !== undefined
-        ? props.selectedItem
-          ? [props.selectedItem]
-          : []
-        : undefined
-      : props.selectedItems;
+  const singleSelectedItem =
+    mode === 'single' ? (props as { selectedItem?: ModalInputSelection<TData> | null }).selectedItem : undefined;
+  const multiSelectedItems =
+    mode === 'multi' ? (props as { selectedItems?: ModalInputSelection<TData>[] }).selectedItems : undefined;
+  const controlledSelectedItems = useMemo(() => {
+    if (mode === 'single') {
+      if (singleSelectedItem === undefined) return undefined;
+      return singleSelectedItem ? [singleSelectedItem] : [];
+    }
+    return multiSelectedItems;
+  }, [mode, multiSelectedItems, singleSelectedItem]);
   const resolvedSelectedItems = controlledSelectedItems ?? internalSelectedItems;
   const resolvedDisplayValue =
     formatDisplayValue?.(resolvedSelectedItems, mode) ??
@@ -129,13 +133,17 @@ export function ModalInput<TData = unknown>(props: ModalInputProps<TData>) {
     if (!open) return;
     setDraftSelectedItems(resolvedSelectedItems);
     setShowSelectedOnly(false);
+    if (clearSearchOnOpen) {
+      setSearchValue('');
+      return;
+    }
     if (mode === 'multi') {
       setSearchValue('');
       return;
     }
     const seed = readOnly ? resolvedDisplayValue : inputValue;
     setSearchValue(seed.trim());
-  }, [inputValue, mode, open, readOnly, resolvedDisplayValue, resolvedSelectedItems]);
+  }, [clearSearchOnOpen, inputValue, mode, open, readOnly, resolvedDisplayValue, resolvedSelectedItems]);
 
   useEffect(() => {
     if (!open || !fetchItems) return;

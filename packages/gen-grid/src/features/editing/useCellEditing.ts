@@ -107,7 +107,7 @@ export function useCellEditing<TData>(args: {
     if (typeof document === 'undefined') return false;
     const active = document.activeElement as HTMLElement | null;
     if (!active) return false;
-    if (!active.closest('input,select,textarea,[contenteditable="true"]')) return false;
+    if (!active.closest('input,select,textarea,button,[contenteditable="true"]')) return false;
     active.blur();
     return true;
   }, []);
@@ -451,7 +451,7 @@ export function useCellEditing<TData>(args: {
     const blurActiveEditor = () => {
       const active = document.activeElement as HTMLElement | null;
       if (!active) return false;
-      if (!active.closest('input,select,textarea,[contenteditable="true"]')) return false;
+      if (!active.closest('input,select,textarea,button,[contenteditable="true"]')) return false;
       active.blur();
       return true;
     };
@@ -489,7 +489,7 @@ export function useCellEditing<TData>(args: {
     const blurActiveEditor = () => {
       const active = document.activeElement as HTMLElement | null;
       if (!active) return false;
-      if (!active.closest('input,select,textarea,[contenteditable="true"]')) return false;
+      if (!active.closest('input,select,textarea,button,[contenteditable="true"]')) return false;
       active.blur();
       return true;
     };
@@ -501,6 +501,24 @@ export function useCellEditing<TData>(args: {
       const target = event.target as HTMLElement | null;
       if (!target) return;
       if (target.closest('[data-gen-grid-editor-overlay="true"]')) return;
+
+      const clickedCell = target.closest<HTMLElement>('td[data-rowid][data-colid]');
+      if (clickedCell && editCell) {
+        const nextRowId = clickedCell.dataset.rowid ?? '';
+        const nextColumnId = clickedCell.dataset.colid ?? '';
+        const isDifferentCell = nextRowId !== editCell.rowId || nextColumnId !== editCell.columnId;
+        if (isDifferentCell && nextRowId && nextColumnId) {
+          pendingEditCellRef.current = { rowId: nextRowId, columnId: nextColumnId };
+          if (blurActiveEditor()) return;
+          clearPending();
+          if (canEdit(nextRowId, nextColumnId)) {
+            enterEdit({ rowId: nextRowId, columnId: nextColumnId });
+            return;
+          }
+          exitEdit({ preserve: false });
+          return;
+        }
+      }
 
       const cell = document.querySelector<HTMLElement>(
         `[data-rowid="${CSS.escape(activeCell.rowId)}"][data-colid="${CSS.escape(activeCell.columnId)}"]`
@@ -536,7 +554,7 @@ export function useCellEditing<TData>(args: {
     return () => {
       document.removeEventListener('mousedown', handlePointerDown, true);
     };
-  }, [activeCell, editMode, keepEditingOnNavigate, exitEdit]);
+  }, [activeCell, canEdit, clearPending, editCell, editMode, enterEdit, keepEditingOnNavigate, exitEdit]);
 
   const commitEditing = React.useCallback(() => {
     if (keepEditingOnNavigate) {

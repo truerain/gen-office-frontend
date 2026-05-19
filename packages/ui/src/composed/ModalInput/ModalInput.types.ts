@@ -25,6 +25,7 @@ type ModalInputBaseProps<TData = unknown> = {
   modalDescription?: string;
   placeholder?: string;
   searchPlaceholder?: string;
+  clearSearchOnOpen?: boolean;
   disabled?: boolean;
   readOnly?: boolean;
   openOnInputFocus?: boolean;

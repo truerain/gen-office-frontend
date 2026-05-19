@@ -43,6 +43,7 @@ export function MonthPicker({
   clearable: _clearable,
   parse,
   className,
+  editorOverlay = false,
 }: MonthPickerProps) {
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -151,6 +152,7 @@ export function MonthPicker({
       <PopoverContent
         align={align}
         className={`${styles.monthPopover} ${className ?? ''}`.trim()}
+        data-gen-grid-editor-overlay={editorOverlay ? 'true' : undefined}
       >
         <div className={styles.monthContent}>
           <div className={styles.monthHeader}>

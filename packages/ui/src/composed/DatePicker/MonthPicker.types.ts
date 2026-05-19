@@ -11,4 +11,5 @@ export interface MonthPickerProps {
   clearable?: boolean;
   parse?: (value: string) => Date | undefined;
   className?: string;
+  editorOverlay?: boolean;
 }

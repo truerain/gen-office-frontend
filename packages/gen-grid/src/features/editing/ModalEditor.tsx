@@ -96,6 +96,15 @@ export function ModalEditor<TRow, TSelectionData = unknown>(
         <ModalInput<TSelectionData>
           mode="single"
           selectedItem={currentSelection}
+          onSelectedItemChange={(selectedItem) => {
+            const mappedValue =
+              'mapSelectedItemToValue' in props && props.mapSelectedItemToValue
+                ? props.mapSelectedItemToValue(
+                    selectedItem as ModalEditorSelection<TSelectionData> | null
+                  )
+                : (selectedItem?.value ?? '');
+            editor.onChange(mappedValue);
+          }}
           onCommit={(selectedItem) => {
             const mappedValue =
               'mapSelectedItemToValue' in props && props.mapSelectedItemToValue
@@ -103,11 +112,16 @@ export function ModalEditor<TRow, TSelectionData = unknown>(
                     selectedItem as ModalEditorSelection<TSelectionData> | null
                   )
                 : (selectedItem?.value ?? '');
+            if (!selectedItem) {
+              editor.onChange(mappedValue);
+              return;
+            }
             editor.commitValue(mappedValue);
           }}
           title={title}
           placeholder={placeholder}
           searchPlaceholder={searchPlaceholder}
+          clearSearchOnOpen={true}
           readOnly={readOnly}
           items={items as ModalInputSelection<TSelectionData>[] | undefined}
           fetchItems={
@@ -134,6 +148,7 @@ export function ModalEditor<TRow, TSelectionData = unknown>(
           title={title}
           placeholder={placeholder}
           searchPlaceholder={searchPlaceholder}
+          clearSearchOnOpen={true}
           readOnly={readOnly}
           items={items as ModalInputSelection<TSelectionData>[] | undefined}
           fetchItems={
