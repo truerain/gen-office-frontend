@@ -1,6 +1,13 @@
-import type { ChartTokens, DeepPartial } from '@gen-office/theme';
+import type { ChartTokens, DeepPartial } from "@gen-office/theme";
 
-export type GenChartKind = 'line' | 'bar' | 'area' | 'composed' | 'pie' | 'donut' | 'treemap';
+export type GenChartKind =
+  | "line"
+  | "bar"
+  | "area"
+  | "composed"
+  | "pie"
+  | "donut"
+  | "treemap";
 
 export interface ChartTheme {
   background?: string;
@@ -24,15 +31,15 @@ export interface GenChartAxisOptions {
   tickCount?: number;
   showAllTicks?: boolean;
   tickFormat?: (value: unknown) => string;
-  min?: number | 'auto' | 'dataMin';
-  max?: number | 'auto' | 'dataMax';
-  position?: 'default' | 'zero' | 'top' | 'left' | 'right';
+  min?: number | "auto" | "dataMin";
+  max?: number | "auto" | "dataMax";
+  position?: "default" | "zero" | "top" | "left" | "right";
 }
 
 export interface GenChartLegendOptions {
   enabled?: boolean;
-  position?: 'top' | 'bottom';
-  align?: 'start' | 'center' | 'end';
+  position?: "top" | "bottom";
+  align?: "start" | "center" | "end";
 }
 
 export interface GenChartGridOptions {
@@ -52,6 +59,14 @@ export interface GenChartTooltipOptions<T = unknown> {
   valueFormatter?: (ctx: GenChartTooltipContext<T>) => string;
 }
 
+export interface GenChartMotionOptions {
+  enabled?: boolean;
+  mode?: "enter" | "reset-on-change" | "none";
+  durationMs?: number;
+  easing?: "linear" | "easeOut" | "easeInOut";
+  changeKey?: string | number;
+}
+
 export interface GenChartBaseProps<T = unknown> {
   width: number;
   height: number;
@@ -61,11 +76,12 @@ export interface GenChartBaseProps<T = unknown> {
   grid?: boolean | GenChartGridOptions;
   tooltip?: boolean | GenChartTooltipOptions<T>;
   legend?: boolean | GenChartLegendOptions;
+  motion?: boolean | GenChartMotionOptions;
 }
 
 export interface CartesianSeriesDef<T> {
   id: string;
-  type: 'line' | 'bar' | 'area';
+  type: "line" | "bar" | "area";
   y: (d: T, index: number) => number | null | undefined;
   yAxisId?: string;
   label?: string;
@@ -73,28 +89,36 @@ export interface CartesianSeriesDef<T> {
   hideZeroValueLabel?: boolean;
   valueLabelFormatter?: (value: number, datum: T, index: number) => string;
   valueLabelOffsetY?: number;
-  valueLabelStyle?: {
-    color?: string;
-    fontSize?: number;
-    fontWeight?: number | string;
-    opacity?: number;
-  } | ((value: number, datum: T, index: number) => {
-    color?: string;
-    fontSize?: number;
-    fontWeight?: number | string;
-    opacity?: number;
-  } | undefined);
+  valueLabelStyle?:
+    | {
+        color?: string;
+        fontSize?: number;
+        fontWeight?: number | string;
+        opacity?: number;
+      }
+    | ((
+        value: number,
+        datum: T,
+        index: number,
+      ) =>
+        | {
+            color?: string;
+            fontSize?: number;
+            fontWeight?: number | string;
+            opacity?: number;
+          }
+        | undefined);
   color?: string | ((value: number, datum: T, index: number) => string);
   strokeColor?: string;
   strokeWidth?: number;
   negativeColor?: string;
   stackId?: string;
-  curve?: 'linear' | 'monotoneX' | 'step';
+  curve?: "linear" | "monotoneX" | "step";
 }
 
 export interface CartesianChartProps<T> extends GenChartBaseProps<T> {
-  kind: 'line' | 'bar' | 'area' | 'composed';
-  barOrientation?: 'vertical' | 'horizontal';
+  kind: "line" | "bar" | "area" | "composed";
+  barOrientation?: "vertical" | "horizontal";
   avoidValueLabelOverlap?: boolean;
   data: T[];
   x: (d: T, index: number) => string | number | Date;
@@ -105,7 +129,7 @@ export interface CartesianChartProps<T> extends GenChartBaseProps<T> {
 }
 
 export interface PieDonutChartProps<T> extends GenChartBaseProps<T> {
-  kind: 'pie' | 'donut';
+  kind: "pie" | "donut";
   data: T[];
   category: (d: T, index: number) => string;
   value: (d: T, index: number) => number;
@@ -122,12 +146,12 @@ export interface TreemapNode {
 }
 
 export interface TreemapChartProps extends GenChartBaseProps<TreemapNode> {
-  kind: 'treemap';
+  kind: "treemap";
   data: TreemapNode;
   value?: (node: TreemapNode) => number;
   label?: (node: TreemapNode) => string;
   color?: (node: TreemapNode, depth: number, index: number) => string;
-  tile?: 'squarify' | 'binary' | 'slice' | 'dice' | 'sliceDice';
+  tile?: "squarify" | "binary" | "slice" | "dice" | "sliceDice";
   minLabelArea?: number;
   onNodeClick?: (node: TreemapNode) => void;
 }

@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef } from 'react';
-import { BarChart3 } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { BarChart3, RefreshCw } from 'lucide-react';
 import { GenChart, ResponsiveChartContainer } from '@gen-office/gen-chart';
 import type { TreemapNode } from '@gen-office/gen-chart';
+import { useMDIStore } from '@gen-office/mdi';
 
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
@@ -48,6 +49,26 @@ const deltaData: DeltaPoint[] = [
   { month: 'Apr', delta: -26 },
   { month: 'May', delta: 33 },
   { month: 'Jun', delta: -11 },
+];
+
+const motionMonthlyData: MonthlyPoint[][] = [
+  monthlyData,
+  [
+    { month: 'Jan', revenue: 108, cost: 78, profit: 30 },
+    { month: 'Feb', revenue: 126, cost: 88, profit: 38 },
+    { month: 'Mar', revenue: 171, cost: 101, profit: 70 },
+    { month: 'Apr', revenue: 149, cost: 94, profit: 55 },
+    { month: 'May', revenue: 194, cost: 118, profit: 76 },
+    { month: 'Jun', revenue: 205, cost: 121, profit: 84 },
+  ],
+  [
+    { month: 'Jan', revenue: 142, cost: 96, profit: 46 },
+    { month: 'Feb', revenue: 131, cost: 90, profit: 41 },
+    { month: 'Mar', revenue: 158, cost: 108, profit: 50 },
+    { month: 'Apr', revenue: 188, cost: 119, profit: 69 },
+    { month: 'May', revenue: 176, cost: 111, profit: 65 },
+    { month: 'Jun', revenue: 219, cost: 126, profit: 93 },
+  ],
 ];
 
 const treemapData: TreemapNode = {
@@ -102,7 +123,18 @@ const treemapColorById: Record<string, string> = {
 
 export default function ChartDemoPage(_props: PageComponentProps) {
   const { openAlert } = useAlertDialog();
+  const [motionSampleIndex, setMotionSampleIndex] = useState(0);
+  const [chartActivationKey, setChartActivationKey] = useState(0);
   const lastShownParamsSignatureRef = useRef<string>('');
+  const menuId = typeof _props.menuId === 'string' ? _props.menuId : undefined;
+  const motionData = motionMonthlyData[motionSampleIndex] ?? motionMonthlyData[0];
+  const activationMotion = useMemo(
+    () => ({
+      mode: 'reset-on-change' as const,
+      changeKey: chartActivationKey,
+    }),
+    [chartActivationKey],
+  );
   const paramsSignature = useMemo(() => {
     if (_props.initialParams == null) return '';
     try {
@@ -120,6 +152,19 @@ export default function ChartDemoPage(_props: PageComponentProps) {
       return String(_props.initialParams);
     }
   }, [_props.initialParams]);
+
+  useEffect(() => {
+    if (!menuId) return undefined;
+
+    let wasActiveTab = useMDIStore.getState().activeTabId === menuId;
+    return useMDIStore.subscribe((state) => {
+      const isActiveTab = state.activeTabId === menuId;
+      if (isActiveTab && !wasActiveTab) {
+        setChartActivationKey((key) => key + 1);
+      }
+      wasActiveTab = isActiveTab;
+    });
+  }, [menuId]);
 
   useEffect(() => {
     if (!paramsSignature) return;
@@ -164,6 +209,7 @@ export default function ChartDemoPage(_props: PageComponentProps) {
                     { id: 'revenue', type: 'line', label: 'Revenue', y: (d) => d.revenue },
                     { id: 'cost', type: 'line', label: 'Cost', y: (d) => d.cost },
                   ]}
+                  motion={activationMotion}
                   tooltip
                   legend
                 />
@@ -187,6 +233,7 @@ export default function ChartDemoPage(_props: PageComponentProps) {
                     { id: 'revenue', type: 'bar', label: 'Revenue', y: (d) => d.revenue },
                     { id: 'cost', type: 'bar', label: 'Cost', y: (d) => d.cost },
                   ]}
+                  motion={activationMotion}
                   tooltip
                   legend
                 />
@@ -218,6 +265,7 @@ export default function ChartDemoPage(_props: PageComponentProps) {
                       negativeColor: '#dc2626',
                     },
                   ]}
+                  motion={activationMotion}
                   tooltip
                   legend
                 />
@@ -240,6 +288,7 @@ export default function ChartDemoPage(_props: PageComponentProps) {
                   series={[
                     { id: 'profit', type: 'area', label: 'Profit', y: (d) => d.profit },
                   ]}
+                  motion={activationMotion}
                   tooltip
                   legend
                 />
@@ -263,6 +312,47 @@ export default function ChartDemoPage(_props: PageComponentProps) {
                     { id: 'revenue', type: 'bar', label: 'Revenue', y: (d) => d.revenue },
                     { id: 'profit', type: 'line', label: 'Profit', y: (d) => d.profit },
                   ]}
+                  motion={activationMotion}
+                  tooltip
+                  legend
+                />
+              )}
+            </ResponsiveChartContainer>
+          </div>
+        </section>
+
+        <section className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h3 className={styles.cardTitle}>Motion (Reset on Change)</h3>
+            <button
+              type="button"
+              className={styles.iconButton}
+              aria-label="Refresh motion data"
+              onClick={() => setMotionSampleIndex((index) => (index + 1) % motionMonthlyData.length)}
+            >
+              <RefreshCw size={16} />
+            </button>
+          </div>
+          <div className={styles.chartWrap}>
+            <ResponsiveChartContainer minHeight={280} fallbackHeight={280}>
+              {({ width, height }) => (
+                <GenChart<MonthlyPoint>
+                  kind="composed"
+                  width={width}
+                  height={height}
+                  data={motionData}
+                  x={(d) => d.month}
+                  yAxis={{ min: 0, max: 240 }}
+                  series={[
+                    { id: 'revenue', type: 'bar', label: 'Revenue', y: (d) => d.revenue },
+                    { id: 'profit', type: 'line', label: 'Profit', y: (d) => d.profit, curve: 'monotoneX' },
+                  ]}
+                  motion={{
+                    mode: 'reset-on-change',
+                    changeKey: `${motionSampleIndex}-${chartActivationKey}`,
+                    durationMs: 2000,
+                    easing: 'easeOut',
+                  }}
                   tooltip
                   legend
                 />
@@ -283,6 +373,7 @@ export default function ChartDemoPage(_props: PageComponentProps) {
                   data={channelData}
                   category={(d) => d.channel}
                   value={(d) => d.value}
+                  motion={activationMotion}
                   tooltip
                   legend
                 />
@@ -309,6 +400,7 @@ export default function ChartDemoPage(_props: PageComponentProps) {
                       seriesPalette: ['#0f766e', '#2563eb', '#f59e0b'],
                     },
                   }}
+                  motion={activationMotion}
                   tooltip
                   legend
                 />
@@ -330,6 +422,7 @@ export default function ChartDemoPage(_props: PageComponentProps) {
                   color={(node) => treemapColorById[node.id] ?? '#475569'}
                   tile="squarify"
                   minLabelArea={1400}
+                  motion={activationMotion}
                   tooltip
                 />
               )}
