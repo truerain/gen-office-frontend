@@ -36,6 +36,7 @@ type Point<T> = {
 type TooltipState<T> = {
   x: number;
   y: number;
+  anchorX?: number;
   context: GenChartTooltipContext<T>;
 };
 
@@ -196,6 +197,7 @@ function renderTooltip<T>(
   tooltip: TooltipState<T>,
   tooltipOptions: ReturnType<typeof resolveTooltip<T>>,
   tokens: ReturnType<typeof resolveChartTokens>,
+  tooltipRef?: React.Ref<HTMLDivElement>,
 ) {
   const label =
     tooltipOptions.config?.labelFormatter?.(tooltip.context) ??
@@ -208,6 +210,7 @@ function renderTooltip<T>(
 
   return (
     <div
+      ref={tooltipRef}
       className="gen-chart-tooltip"
       style={{
         left: tooltip.x,
@@ -224,6 +227,20 @@ function renderTooltip<T>(
   );
 }
 
+function computeTooltipX(
+  anchorScreenX: number,
+  chartWidth: number,
+  tooltipWidth: number,
+) {
+  const safeWidth = Math.max(1, Math.min(chartWidth, tooltipWidth));
+  const rightCandidateX = anchorScreenX + 12;
+  const leftCandidateX = anchorScreenX - safeWidth - 12;
+  const maxTooltipX = chartWidth - safeWidth - TOOLTIP_MARGIN;
+  const preferredX =
+    rightCandidateX <= maxTooltipX ? rightCandidateX : leftCandidateX;
+  return Math.max(TOOLTIP_MARGIN, Math.min(maxTooltipX, preferredX));
+}
+
 function CartesianRenderer<T>(props: CartesianChartProps<T>) {
   const defaultYAxisId = "left";
   const getSeriesYAxisId = (series: CartesianSeriesDef<T>) =>
@@ -238,6 +255,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
   ]);
   const tooltipOptions = resolveTooltip(props.tooltip);
   const [tooltip, setTooltip] = React.useState<TooltipState<T> | null>(null);
+  const tooltipRef = React.useRef<HTMLDivElement | null>(null);
   const rightAxisEntries = Object.entries(props.yAxes ?? {}).filter(
     ([, axis]) => (axis.position ?? "right") === "right",
   );
@@ -629,12 +647,11 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
       const raw = bestSeries.y(bestPoint.datum, bestPoint.index);
       const value =
         typeof raw === "number" && Number.isFinite(raw) ? raw : null;
-      const tooltipX = Math.max(
-        TOOLTIP_MARGIN,
-        Math.min(
-          props.width - TOOLTIP_MAX_WIDTH - TOOLTIP_MARGIN,
-          padding.left + bestAnchorX + 12,
-        ),
+      const anchorScreenX = padding.left + bestAnchorX;
+      const tooltipX = computeTooltipX(
+        anchorScreenX,
+        props.width,
+        TOOLTIP_MAX_WIDTH,
       );
       const tooltipY = Math.max(
         TOOLTIP_MARGIN,
@@ -643,6 +660,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
       setTooltip({
         x: tooltipX,
         y: tooltipY,
+        anchorX: anchorScreenX,
         context: {
           label: bestSeries.label ?? bestSeries.id,
           value,
@@ -672,6 +690,19 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
       yScaleByAxis,
     ],
   );
+
+  React.useLayoutEffect(() => {
+    if (!tooltip) return;
+    const node = tooltipRef.current;
+    if (!node) return;
+    const measuredWidth = Math.ceil(node.getBoundingClientRect().width);
+    if (!Number.isFinite(measuredWidth) || measuredWidth <= 0) return;
+    const anchorX = tooltip.anchorX ?? tooltip.x;
+    const nextX = computeTooltipX(anchorX, props.width, measuredWidth);
+    if (nextX !== tooltip.x) {
+      setTooltip((prev) => (prev ? { ...prev, x: nextX } : prev));
+    }
+  }, [props.width, tooltip]);
 
   return (
     <div
@@ -1296,7 +1327,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
       ) : null}
 
       {tooltip && tooltipOptions.enabled
-        ? renderTooltip(tooltip, tooltipOptions, tokens)
+        ? renderTooltip(tooltip, tooltipOptions, tokens, tooltipRef)
         : null}
     </div>
   );
