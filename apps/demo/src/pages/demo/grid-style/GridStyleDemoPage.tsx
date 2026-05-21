@@ -245,6 +245,100 @@ export default function GridStyleDemoPage(_props: PageComponentProps) {
     return next;
   }, [data]);
 
+  const expandableRowIds = useMemo(() => {
+    const parentIds = new Set<string>();
+    for (const row of data) {
+      if (row.parentNodeId) parentIds.add(row.parentNodeId);
+    }
+    return parentIds;
+  }, [data]);
+
+  const levelByNodeId = useMemo(() => {
+    const next = new Map<string, number>();
+    for (const row of data) {
+      next.set(row.nodeId, Number(row.level ?? 1));
+    }
+    return next;
+  }, [data]);
+
+  const parentByNodeId = useMemo(() => {
+    const next = new Map<string, string | null>();
+    for (const row of data) {
+      next.set(row.nodeId, row.parentNodeId ?? null);
+    }
+    return next;
+  }, [data]);
+
+  const rootByNodeId = useMemo(() => {
+    const memo = new Map<string, string>();
+    const resolveRoot = (nodeId: string): string => {
+      const cached = memo.get(nodeId);
+      if (cached) return cached;
+      let current = nodeId;
+      let parent = parentByNodeId.get(current) ?? null;
+      while (parent) {
+        current = parent;
+        parent = parentByNodeId.get(current) ?? null;
+      }
+      memo.set(nodeId, current);
+      return current;
+    };
+    for (const row of data) resolveRoot(row.nodeId);
+    return memo;
+  }, [data, parentByNodeId]);
+
+  const expandableIdsByRoot = useMemo(() => {
+    const grouped = new Map<string, string[]>();
+    for (const rowId of expandableRowIds) {
+      const rootId = rootByNodeId.get(rowId);
+      if (!rootId) continue;
+      const list = grouped.get(rootId);
+      if (list) list.push(rowId);
+      else grouped.set(rootId, [rowId]);
+    }
+    return grouped;
+  }, [expandableRowIds, rootByNodeId]);
+
+  const applyExpandDeltaByRoot = (state: Record<string, boolean>, delta: 1 | -1) => {
+    const currentByRoot = new Map<string, number>();
+    for (const [rowId, expanded] of Object.entries(state)) {
+      if (!expanded) continue;
+      const rootId = rootByNodeId.get(rowId);
+      if (!rootId) continue;
+      const level = levelByNodeId.get(rowId) ?? 0;
+      const prev = currentByRoot.get(rootId) ?? 0;
+      if (level > prev) currentByRoot.set(rootId, level);
+    }
+
+    const roots = Array.from(expandableIdsByRoot.keys());
+    const currentLevels = roots.map((rootId) => currentByRoot.get(rootId) ?? 0);
+    const minCurrent = currentLevels.length > 0 ? Math.min(...currentLevels) : 0;
+    const maxCurrent = currentLevels.length > 0 ? Math.max(...currentLevels) : 0;
+
+    const next: Record<string, boolean> = {};
+    for (const [rootId, rowIds] of expandableIdsByRoot.entries()) {
+      let maxLevel = 0;
+      for (const rowId of rowIds) {
+        const level = levelByNodeId.get(rowId) ?? 0;
+        if (level > maxLevel) maxLevel = level;
+      }
+      const current = currentByRoot.get(rootId) ?? 0;
+      // Keep roots aligned by step:
+      // expand: raise lagging roots first without pushing already-deeper roots further.
+      // collapse: lower deeper roots first without collapsing shallower roots further.
+      const target =
+        delta > 0
+          ? Math.min(maxLevel, Math.max(current, minCurrent + 1))
+          : Math.max(0, Math.min(current, maxCurrent - 1));
+      if (target <= 0) continue;
+      for (const rowId of rowIds) {
+        const level = levelByNodeId.get(rowId) ?? 0;
+        if (level <= target) next[rowId] = true;
+      }
+    }
+    return next;
+  };
+
   const [expandedRowIds, setExpandedRowIds] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -323,18 +417,22 @@ export default function GridStyleDemoPage(_props: PageComponentProps) {
               {
                 key: 'expand-all',
                 icon: <ChevronsDown aria-hidden size={16} />,
-                side: 'right',
+                side: 'left',
                 style: 'icon',
                 order: 40,
-                onClick: () => setExpandedRowIds(defaultExpandedRowIds),
+                onClick: () => {
+                  setExpandedRowIds((prev) => applyExpandDeltaByRoot(prev, 1));
+                },
               },
               {
                 key: 'collapse-all',
                 icon: <ChevronsUp aria-hidden size={16} />,
-                side: 'right',
+                side: 'left',
                 style: 'icon',
                 order: 41,
-                onClick: () => setExpandedRowIds({}),
+                onClick: () => {
+                  setExpandedRowIds((prev) => applyExpandDeltaByRoot(prev, -1));
+                },
               },
             ],
           }}
