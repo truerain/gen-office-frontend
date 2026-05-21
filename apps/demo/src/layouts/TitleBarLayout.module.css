@@ -96,8 +96,18 @@
   background-color: var(--color-surface);
 }
 
+.navButton:focus-visible {
+  outline: none;
+}
+
 .navIcon {
   display: inline-flex;
+}
+
+.noticeSeparator {
+  width: 1px;
+  height: 20px;
+  background-color: var(--color-border, #d0d0d0);
 }
 
 /* User Section */
@@ -126,6 +136,10 @@
   background-color: var(--color-surface-hover);
 }
 
+.userButton:focus-visible {
+  outline: none;
+}
+
 /* Responsive */
 @media (max-width: 1000px) {
   .leftSection {
@@ -144,6 +158,10 @@
     padding: var(--spacing-xs);
     width: 40px;
     justify-content: center;
+  }
+
+  .noticeSeparator {
+    height: 16px;
   }
 }
 

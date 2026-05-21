@@ -25,6 +25,7 @@
 
 .sidebarCollapsed {
   width: 64px;
+  overflow: visible;
 }
 
 .sidebarHeader {
@@ -150,6 +151,10 @@
   padding-left: 0;
 }
 
+.sidebarCollapsed .nav {
+  overflow: auto;
+}
+
 .sidebarCollapsed .sidebarHeader {
   justify-content: center;
 }
@@ -180,4 +185,19 @@
 
 .settingsButton:hover {
   background-color: var(--color-surface-hover);
+}
+
+.floatingTooltip {
+  position: fixed;
+  transform: translateY(-50%);
+  background: var(--color-bg-primary);
+  color: var(--color-fg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  box-shadow: var(--shadow-sm);
+  padding: 4px 8px;
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 9999;
 }

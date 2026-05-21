@@ -27,9 +27,10 @@ type NoticeDraftPanelProps = {
   isDetailLoading: boolean;
   isSaving: boolean;
   uploadRequestId: number;
-  onUploadDone: (result: FileAttachmentUploadResult) => void;
-  onDraftChange: Dispatch<SetStateAction<NoticeDraft>>;
-  onSave: () => void;
+  onUploadDone?: (result: FileAttachmentUploadResult) => void;
+  onDraftChange?: Dispatch<SetStateAction<NoticeDraft>>;
+  onSave?: () => void;
+  readOnly?: boolean;
   validationErrors?: Partial<Record<NoticeDraftField, string>>;
 };
 
@@ -55,11 +56,19 @@ export function NoticeDraftPanel({
   onUploadDone,
   onDraftChange,
   onSave,
+  readOnly = false,
   validationErrors,
 }: NoticeDraftPanelProps) {
   const addNotification = useAppStore((state) => state.addNotification);
   const issuingFileSetIdRef = useRef(false);
+
+  const updateDraft = (next: SetStateAction<NoticeDraft>) => {
+    if (!onDraftChange) return;
+    onDraftChange(next);
+  };
+
   useEffect(() => {
+    if (readOnly) return;
     if (isDetailLoading) return;
     if (issuingFileSetIdRef.current) return;
     if (String(draft.fileSetId ?? '').trim()) return;
@@ -70,7 +79,7 @@ export function NoticeDraftPanel({
         const issued = await commonFileApi.getNewFileSetId();
         const normalized = String(issued ?? '').trim();
         if (!normalized) throw new Error('Failed to issue file set id.');
-        onDraftChange((prev) => {
+        updateDraft((prev) => {
           if (String(prev.fileSetId ?? '').trim()) return prev;
           return { ...prev, fileSetId: normalized };
         });
@@ -83,42 +92,44 @@ export function NoticeDraftPanel({
         issuingFileSetIdRef.current = false;
       }
     })();
-  }, [addNotification, draft.fileSetId, isDetailLoading, onDraftChange]);
+  }, [addNotification, draft.fileSetId, isDetailLoading, readOnly, onDraftChange]);
 
   return (
     <div className={styles.pane}>
-      <div className={styles.actions}>
-        <button
-          type="button"
-          className={`${styles.button} ${styles.iconButton}`}
-          aria-label="Preview"
-          title="Preview (Coming soon)"
-          disabled
-        >
-          <Eye size={16} aria-hidden />
-        </button>
-        <button
-          type="button"
-          className={`${styles.button} ${styles.primaryButton} ${styles.iconButton}`}
-          onClick={onSave}
-          disabled={isSaving}
-          aria-label={isSaving ? 'Saving' : 'Save'}
-          title={isSaving ? 'Saving' : 'Save'}
-        >
-          <Save size={16} aria-hidden />
-        </button>
-      </div>
+      {!readOnly ? (
+        <div className={styles.actions}>
+          <button
+            type="button"
+            className={`${styles.button} ${styles.iconButton}`}
+            aria-label="Preview"
+            title="Preview (Coming soon)"
+            disabled
+          >
+            <Eye size={16} aria-hidden />
+          </button>
+          <button
+            type="button"
+            className={`${styles.button} ${styles.primaryButton} ${styles.iconButton}`}
+            onClick={onSave}
+            disabled={isSaving}
+            aria-label={isSaving ? 'Saving' : 'Save'}
+            title={isSaving ? 'Saving' : 'Save'}
+          >
+            <Save size={16} aria-hidden />
+          </button>
+        </div>
+      ) : null}
 
       <div className={styles.editorWrap}>
         <div className={styles.fieldRow}>
           <div className={styles.field}>
             <Input
               value={draft.title}
-              onChange={(e) => onDraftChange({ ...draft, title: e.target.value })}
+              onChange={(e) => updateDraft({ ...draft, title: e.target.value })}
               placeholder="Notice Title"
               fullWidth
               autoSelect={false}
-              disabled={isSaving}
+              disabled={isSaving || readOnly}
               error={Boolean(validationErrors?.title)}
               helperText={validationErrors?.title}
             />
@@ -126,13 +137,20 @@ export function NoticeDraftPanel({
         </div>
 
         <div className={styles.field}>
-          <RichTextEditor
-            value={draft.content}
-            onChange={(nextHtml) => onDraftChange({ ...draft, content: nextHtml })}
-            placeholder="Enter notice content"
-            className={`${styles.noticeEditor} ${validationErrors?.content ? styles.fieldError : ''}`}
-            editorClassName={styles.noticeEditorBody}
-          />
+          {readOnly ? (
+            <div
+              className={`${styles.noticeEditor} ${styles.noticeReadOnlyContent}`}
+              dangerouslySetInnerHTML={{ __html: draft.content || '' }}
+            />
+          ) : (
+            <RichTextEditor
+              value={draft.content}
+              onChange={(nextHtml) => updateDraft({ ...draft, content: nextHtml })}
+              placeholder="Enter notice content"
+              className={`${styles.noticeEditor} ${validationErrors?.content ? styles.fieldError : ''}`}
+              editorClassName={styles.noticeEditorBody}
+            />
+          )}
           {validationErrors?.content ? (
             <div className={styles.fieldErrorText}>{validationErrors.content}</div>
           ) : null}
@@ -142,12 +160,13 @@ export function NoticeDraftPanel({
           fileSetId={draft.fileSetId}
           bodyMaxHeight={100}
           uploadRequestId={uploadRequestId}
-          onUploadDone={onUploadDone}
-          onFileSetIdChange={(next) => onDraftChange((prev) => ({ ...prev, fileSetId: next }))}
-          disabled={isSaving}
+          onUploadDone={onUploadDone ?? (() => undefined)}
+          onFileSetIdChange={(next) => updateDraft((prev) => ({ ...prev, fileSetId: next }))}
+          disabled={isSaving || readOnly}
         />
 
-        <div className={styles.fieldRowControls}>
+        {!readOnly ? (
+          <div className={styles.fieldRowControls}>
           <div className={styles.field}>
             <label className={styles.label}>Display Period</label>
             <div className={validationErrors?.dispStartDate || validationErrors?.dispEndDate ? styles.fieldError : ''}>
@@ -157,7 +176,7 @@ export function NoticeDraftPanel({
                   to: parseDate(draft.dispEndDate),
                 }}
                 onChange={(range) =>
-                  onDraftChange({
+                  updateDraft({
                     ...draft,
                     dispStartDate: formatDate(range?.from),
                     dispEndDate: formatDate(range?.to),
@@ -183,7 +202,7 @@ export function NoticeDraftPanel({
               id="notice-popup-switch"
               checked={draft.popupYn === 'Y'}
               onCheckedChange={(checked) =>
-                onDraftChange({ ...draft, popupYn: checked ? 'Y' : 'N' })
+                updateDraft({ ...draft, popupYn: checked ? 'Y' : 'N' })
               }
               disabled={isSaving}
             />
@@ -196,12 +215,13 @@ export function NoticeDraftPanel({
               id="notice-use-switch"
               checked={draft.useYn === 'Y'}
               onCheckedChange={(checked) =>
-                onDraftChange({ ...draft, useYn: checked ? 'Y' : 'N' })
+                updateDraft({ ...draft, useYn: checked ? 'Y' : 'N' })
               }
               disabled={isSaving}
             />
           </div>
-        </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

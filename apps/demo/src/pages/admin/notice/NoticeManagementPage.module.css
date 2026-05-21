@@ -54,6 +54,14 @@
   max-height: 320px;
 }
 
+.noticeReadOnlyContent {
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-primary);
+  overflow: auto;
+  padding: 12px;
+}
+
 .noticeEditorBody {
   flex: 1 1 auto;
   min-height: 0;

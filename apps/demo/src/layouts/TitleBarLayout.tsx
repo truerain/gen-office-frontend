@@ -1,8 +1,12 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { LogOut, Moon, Settings, Sun } from 'lucide-react';
+import { LogOut, Megaphone, Moon, Settings, Sun } from 'lucide-react';
 
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -16,6 +20,10 @@ import {
 import { useTheme } from '@gen-office/theme';
 import { useAppStore } from '@/app/store/appStore';
 import { getIconComponent } from '@/app/menu/model/iconMapper';
+import { noticeApi, useNoticeListQuery } from '@/pages/admin/notice/api/notice';
+import type { Notice } from '@/pages/admin/notice/model/types';
+import { NoticeDraftPanel, type NoticeDraft } from '@/pages/admin/notice/NoticeDraftPanel';
+import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 import type { MenuTreeItem } from '@/types/menu.types';
 import { LayoutSettingsDialog } from './LayoutSettingsDialog';
 
@@ -30,6 +38,20 @@ interface TitleBarLayoutProps {
   children: ReactNode;
 }
 
+function toNoticeDraft(notice: Notice): NoticeDraft {
+  return {
+    noticeId: notice.noticeId,
+    title: String(notice.title ?? ''),
+    content: String(notice.content ?? ''),
+    dispStartDate: String(notice.dispStartDate ?? ''),
+    dispEndDate: String(notice.dispEndDate ?? ''),
+    popupYn: String(notice.popupYn ?? 'N'),
+    useYn: String(notice.useYn ?? 'Y'),
+    fileSetId: String(notice.fileSetId ?? ''),
+    readCount: Number(notice.readCount ?? 0),
+  };
+}
+
 export function TitleBarLayout({
   menuTree,
   onOpenPage,
@@ -41,9 +63,16 @@ export function TitleBarLayout({
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [isAnyMenuOpen, setIsAnyMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [noticeViewerOpen, setNoticeViewerOpen] = useState(false);
+  const [noticeViewerDraft, setNoticeViewerDraft] = useState<NoticeDraft | null>(null);
+  const [isNoticeDetailLoading, setIsNoticeDetailLoading] = useState(false);
   const navigationRef = useRef<HTMLElement>(null);
   const layoutMode = useAppStore((state) => state.layoutMode);
   const setLayoutMode = useAppStore((state) => state.setLayoutMode);
+  const addNotification = useAppStore((state) => state.addNotification);
+
+  const noticeQueryParams = useMemo(() => ({}), []);
+  const { data: noticeList = [], isLoading: isNoticeListLoading } = useNoticeListQuery(noticeQueryParams);
 
   const handleThemeToggle = () => {
     setMode(mode === 'light' ? 'dark' : 'light');
@@ -83,6 +112,23 @@ export function TitleBarLayout({
       if (hoveredMenuId && hoveredMenuId !== openMenuId) {
         setOpenMenuId(hoveredMenuId);
       }
+    }
+  };
+
+  const handleNoticeClick = async (noticeId: number) => {
+    try {
+      setIsNoticeDetailLoading(true);
+      setNoticeViewerOpen(true);
+      const detail = await noticeApi.get(noticeId);
+      setNoticeViewerDraft(toNoticeDraft(detail));
+    } catch (error) {
+      const message = resolveApiErrorMessage(error, {
+        defaultMessage: '공지사항 상세 정보를 불러오지 못했습니다.',
+      });
+      addNotification(message, 'error');
+      setNoticeViewerOpen(false);
+    } finally {
+      setIsNoticeDetailLoading(false);
     }
   };
 
@@ -159,6 +205,42 @@ export function TitleBarLayout({
               );
             })}
           </nav>
+          <span className={styles.noticeSeparator} aria-hidden="true" />
+
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild>
+              <button type="button" className={styles.navButton}>
+                <span className={styles.navIcon}>
+                  <Megaphone size={18} />
+                </span>
+                <span>공지사항</span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className={styles.dropdownContent}>
+              <DropdownMenuLabel>공지사항</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {isNoticeListLoading ? (
+                <DropdownMenuItem disabled>
+                  <span>불러오는 중...</span>
+                </DropdownMenuItem>
+              ) : noticeList.length === 0 ? (
+                <DropdownMenuItem disabled>
+                  <span>공지사항이 없습니다.</span>
+                </DropdownMenuItem>
+              ) : (
+                noticeList.map((notice) => (
+                  <DropdownMenuItem
+                    key={notice.noticeId}
+                    onClick={() => {
+                      void handleNoticeClick(notice.noticeId);
+                    }}
+                  >
+                    <span>{notice.title}</span>
+                  </DropdownMenuItem>
+                ))
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <div className={styles.userSection}>
@@ -206,6 +288,26 @@ export function TitleBarLayout({
         value={layoutMode}
         onConfirm={setLayoutMode}
       />
+      <Dialog open={noticeViewerOpen} onOpenChange={setNoticeViewerOpen}>
+        <DialogContent style={{ width: 'min(1100px, 92vw)', maxWidth: '1100px', height: 'min(88vh, 900px)', display: 'flex', flexDirection: 'column' }}>
+          <DialogHeader>
+            <DialogTitle>공지사항</DialogTitle>
+          </DialogHeader>
+          <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
+            {noticeViewerDraft ? (
+              <NoticeDraftPanel
+                draft={noticeViewerDraft}
+                isDetailLoading={isNoticeDetailLoading}
+                isSaving={false}
+                uploadRequestId={0}
+                readOnly
+              />
+            ) : (
+              <div style={{ padding: 12 }}>불러오는 중...</div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
       <main className={styles.main}>{children}</main>
     </div>
   );

@@ -12,6 +12,13 @@
   animation: fadeIn 0.15s ease-out;
 }
 
+.content:focus-visible,
+.content :focus-visible,
+.subContent:focus-visible,
+.subContent :focus-visible {
+  outline: none;
+}
+
 .content[data-state='closed'] {
   animation: fadeOut 0.1s ease-in;
 }

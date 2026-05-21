@@ -15,7 +15,8 @@ type Employee = {
 type DemoRow = {
   id: string;
   title: string;
-  assignee: string;
+  assigneeId: string;
+  assigneeName: string;
   status: '' | 'Open' | 'In Progress' | 'Done';
   plannedMonth: string;
   updatedAt: string;
@@ -30,40 +31,19 @@ const employees: Employee[] = [
 ];
 
 const initialRows: DemoRow[] = [
-  { id: 'T-1001', title: 'Monthly closing checklist', assignee: 'Olivia Harper (E1001)', status: '', plannedMonth: '', updatedAt: '2026-04-01' },
-  { id: 'T-1002', title: 'Prepare launch memo', assignee: 'Noah Kim (E1002)', status: 'In Progress', plannedMonth: '2026-05', updatedAt: '2026-04-03' },
-  { id: 'T-1003', title: 'Onboarding workflow review', assignee: 'Emma Park (E1003)', status: 'Done', plannedMonth: '2026-03', updatedAt: '2026-03-29' },
-  { id: 'T-1004', title: 'Grid editor QA', assignee: 'Liam Choi (E1004)', status: 'Open', plannedMonth: '2026-06', updatedAt: '2026-04-05' },
+  { id: 'T-1001', title: 'Monthly closing checklist', assigneeId: 'E1001', assigneeName: 'Olivia Harper', status: '', plannedMonth: '', updatedAt: '2026-04-01' },
+  { id: 'T-1002', title: 'Prepare launch memo', assigneeId: 'E1002', assigneeName: 'Noah Kim', status: 'In Progress', plannedMonth: '2026-05', updatedAt: '2026-04-03' },
+  { id: 'T-1003', title: 'Onboarding workflow review', assigneeId: 'E1003', assigneeName: 'Emma Park', status: 'Done', plannedMonth: '2026-03', updatedAt: '2026-03-29' },
+  { id: 'T-1004', title: 'Grid editor QA', assigneeId: 'E1004', assigneeName: 'Liam Choi', status: 'Open', plannedMonth: '2026-06', updatedAt: '2026-04-05' },
 ];
 
-function toSelection(employee: Employee): ModalEditorSelection<Employee> {
-  return {
-    value: employee.id,
-    label: `${employee.name} (${employee.id})`,
-    description: `${employee.id} · ${employee.dept}`,
-    keywords: [employee.name, employee.id, employee.dept, employee.email],
-    data: employee,
-  };
-}
-
-function fetchAssignees(keyword: string): Promise<ModalEditorSelection<Employee>[]> {
-  const normalized = keyword.trim().toLowerCase();
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const filtered = employees.filter((employee) => {
-        if (!normalized) return true;
-        return (
-          employee.name.toLowerCase().includes(normalized) ||
-          employee.id.toLowerCase().includes(normalized) ||
-          employee.dept.toLowerCase().includes(normalized) ||
-          employee.email.toLowerCase().includes(normalized)
-        );
-      });
-      resolve(filtered.map((employee) => toSelection(employee)));
-    }, 200);
-  });
-}
-
+const assigneeOptions: ModalEditorSelection<Employee>[] = employees.map((employee) => ({
+  value: employee.id,
+  label: `${employee.name} (${employee.id})`,
+  description: `${employee.id} / ${employee.dept}`,
+  keywords: [employee.name, employee.id, employee.dept, employee.email],
+  data: employee,
+}));
 function DataGridPage() {
   const [rows, setRows] = useState<DemoRow[]>(initialRows);
   const [lastDateEditEvent, setLastDateEditEvent] = useState<string>('No date edit yet');
@@ -110,10 +90,14 @@ function DataGridPage() {
         },
       },
       {
-        id: 'assignee',
+        id: 'assigneeId',
         header: 'Assignee',
-        accessorKey: 'assignee',
+        accessorKey: 'assigneeId',
         size: 220,
+        cell: ({ row }) => {
+          const { assigneeId, assigneeName } = row.original;
+          return assigneeId ? `${assigneeName} (${assigneeId})` : '';
+        },
         meta: {
           editable: true,
           renderEditor: (editor) => (
@@ -124,9 +108,7 @@ function DataGridPage() {
               placeholder="Select assignee"
               searchPlaceholder="Type name, id, department..."
               modalHeight={320}
-              items={employees.map((employee) => toSelection(employee))}
-              fetchItems={fetchAssignees}
-              searchOnInputChange={true}
+              items={assigneeOptions}
               listColumns={[
                 {
                   key: 'name',
@@ -147,11 +129,11 @@ function DataGridPage() {
                   render: (item) => item.data?.dept ?? '-',
                 },
               ]}
-              mapSelectedItemToValue={(selectedItem) => selectedItem?.label ?? ''}
+              mapSelectedItemToValue={(selectedItem) => selectedItem?.value ?? ''}
               confirmOnDoubleClick={true}
               clearable={true}
-              confirmLabel='적용'
-              cancelLabel='취소'
+              confirmLabel="Apply"
+              cancelLabel="Cancel"
             />
           ),
         },
@@ -203,13 +185,23 @@ function DataGridPage() {
         <div className={styles.gridWrap}>
           <GenGrid<DemoRow>
             data={rows}
-            onDataChange={setRows}
-            onCellValueChange={(coord, value) => {
-              if (coord.columnId !== 'updatedAt') return;
-              const row = rows.find((item) => item.id === coord.rowId);
+            onDataChange={(nextRows) => {
+              setRows(
+                nextRows.map((row) => {
+                  const employee = employees.find((item) => item.id === row.assigneeId);
+                  return {
+                    ...row,
+                    assigneeName: employee?.name ?? '',
+                  };
+                })
+              );
+            }}
+            onCellValueChange={({ rowId, columnId, value }) => {
+              if (columnId !== 'updatedAt') return;
+              const row = rows.find((item) => item.id === rowId);
               const prev = row?.updatedAt ?? '';
               setLastDateEditEvent(
-                `${coord.rowId} | ${prev || '(empty)'} -> ${String(value || '(empty)')}`
+                `${rowId} | ${prev || '(empty)'} -> ${String(value || '(empty)')}`
               );
             }}
             columns={columns}
@@ -224,6 +216,7 @@ function DataGridPage() {
             editOnActiveCell={false}
             keepEditingOnNavigate={true}
             noRowsMessage="No tasks"
+            enableActiveRowHighlight={true}
             height={420}
           />
         </div>
