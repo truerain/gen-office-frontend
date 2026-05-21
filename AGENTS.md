@@ -1,4 +1,30 @@
-# Repository Agent Rules
+# Gen-Office Frontend — Agent Rules
+
+> 공통: [`../AGENTS.md`](../AGENTS.md) · 문서 [`../docs/`](../docs/README.md) · Cursor [`../.cursor/rules/project-core.mdc`](../.cursor/rules/project-core.mdc)
+
+워크스페이스는 **상위 `100 gen-office`** 기준. 이 파일은 프론트·GenGrid 상세 규칙입니다.
+
+## 문서 (SSOT)
+
+- 통합 문서 정본: `../docs/` (이후 `gen-office-docs` repo)
+- 새 가이드는 `../docs/`에만. `frontend/docs/`는 **이전 스텁**만
+- 레거시: `docs/gen-grid/layout-contract.md` 등 — 이전 전까지 참고
+
+## 아키텍처 (demo)
+
+- **네비**: URL 라우터 없음 → MDI 탭 + DB 메뉴 `componentName`
+- **로딩**: `apps/demo/src/app/config/componentRegistry.dynamic.ts` lazy map
+- **API**: `apps/demo/src/shared/api/http.ts` — `credentials: 'include'`, envelope `{ success, code, data }`
+- **인증**: `shared/api/auth.ts`, 세션 쿠키 — [session-login](../docs/guides/auth/session-login.md) (상위 `docs/` 있을 때)
+
+## 빠른 검증
+
+```bash
+pnpm install && pnpm build && pnpm demo
+pnpm lint
+```
+
+배포: Vercel — 이 repo 루트(또는 `frontend`를 root directory로 설정).
 
 ## Encoding Safety (Korean Text)
 
@@ -14,7 +40,7 @@
 - `.githooks/pre-commit` runs `node scripts/check-encoding.mjs --staged`.
 - The check blocks commits for:
   - UTF-8 BOM
-  - invalid UTF-8 / replacement character (`\\uFFFD`)
+  - invalid UTF-8 / replacement character (`\uFFFD`)
   - suspicious mojibake patterns in Hangul lines
 
 ## GenGrid Layout Guard
@@ -36,7 +62,6 @@
 - Before edit, capture target context lines and verify exact location.
 - Do not use broad/global replacement across the whole file.
 - Allow only single-match replacement (exact string or regex). If match count is not 1, stop.
-- After each edit, immediately verify changed lines and git diff -- <file>.
-- Run relevant typecheck/build after code edits (tsc --noEmit when applicable).
+- After each edit, immediately verify changed lines and `git diff -- <file>`.
+- Run relevant typecheck/build after code edits (`tsc --noEmit` when applicable).
 - If unexpected diff, mojibake, or syntax issue appears, stop and fix before additional edits.
-- In new sessions, remind the agent to follow AGENTS.md rules in the first message.
