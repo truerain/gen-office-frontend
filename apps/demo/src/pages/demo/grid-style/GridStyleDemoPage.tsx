@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { ChevronsDown, ChevronsUp, Paintbrush } from 'lucide-react';
 
 import { GenGridCrud } from '@gen-office/gen-grid-crud';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
+import { useGridTreeStepExpand } from '@/shared/hooks/useGridTreeStepExpand';
 import { gridStyleDemoPreset } from './GridStyleDemoStyle';
 
 import styles from './GridStyleDemoPage.module.css';
@@ -221,6 +222,12 @@ function buildSeedData(): DemoRow[] {
 
 const seedData = buildSeedData();
 
+const gridStyleDemoGridTreeAccessors = {
+  getNodeId: (row: DemoRow) => row.nodeId,
+  getParentId: (row: DemoRow) => row.parentNodeId,
+  resetOnDataChange: 'collapsed',
+};
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function GridStyleDemoPage(_props: PageComponentProps) {
   const [data] = useState<DemoRow[]>(seedData);
@@ -235,115 +242,15 @@ export default function GridStyleDemoPage(_props: PageComponentProps) {
     return numberFormatter.format(value);
   };
 
-  const defaultExpandedRowIds = useMemo<Record<string, boolean>>(() => {
-    const parentIds = new Set<string>();
-    for (const row of data) {
-      if (row.parentNodeId) parentIds.add(row.parentNodeId);
-    }
-    const next: Record<string, boolean> = {};
-    for (const parentId of parentIds) next[parentId] = true;
-    return next;
-  }, [data]);
-
-  const expandableRowIds = useMemo(() => {
-    const parentIds = new Set<string>();
-    for (const row of data) {
-      if (row.parentNodeId) parentIds.add(row.parentNodeId);
-    }
-    return parentIds;
-  }, [data]);
-
-  const levelByNodeId = useMemo(() => {
-    const next = new Map<string, number>();
-    for (const row of data) {
-      next.set(row.nodeId, Number(row.level ?? 1));
-    }
-    return next;
-  }, [data]);
-
-  const parentByNodeId = useMemo(() => {
-    const next = new Map<string, string | null>();
-    for (const row of data) {
-      next.set(row.nodeId, row.parentNodeId ?? null);
-    }
-    return next;
-  }, [data]);
-
-  const rootByNodeId = useMemo(() => {
-    const memo = new Map<string, string>();
-    const resolveRoot = (nodeId: string): string => {
-      const cached = memo.get(nodeId);
-      if (cached) return cached;
-      let current = nodeId;
-      let parent = parentByNodeId.get(current) ?? null;
-      while (parent) {
-        current = parent;
-        parent = parentByNodeId.get(current) ?? null;
-      }
-      memo.set(nodeId, current);
-      return current;
-    };
-    for (const row of data) resolveRoot(row.nodeId);
-    return memo;
-  }, [data, parentByNodeId]);
-
-  const expandableIdsByRoot = useMemo(() => {
-    const grouped = new Map<string, string[]>();
-    for (const rowId of expandableRowIds) {
-      const rootId = rootByNodeId.get(rowId);
-      if (!rootId) continue;
-      const list = grouped.get(rootId);
-      if (list) list.push(rowId);
-      else grouped.set(rootId, [rowId]);
-    }
-    return grouped;
-  }, [expandableRowIds, rootByNodeId]);
-
-  const applyExpandDeltaByRoot = (state: Record<string, boolean>, delta: 1 | -1) => {
-    const currentByRoot = new Map<string, number>();
-    for (const [rowId, expanded] of Object.entries(state)) {
-      if (!expanded) continue;
-      const rootId = rootByNodeId.get(rowId);
-      if (!rootId) continue;
-      const level = levelByNodeId.get(rowId) ?? 0;
-      const prev = currentByRoot.get(rootId) ?? 0;
-      if (level > prev) currentByRoot.set(rootId, level);
-    }
-
-    const roots = Array.from(expandableIdsByRoot.keys());
-    const currentLevels = roots.map((rootId) => currentByRoot.get(rootId) ?? 0);
-    const minCurrent = currentLevels.length > 0 ? Math.min(...currentLevels) : 0;
-    const maxCurrent = currentLevels.length > 0 ? Math.max(...currentLevels) : 0;
-
-    const next: Record<string, boolean> = {};
-    for (const [rootId, rowIds] of expandableIdsByRoot.entries()) {
-      let maxLevel = 0;
-      for (const rowId of rowIds) {
-        const level = levelByNodeId.get(rowId) ?? 0;
-        if (level > maxLevel) maxLevel = level;
-      }
-      const current = currentByRoot.get(rootId) ?? 0;
-      // Keep roots aligned by step:
-      // expand: raise lagging roots first without pushing already-deeper roots further.
-      // collapse: lower deeper roots first without collapsing shallower roots further.
-      const target =
-        delta > 0
-          ? Math.min(maxLevel, Math.max(current, minCurrent + 1))
-          : Math.max(0, Math.min(current, maxCurrent - 1));
-      if (target <= 0) continue;
-      for (const rowId of rowIds) {
-        const level = levelByNodeId.get(rowId) ?? 0;
-        if (level <= target) next[rowId] = true;
-      }
-    }
-    return next;
-  };
-
-  const [expandedRowIds, setExpandedRowIds] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    setExpandedRowIds(defaultExpandedRowIds);
-  }, [defaultExpandedRowIds]);
+  const { 
+    expandedRowIds, 
+    setExpandedRowIds, 
+    expandOneStep, 
+    collapseOneStep 
+  } = useGridTreeStepExpand({
+    data,
+    ...gridStyleDemoGridTreeAccessors,
+  });
 
   const columns = useMemo<ColumnDef<DemoRow, any>[]>(
     () => [
@@ -420,9 +327,7 @@ export default function GridStyleDemoPage(_props: PageComponentProps) {
                 side: 'left',
                 style: 'icon',
                 order: 40,
-                onClick: () => {
-                  setExpandedRowIds((prev) => applyExpandDeltaByRoot(prev, 1));
-                },
+                onClick: expandOneStep,
               },
               {
                 key: 'collapse-all',
@@ -430,9 +335,7 @@ export default function GridStyleDemoPage(_props: PageComponentProps) {
                 side: 'left',
                 style: 'icon',
                 order: 41,
-                onClick: () => {
-                  setExpandedRowIds((prev) => applyExpandDeltaByRoot(prev, -1));
-                },
+                onClick: collapseOneStep,
               },
             ],
           }}
@@ -457,7 +360,7 @@ export default function GridStyleDemoPage(_props: PageComponentProps) {
               treeColumnId: 'indexName',
               expandedRowIds,
               onExpandedRowIdsChange: setExpandedRowIds,
-              defaultExpanded: true,
+              defaultExpanded: false,
               indentPx: 12,
             },
             getRowStyle: ({ row, rowIndex }) => {
