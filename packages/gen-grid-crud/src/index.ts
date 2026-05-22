@@ -10,6 +10,14 @@ export type { CrudChange, CrudRowId } from './crud/types';
 export { prepareCommitChanges } from './crud/prepareCommitChanges';
 export { normalizeChanges } from './crud/normalizeChanges';
 export type {
+  GenGridDisplayScaleConfig,
+  GenGridDisplayScaleExportMode,
+  GenGridDisplayScaleInput,
+  GenGridDisplayScaleTooltipMode,
+  GenGridMetaResolverArgs,
+  ResolvedGenGridDisplayScale,
+} from '@gen-office/gen-grid';
+export type {
   GenGridCrudProps,
   CrudActionApi,
   CrudActionBarOptions,

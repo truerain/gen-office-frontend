@@ -385,6 +385,51 @@ const negativeTriangleColumns: ColumnDef<NegativeTriangleRow>[] = [
   },
 ];
 
+type DisplayScaleRow = {
+  id: string;
+  item: string;
+  amount: number;
+};
+
+const displayScaleData: DisplayScaleRow[] = [
+  { id: '1', item: 'Revenue', amount: 1_250_000 },
+  { id: '2', item: 'Cost', amount: -880_500 },
+];
+
+const displayScaleColumns: ColumnDef<DisplayScaleRow>[] = [
+  { accessorKey: 'item', header: 'Item', size: 160 },
+  {
+    accessorKey: 'amount',
+    header: 'Amount (÷1000)',
+    size: 180,
+    meta: {
+      align: 'right',
+      semanticType: 'amount',
+      amountOptions: { negativeStyle: 'triangle', negativeColor: true },
+      displayScale: { divisor: 1000, unitLabel: '천원', tooltip: 'both' },
+      numberFormat: { maximumFractionDigits: 0 },
+    } as any,
+  },
+];
+
+export const AmountDisplayScale: Story = {
+  render: () => (
+    <div style={{ padding: 16 }}>
+      <GenGrid<DisplayScaleRow>
+        caption="Amount displayScale"
+        data={displayScaleData}
+        columns={displayScaleColumns}
+        getRowId={(row) => row.id}
+        height={200}
+        maxHeight={200}
+        rowHeight={36}
+        onDataChange={() => {}}
+        enableColumnSizing
+      />
+    </div>
+  ),
+};
+
 export const AmountNegativeTriangleMarker: Story = {
   render: () => (
     <div style={{ padding: 16 }}>

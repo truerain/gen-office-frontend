@@ -16,7 +16,9 @@ import type {
   CrudFieldErrorMap,
 } from './GenGridCrud.types';
 import { CrudActionBar } from './components/CrudActionBar';
+import { resolveGenGridCellTooltip } from '@gen-office/gen-grid';
 import { exportAdditionalCrudExcel, exportCrudExcel } from './features/excel';
+import { findLeafColumnDef } from './utils/columnMeta';
 import {
   buildFieldErrorKey,
   validatePendingRows,
@@ -1044,16 +1046,28 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
         columnId: string;
         value: unknown;
       }) => {
-        const base = gridProps?.getCellTooltip?.(args);
         const err = fieldErrors[buildFieldErrorKey(args.rowId, args.columnId)];
-        if (!err) return base;
-        const fallback = err.defaultMessage ?? base;
-        if (err.messageKey) {
-          return t(err.messageKey, {
-            defaultValue: fallback,
-          });
+        if (err) {
+          const base = gridProps?.getCellTooltip?.(args);
+          const fallback = err.defaultMessage ?? base;
+          if (err.messageKey) {
+            return t(err.messageKey, {
+              defaultValue: fallback,
+            });
+          }
+          return fallback;
         }
-        return fallback;
+
+        const columnDef = findLeafColumnDef(columns, args.columnId);
+        return resolveGenGridCellTooltip({
+          meta: columnDef?.meta as any,
+          row: args.row,
+          rowId: args.rowId,
+          rowIndex: args.rowIndex,
+          columnId: args.columnId,
+          value: args.value,
+          getCellTooltip: gridProps?.getCellTooltip,
+        });
       },
     }),
     [
@@ -1064,6 +1078,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       hasColumnReorderBuiltIn,
       columnReorderEnabled,
       columnOrder,
+      columns,
       fieldErrors,
       t,
     ]

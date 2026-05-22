@@ -9,6 +9,12 @@ import pinningStyles from './GenGridPinning.module.css';
 import { getCellStyle } from './cellStyles';
 import { getMeta, type GenGridColumnMeta } from './utils';
 import { formatCellValue } from './cellFormat';
+import {
+  appendDisplayScaleCellSuffix,
+  resolveDisplayScale,
+  scaleNumericByDisplayScale,
+  type GenGridDisplayScaleInput,
+} from './semanticDisplay';
 import { SELECTION_COLUMN_ID } from '../../features/row-selection/rowSelection';
 import { ROW_NUMBER_COLUMN_ID } from '../../features/row-number/useRowNumberColumn';
 import { useGenGridContext } from '../../core/context/GenGridProvider';
@@ -469,6 +475,11 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     return rawPercentOptions;
   }, [meta?.percentOptions, metaResolverArgs]);
 
+  const resolvedDisplayScale = React.useMemo(() => {
+    const rawDisplayScale = meta?.displayScale as GenGridDisplayScaleInput | undefined;
+    return resolveDisplayScale(rawDisplayScale, metaResolverArgs);
+  }, [meta?.displayScale, metaResolverArgs]);
+
   const effectiveMeta = React.useMemo(() => {
     if (!meta) return meta;
     if (meta.format) return meta;
@@ -832,13 +843,20 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
 
   const hasColumnCellRenderer = Boolean((cell.column.columnDef.meta as any)?.__genGridHasUserCellRenderer);
   const commitValueForDisplay = isEditing ? onCommitValue : onApplyValue;
+  const scaledNumericCellValue =
+    numericCellValue != null && resolvedDisplayScale
+      ? scaleNumericByDisplayScale(numericCellValue, resolvedDisplayScale)
+      : numericCellValue;
+
   const displayValue =
-    (showNegativeTriangle || isPercentDeltaNegative || isAmountDeltaNegative) && numericCellValue != null
-      ? Math.abs(numericCellValue)
-      : cell.getValue();
+    (showNegativeTriangle || isPercentDeltaNegative || isAmountDeltaNegative) && scaledNumericCellValue != null
+      ? Math.abs(scaledNumericCellValue)
+      : scaledNumericCellValue != null
+        ? scaledNumericCellValue
+        : cell.getValue();
   const cellContext = cell.getContext();
   const normalizedCellContext =
-    (showNegativeTriangle || isPercentDeltaNegative || isAmountDeltaNegative) && numericCellValue != null
+    (showNegativeTriangle || isPercentDeltaNegative || isAmountDeltaNegative) && scaledNumericCellValue != null
       ? {
           ...cellContext,
           getValue: () => displayValue,
@@ -860,10 +878,11 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
         : flexRender(cell.column.columnDef.cell, normalizedCellContext as any);
   const shouldNormalizeNegativeSign =
     showNegativeTriangle || isPercentDeltaNegative || isAmountDeltaNegative;
-  const displayContent =
+  const displayContentStripped =
     shouldNormalizeNegativeSign && typeof displayContentRaw === 'string'
       ? displayContentRaw.replace(/^\s*[-−]\s*/, '')
       : displayContentRaw;
+  const displayContent = appendDisplayScaleCellSuffix(displayContentStripped, resolvedDisplayScale);
 
   const nonEditingContent =
     !isTreeColumn

@@ -1,5 +1,6 @@
 import '@tanstack/react-table';
 import type * as React from 'react';
+import type { GenGridDisplayScaleInput } from '../../components/layout/semanticDisplay';
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData, TValue> {
@@ -49,6 +50,7 @@ declare module '@tanstack/react-table' {
               }) => unknown);
           invertDirection?: boolean;
         } | undefined);
+    displayScale?: GenGridDisplayScaleInput;
     width?: number;
     pinned?: 'left' | 'right';
     editValidator?: (

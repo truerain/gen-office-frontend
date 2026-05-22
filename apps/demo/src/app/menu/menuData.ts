@@ -24,6 +24,7 @@ const componentNameByMenuId: Record<string, string> = {
   '991000': 'PopupInputDemoPage',
   '991100': 'SimpleFilterBarDemoPage',
   '991200': 'CrudActionControlsDemoPage',
+  '991300': 'GridDisplayScaleDemoPage',
 };
 
 const iconByMenuId: Record<string, string> = {
@@ -51,6 +52,7 @@ const iconByMenuId: Record<string, string> = {
   '991000': 'Search',
   '991100': 'Filter',
   '991200': 'SlidersHorizontal',
+  '991300': 'Scale',
 };
 
 export type SystemMenuData = {

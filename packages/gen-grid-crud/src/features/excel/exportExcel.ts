@@ -1,6 +1,8 @@
 import * as React from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 import ExcelJS from 'exceljs';
+import { resolveExportNumericValue, resolveSemanticType } from '@gen-office/gen-grid';
+import type { GenGridColumnMeta } from '@gen-office/gen-grid';
 
 import type {
   CrudUiState,
@@ -269,6 +271,10 @@ function toExcelRowHeightPt(rowHeightPx?: number): number {
 }
 
 function resolveExcelNumFmt<TData>(meta?: ExportMeta<TData>): string | undefined {
+  const columnMeta = meta as GenGridColumnMeta | undefined;
+  if (resolveSemanticType(columnMeta, { row: {}, rowId: '', columnId: '', value: null }) === 'amount') {
+    return '#,##0';
+  }
   if (!meta?.format) return undefined;
   switch (meta.format) {
     case 'number':
@@ -856,8 +862,13 @@ export async function exportCrudExcel<TData>(args: ExportCrudExcelArgs<TData>) {
           rowId,
           columnId: col.id,
         });
-        const normalized = formatExportValue(
+        const valueForExport = resolveExportNumericValue(
           customValue === undefined ? baseValue : customValue,
+          col.meta as GenGridColumnMeta | undefined,
+          { row, rowId, columnId: col.id, value: baseValue }
+        );
+        const normalized = formatExportValue(
+          valueForExport,
           col.meta,
           {
             yes: t('common.yes', { defaultValue: 'Yes' }),

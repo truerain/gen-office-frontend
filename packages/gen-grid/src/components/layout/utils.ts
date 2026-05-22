@@ -1,6 +1,7 @@
 // Step2: column meta
 import type * as React from 'react';
 import type { GenGridFieldValidationMeta } from '../../validation/types';
+import type { GenGridDisplayScaleInput } from './semanticDisplay';
 
 export type GenGridColumnMeta = {
   semanticType?:
@@ -59,6 +60,7 @@ export type GenGridColumnMeta = {
             }) => unknown);
         invertDirection?: boolean;
       } | undefined);
+  displayScale?: GenGridDisplayScaleInput;
   editable?:
     | boolean
     | ((args: { row: unknown; rowId: string; columnId: string }) => boolean);

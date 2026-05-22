@@ -14,6 +14,7 @@ import { useGenGridContext } from '../../core/context/GenGridProvider';
 import { useRangeSelection } from '../../features/range-selection/useRangeSelection';
 import { GenGridCell } from './GenGridCell';
 import { getCellStyle } from './cellStyles';
+import { resolveGenGridCellTooltip } from './semanticDisplay';
 import { getMeta } from './utils';
 
 import { SELECTION_COLUMN_ID } from '../../features/row-selection/rowSelection';
@@ -115,30 +116,6 @@ function pickRowStyleForCell(style?: React.CSSProperties): React.CSSProperties |
     borderBottom: style.borderBottom,
     borderLeft: style.borderLeft,
   };
-}
-
-function resolveColumnTooltip<TData>(args: {
-  meta: any;
-  row: TData;
-  rowId: string;
-  rowIndex: number;
-  columnId: string;
-  value: unknown;
-  getCellTooltip?: (args: {
-    row: TData;
-    rowId: string;
-    rowIndex: number;
-    columnId: string;
-    value: unknown;
-  }) => string | undefined;
-}) {
-  const { meta, row, rowId, rowIndex, columnId, value, getCellTooltip } = args;
-  const base = getCellTooltip?.({ row, rowId, rowIndex, columnId, value });
-  if (base != null) return base;
-  if (typeof meta?.getCellTooltip === 'function') {
-    return meta.getCellTooltip({ row, rowId, columnId, value });
-  }
-  return typeof meta?.tooltip === 'string' ? meta.tooltip : undefined;
 }
 
 function toFiniteNumber(value: unknown): number | null {
@@ -685,7 +662,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
                 ) as any,
                 onClick: mergeHandlers((navProps as any).onClick, (editProps as any).onClick) as any,
               };
-              const cellTooltip = resolveColumnTooltip({
+              const cellTooltip = resolveGenGridCellTooltip({
                 meta,
                 row: cell.row.original,
                 rowId: row.id,

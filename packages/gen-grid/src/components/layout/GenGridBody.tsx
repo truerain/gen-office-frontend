@@ -13,6 +13,7 @@ import { SELECTION_COLUMN_ID } from '../../features/row-selection/rowSelection';
 import { ROW_NUMBER_COLUMN_ID } from '../../features/row-number/useRowNumberColumn';
 import { GenGridCell } from './GenGridCell';
 import { getCellStyle } from './cellStyles';
+import { resolveGenGridCellTooltip } from './semanticDisplay';
 import { getMeta } from './utils';
 import type { CellCoord } from './types';
 import type { RowSpanModel } from './rowSpanModel';
@@ -108,30 +109,6 @@ function pickRowStyleForCell(style?: React.CSSProperties): React.CSSProperties |
     borderBottom: style.borderBottom,
     borderLeft: style.borderLeft,
   };
-}
-
-function resolveColumnTooltip<TData>(args: {
-  meta: any;
-  row: TData;
-  rowId: string;
-  rowIndex: number;
-  columnId: string;
-  value: unknown;
-  getCellTooltip?: (args: {
-    row: TData;
-    rowId: string;
-    rowIndex: number;
-    columnId: string;
-    value: unknown;
-  }) => string | undefined;
-}) {
-  const { meta, row, rowId, rowIndex, columnId, value, getCellTooltip } = args;
-  const base = getCellTooltip?.({ row, rowId, rowIndex, columnId, value });
-  if (base != null) return base;
-  if (typeof meta?.getCellTooltip === 'function') {
-    return meta.getCellTooltip({ row, rowId, columnId, value });
-  }
-  return typeof meta?.tooltip === 'string' ? meta.tooltip : undefined;
 }
 
 function toFiniteNumber(value: unknown): number | null {
@@ -634,15 +611,15 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
             };
             
             const dirty = isCellDirty?.(row.id, colId) ?? false;
-            const cellTooltip = resolveColumnTooltip({
-              meta,
-              row: cell.row.original,
-              rowId: row.id,
-              rowIndex: row.index,
-              columnId: colId,
-              value: cell.getValue(),
-              getCellTooltip,
-            });
+              const cellTooltip = resolveGenGridCellTooltip({
+                meta,
+                row: cell.row.original,
+                rowId: row.id,
+                rowIndex: row.index,
+                columnId: colId,
+                value: cell.getValue(),
+                getCellTooltip,
+              });
             return (
               <GenGridCell
                 key={cell.id}

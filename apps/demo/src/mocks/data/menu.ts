@@ -261,6 +261,17 @@ const menus: AppMenu[] = [
     sortOrder: 12,
     execComponent: 'CrudActionControlsDemoPage',
   },
+  {
+    menuId: 991300,
+    menuName: 'Grid Display Scale Demo',
+    menuNameEng: 'Grid Display Scale Demo',
+    menuIcon: 'Scale',
+    parentMenuId: 990000,
+    displayYn: 'Y',
+    useYn: 'Y',
+    sortOrder: 13,
+    execComponent: 'GridDisplayScaleDemoPage',
+  },
 ];
 
 export function loadAppMenuData() {

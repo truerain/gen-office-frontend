@@ -26,6 +26,22 @@ export type {
 } from './validation/types';
 export type { GenGridHandle } from './types/GenGridHandle';
 export type { GenGridTableActions } from './core/table/tanstack-table';
+export type { GenGridColumnMeta } from './components/layout/utils';
+export type {
+  GenGridDisplayScaleConfig,
+  GenGridDisplayScaleExportMode,
+  GenGridDisplayScaleInput,
+  GenGridDisplayScaleTooltipMode,
+  GenGridMetaResolverArgs,
+  ResolvedGenGridDisplayScale,
+} from './components/layout/semanticDisplay';
+export {
+  buildDisplayScaleTooltip,
+  resolveDisplayScale,
+  resolveExportNumericValue,
+  resolveGenGridCellTooltip,
+  resolveSemanticType,
+} from './components/layout/semanticDisplay';
 
 // 3. provider
 export { GenGridProvider, useGenGridContext } from './core/context/GenGridProvider';
