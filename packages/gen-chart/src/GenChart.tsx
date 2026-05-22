@@ -44,6 +44,23 @@ const LEGEND_BAND = 28;
 const TOOLTIP_MAX_WIDTH = 220;
 const TOOLTIP_MARGIN = 8;
 
+function resolveXAxisTopPlotOffset(
+  xAxis: CartesianChartProps<unknown>["xAxis"],
+  barOrientation: "vertical" | "horizontal",
+  tokens: ReturnType<typeof resolveChartTokens>,
+): number {
+  if (barOrientation === "horizontal") return 0;
+  if ((xAxis?.show ?? true) === false) return 0;
+  if (xAxis?.position !== "top") return 0;
+  const tickLength = xAxis.showTicks === false ? 0 : 6;
+  return Math.ceil(
+    tokens.typography.axisTickFontSize +
+      tokens.spacing.axisTickGap +
+      tickLength +
+      8,
+  );
+}
+
 type ResolvedMotion = {
   enabled: boolean;
   mode: NonNullable<GenChartMotionOptions["mode"]>;
@@ -263,6 +280,12 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
   const isLeftAxisVisible = (props.yAxis?.show ?? true) !== false;
   const leftAxisPadding = isLeftAxisVisible ? 44 : 16;
   const rightAxisPadding = hasRightAxis ? 44 : 16;
+  const barOrientation = props.barOrientation ?? "vertical";
+  const xAxisTopPlotOffset = resolveXAxisTopPlotOffset(
+    props.xAxis,
+    barOrientation,
+    tokens,
+  );
 
   const basePadding = {
     top: props.padding?.top ?? 16,
@@ -314,7 +337,6 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
     Boolean(series.stackId),
   );
   const groupedBarSeries = barSeries.filter((series) => !series.stackId);
-  const barOrientation = props.barOrientation ?? "vertical";
 
   const yAxisValues = new Map<string, number[]>();
   const pushYAxisValue = (axisId: string, value: number) => {
@@ -382,7 +404,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
       axisId,
       scaleLinear<number>({
         domain: [minY, maxY],
-        range: [innerHeight, 0],
+        range: [innerHeight, xAxisTopPlotOffset],
         nice: true,
       }),
     );
@@ -391,7 +413,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
     yScaleByAxis.get(defaultYAxisId) ??
     scaleLinear<number>({
       domain: [0, 1],
-      range: [innerHeight, 0],
+      range: [innerHeight, xAxisTopPlotOffset],
       nice: true,
     });
   const leftDomain = yDomainByAxis.get(defaultYAxisId) ?? { min: 0, max: 1 };
@@ -407,7 +429,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
   });
   const xAxisTop =
     props.xAxis?.position === "top"
-      ? 0
+      ? xAxisTopPlotOffset
       : props.xAxis?.position === "zero" &&
           leftDomain.min < 0 &&
           leftDomain.max > 0
@@ -1184,7 +1206,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
             barOrientation !== "horizontal" &&
             props.xAxis?.position === "top" ? (
               <AxisTop
-                top={0}
+                top={xAxisTopPlotOffset}
                 scale={allCategory ? xBand : xLinear}
                 hideTicks={props.xAxis?.showTicks === false}
                 stroke={tokens.color.axis}

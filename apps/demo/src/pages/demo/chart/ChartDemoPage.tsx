@@ -229,13 +229,16 @@ export default function ChartDemoPage(_props: PageComponentProps) {
                   height={height}
                   data={monthlyData}
                   x={(d) => d.month}
+                  xAxis={{ showAllTicks: true, position: 'top' }}
                   series={[
                     { id: 'revenue', type: 'bar', label: 'Revenue', y: (d) => d.revenue },
                     { id: 'cost', type: 'bar', label: 'Cost', y: (d) => d.cost },
                   ]}
                   motion={activationMotion}
                   tooltip
-                  legend
+                  legend = {{
+                    position: 'bottom',
+                  }}
                 />
               )}
             </ResponsiveChartContainer>
