@@ -260,7 +260,7 @@ export const ValueLabelStyledWithOverlapAvoidance: Story = {
           showValueLabel: true,
           hideZeroValueLabel: true,
           valueLabelStyle: { color: '#1e3a8a', fontSize: 12, fontWeight: 700 },
-          valueLabelOffsetY: -10,
+          valueLabelOffsetY: (value, _datum, index) => (index % 2 === 0 ? -12 : -8) + (value >= 120 ? -2 : 0),
           valueLabelFormatter: (value) => `${value}`,
         },
         {
@@ -301,6 +301,7 @@ export const BarNegativeValues: Story = {
           color: (value, _, index) => (index === 0 ? '#1d4ed8' : value >= 0 ? '#60a5fa' : '#93c5fd'),
           negativeColor: '#dc2626',
           showValueLabel: true,
+          valueLabelOffsetY: (value) => (value < 0 ? 2 : -2),
           valueLabelStyle: (value) => ({
             color: value < 0 ? '#7f1d1d' : '#1e3a8a',
             fontWeight: 700,

@@ -170,10 +170,9 @@ function useMotionRenderKey(
   return `${motion.mode}-${revision}`;
 }
 
-function motionGroupProps(motion: ResolvedMotion, renderKey: string) {
+function motionGroupProps(motion: ResolvedMotion) {
   const isAnimated = motion.enabled && motion.mode !== "none";
   return {
-    key: renderKey,
     className: isAnimated ? "gen-chart-motion-enter" : undefined,
     style: isAnimated
       ? ({
@@ -772,7 +771,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
             />
           ) : null}
 
-          <g {...motionGroupProps(motion, motionRenderKey)}>
+          <g key={motionRenderKey} {...motionGroupProps(motion)}>
             {(() => {
               const stackAcc = new Map<string, { pos: number; neg: number }>();
               return props.series.map((series) => {
@@ -824,7 +823,23 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                     opacity: rawStyle?.opacity,
                   };
                 };
-                const labelOffsetY = series.valueLabelOffsetY ?? -8;
+                const resolveValueLabelOffsetY = (
+                  point: Point<T>,
+                  fallback: number,
+                ): number => {
+                  const rawOffset =
+                    typeof series.valueLabelOffsetY === "function"
+                      ? series.valueLabelOffsetY(
+                          point.value,
+                          point.datum,
+                          point.index,
+                        )
+                      : series.valueLabelOffsetY;
+                  return typeof rawOffset === "number" &&
+                    Number.isFinite(rawOffset)
+                    ? rawOffset
+                    : fallback;
+                };
                 if (series.type === "line") {
                   return (
                     <React.Fragment key={series.id}>
@@ -842,6 +857,10 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                         ? points.map((point) =>
                             (() => {
                               if (!shouldShowValueLabel(point)) return null;
+                              const labelOffsetY = resolveValueLabelOffsetY(
+                                point,
+                                -8,
+                              );
                               const placement = resolveLabelPlacement(
                                 point.x,
                                 point.y + labelOffsetY,
@@ -889,6 +908,10 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                         ? points.map((point) =>
                             (() => {
                               if (!shouldShowValueLabel(point)) return null;
+                              const labelOffsetY = resolveValueLabelOffsetY(
+                                point,
+                                -8,
+                              );
                               const placement = resolveLabelPlacement(
                                 point.x,
                                 point.y + labelOffsetY,
@@ -970,7 +993,8 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                                 const label = getValueLabel(point);
                                 const placement = resolveLabelPlacement(
                                   Math.max(xStart, xEnd) + 4,
-                                  point.y + (series.valueLabelOffsetY ?? 0),
+                                  point.y +
+                                    resolveValueLabelOffsetY(point, 0),
                                   {
                                     label,
                                     fontSize: Number(labelStyle.fontSize ?? 11),
@@ -1033,7 +1057,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                                 (isNegative
                                   ? Math.max(yStart, yEnd) + 12
                                   : Math.min(yStart, yEnd) - 4) +
-                                (series.valueLabelOffsetY ?? 0);
+                                resolveValueLabelOffsetY(point, 0);
                               const labelStyle = resolveValueLabelStyle(point);
                               const label = getValueLabel(point);
                               const placement = resolveLabelPlacement(
@@ -1101,7 +1125,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                                 Math.max(zeroX, point.x) + 4,
                                 y +
                                   groupedBarHeight / 2 +
-                                  (series.valueLabelOffsetY ?? 0),
+                                  resolveValueLabelOffsetY(point, 0),
                                 {
                                   label,
                                   fontSize: Number(labelStyle.fontSize ?? 11),
@@ -1164,7 +1188,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                               (isNegative
                                 ? Math.max(zeroY, point.y) + 12
                                 : Math.min(zeroY, point.y) - 4) +
-                              (series.valueLabelOffsetY ?? 0);
+                              resolveValueLabelOffsetY(point, 0);
                             const labelStyle = resolveValueLabelStyle(point);
                             const label = getValueLabel(point);
                             const placement = resolveLabelPlacement(
@@ -1413,7 +1437,7 @@ function PieDonutRenderer<T>(props: PieDonutChartProps<T>) {
         style={{ display: "block", flex: "1 1 auto", minHeight: 0 }}
       >
         <Group left={cx} top={cy}>
-          <g {...motionGroupProps(motion, motionRenderKey)}>
+          <g key={motionRenderKey} {...motionGroupProps(motion)}>
             <Pie<T>
               data={props.data}
               pieValue={(datum: T) =>

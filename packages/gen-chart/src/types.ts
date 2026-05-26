@@ -88,7 +88,9 @@ export interface CartesianSeriesDef<T> {
   showValueLabel?: boolean;
   hideZeroValueLabel?: boolean;
   valueLabelFormatter?: (value: number, datum: T, index: number) => string;
-  valueLabelOffsetY?: number;
+  valueLabelOffsetY?:
+    | number
+    | ((value: number, datum: T, index: number) => number | undefined);
   valueLabelStyle?:
     | {
         color?: string;
