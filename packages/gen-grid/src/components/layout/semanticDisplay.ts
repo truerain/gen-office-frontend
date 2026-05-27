@@ -15,6 +15,7 @@ export type GenGridDisplayScaleExportMode = 'raw' | 'display';
 
 export type GenGridDisplayScaleConfig = {
   divisor: number;
+  fractionDigits?: number;
   unitLabel?: string;
   cellUnitLabel?: string;
   tooltip?: GenGridDisplayScaleTooltipMode;
@@ -47,9 +48,15 @@ function normalizeDisplayScaleConfig(
     typeof input === 'number' ? { divisor: input } : { ...input };
   const divisor = Number(config.divisor);
   if (!Number.isFinite(divisor) || divisor <= 0) return undefined;
+  const fractionDigitsRaw = config.fractionDigits;
+  const fractionDigits =
+    typeof fractionDigitsRaw === 'number' && Number.isFinite(fractionDigitsRaw)
+      ? Math.max(0, Math.trunc(fractionDigitsRaw))
+      : 0;
   return {
     ...config,
     divisor,
+    fractionDigits,
     tooltip: config.tooltip ?? 'both',
   };
 }
@@ -96,6 +103,23 @@ function formatAmountNumber(value: number, meta?: GenGridColumnMeta): string {
   return String(formatCellValue(value, { ...meta, format: 'number' }));
 }
 
+export function applyDisplayScaleNumberFormat(
+  meta: GenGridColumnMeta | undefined,
+  scale: ResolvedGenGridDisplayScale | undefined
+): GenGridColumnMeta | undefined {
+  if (!meta || !scale) return meta;
+  const fractionDigits = scale.fractionDigits ?? 0;
+  const numberFormat = {
+    ...(meta.numberFormat ?? {}),
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  };
+  return {
+    ...meta,
+    numberFormat,
+  };
+}
+
 export function buildDisplayScaleTooltip(
   rawValue: unknown,
   scale: ResolvedGenGridDisplayScale,
@@ -110,7 +134,8 @@ export function buildDisplayScaleTooltip(
   const scaledNumber = scaleNumericByDisplayScale(rawNumber, scale);
   const unitSuffix = scale.unitLabel ? scale.unitLabel : '';
   const rawText = formatAmountNumber(rawNumber, meta);
-  const scaledText = `${formatAmountNumber(scaledNumber, meta)}${unitSuffix}`;
+  const scaledMeta = applyDisplayScaleNumberFormat(meta, scale);
+  const scaledText = `${formatAmountNumber(scaledNumber, scaledMeta)}${unitSuffix}`;
 
   if (mode === 'raw') return rawText;
   if (mode === 'scaled') return scaledText;

@@ -10,6 +10,7 @@ import { getCellStyle } from './cellStyles';
 import { getMeta, type GenGridColumnMeta } from './utils';
 import { formatCellValue } from './cellFormat';
 import {
+  applyDisplayScaleNumberFormat,
   appendDisplayScaleCellSuffix,
   resolveDisplayScale,
   scaleNumericByDisplayScale,
@@ -496,13 +497,18 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
   }, [meta, semanticType]);
   const effectiveMetaForFormat = React.useMemo(() => {
     if (!effectiveMeta) return effectiveMeta;
-    if (effectiveMeta.format !== 'percent') return effectiveMeta;
-    if (!resolvedPercentOptions) return effectiveMeta;
-    return {
-      ...effectiveMeta,
-      percentOptions: resolvedPercentOptions as GenGridColumnMeta['percentOptions'],
-    };
-  }, [effectiveMeta, resolvedPercentOptions]);
+    let nextMeta = effectiveMeta;
+    if (nextMeta.format === 'percent' && resolvedPercentOptions) {
+      nextMeta = {
+        ...nextMeta,
+        percentOptions: resolvedPercentOptions as GenGridColumnMeta['percentOptions'],
+      };
+    }
+    if (semanticType === 'amount' && resolvedDisplayScale) {
+      nextMeta = applyDisplayScaleNumberFormat(nextMeta, resolvedDisplayScale) ?? nextMeta;
+    }
+    return nextMeta;
+  }, [effectiveMeta, resolvedPercentOptions, semanticType, resolvedDisplayScale]);
 
   const isNegativeStyleSupported = semanticType === 'amount' || semanticType === 'percent';
   const amountNegativeStyle =
