@@ -9,7 +9,7 @@ export type GenGridMetaResolverArgs<T = unknown> = {
   value: unknown;
 };
 
-export type GenGridDisplayScaleTooltipMode = 'raw' | 'scaled' | 'both' | 'off';
+export type GenGridDisplayScaleTooltipMode = 'raw' | 'rawWithUnit' | 'scaled' | 'both' | 'off';
 
 export type GenGridDisplayScaleExportMode = 'raw' | 'display';
 
@@ -138,9 +138,16 @@ export function buildDisplayScaleTooltip(
   const scaledText = `${formatAmountNumber(scaledNumber, scaledMeta)}${unitSuffix}`;
 
   if (mode === 'raw') return rawText;
+  if (mode === 'rawWithUnit') return `${rawText}${unitSuffix}`;
   if (mode === 'scaled') return scaledText;
   if (rawText === scaledText && !unitSuffix) return rawText;
   return `${rawText} (${scaledText})`;
+}
+
+function buildPercentTooltip(rawValue: unknown, meta?: GenGridColumnMeta): string | undefined {
+  const rawNumber = toFiniteNumber(rawValue);
+  if (rawNumber == null) return undefined;
+  return String(formatCellValue(rawNumber, { ...meta, format: 'percent' }));
 }
 
 export function resolveGenGridCellTooltip<TData>(args: {
@@ -175,6 +182,10 @@ export function resolveGenGridCellTooltip<TData>(args: {
       const semanticTooltip = buildDisplayScaleTooltip(value, scale, meta);
       if (semanticTooltip) return semanticTooltip;
     }
+  }
+  if (semanticType === 'percent') {
+    const semanticTooltip = buildPercentTooltip(value, meta);
+    if (semanticTooltip) return semanticTooltip;
   }
 
   return typeof meta?.tooltip === 'string' ? meta.tooltip : undefined;
