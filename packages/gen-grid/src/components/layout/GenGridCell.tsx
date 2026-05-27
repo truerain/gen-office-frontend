@@ -45,9 +45,11 @@ export type GenGridCellProps<TData> = {
     row: TData;
     rowId: string;
     rowIndex: number;
+    visibleRows: TData[];
     columnId: string;
     value: unknown;
   }) => React.CSSProperties | undefined;
+  visibleRows: TData[];
 
   cellProps: React.TdHTMLAttributes<HTMLTableCellElement>;
   isRowSpanCovered?: boolean;
@@ -376,6 +378,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     enableColumnSizing,
     getCellClassName,
     getCellStyle: getCellStyleByRule,
+    visibleRows,
     cellProps,
     isRowSpanCovered,
     cellRowSpan,
@@ -974,6 +977,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
           row: cell.row.original,
           rowId,
           rowIndex,
+          visibleRows,
           columnId: colId,
           value: cellValue,
         }) ?? {}),

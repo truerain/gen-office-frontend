@@ -186,6 +186,7 @@ type CommonGridOptions<TData> = {
     row: TData;
     rowId: string;
     rowIndex: number;
+    visibleRows: TData[];
     columnId: string;
     value: unknown;
   }) => React.CSSProperties | undefined;

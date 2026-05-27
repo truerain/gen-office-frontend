@@ -84,6 +84,7 @@ type GenGridVirtualBodyProps<TData> = {
     row: TData;
     rowId: string;
     rowIndex: number;
+    visibleRows: TData[];
     columnId: string;
     value: unknown;
   }) => React.CSSProperties | undefined;
@@ -180,6 +181,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
 
   const { editMode, setEditMode, options, selectedRanges, setSelectedRanges } = useGenGridContext<TData>();
   const rows = table.getRowModel().rows;
+  const visibleRows = React.useMemo(() => rows.map((r) => r.original), [rows]);
   const rowStyleById = React.useMemo(() => {
     const map = new Map<string, React.CSSProperties | undefined>();
     rows.forEach((r) => {
@@ -443,6 +445,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
                     row: row.original,
                     rowId: row.id,
                     rowIndex: row.index,
+                    visibleRows,
                     columnId: colId,
                     value: cellValue,
                   }) ?? {}),
@@ -473,6 +476,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
       getRowStyle,
       getCellClassName,
       getCellStyleByRule,
+      visibleRows,
       rangeSelection,
     ]
   );
@@ -685,6 +689,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
                   enableColumnSizing={enableColumnSizing}
                   getCellClassName={getCellClassName}
                   getCellStyle={getCellStyleByRule}
+                  visibleRows={visibleRows}
                   cellProps={{
                     ...mergedProps,
                     colSpan: cellColSpan > 1 ? cellColSpan : undefined,
