@@ -50,7 +50,7 @@ declare module '@tanstack/react-table' {
               }) => unknown);
           invertDirection?: boolean;
         } | undefined);
-    displayScale?: GenGridDisplayScaleInput;
+    displayScale?: GenGridDisplayScaleInput<TData>;
     width?: number;
     pinned?: 'left' | 'right';
     editValidator?: (

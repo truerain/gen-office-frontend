@@ -22,10 +22,10 @@ export type GenGridDisplayScaleConfig = {
   export?: GenGridDisplayScaleExportMode;
 };
 
-export type GenGridDisplayScaleInput =
+export type GenGridDisplayScaleInput<T = unknown> =
   | number
   | GenGridDisplayScaleConfig
-  | ((args: GenGridMetaResolverArgs) => GenGridDisplayScaleInput | undefined);
+  | ((args: GenGridMetaResolverArgs<T>) => GenGridDisplayScaleInput<T> | undefined);
 
 export type ResolvedGenGridDisplayScale = GenGridDisplayScaleConfig;
 
