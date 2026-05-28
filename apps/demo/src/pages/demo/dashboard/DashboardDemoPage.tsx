@@ -138,16 +138,54 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
       {
         accessorKey: 'value',
         header: '매출',
-        size: 110,
+        size: 210,
         meta: { align: 'right', mono: true },
-        cell: ({ getValue }) => numberFormatter.format(Number(getValue() ?? 0)),
-      },
-      {
-        accessorKey: 'target',
-        header: '구성비',
-        size: 110,
-        meta: { align: 'right', mono: true },
-        cell: ({ getValue }) => numberFormatter.format(Number(getValue() ?? 0)),
+        cell: ({ row }) => {
+          const value = Number(row.original.value ?? 0);
+          const target = Number(row.original.target ?? 0);
+          const scaleMax = Math.max(value, target, 1);
+          const valueWidth = Math.max(0, Math.min(100, (value / scaleMax) * 100));
+          const targetWidth = Math.max(0, Math.min(100, (target / scaleMax) * 100));
+
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div
+                style={{
+                  position: 'relative',
+                  flex: 1,
+                  height: 18,
+                  background: '#e5e7eb',
+                  overflow: 'visible',
+                }}
+              >
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 2,
+                    width: `${targetWidth}%`,
+                    height: 7,
+                    background: 'rgba(245, 158, 11, 0.7)',
+                  }}
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 9,
+                    width: `${valueWidth}%`,
+                    height: 7,
+                    background: 'rgba(37, 99, 235, 0.75)',
+                  }}
+                />
+              </div>
+              <div style={{ minWidth: 92, fontSize: 11, lineHeight: 1.2, textAlign: 'right' }}>
+                <div style={{ color: '#b45309' }}>{numberFormatter.format(target)}</div>
+                <div style={{ color: '#1d4ed8' }}>{numberFormatter.format(value)}</div>
+              </div>
+            </div>
+          );
+        },
       },
       {
         accessorKey: 'rate',

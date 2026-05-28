@@ -209,6 +209,23 @@ function resolveSeriesCurve(curve: CartesianSeriesDef<unknown>["curve"]) {
   return curveLinear;
 }
 
+function resolveBarLayout<T>(series: CartesianSeriesDef<T>) {
+  if (series.type !== "bar") return "grouped" as const;
+  if (series.layout) return series.layout;
+  return series.stackId ? "stacked" : "grouped";
+}
+
+function resolveOverlayOffsetPx<T>(series: CartesianSeriesDef<T>) {
+  if (series.type !== "bar") return 0;
+  const value = series.overlayOffsetPx;
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function resolveBarWidthRatio(value: number | undefined) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return 0.92;
+  return Math.max(0.1, Math.min(1, value));
+}
+
 function renderTooltip<T>(
   tooltip: TooltipState<T>,
   tooltipOptions: ReturnType<typeof resolveTooltip<T>>,
@@ -332,10 +349,12 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
   });
 
   const barSeries = props.series.filter((series) => series.type === "bar");
-  const stackedBarSeries = barSeries.filter((series) =>
-    Boolean(series.stackId),
+  const stackedBarSeries = barSeries.filter(
+    (series) => resolveBarLayout(series) === "stacked" && Boolean(series.stackId),
   );
-  const groupedBarSeries = barSeries.filter((series) => !series.stackId);
+  const groupedBarSeries = barSeries.filter(
+    (series) => resolveBarLayout(series) === "grouped",
+  );
 
   const yAxisValues = new Map<string, number[]>();
   const pushYAxisValue = (axisId: string, value: number) => {
@@ -426,6 +445,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
     range: [0, innerHeight],
     padding: 0.22,
   });
+  const barWidthRatio = resolveBarWidthRatio(props.barWidthRatio);
   const xAxisTop =
     props.xAxis?.position === "top"
       ? xAxisTopPlotOffset
@@ -489,17 +509,17 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
   const groupedBarWidth = allCategory
     ? Math.max(
         4,
-        (xBand.bandwidth() / Math.max(1, groupedBarSeries.length)) * 0.92,
+        (xBand.bandwidth() / Math.max(1, groupedBarSeries.length)) * barWidthRatio,
       )
     : 14;
   const stackedBarWidth = allCategory
-    ? Math.max(4, xBand.bandwidth() * 0.92)
+    ? Math.max(4, xBand.bandwidth() * barWidthRatio)
     : 14;
   const groupedBarHeight = Math.max(
     4,
-    (yBand.bandwidth() / Math.max(1, groupedBarSeries.length)) * 0.92,
+    (yBand.bandwidth() / Math.max(1, groupedBarSeries.length)) * barWidthRatio,
   );
-  const stackedBarHeight = Math.max(4, yBand.bandwidth() * 0.92);
+  const stackedBarHeight = Math.max(4, yBand.bandwidth() * barWidthRatio);
   const clampLabelX = (x: number) => Math.max(6, Math.min(innerWidth - 6, x));
   const clampLabelY = (y: number) => Math.max(10, Math.min(innerHeight - 4, y));
   const placedLabelRows = new Map<number, number[]>();
@@ -592,7 +612,9 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
       const hoverStackAcc = new Map<string, { pos: number; neg: number }>();
       for (const series of props.series) {
         const points = pointsBySeries.get(series.id) ?? [];
-        const isGroupedBarSeries = series.type === "bar" && !series.stackId;
+        const barLayout = resolveBarLayout(series);
+        const isGroupedBarSeries =
+          series.type === "bar" && barLayout === "grouped";
         const barIndex = isGroupedBarSeries
           ? Math.max(
               0,
@@ -603,7 +625,11 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
           let hoverX = point.x;
           let hoverY = point.y;
 
-          if (series.type === "bar" && series.stackId) {
+          if (
+            series.type === "bar" &&
+            barLayout === "stacked" &&
+            series.stackId
+          ) {
             const stackId = String(series.stackId);
             const key = `${stackId}:${point.index}`;
             const prev = hoverStackAcc.get(key) ?? { pos: 0, neg: 0 };
@@ -644,6 +670,13 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                   barIndex * groupedBarWidth +
                   groupedBarWidth / 2
                 : point.x;
+            }
+          } else if (series.type === "bar" && barLayout === "overlay") {
+            const overlayOffset = resolveOverlayOffsetPx(series);
+            if (barOrientation === "horizontal") {
+              hoverY = point.y + overlayOffset;
+            } else {
+              hoverX = point.x + overlayOffset;
             }
           }
 
@@ -940,6 +973,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                   );
                 }
 
+                const barLayout = resolveBarLayout(series);
                 const barIndex = Math.max(
                   0,
                   groupedBarSeries.findIndex((item) => item.id === series.id),
@@ -947,7 +981,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                 return (
                   <React.Fragment key={series.id}>
                     {points.map((point) => {
-                      if (series.stackId) {
+                      if (barLayout === "stacked" && series.stackId) {
                         const stackId = String(series.stackId);
                         const key = `${stackId}:${point.index}`;
                         const prev = stackAcc.get(key) ?? { pos: 0, neg: 0 };
@@ -1090,13 +1124,19 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                         );
                       }
 
+                      const isOverlayBar = barLayout === "overlay";
+                      const overlayOffset = resolveOverlayOffsetPx(series);
                       if (barOrientation === "horizontal") {
                         const zeroX = Number(valueXScale(0));
                         const barWidth = Math.max(1, Math.abs(zeroX - point.x));
-                        const y =
-                          point.y -
-                          yBand.bandwidth() / 2 +
-                          barIndex * groupedBarHeight;
+                        const barHeight = isOverlayBar
+                          ? stackedBarHeight
+                          : groupedBarHeight;
+                        const y = isOverlayBar
+                          ? point.y + overlayOffset - barHeight / 2
+                          : point.y -
+                            yBand.bandwidth() / 2 +
+                            barIndex * groupedBarHeight;
                         return (
                           <React.Fragment key={`${series.id}-${point.index}`}>
                             <Bar
@@ -1104,10 +1144,10 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                                 barOrientation,
                                 point.value,
                               )}
-                              x={Math.min(zeroX, point.x)}
-                              y={y}
-                              width={barWidth}
-                              height={groupedBarHeight}
+                                x={Math.min(zeroX, point.x)}
+                                y={y}
+                                width={barWidth}
+                                height={barHeight}
                               fill={resolveBarFill(point)}
                               stroke={
                                 point.value < 0
@@ -1115,16 +1155,16 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                                   : barStrokeColor
                               }
                               strokeWidth={seriesStrokeWidth}
-                              opacity={0.9}
-                            />
+                                opacity={isOverlayBar ? 0.65 : 0.9}
+                              />
                             {(() => {
                               if (!shouldShowValueLabel(point)) return null;
                               const labelStyle = resolveValueLabelStyle(point);
                               const label = getValueLabel(point);
-                              const placement = resolveLabelPlacement(
-                                Math.max(zeroX, point.x) + 4,
-                                y +
-                                  groupedBarHeight / 2 +
+                                const placement = resolveLabelPlacement(
+                                  Math.max(zeroX, point.x) + 4,
+                                  y +
+                                  barHeight / 2 +
                                   resolveValueLabelOffsetY(point, 0),
                                 {
                                   label,
@@ -1152,11 +1192,16 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                         );
                       }
 
+                      const barWidth = isOverlayBar
+                        ? stackedBarWidth
+                        : groupedBarWidth;
                       const x = allCategory
-                        ? point.x -
-                          xBand.bandwidth() / 2 +
-                          barIndex * groupedBarWidth
-                        : point.x - groupedBarWidth / 2;
+                        ? isOverlayBar
+                          ? point.x + overlayOffset - barWidth / 2
+                          : point.x -
+                            xBand.bandwidth() / 2 +
+                            barIndex * groupedBarWidth
+                        : point.x - barWidth / 2;
                       const seriesYScale =
                         yScaleByAxis.get(point.yAxisId) ?? yScale;
                       const zeroY = Number(seriesYScale(0));
@@ -1170,7 +1215,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                             )}
                             x={x}
                             y={Math.min(zeroY, point.y)}
-                            width={groupedBarWidth}
+                            width={barWidth}
                             height={barHeight}
                             fill={resolveBarFill(point)}
                             stroke={
@@ -1179,7 +1224,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                               : barStrokeColor
                             }
                             strokeWidth={seriesStrokeWidth}
-                            opacity={0.9}
+                            opacity={isOverlayBar ? 0.65 : 0.9}
                           />
                           {(() => {
                             if (!shouldShowValueLabel(point)) return null;
@@ -1192,7 +1237,7 @@ function CartesianRenderer<T>(props: CartesianChartProps<T>) {
                             const labelStyle = resolveValueLabelStyle(point);
                             const label = getValueLabel(point);
                             const placement = resolveLabelPlacement(
-                              x + groupedBarWidth / 2,
+                              x + barWidth / 2,
                               labelY,
                               {
                                 label,

@@ -114,6 +114,8 @@ export interface CartesianSeriesDef<T> {
   strokeColor?: string;
   strokeWidth?: number;
   negativeColor?: string;
+  layout?: "grouped" | "stacked" | "overlay";
+  overlayOffsetPx?: number;
   stackId?: string;
   curve?: "linear" | "monotoneX" | "step";
 }
@@ -121,6 +123,7 @@ export interface CartesianSeriesDef<T> {
 export interface CartesianChartProps<T> extends GenChartBaseProps<T> {
   kind: "line" | "bar" | "area" | "composed";
   barOrientation?: "vertical" | "horizontal";
+  barWidthRatio?: number;
   avoidValueLabelOverlap?: boolean;
   data: T[];
   x: (d: T, index: number) => string | number | Date;

@@ -170,6 +170,38 @@ export const BarBasic: Story = {
   ),
 };
 
+export const BarOverlay: Story = {
+  render: () => (
+    <GenChart<SalesRow>
+      kind="bar"
+      width={760}
+      height={360}
+      data={salesData}
+      x={(d) => d.month}
+      series={[
+        {
+          id: 'revenue',
+          type: 'bar',
+          layout: 'overlay',
+          y: (d) => d.revenue,
+          label: 'Revenue',
+          color: '#2563eb',
+        },
+        {
+          id: 'expense',
+          type: 'bar',
+          layout: 'overlay',
+          y: (d) => d.expense,
+          label: 'Expense',
+          color: '#f97316',
+        },
+      ]}
+      legend
+      tooltip
+    />
+  ),
+};
+
 export const ComposedLineBar: Story = {
   render: () => (
     <GenChart<SalesRow>

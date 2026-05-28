@@ -278,6 +278,51 @@ export default function ChartDemoPage(_props: PageComponentProps) {
         </section>
 
         <section className={styles.card}>
+          <h3 className={styles.cardTitle}>Column Overlay (Bar Layout)</h3>
+          <div className={styles.chartWrap}>
+            <ResponsiveChartContainer minHeight={280} fallbackHeight={280}>
+              {({ width, height }) => (
+                <GenChart<MonthlyPoint>
+                  kind="bar"
+                  barOrientation="horizontal"
+                  barWidthRatio={0.62}
+                  width={width}
+                  height={height}
+                  data={monthlyData}
+                  x={(d) => d.month}
+                  xAxis={{ showAllTicks: true }}
+                  series={[
+                    {
+                      id: 'revenue',
+                      type: 'bar',
+                      layout: 'overlay',
+                      overlayOffsetPx: -3,
+                      label: 'Revenue',
+                      y: (d) => d.revenue,
+                      color: '#ababab',
+                      showValueLabel: true,
+                    },
+                    {
+                      id: 'cost',
+                      type: 'bar',
+                      layout: 'overlay',
+                      overlayOffsetPx: 6,
+                      label: 'Cost',
+                      y: (d) => d.cost,
+                      color: '#f59e0b',
+                      showValueLabel: true,
+                    },
+                  ]}
+                  motion={activationMotion}
+                  tooltip
+                  legend
+                />
+              )}
+            </ResponsiveChartContainer>
+          </div>
+        </section>
+
+        <section className={styles.card}>
           <h3 className={styles.cardTitle}>Area</h3>
           <div className={styles.chartWrap}>
             <ResponsiveChartContainer minHeight={280} fallbackHeight={280}>
