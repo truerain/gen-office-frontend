@@ -67,6 +67,12 @@ declare module '@tanstack/react-table' {
     cellClassName?:
       | string
       | ((args: { row: TData; rowId: string; columnId: string; value: unknown }) => string | undefined);
+    color?:
+      | string
+      | ((args: { row: TData; rowId: string; columnId: string; value: unknown }) => string | undefined);
+    backgroundColor?:
+      | string
+      | ((args: { row: TData; rowId: string; columnId: string; value: unknown }) => string | undefined);
     format?: 'text' | 'number' | 'currency' | 'percent' | 'date' | 'datetime' | 'boolean';
     formatLocale?: string;
     numberFormat?: Intl.NumberFormatOptions;

@@ -575,6 +575,24 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
           value: cellValue,
         })
       : meta?.cellClassName;
+  const metaColor =
+    typeof meta?.color === 'function'
+      ? meta.color({
+          row: cell.row.original,
+          rowId,
+          columnId: colId,
+          value: cellValue,
+        })
+      : meta?.color;
+  const metaBackgroundColor =
+    typeof meta?.backgroundColor === 'function'
+      ? meta.backgroundColor({
+          row: cell.row.original,
+          rowId,
+          columnId: colId,
+          value: cellValue,
+        })
+      : meta?.backgroundColor;
 
   const [draft, setDraft] = React.useState<unknown>(cell.getValue());
   const normalizeEditValue = React.useCallback(
@@ -987,6 +1005,8 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
           columnId: colId,
           value: cellValue,
         }) ?? {}),
+        ...(metaColor != null ? { color: metaColor } : {}),
+        ...(metaBackgroundColor != null ? { backgroundColor: metaBackgroundColor } : {}),
       }}
       data-rowid={rowId}
       data-colid={colId}

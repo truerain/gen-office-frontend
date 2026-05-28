@@ -70,6 +70,12 @@ export type GenGridColumnMeta = {
   cellClassName?:
     | string
     | ((args: { row: unknown; rowId: string; columnId: string; value: unknown }) => string | undefined);
+  color?:
+    | string
+    | ((args: { row: unknown; rowId: string; columnId: string; value: unknown }) => string | undefined);
+  backgroundColor?:
+    | string
+    | ((args: { row: unknown; rowId: string; columnId: string; value: unknown }) => string | undefined);
 
   // renderer
   format?: 'text' | 'number' | 'currency' | 'percent' | 'date' | 'datetime' | 'boolean';
