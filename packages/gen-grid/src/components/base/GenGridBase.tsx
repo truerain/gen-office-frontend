@@ -203,9 +203,9 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
         size: Math.max(1, Math.floor(column.getSize())),
       }));
       const totalWidth = sizes.reduce((sum, column) => sum + column.size, 0);
+      if (!Number.isFinite(totalWidth) || totalWidth <= 0) return;
 
-      if (totalWidth <= containerWidth) return;
-
+      // Fill mode: always distribute container width by current column size ratios.
       const ratio = containerWidth / totalWidth;
       const scaled = sizes.map((column) => {
         const next = Math.max(1, Math.floor(column.size * ratio));

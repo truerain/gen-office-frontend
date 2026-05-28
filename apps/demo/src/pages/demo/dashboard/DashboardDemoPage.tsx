@@ -179,7 +179,7 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
                   }}
                 />
               </div>
-              <div style={{ minWidth: 92, fontSize: 11, lineHeight: 1.2, textAlign: 'right' }}>
+              <div style={{ minWidth: 50, fontSize: 11, lineHeight: 1.2, textAlign: 'right' }}>
                 <div style={{ color: '#b45309' }}>{numberFormatter.format(target)}</div>
                 <div style={{ color: '#1d4ed8' }}>{numberFormatter.format(value)}</div>
               </div>
@@ -190,7 +190,7 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
       {
         accessorKey: 'rate',
         header: '달성도(%)',
-        size: 110,
+        size: 100,
         meta: { align: 'right', mono: true },
         cell: ({ getValue }) => percentFormatter.format(Number(getValue() ?? 0)),
       },
