@@ -1006,6 +1006,7 @@ export async function exportCrudExcel<TData>(args: ExportCrudExcelArgs<TData>) {
             row: styleRow,
             rowId: styleRowId,
             rowIndex: styleRowIndex,
+            visibleRows: [...sourceRows],
             columnId: col.id,
             value: preparedRows[rowIndex]!.styleValueByColumnId[col.id],
           });

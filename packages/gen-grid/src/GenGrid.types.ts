@@ -138,6 +138,7 @@ type CommonGridOptions<TData> = {
   footer?: React.ReactNode;
   renderFooter?: (table: Table<TData>) => React.ReactNode;
   noRowsMessage?: React.ReactNode;
+  renderNoRowsMessage?: (table: Table<TData>) => React.ReactNode;
 
   onDirtyChange?: (dirty: boolean) => void;               // notify when dirty flag changes
   onDirtyRowsChange?: (rowIds: string[]) => void;         // notify when dirty row id list changes

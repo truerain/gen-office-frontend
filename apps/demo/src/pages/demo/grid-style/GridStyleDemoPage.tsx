@@ -5,7 +5,7 @@ import { ChevronsDown, ChevronsUp, Paintbrush } from 'lucide-react';
 import { GenGridCrud } from '@gen-office/gen-grid-crud';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
-import { useGridTreeStepExpand } from '@/shared/hooks/useGridTreeStepExpand';
+import { useGridTreeStepExpand, type UseGridTreeStepExpandOptions } from '@/shared/hooks/useGridTreeStepExpand';
 import { gridStyleDemoPreset } from './GridStyleDemoStyle';
 
 import styles from './GridStyleDemoPage.module.css';
@@ -222,27 +222,34 @@ function buildSeedData(): DemoRow[] {
 
 const seedData = buildSeedData();
 
-const gridStyleDemoGridTreeAccessors = {
-  getNodeId: (row: DemoRow) => row.nodeId,
-  getParentId: (row: DemoRow) => row.parentNodeId,
+const gridStyleDemoGridTreeAccessors: Pick<
+  UseGridTreeStepExpandOptions<DemoRow>,
+  'getNodeId' | 'getParentId' | 'resetOnDataChange'
+> = {
+  getNodeId: (row) => row.nodeId,
+  getParentId: (row) => row.parentNodeId,
   resetOnDataChange: 'collapsed',
+};
+
+const perfAmountMeta = {
+  align: 'right' as const,
+  mono: true,
+  semanticType: 'amount' as const,
+  amountOptions: { negativeStyle: 'triangle' as const },
+  numberFormat: { maximumFractionDigits: 0 },
+};
+
+const perfRateMeta = {
+  ...perfAmountMeta,
+  numberFormat: { maximumFractionDigits: 1 },
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function GridStyleDemoPage(_props: PageComponentProps) {
   const [data] = useState<DemoRow[]>(seedData);
   const [enableStyleRules, setEnableStyleRules] = useState(true);
-  const numberFormatter = useMemo(() => new Intl.NumberFormat('ko-KR'), []);
 
-  const renderByFormat = (format: unknown, value: unknown) => {
-    if (typeof value !== 'number' || Number.isNaN(value)) return String(value ?? '');
-    const absText = numberFormatter.format(Math.abs(value));
-    if (format === 'triangleNumber') return value < 0 ? `△${absText}` : absText;
-    if (format === 'number') return numberFormatter.format(value);
-    return numberFormatter.format(value);
-  };
-
-  const { 
+  const {
     expandedRowIds, 
     setExpandedRowIds, 
     expandOneStep, 
@@ -252,13 +259,15 @@ export default function GridStyleDemoPage(_props: PageComponentProps) {
     ...gridStyleDemoGridTreeAccessors,
   });
 
-  const columns = useMemo<ColumnDef<DemoRow, any>[]>(
+  const columns = useMemo<ColumnDef<DemoRow, unknown>[]>(
     () => [
-      { id: 'test', header: 'Test',
+      {
+        id: 'test',
+        header: 'Test',
         columns: [
-      { accessorKey: 'level', header: 'Level', size: 80, meta: { pinned: 'left', align: 'center', mono: true } },
-      { accessorKey: 'fsIndex', header: 'Fs Index', size: 120, meta: { pinned: 'left', mono: true } },
-        ]
+          { accessorKey: 'level', header: 'Level', size: 80, meta: { pinned: 'left', align: 'center', mono: true } },
+          { accessorKey: 'fsIndex', header: 'Fs Index', size: 120, meta: { pinned: 'left', mono: true } },
+        ],
       },
       {
         accessorKey: 'indexName',
@@ -270,23 +279,23 @@ export default function GridStyleDemoPage(_props: PageComponentProps) {
           return <span style={{ paddingLeft: `${level - 1}ch` }}>{String(getValue() ?? '')}</span>;
         },
       },
-            {
+      {
         id: 'perfPlan',
         header: '실적/계획',
         columns: [
-          { accessorKey: '2022', header: '2022', size: 110, meta: { editable: true, align: 'right', mono: true, format: 'triangleNumber' as any }, cell: ({ column, getValue }) => renderByFormat(column.columnDef.meta?.format, getValue()) },
-          { accessorKey: '2023', header: '2023', size: 110, meta: { align: 'right', mono: true, format: 'triangleNumber' as any }, cell: ({ column, getValue }) => renderByFormat(column.columnDef.meta?.format, getValue()) },
-          { accessorKey: '2024', header: '2024', size: 110, meta: { align: 'right', mono: true, format: 'triangleNumber' as any }, cell: ({ column, getValue }) => renderByFormat(column.columnDef.meta?.format, getValue()) },
-          { accessorKey: '2025', header: '2025', size: 110, meta: { align: 'right', mono: true, format: 'triangleNumber' as any }, cell: ({ column, getValue }) => renderByFormat(column.columnDef.meta?.format, getValue()) },
-          { accessorKey: '2026', header: '2026', size: 110, meta: { align: 'right', mono: true, format: 'triangleNumber' as any }, cell: ({ column, getValue }) => renderByFormat(column.columnDef.meta?.format, getValue()) },
-          { accessorKey: '2026Plan', header: '2026계획', size: 110, meta: { align: 'right', mono: true, format: 'triangleNumber' as any }, cell: ({ column, getValue }) => renderByFormat(column.columnDef.meta?.format, getValue()) },
-          { accessorKey: 'yoy', header: '전년비', size: 110, meta: { align: 'right', mono: true, format: 'triangleNumber' as any }, cell: ({ column, getValue }) => renderByFormat(column.columnDef.meta?.format, getValue()) },
-          { accessorKey: 'planDiff', header: '계획비', size: 110, meta: { align: 'right', mono: true, format: 'triangleNumber' as any }, cell: ({ column, getValue }) => renderByFormat(column.columnDef.meta?.format, getValue()) },
-          { accessorKey: 'yoyRate', header: '전년비(%)', size: 120, meta: { align: 'right', mono: true, format: 'triangleNumber' as any }, cell: ({ column, getValue }) => renderByFormat(column.columnDef.meta?.format, getValue()) },
+          { accessorKey: '2022', header: '2022', size: 110, meta: { ...perfAmountMeta, editable: true } },
+          { accessorKey: '2023', header: '2023', size: 110, meta: perfAmountMeta },
+          { accessorKey: '2024', header: '2024', size: 110, meta: perfAmountMeta },
+          { accessorKey: '2025', header: '2025', size: 110, meta: perfAmountMeta },
+          { accessorKey: '2026', header: '2026', size: 110, meta: perfAmountMeta },
+          { accessorKey: '2026Plan', header: '2026계획', size: 110, meta: perfAmountMeta },
+          { accessorKey: 'yoy', header: '전년비', size: 110, meta: perfAmountMeta },
+          { accessorKey: 'planDiff', header: '계획비', size: 110, meta: perfAmountMeta },
+          { accessorKey: 'yoyRate', header: '전년비(%)', size: 120, meta: perfRateMeta },
         ],
       },
     ],
-    [numberFormatter]
+    []
   );
 
   return (

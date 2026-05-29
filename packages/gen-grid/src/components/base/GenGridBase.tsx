@@ -58,6 +58,7 @@ export type GenGridBaseProps<TData> = {
   footer?: React.ReactNode;
   renderFooter?: (table: Table<TData>) => React.ReactNode;
   noRowsMessage?: React.ReactNode;
+  renderNoRowsMessage?: (table: Table<TData>) => React.ReactNode;
 
   enableFooterRow?: boolean;
   enableStickyFooterRow?: boolean;
@@ -150,6 +151,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     footer,
     renderFooter,
     noRowsMessage,
+    renderNoRowsMessage,
     enableFooterRow,
     enableStickyFooterRow,
 
@@ -169,6 +171,9 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
   const fitColumnsMode = fitColumns ?? 'none';
   const shouldFillColumns = columnSizingEnabled && fitColumnsMode === 'fill';
   const footerContent = renderFooter ? renderFooter(table) : footer;
+  const resolvedNoRowsMessage = renderNoRowsMessage
+    ? renderNoRowsMessage(table)
+    : noRowsMessage ?? 'No data';
   const footerEnabled = enableFooter !== undefined ? enableFooter : false;
   const showFooter = footerEnabled && footerContent !== null && footerContent !== undefined;
 
@@ -270,8 +275,6 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     stickyFooterRowEnabled
       ? Math.max(0, availableBodyHeight - totalBodyHeight)
       : 0;
-  const resolvedNoRowsMessage = noRowsMessage ?? 'No data';
-
   const autoSizeColumn = React.useCallback((columnId: string) => {
     void columnId;
   }, []);
