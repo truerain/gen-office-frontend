@@ -176,7 +176,7 @@ export function resolveGenGridCellTooltip<TData>(args: {
   }
 
   const semanticType = resolveSemanticType(meta, resolverArgs);
-  if (semanticType === 'amount') {
+  if (semanticType === 'amount' || semanticType === 'percent') {
     const scale = resolveDisplayScale(meta?.displayScale as GenGridDisplayScaleInput | undefined, resolverArgs);
     if (scale) {
       const semanticTooltip = buildDisplayScaleTooltip(value, scale, meta);
