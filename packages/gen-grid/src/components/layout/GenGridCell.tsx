@@ -892,7 +892,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
       : cellContext;
   const displayContentRaw = meta?.renderCell
     ? meta.renderCell({
-        value: displayValue,
+        value: cellValue,
         row: cell.row.original,
         rowId,
         columnId: colId,
