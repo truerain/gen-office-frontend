@@ -51,7 +51,7 @@
 
 ## 4. Gate 1. Div Renderer Contract
 
-Status: in progress. A minimal non-interactive div renderer exists and baseline SSR tests cover the root/header/body/cell contract. Non-virtualized `getRowHeight` is implemented. Interaction tests and visual checks are not implemented yet.
+Status: in progress. A minimal non-interactive div renderer exists and baseline SSR tests cover the root/header/body/cell contract. Non-virtualized `getRowHeight` is implemented. A baseline Storybook page exists for visual checks. Automated browser interaction tests are not implemented yet.
 
 ### 목표
 

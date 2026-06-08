@@ -95,3 +95,14 @@ Records meaningful GenDataGrid implementation decisions and progress.
 - Updated cell CSS to prefer row-specific height and fall back to `rowHeight`.
 - Added a baseline SSR test for per-row height rendering.
 - Verified `pnpm -C frontend/packages/gen-datagrid test` passes with 9 tests.
+
+### Storybook Baseline Page
+
+- Added `src/stories/GenDataGrid.baseline.stories.tsx`.
+- The story visually covers:
+  - div header/body rendering
+  - column width layout
+  - per-row height through `getRowHeight`
+  - default active cell outline
+  - keyboard navigation after focusing/clicking a cell
+- Verified the common Storybook build with `pnpm -C frontend/apps/storybook-all build`.
