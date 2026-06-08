@@ -2,6 +2,7 @@
  * Date formatting utilities
  */
 
+// Parses a date string in 'YYYY-MM-DD' format and returns a Date object
 export const parseDate = (value: string): Date | undefined => {
   if(!value) return undefined;
 
@@ -9,6 +10,26 @@ export const parseDate = (value: string): Date | undefined => {
   return Number.isNaN(date.getTime()) ? undefined : date;
 }
 
+// Parses a date string in 'YYYY-MM-DD' format and returns a Date object, or undefined if invalid
+export const parseDateString = (value: string): Date | undefined => {
+  return parseDate(value);
+}
+
+// Parses a date string in 'YYYYMMDD' format and returns a Date object, or undefined if invalid
+export const parseApiDate = (value: string): Date | undefined => {
+  if( !value) return undefined;
+  if(value.length !== 8) return undefined
+
+  const year = value.slice(0, 4);
+  const month = value.slice(4, 6);
+  const day = value.slice(6, 8);
+
+  const date = new Date(`${year}${month}${day}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
+
+// Formats a Date object or date string into a specified format
 export const formatDate = (date: Date | string, format: 'short' | 'long' | 'full' = 'short'): string => {
   const d = typeof date === 'string' ? new Date(date) : date;
 
@@ -21,10 +42,12 @@ export const formatDate = (date: Date | string, format: 'short' | 'long' | 'full
   return new Intl.DateTimeFormat('ko-KR', formats[format]).format(d);
 };
 
+// Convenience functions for specific date formats
 export const formatDateTime = (date: Date | string): string => {
   return formatDate(date, 'full');
 };
 
+// Formats a Date object or date string into 'HH:mm:ss' format
 export const formatTime = (date: Date | string): string => {
   const d = typeof date === 'string' ? new Date(date) : date;
   return new Intl.DateTimeFormat('ko-KR', {
@@ -34,6 +57,7 @@ export const formatTime = (date: Date | string): string => {
   }).format(d);
 };
 
+// Formats a Date object or date string into a relative time format (e.g., "2 hours ago")
 export const formatRelativeTime = (date: Date | string): string => {
   const d = typeof date === 'string' ? new Date(date) : date;
   const now = new Date();
@@ -49,24 +73,6 @@ export const formatRelativeTime = (date: Date | string): string => {
   if (minutes > 0) return `${minutes}분 전`;
   return '방금 전';
 };
-
-export const parseDateString = (value: string): Date | undefined => {
-  if( !value) return undefined;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? undefined : date;
-}
-
-export const parseApiDate = (value: string): Date | undefined => {
-  if( !value) return undefined;
-  if(value.length !== 8) return undefined
-
-  const year = value.slice(0, 4);
-  const month = value.slice(4, 6);
-  const day = value.slice(6, 8);
-
-  const date = new Date(`${year}${month}${day}T00:00:00`);
-  return Number.isNaN(date.getTime()) ? undefined : date;
-}
 
 export const formatApiDate = (date: Date | undefined): string | undefined=> {
   if(!date) return undefined;
@@ -85,6 +91,7 @@ export const formatApiMonth = (date: Date | undefined): string | undefined => {
   return `${year}${month}`;
 }
 
+
 export const yyyymmToDate = (value: string): Date | undefined => {
   if (!/^\d{6}$/.test(value)) return undefined;
 
@@ -102,3 +109,4 @@ export const dateToYyyymm = (date: Date | undefined): string | undefined => {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   return `${year}${month}`;
 };
+
