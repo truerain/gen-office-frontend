@@ -1,0 +1,63 @@
+/* packages/gen-datagrid/src/index.css
+ * Defines baseline styles for GenDataGrid.
+ */
+
+:where([data-gen-datagrid-root='true']) {
+  box-sizing: border-box;
+}
+
+:where([data-gen-datagrid-root='true'] *) {
+  box-sizing: border-box;
+}
+
+.gen-datagrid {
+  width: 100%;
+  min-width: 0;
+  overflow: auto;
+  color: inherit;
+  background: inherit;
+}
+
+.gen-datagrid__header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.gen-datagrid__row {
+  display: grid;
+  min-width: max-content;
+}
+
+.gen-datagrid__header-cell,
+.gen-datagrid__cell {
+  min-width: 0;
+  padding: 0 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  border-right: 1px solid #d0d7de;
+  border-bottom: 1px solid #d0d7de;
+}
+
+.gen-datagrid__header-cell {
+  height: var(--gen-datagrid-header-height, 40px);
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  background: #f6f8fa;
+}
+
+.gen-datagrid__cell {
+  height: var(
+    --gen-datagrid-current-row-height,
+    var(--gen-datagrid-row-height, 36px)
+  );
+  display: flex;
+  align-items: center;
+}
+
+.gen-datagrid__cell[data-active-cell='true'] {
+  outline: 2px solid #0969da;
+  outline-offset: -2px;
+}
