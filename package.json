@@ -41,7 +41,9 @@
       "@storybook/react": "8.6.15",
       "@storybook/react-vite": "8.6.15",
       "@storybook/blocks": "8.6.15",
-      "storybook": "8.6.15"      
+      "storybook": "8.6.15",
+      "lodash": "4.18.1",
+      "exceljs>tmp": "0.2.7"
     },
     "peerDependencyRules": {
       "allowAny": [],

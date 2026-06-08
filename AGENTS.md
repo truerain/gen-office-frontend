@@ -26,6 +26,51 @@ pnpm lint
 
 배포: Vercel — 이 repo 루트(또는 `frontend`를 root directory로 설정).
 
+## Source File Header Comments
+
+- When creating a new source file under `frontend`, add a short header comment at the top.
+- The header should state the workspace-relative file path, the file's purpose and creation date.
+- Apply this to source-like files such as `.ts`, `.tsx`, `.js`, `.jsx`, `.css`, `.scss`, `.md`, `.mjs`, and `.cjs`.
+- Do not add header comments to formats that do not support comments, such as `.json`.
+- Do not duplicate headers. If an existing file already has a clear header comment, preserve it.
+- Keep the header concise and avoid legal/copyright text unless explicitly requested.
+
+Examples:
+
+```ts
+// packages/gen-datagrid/src/GenDataGrid.tsx
+// Provides the public GenDataGrid React component.
+```
+
+```css
+/* packages/gen-datagrid/src/index.css
+ * Defines baseline styles for GenDataGrid.
+ */
+```
+
+```md
+<!-- packages/gen-datagrid/docs/api-structure.md
+Documents the public API grouping for GenDataGrid.
+-->
+```
+
+## GenDataGrid Documentation Log
+
+- When implementing or changing `packages/gen-datagrid`, update documentation under `packages/gen-datagrid/docs`.
+- Record meaningful implementation decisions, API changes, test gate updates, known limitations, and migration notes.
+- Do not leave implementation-only knowledge only in chat or code comments.
+- Prefer adding or updating focused docs instead of appending unrelated notes to a single large document.
+- At minimum, update one of:
+  - `docs/implementation-log.md`
+  - `docs/api-structure.md`
+  - `docs/api-comparison-with-gen-grid.md`
+  - `docs/div-datagrid-development-plan.md`
+  - `docs/mvp-test-gates.md`
+  - a new focused document under `docs/`
+- If a code change affects a test gate, update `docs/mvp-test-gates.md`.
+- If a code change affects public API, update `docs/api-structure.md` and `docs/api-comparison-with-gen-grid.md`.
+- If a code change introduces a known limitation or deferred behavior, record it in `docs/implementation-log.md`.
+
 ## Encoding Safety (Korean Text)
 
 - Treat all source text files as UTF-8.
