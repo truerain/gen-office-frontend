@@ -1,7 +1,7 @@
 // packages/gen-datagrid/src/renderers/div-grid/gridTemplate.ts
 // Builds CSS grid column templates for the div-based DataGrid renderer.
 
-import type { ColumnDef } from '@tanstack/react-table';
+import type { Column, ColumnDef } from '@tanstack/react-table';
 
 export const DEFAULT_COLUMN_WIDTH = 160;
 
@@ -25,4 +25,10 @@ export function getColumnWidth<TData>(column: ColumnDef<TData, unknown>) {
 
 export function buildGridTemplateColumns<TData>(columns: ColumnDef<TData, unknown>[]) {
   return columns.map((column) => `${getColumnWidth(column)}px`).join(' ');
+}
+
+export function buildGridTemplateColumnsFromModel<TData>(
+  columns: Column<TData, unknown>[]
+) {
+  return columns.map((column) => `${column.getSize()}px`).join(' ');
 }

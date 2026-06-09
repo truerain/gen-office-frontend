@@ -7,6 +7,7 @@ type DataGridCellProps = {
   rowId: string;
   columnId: string;
   isActive: boolean;
+  isSelected: boolean;
   onActivate: (coord: { rowId: string; columnId: string }) => void;
   children: React.ReactNode;
 };
@@ -15,6 +16,7 @@ export function DataGridCell({
   rowId,
   columnId,
   isActive,
+  isSelected,
   onActivate,
   children,
 }: DataGridCellProps) {
@@ -26,6 +28,7 @@ export function DataGridCell({
       data-rowid={rowId}
       data-colid={columnId}
       data-active-cell={isActive ? 'true' : undefined}
+      data-selected-cell={isSelected ? 'true' : undefined}
       className="gen-datagrid__cell"
       tabIndex={isActive ? 0 : -1}
       onMouseDown={(event) => {

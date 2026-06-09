@@ -106,3 +106,116 @@ Records meaningful GenDataGrid implementation decisions and progress.
   - default active cell outline
   - keyboard navigation after focusing/clicking a cell
 - Verified the common Storybook build with `pnpm -C frontend/apps/storybook-all build`.
+
+
+## 2026-06-09 New Agent session
+
+### Phase 1 Core Table Adapter
+
+- Added `src/core/table/useDataGridTable.ts` as the TanStack Table adapter for the div renderer.
+- Moved row and visible column source data from raw `data/defaultData` arrays to TanStack row/header/column models.
+- Added public controlled/uncontrolled state props for `columnOrder`, `columnVisibility`, and `columnSizing`.
+- Updated the div header/body renderers to consume TanStack header groups, rows, visible cells, and column sizes.
+- Kept the existing `data-gen-datagrid-root`, `data-grid-id`, `data-gen-datagrid-cell`, `data-rowid`, and `data-colid` DOM contract unchanged.
+- Added baseline SSR coverage for TanStack column order, visibility, and sizing state.
+
+### Gate 2 Interaction Test Baseline
+
+- Added Vitest, jsdom, and Testing Library dependencies for DOM interaction tests.
+- Added `test/interaction.test.tsx` to cover:
+  - Arrow key active cell movement
+  - multiple grid keyboard isolation
+  - interactive descendant keydown bypass for grid navigation
+- Added `test:interaction` and included it in the package `test` script.
+- Verified `pnpm -C frontend/packages/gen-datagrid run test:interaction` passes with 3 tests.
+
+### Architecture Diagram
+
+- Added `docs/gate-1-2-architecture.md` with Mermaid diagrams for:
+  - component relationships
+  - render data flow
+  - active cell interaction flow
+- Documented current Phase 1/Gate 2 boundaries, implemented state surface, and deferred features.
+
+### Gate 1 And Gate 2 Completion
+
+- Marked Gate 1 and Gate 2 as complete for Gate 3 entry in `docs/mvp-test-gates.md`.
+- Completion basis:
+  - baseline build and SSR/source tests cover the div DOM contract, table tag exclusion, active cell markers, roving tab stop, root-scoped lookup, per-row height, and TanStack column state.
+  - Vitest/jsdom interaction tests cover arrow key movement, multiple grid isolation, and interactive descendant keydown bypass.
+  - `docs/gate-1-2-architecture.md` documents the current component relationship, render data flow, and active cell interaction flow.
+- Browser-level visual/real viewport automation remains deferred until Playwright or Storybook test runner is introduced.
+
+### Gate 3 Range Selection Slice
+
+- Added `features/range-selection/rangeSelection.ts` for range coordinate and containment helpers.
+- Added `features/range-selection/useRangeSelection.ts` for root-level mouse range selection.
+- Wired `DataGridRoot` to handle `onMouseDown` and `onMouseOver` through range selection delegation.
+- Updated `DataGridBody` and `DataGridCell` to render `data-selected-cell="true"` for cells inside the current range.
+- Added selected cell baseline styling in `src/index.css`.
+- Added Vitest/jsdom interaction coverage for:
+  - drag range selection
+  - interactive descendant guard for range selection
+- Added `docs/gate-3-architecture.md` for the current Gate 3 range selection architecture.
+
+### Gate 3 Clipboard Copy Slice
+
+- Added range bounds normalization to `features/range-selection/rangeSelection.ts`.
+- Added `features/range-selection/clipboard.ts` for clipboard matrix building, text serialization, value stringification, and paste text parsing helpers.
+- Added `features/range-selection/useClipboardActions.ts` for focused grid copy actions.
+- Added public props:
+  - `enableRangeSelection`
+  - `enableClipboard`
+  - `clipboardOptions.includeHeader`
+- Wired `Ctrl/Cmd+C` to copy the current selected range and `Shift+Ctrl/Cmd+C` to include headers.
+- Added Vitest coverage for:
+  - range bounds normalization
+  - clipboard escaping and serialization
+  - clipboard text parsing
+  - selected range copy
+  - header-included copy
+  - focused grid copy ownership
+- Added `Gate3RangeSelection` Storybook story for manual range selection checks.
+- Deferred paste application until data mutation and editing policies are introduced.
+
+### Gate 3 Shift And Additive Selection
+
+- Expanded internal range selection state from a single range to `GenDataGridRangeSelections`.
+- Added Shift selection behavior to extend the last range from its anchor.
+- Added Ctrl/Meta selection behavior to append a separate range.
+- Updated selected cell calculation to mark cells included by any internal range.
+- Added Vitest/jsdom interaction coverage for:
+  - Shift range extension
+  - Ctrl additive range selection
+
+### Gate 3 Controlled Selection API
+
+- Added public range selection props:
+  - `selectedRanges`
+  - `defaultSelectedRanges`
+  - `onSelectedRangesChange`
+- Exported `GenDataGridCellCoord`, `GenDataGridRangeSelection`, and `GenDataGridRangeSelections` from the package entrypoint.
+- Updated `useRangeSelection` to support controlled and uncontrolled selection state.
+- Added Vitest/jsdom coverage for:
+  - default selected ranges rendering
+  - controlled selected ranges rendering
+  - controlled change callbacks without internal mutation
+
+### Gate 3 Clear And Imperative Handle
+
+- Added `GenDataGridHandle` with:
+  - `rootElement`
+  - `clearSelection()`
+  - `copySelection(options)`
+- Changed `GenDataGrid` forwarded ref from `HTMLDivElement` to `GenDataGridHandle`.
+- Added selection clear behavior for:
+  - `Escape`
+  - root empty area click
+  - imperative `clearSelection()`
+- Added Vitest/jsdom coverage for:
+  - Escape clear
+  - root empty area clear
+  - imperative `copySelection()`
+  - imperative `clearSelection()`
+  - controlled clear callback without internal mutation
+- Marked Gate 3 complete for Gate 4 entry with paste application explicitly deferred.

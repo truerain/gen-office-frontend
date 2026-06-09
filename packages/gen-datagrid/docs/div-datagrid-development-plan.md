@@ -352,6 +352,13 @@ type GenDataGridProps<TData> = {
 
 ## 11. 개발 단계
 
+단계별 구현 규칙:
+
+- 각 phase 또는 gate가 구조를 바꾸면 해당 gate architecture 문서를 작성하거나 갱신한다.
+- architecture 문서 파일명은 `gate-{n}-architecture.md` 또는 여러 gate를 함께 다루는 경우 `gate-{start}-{end}-architecture.md` 형식을 사용한다.
+- architecture 문서에는 component relationship, render/data flow, interaction/event flow, 구현된 state/API surface, deferred feature를 포함한다.
+- architecture 문서와 `mvp-test-gates.md`의 Status가 어긋나면 gate를 통과한 것으로 보지 않는다.
+
 ### Phase 0. 패키지 골격
 
 - `package.json`, `tsconfig.json`, `vite.config.ts`, `src/index.ts` 구성

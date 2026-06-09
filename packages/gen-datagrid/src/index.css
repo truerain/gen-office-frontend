@@ -61,3 +61,7 @@
   outline: 2px solid #0969da;
   outline-offset: -2px;
 }
+
+.gen-datagrid__cell[data-selected-cell='true'] {
+  background: color-mix(in srgb, #0969da 12%, transparent);
+}

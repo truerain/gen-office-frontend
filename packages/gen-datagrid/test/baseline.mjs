@@ -89,6 +89,23 @@ test('uses one grid template source for rendered rows', () => {
   assert.equal(rowTemplateMatches.length, 3);
 });
 
+test('uses TanStack column order, visibility, and sizing state', () => {
+  const markup = renderToStaticMarkup(
+    React.createElement(GenDataGrid, {
+      ...requiredProps,
+      columnOrder: ['age', 'name'],
+      columnVisibility: { name: false },
+      columnSizing: { age: 96 },
+    })
+  );
+
+  assert.match(markup, /grid-template-columns:96px/);
+  assert.match(markup, /data-colid="age"/);
+  assert.doesNotMatch(markup, /data-colid="name"/);
+  assert.doesNotMatch(markup, />Ada</);
+  assert.match(markup, />37</);
+});
+
 test('supports per-row height in non-virtualized rendering', () => {
   const markup = renderToStaticMarkup(
     React.createElement(GenDataGrid, {

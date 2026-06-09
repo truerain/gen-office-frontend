@@ -132,6 +132,8 @@ State API는 controlled/uncontrolled 상태 계약이다. TanStack feature state
 | `defaultColumnPinning` | `{ left?: string[]; right?: string[] }` | uncontrolled initial pinning |
 | `onColumnPinningChange` | `(next: ColumnPinningState) => void` | pinning callback |
 
+Implementation status: `columnOrder`, `columnVisibility`, and `columnSizing` are wired through the Phase 1 TanStack adapter. Pinning state remains planned for the pinning gate.
+
 설계 원칙:
 
 - column order와 pinning은 서로 정규화한다.
@@ -209,6 +211,8 @@ Feature API는 각 기능의 enable flag, option, event callback을 묶는다.
 | `onSelectedRangesChange` | `(next) => void` | MVP | selected ranges callback |
 | `enableClipboard` | `boolean` | MVP | copy/paste 활성화 |
 | `clipboardOptions` | object | MVP | include header, value formatter 정책 |
+
+Implementation status: `enableRangeSelection`, `selectedRanges`, `defaultSelectedRanges`, `onSelectedRangesChange`, `enableClipboard`, and `clipboardOptions.includeHeader` are implemented for range selection and copy. Paste application and clipboard value formatter policy remain planned.
 
 설계 원칙:
 
@@ -398,6 +402,8 @@ Instance API는 `ref` handle로 제공한다.
 | `scrollToCell(coord)` | scoped scroll | MVP |
 | `clearSelection()` | selection clear | MVP |
 | `copySelection(options)` | selection copy | MVP |
+
+Implementation status: `rootElement`, `clearSelection()`, and `copySelection(options)` are implemented. `scrollToCell(coord)` remains planned.
 
 설계 원칙:
 

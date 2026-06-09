@@ -87,3 +87,25 @@ export const Gate1AndGate2: Story = {
     </div>
   ),
 };
+
+export const Gate3RangeSelection: Story = {
+  render: () => (
+    <div style={{ width: 760, padding: 16 }}>
+      <GenDataGrid<Person>
+        data={data}
+        columns={columns}
+        getRowId={(row) => row.id}
+        gridId="storybook-gen-datagrid-range-selection"
+        defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+        rowHeight={36}
+        headerHeight={40}
+        style={{
+          height: 260,
+          border: '1px solid #d0d7de',
+          borderRadius: 6,
+          background: '#fff',
+        }}
+      />
+    </div>
+  ),
+};

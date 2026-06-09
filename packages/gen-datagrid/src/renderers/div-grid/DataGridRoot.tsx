@@ -3,19 +3,22 @@
 
 import * as React from 'react';
 
-import type { GenDataGridProps } from '../../GenDataGrid.types';
+import type { GenDataGridHandle, GenDataGridProps } from '../../GenDataGrid.types';
 import { focusCellInRoot } from '../../core/dom/cellDom';
+import { useDataGridTable } from '../../core/table/useDataGridTable';
 import {
   getFirstActiveCell,
   isActiveCellNavigationKey,
   resolveNextActiveCell,
 } from '../../features/active-cell/navigation';
+import { useClipboardActions } from '../../features/range-selection/useClipboardActions';
+import { useRangeSelection } from '../../features/range-selection/useRangeSelection';
 import { DataGridBody } from './DataGridBody';
 import { DataGridHeader } from './DataGridHeader';
-import { buildGridTemplateColumns, getColumnId } from './gridTemplate';
+import { buildGridTemplateColumnsFromModel } from './gridTemplate';
 
 type DataGridRootProps<TData> = GenDataGridProps<TData> & {
-  rootRef: React.ForwardedRef<HTMLDivElement>;
+  rootRef: React.ForwardedRef<GenDataGridHandle>;
 };
 
 export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
@@ -30,6 +33,12 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     activeCell: controlledActiveCell,
     defaultActiveCell,
     onActiveCellChange,
+    enableRangeSelection = true,
+    selectedRanges,
+    defaultSelectedRanges,
+    onSelectedRangesChange,
+    enableClipboard = true,
+    clipboardOptions,
     className,
     style,
     rowHeight = 36,
@@ -42,18 +51,46 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     () => gridId ?? getGridId?.() ?? `gen-datagrid-${reactId.replace(/:/g, '')}`,
     [getGridId, gridId, reactId]
   );
-  const rows = data ?? defaultData ?? [];
-  const rowIds = React.useMemo(() => rows.map((row, index) => getRowId(row, index)), [getRowId, rows]);
+  const table = useDataGridTable(props);
+  const tableRows = table.getRowModel().rows;
+  const visibleColumns = table.getVisibleLeafColumns();
+  const headerGroups = table.getHeaderGroups();
+  const rowIds = React.useMemo(() => tableRows.map((row) => row.id), [tableRows]);
   const columnIds = React.useMemo(
-    () => columns.map((column, index) => getColumnId(column, index)),
-    [columns]
+    () => visibleColumns.map((column) => column.id),
+    [visibleColumns]
   );
-  const gridTemplateColumns = buildGridTemplateColumns(columns);
+  const gridTemplateColumns = buildGridTemplateColumnsFromModel(visibleColumns);
+  const rangeSelection = useRangeSelection({
+    rootRef,
+    enabled: enableRangeSelection,
+    selectedRanges,
+    defaultSelectedRanges,
+    onSelectedRangesChange,
+  });
+  const clipboard = useClipboardActions({
+    table,
+    selection: rangeSelection.selection,
+    enabled: enableClipboard,
+    includeHeader: clipboardOptions?.includeHeader,
+  });
   const [uncontrolledActiveCell, setUncontrolledActiveCell] = React.useState(
     () => defaultActiveCell ?? getFirstActiveCell(rowIds, columnIds)
   );
   const activeCell =
     controlledActiveCell !== undefined ? controlledActiveCell : uncontrolledActiveCell;
+
+  React.useImperativeHandle(
+    forwardedRootRef,
+    () => ({
+      get rootElement() {
+        return rootRef.current;
+      },
+      clearSelection: rangeSelection.clearSelection,
+      copySelection: clipboard.copySelection,
+    }),
+    [clipboard.copySelection, forwardedRootRef, rangeSelection.clearSelection]
+  );
 
   const setActiveCell = React.useCallback(
     (next: Exclude<typeof activeCell, null>) => {
@@ -85,12 +122,28 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
 
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (!isActiveCellNavigationKey(event.key)) return;
-
       const target = event.target as HTMLElement | null;
       if (target?.closest('input,select,textarea,button,[contenteditable="true"]')) {
         return;
       }
+
+      const isCopyShortcut =
+        (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'c';
+      if (isCopyShortcut && clipboard.canCopy) {
+        event.preventDefault();
+        void clipboard.copySelection({
+          includeHeader: event.shiftKey ? true : undefined,
+        });
+        return;
+      }
+
+      if (event.key === 'Escape' && rangeSelection.selections.length > 0) {
+        event.preventDefault();
+        rangeSelection.clearSelection();
+        return;
+      }
+
+      if (!isActiveCellNavigationKey(event.key)) return;
 
       const next = resolveNextActiveCell({
         activeCell,
@@ -104,24 +157,19 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       event.preventDefault();
       setActiveCell(next);
     },
-    [activeCell, columnIds, rowIds, setActiveCell]
+    [activeCell, clipboard, columnIds, rangeSelection, rowIds, setActiveCell]
   );
 
   return (
     <div
       ref={(node) => {
         rootRef.current = node;
-        if (typeof forwardedRootRef === 'function') {
-          forwardedRootRef(node);
-        } else if (forwardedRootRef) {
-          forwardedRootRef.current = node;
-        }
       }}
       role="grid"
       data-gen-datagrid-root="true"
       data-grid-id={resolvedGridId}
-      aria-rowcount={rows.length}
-      aria-colcount={columns.length}
+      aria-rowcount={tableRows.length}
+      aria-colcount={visibleColumns.length}
       className={['gen-datagrid', className].filter(Boolean).join(' ')}
       style={{
         ['--gen-datagrid-row-height' as string]: `${rowHeight}px`,
@@ -129,14 +177,17 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
         ...style,
       }}
       onKeyDown={handleKeyDown}
+      onMouseDown={rangeSelection.handleMouseDown}
+      onMouseOver={rangeSelection.handleMouseOver}
     >
-      <DataGridHeader columns={columns} gridTemplateColumns={gridTemplateColumns} />
+      <DataGridHeader headerGroups={headerGroups} gridTemplateColumns={gridTemplateColumns} />
       <DataGridBody
-        data={rows}
-        columns={columns}
+        rows={tableRows}
         gridTemplateColumns={gridTemplateColumns}
-        getRowId={getRowId}
         rowHeight={rowHeight}
+        rowIds={rowIds}
+        columnIds={columnIds}
+        rangeSelections={rangeSelection.selections}
         getRowHeight={getRowHeight}
         activeCell={activeCell}
         onActiveCellChange={setActiveCell}

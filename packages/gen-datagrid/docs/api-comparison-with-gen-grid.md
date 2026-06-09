@@ -84,6 +84,8 @@ type GenDataGridDataProps<TData> =
 | `enableFooter` | `enableFooter` | 유지 | MVP | grid 외부 footer 영역. |
 | `enablePagination` | `enablePagination` | 유지 | MVP | pagination UI/state. |
 
+Implementation status: `enableRangeSelection`, `selectedRanges`, `defaultSelectedRanges`, and `onSelectedRangesChange` are implemented for range selection. `enableClipboard` and `clipboardOptions.includeHeader` are implemented as new copy options. Paste application remains planned until data mutation/editing policy is introduced.
+
 ## 5. Controlled State API
 
 | GenGrid API | GenDataGrid API | 상태 | 우선순위 | 설명 |
@@ -112,6 +114,8 @@ type GenDataGridDataProps<TData> =
 | `onPaginationChange` | `onPaginationChange` | 유지 | MVP | pagination change callback. |
 | `totalRowCount` | `totalRowCount` | 유지 | MVP | manual/server pagination count. |
 | `pageSizeOptions` | `pageSizeOptions` | 유지 | MVP | pagination page size options. |
+
+Implementation status: `columnOrder`, `columnVisibility`, and `columnSizing` are implemented through the Phase 1 TanStack adapter. `columnPinning` remains planned for the pinning gate.
 
 ## 6. Filtering API
 
@@ -289,6 +293,8 @@ type GenDataGridContextMenuActionContext<TData> = {
 | 없음 | `scrollToCell(coord)` | 신규 | MVP | virtualization 포함 scroll 보정. |
 | 없음 | `clearSelection()` | 신규 | MVP | range/row selection clear. |
 | 없음 | `copySelection(options?)` | 신규 | MVP | clipboard action imperative. |
+
+Implementation status: `rootElement`, `clearSelection()`, and `copySelection(options?)` are implemented. `scrollToCell(coord)` remains planned.
 
 권장 handle:
 

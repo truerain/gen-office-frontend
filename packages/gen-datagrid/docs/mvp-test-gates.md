@@ -51,7 +51,7 @@
 
 ## 4. Gate 1. Div Renderer Contract
 
-Status: in progress. A minimal non-interactive div renderer exists and baseline SSR tests cover the root/header/body/cell contract. Non-virtualized `getRowHeight` is implemented. A baseline Storybook page exists for visual checks. Automated browser interaction tests are not implemented yet.
+Status: complete for Gate 3 entry. The div renderer contract is fixed around root/header/body/cell data attributes, table tags are blocked by baseline tests, and header/body layout uses a shared TanStack visible column model. Non-virtualized `getRowHeight` is implemented. A baseline Storybook page exists for visual checks. Architecture is documented in `docs/gate-1-2-architecture.md`.
 
 ### 목표
 
@@ -103,7 +103,7 @@ table 태그 없이 기본 grid DOM과 column layout을 렌더링한다.
 
 ## 5. Gate 2. Scoped Focus And Keyboard Navigation
 
-Status: in progress. Minimal active cell state, roving `tabIndex`, root-scoped DOM helpers, and keyboard navigation handlers are implemented. Browser-level interaction tests are not implemented yet.
+Status: complete for Gate 3 entry. Active cell state, roving `tabIndex`, root-scoped DOM helpers, and keyboard navigation handlers are implemented. Baseline tests cover controlled active cell rendering and root-scoped lookup rules. Vitest/jsdom interaction tests cover arrow key movement, multiple grid isolation, and interactive descendant keydown bypass. Browser-level visual/real viewport automation remains deferred until Playwright or Storybook test runner is introduced.
 
 ### 목표
 
@@ -147,6 +147,8 @@ grid instance 범위 안에서 active cell과 keyboard navigation을 안정화�
 - nested grid keydown이 부모 grid에 버블되어 부모 active cell이 바뀐다.
 
 ## 6. Gate 3. Selection And Clipboard
+
+Status: complete for Gate 4 entry with paste deferred. Range selection is implemented with root-level mouse delegation, controlled/uncontrolled selected ranges, selected cell DOM markers, interactive descendant guard, Shift extension, Ctrl/Meta additive selection, selection clear, imperative `clearSelection()`, imperative `copySelection(options)`, and Vitest/jsdom interaction coverage. Clipboard copy is implemented for `Ctrl/Cmd+C`, with `Shift+Ctrl/Cmd+C` including headers. Paste application is explicitly deferred until data mutation and editing policy are introduced.
 
 ### 목표
 
@@ -497,6 +499,8 @@ MVP 이후 확장 기능은 별도 gate로 관리한다.
 - gate 실패 버그는 새 기능보다 먼저 수정한다.
 - gate마다 최소 하나의 demo/story를 둔다.
 - gate마다 자동 테스트와 수동 확인 항목을 문서에 갱신한다.
+- gate마다 architecture 문서를 작성하거나 갱신한다. 파일명은 `gate-{n}-architecture.md` 또는 여러 gate를 함께 다루는 경우 `gate-{start}-{end}-architecture.md` 형식을 사용한다.
+- architecture 문서에는 component relationship, render/data flow, interaction/event flow, 구현된 state/API surface, deferred feature를 포함한다.
 
 ## 14. 추천 테스트 도구
 
