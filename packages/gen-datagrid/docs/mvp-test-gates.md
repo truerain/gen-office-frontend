@@ -194,6 +194,8 @@ range selection과 clipboard 동작을 root-level event delegation 위에서 구
 
 ## 7. Gate 4. Editing
 
+Status: in progress. The first Gate 4 slice defines the public editing API and TanStack column meta surface. Editing state, editor rendering, commit, cancel, blur handling, and navigation integration are not implemented yet.
+
 ### 목표
 
 셀 편집 진입, commit, cancel, navigation 연동을 안정화한다.

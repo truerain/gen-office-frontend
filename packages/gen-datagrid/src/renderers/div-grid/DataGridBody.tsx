@@ -4,7 +4,8 @@
 import * as React from 'react';
 import { flexRender, type Row } from '@tanstack/react-table';
 
-import type { GenDataGridActiveCell } from '../../GenDataGrid.types';
+import type { GenDataGridActiveCell, GenDataGridEditableContext } from '../../GenDataGrid.types';
+import { resolveEditableCell } from '../../features/editing/editableCell';
 import {
   isCellInRangeSelections,
   type GenDataGridRangeSelections,
@@ -20,6 +21,8 @@ type DataGridBodyProps<TData> = {
   rowIds: readonly string[];
   columnIds: readonly string[];
   rangeSelections: GenDataGridRangeSelections;
+  readOnly?: boolean;
+  isCellEditable?: (ctx: GenDataGridEditableContext<TData>) => boolean;
   getRowHeight?: (args: {
     row: TData;
     rowId: string;
@@ -36,6 +39,8 @@ export function DataGridBody<TData>({
   rowIds,
   columnIds,
   rangeSelections,
+  readOnly,
+  isCellEditable,
   getRowHeight,
   activeCell,
   onActiveCellChange,
@@ -61,6 +66,12 @@ export function DataGridBody<TData>({
           >
             {row.getVisibleCells().map((cell) => {
               const columnId = cell.column.id;
+              const isEditable = resolveEditableCell({
+                row,
+                column: cell.column,
+                readOnly,
+                isCellEditable,
+              });
               return (
                 <DataGridCell
                   key={cell.id}
@@ -78,6 +89,7 @@ export function DataGridBody<TData>({
                     columnIds,
                     selections: rangeSelections,
                   })}
+                  isEditable={isEditable}
                   onActivate={onActiveCellChange}
                 >
                   {cell.column.columnDef.cell

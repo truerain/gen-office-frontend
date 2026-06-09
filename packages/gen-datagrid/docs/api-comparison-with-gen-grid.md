@@ -140,6 +140,8 @@ Implementation status: `columnOrder`, `columnVisibility`, and `columnSizing` are
 | `readonly` | `readonly` / `readOnly` | 변경 | MVP | `readonly` 유지 + `readOnly` alias 제공 검토. |
 | 없음 | `isCellEditable` | 신규 | MVP | column meta 외 grid-level editable predicate. |
 
+Implementation status: editing public prop and column meta types are defined. Runtime editing behavior is not implemented yet.
+
 권장 editor context:
 
 ```ts

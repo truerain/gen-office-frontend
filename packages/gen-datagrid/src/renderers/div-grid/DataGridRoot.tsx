@@ -30,6 +30,9 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     getRowId,
     gridId,
     getGridId,
+    readOnly,
+    readonly,
+    isCellEditable,
     activeCell: controlledActiveCell,
     defaultActiveCell,
     onActiveCellChange,
@@ -61,6 +64,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     [visibleColumns]
   );
   const gridTemplateColumns = buildGridTemplateColumnsFromModel(visibleColumns);
+  const resolvedReadOnly = readOnly ?? readonly ?? false;
   const rangeSelection = useRangeSelection({
     rootRef,
     enabled: enableRangeSelection,
@@ -188,6 +192,8 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
         rowIds={rowIds}
         columnIds={columnIds}
         rangeSelections={rangeSelection.selections}
+        readOnly={resolvedReadOnly}
+        isCellEditable={isCellEditable}
         getRowHeight={getRowHeight}
         activeCell={activeCell}
         onActiveCellChange={setActiveCell}

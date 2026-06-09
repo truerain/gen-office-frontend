@@ -36,6 +36,11 @@ const editableColumns = [
   { accessorKey: 'age', header: 'Age', size: 80 },
 ];
 
+const editabilityColumns = [
+  { accessorKey: 'name', header: 'Name', size: 120, meta: { editable: true } },
+  { accessorKey: 'age', header: 'Age', size: 80, meta: { editable: false } },
+];
+
 function getCell(root: ParentNode, rowId: string, columnId: string) {
   const cell = root.querySelector<HTMLElement>(
     `[data-gen-datagrid-cell="true"][data-cell-kind="body"][data-rowid="${rowId}"][data-colid="${columnId}"]`
@@ -363,6 +368,80 @@ describe('GenDataGrid interaction contract', () => {
     await waitFor(() => {
       expect(onSelectedRangesChange).toHaveBeenLastCalledWith([]);
       expect(getCell(container, '1', 'name').dataset.selectedCell).toBe('true');
+    });
+  });
+
+  it('marks editable cells from column meta', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="editable-marker-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+      />
+    );
+
+    await waitFor(() => {
+      expect(getCell(container, '1', 'name').dataset.editableCell).toBe('true');
+      expect(getCell(container, '1', 'age').dataset.editableCell).toBeUndefined();
+    });
+  });
+
+  it('does not mark editable cells when readOnly is true', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="readonly-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        readOnly
+      />
+    );
+
+    await waitFor(() => {
+      expect(getCell(container, '1', 'name').dataset.editableCell).toBeUndefined();
+    });
+  });
+
+  it('uses grid-level editable predicate before column meta', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="editable-predicate-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        isCellEditable={({ rowId }) => rowId === '2'}
+      />
+    );
+
+    await waitFor(() => {
+      expect(getCell(container, '1', 'name').dataset.editableCell).toBeUndefined();
+      expect(getCell(container, '2', 'name').dataset.editableCell).toBe('true');
+    });
+  });
+
+  it('treats renderEditor columns as editable by default', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="render-editor-grid"
+        data={rows}
+        columns={[
+          {
+            accessorKey: 'name',
+            header: 'Name',
+            meta: {
+              renderEditor: ({ draftValue }) => (
+                <input aria-label="editor" defaultValue={String(draftValue)} />
+              ),
+            },
+          },
+        ]}
+        getRowId={(row) => row.id}
+      />
+    );
+
+    await waitFor(() => {
+      expect(getCell(container, '1', 'name').dataset.editableCell).toBe('true');
     });
   });
 

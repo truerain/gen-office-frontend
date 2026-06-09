@@ -219,3 +219,30 @@ Records meaningful GenDataGrid implementation decisions and progress.
   - imperative `clearSelection()`
   - controlled clear callback without internal mutation
 - Marked Gate 3 complete for Gate 4 entry with paste application explicitly deferred.
+
+### Gate 4 Editing API Baseline
+
+- Added public editing types:
+  - `GenDataGridEditType`
+  - `GenDataGridEditOption`
+  - `GenDataGridEditableContext`
+  - `GenDataGridEditorContext`
+  - `GenDataGridEditorFactory`
+  - `GenDataGridCellValueChange`
+- Added editing props:
+  - `readOnly`
+  - `readonly`
+  - `editOnActiveCell`
+  - `keepEditingOnNavigate`
+  - `editorFactory`
+  - `isCellEditable`
+  - `onCellValueChange`
+- Added `src/core/table/tanstack-table.ts` to extend TanStack `ColumnMeta` with editing meta:
+  - `editable`
+  - `editType`
+  - `editOptions`
+  - `getEditOptions`
+  - `editPlaceholder`
+  - `renderEditor`
+- Imported the TanStack metadata augmentation from the package entrypoint.
+- Runtime editing behavior is intentionally not implemented in this slice.

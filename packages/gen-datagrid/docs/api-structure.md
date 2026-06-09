@@ -201,6 +201,8 @@ Feature API는 각 기능의 enable flag, option, event callback을 묶는다.
 | `isCellEditable` | `(ctx) => boolean` | MVP | grid-level editable predicate |
 | `onCellValueChange` | `(args) => void` | MVP | committed value callback |
 
+Implementation status: `readOnly`, `readonly`, `editOnActiveCell`, `keepEditingOnNavigate`, `editorFactory`, `isCellEditable`, and `onCellValueChange` are defined as public API types. Runtime editing behavior is not implemented yet.
+
 ### 5.2 Range Selection And Clipboard Feature
 
 | API | Type | 우선순위 | 설명 |
@@ -356,6 +358,8 @@ src/columns/cellFormat.ts
 | `getEditOptions` | row-based select options | MVP |
 | `editPlaceholder` | editor placeholder | MVP |
 | `renderEditor` | custom editor | MVP |
+
+Implementation status: `editable`, `editType`, `editOptions`, `getEditOptions`, `editPlaceholder`, and `renderEditor` are defined on TanStack `ColumnMeta`. Runtime editor rendering is not implemented yet.
 
 ### 7.3 Styling Meta
 

@@ -22,11 +22,64 @@ export type GenDataGridHandle = {
   copySelection: (options?: { includeHeader?: boolean }) => Promise<boolean>;
 };
 
+export type GenDataGridEditType =
+  | 'text'
+  | 'number'
+  | 'date'
+  | 'select'
+  | 'textarea'
+  | 'checkbox';
+
+export type GenDataGridEditOption = {
+  label: string;
+  value: string | number | boolean;
+};
+
+export type GenDataGridEditableContext<TData> = {
+  row: TData;
+  rowId: string;
+  rowIndex: number;
+  columnId: string;
+  value: unknown;
+};
+
+export type GenDataGridEditorContext<TData> = GenDataGridEditableContext<TData> & {
+  draftValue: unknown;
+  setDraftValue: (nextValue: unknown) => void;
+  commit: (nextValue?: unknown) => void;
+  cancel: () => void;
+  applyValue: (nextValue: unknown) => void;
+};
+
+export type GenDataGridEditorFactory<TData> = (
+  ctx: GenDataGridEditorContext<TData> & {
+    editType?: GenDataGridEditType;
+    editOptions?: readonly GenDataGridEditOption[];
+    placeholder?: string;
+  }
+) => React.ReactNode;
+
+export type GenDataGridCellValueChange<TData> = {
+  row: TData;
+  rowId: string;
+  rowIndex: number;
+  columnId: string;
+  previousValue: unknown;
+  value: unknown;
+};
+
 export type GenDataGridProps<TData> = {
   data?: TData[];
   defaultData?: TData[];
   columns: ColumnDef<TData, unknown>[];
   getRowId: (row: TData, index: number) => string;
+  readOnly?: boolean;
+  readonly?: boolean;
+  editOnActiveCell?: boolean;
+  keepEditingOnNavigate?: boolean;
+  editorFactory?: GenDataGridEditorFactory<TData>;
+  isCellEditable?: (ctx: GenDataGridEditableContext<TData>) => boolean;
+  onCellValueChange?: (args: GenDataGridCellValueChange<TData>) => void;
   enableRangeSelection?: boolean;
   selectedRanges?: GenDataGridRangeSelections;
   defaultSelectedRanges?: GenDataGridRangeSelections;
