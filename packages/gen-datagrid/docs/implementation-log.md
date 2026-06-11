@@ -4,6 +4,8 @@ Records meaningful GenDataGrid implementation decisions and progress.
 
 # GenDataGrid Implementation Log
 
+용어 기준: 구현 로그와 QA 보정 기록의 공통 용어는 `docs/terminology.md`를 따른다.
+
 ## 2026-06-08
 
 ### Documentation Baseline
@@ -246,3 +248,101 @@ Records meaningful GenDataGrid implementation decisions and progress.
   - `renderEditor`
 - Imported the TanStack metadata augmentation from the package entrypoint.
 - Runtime editing behavior is intentionally not implemented in this slice.
+
+### Gate 4 Editable Cell Predicate
+
+- Added `features/editing/editableCell.ts` to resolve whether a cell can enter editing mode.
+- Added editable predicate precedence:
+  - `readOnly` / `readonly`
+  - grid-level `isCellEditable(ctx)`
+  - column meta `editable`
+  - column editor capability
+- Wired `DataGridBody` to calculate editable state from TanStack row/cell models.
+- Added `data-editable-cell="true"` to editable body cells.
+- Added Vitest/jsdom coverage for:
+  - column meta editable markers
+  - `readOnly` disabling editable markers
+  - grid-level editable predicate precedence
+  - `renderEditor` columns treated as editable by default
+- Added `docs/gate-4-architecture.md` for the current Gate 4 editing predicate architecture.
+
+### Gate 4 Editing Runtime Baseline
+
+- Added `features/editing/useCellEditing.ts` to manage the active editing cell and draft value.
+- Wired edit entry from:
+  - active editable cell `Enter`
+  - active editable cell `F2`
+  - editable cell double-click
+- Added runtime editor rendering precedence:
+  - column meta `renderEditor`
+  - grid-level `editorFactory`
+  - built-in default editor
+- Added built-in editor surfaces for:
+  - text
+  - number
+  - date
+  - select
+  - textarea
+  - checkbox
+- Added edit lifecycle behavior:
+  - `data-editing-cell="true"` marker for the active editor cell
+  - Escape cancel without emitting changes
+  - activating another cell cancels the current editor without emitting changes
+  - mouse interaction inside editor controls does not reactivate the parent cell
+  - Enter commit through `onCellValueChange`
+  - `applyValue(nextValue)` for custom editors
+- Kept row data mutation out of this slice. The parent must apply `onCellValueChange` to `data` if the committed value should be reflected in rendered rows.
+- Deferred blur commit, printable-key edit entry, Tab/Shift+Tab editable-cell navigation, `editOnActiveCell`, `keepEditingOnNavigate`, and paste application.
+- Added Vitest/jsdom coverage for:
+  - double-click edit entry
+  - keyboard edit entry
+  - Escape cancel
+  - other-cell activation cancel
+  - select editor mouse down passthrough
+  - Enter commit callback
+  - custom editor `applyValue`
+
+## 2026-06-11
+- 다음은 Storybook 테스트 후 수정사항 임
+
+### Gate 4 Active Cell Reclick Edit Entry
+
+- Added an edit entry path for clicking an already active editable cell.
+- Kept first click on an inactive cell as activation-only behavior.
+- Preserved existing double-click, Enter, and F2 edit entry paths.
+- Kept interactive descendants excluded from cell activation and edit entry.
+- Added Vitest/jsdom coverage for:
+  - inactive editable cell first click activates without editing
+  - second click on the same active editable cell enters edit mode
+
+### Gate 4 Cell Edit API Surface
+
+- Added `docs/cell-edit-api.md` to define Cell Edit public props, column meta, editor context, commit event, implemented behavior, and deferred policies.
+- Added grid-level `editSelectOnFocus`.
+- Added column meta `editSelectOnFocus`.
+- Added `selectOnFocus` to `editorFactory` context.
+- Wired `editSelectOnFocus` to the built-in input editor focus behavior.
+- Kept column meta precedence over the grid-level default.
+- Documented deferred edit policies:
+  - `editOnActiveCell`
+  - `keepEditingOnNavigate`
+  - printable-key edit entry
+  - blur commit
+  - Tab/Shift+Tab editable-cell navigation
+  - paste application
+  - dirty state integration
+- Added Vitest/jsdom coverage for:
+  - grid-level select-on-focus behavior
+  - column-level select-on-focus override
+
+### Range Selection Native Text Selection Guard
+
+- Prevented browser-native text selection when body cell range selection starts.
+- Added `user-select: none` to grid body cells and restored `user-select: text` for active editors.
+- Added Vitest/jsdom coverage that cell range selection cancels the native mouse default while root empty-area mouse behavior remains uncancelled.
+
+### Range Selection Scrollbar Guard
+
+- Kept selected ranges when the grid root scrollbar is clicked or dragged.
+- Preserved the existing empty root-area click behavior that clears selection.
+- Added Vitest/jsdom coverage for root scrollbar mouse down versus root empty-area mouse down.

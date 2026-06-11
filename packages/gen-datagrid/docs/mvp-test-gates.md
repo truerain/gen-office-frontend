@@ -1,5 +1,9 @@
 # GenDataGrid MVP Test Gates
 
+용어 기준: Active Cell, Selected Cell, Editing Cell, Editable Cell, Range Selection 등 공통 용어는 `docs/terminology.md`를 따른다.
+
+Cell Edit API 기준: editing public props, column meta, editor context, implemented/deferred 상태는 `docs/cell-edit-api.md`를 따른다.
+
 ## 1. 목적
 
 이 문서는 `gen-datagrid`를 div 기반 DataGrid로 개발할 때 단계별 통과 기준을 정의한다.
@@ -194,7 +198,7 @@ range selection과 clipboard 동작을 root-level event delegation 위에서 구
 
 ## 7. Gate 4. Editing
 
-Status: in progress. The first Gate 4 slice defines the public editing API and TanStack column meta surface. Editing state, editor rendering, commit, cancel, blur handling, and navigation integration are not implemented yet.
+Status: in progress. Gate 4 now defines the public editing API, TanStack column meta surface, editable cell predicate model, internal cell editing state, default editor rendering, custom `renderEditor`/`editorFactory` rendering, `editSelectOnFocus`, Enter/F2/double-click/active-cell-reclick edit entry, Escape cancel, and Enter commit through `onCellValueChange`. Editable cells render `data-editable-cell="true"` and active editors render `data-editing-cell="true"`. Blur commit, printable-key edit entry, Tab/Shift+Tab editable-cell navigation, `editOnActiveCell`, `keepEditingOnNavigate`, and paste application remain deferred.
 
 ### 목표
 

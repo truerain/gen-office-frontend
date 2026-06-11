@@ -56,6 +56,7 @@ export type GenDataGridEditorFactory<TData> = (
     editType?: GenDataGridEditType;
     editOptions?: readonly GenDataGridEditOption[];
     placeholder?: string;
+    selectOnFocus?: boolean;
   }
 ) => React.ReactNode;
 
@@ -75,6 +76,7 @@ export type GenDataGridProps<TData> = {
   getRowId: (row: TData, index: number) => string;
   readOnly?: boolean;
   readonly?: boolean;
+  editSelectOnFocus?: boolean;
   editOnActiveCell?: boolean;
   keepEditingOnNavigate?: boolean;
   editorFactory?: GenDataGridEditorFactory<TData>;

@@ -11,6 +11,8 @@ import {
   isActiveCellNavigationKey,
   resolveNextActiveCell,
 } from '../../features/active-cell/navigation';
+import { resolveEditableCell } from '../../features/editing/editableCell';
+import { useCellEditing } from '../../features/editing/useCellEditing';
 import { useClipboardActions } from '../../features/range-selection/useClipboardActions';
 import { useRangeSelection } from '../../features/range-selection/useRangeSelection';
 import { DataGridBody } from './DataGridBody';
@@ -32,7 +34,10 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     getGridId,
     readOnly,
     readonly,
+    editSelectOnFocus,
+    editorFactory,
     isCellEditable,
+    onCellValueChange,
     activeCell: controlledActiveCell,
     defaultActiveCell,
     onActiveCellChange,
@@ -83,6 +88,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
   );
   const activeCell =
     controlledActiveCell !== undefined ? controlledActiveCell : uncontrolledActiveCell;
+  const editing = useCellEditing();
 
   React.useImperativeHandle(
     forwardedRootRef,
@@ -98,13 +104,43 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
 
   const setActiveCell = React.useCallback(
     (next: Exclude<typeof activeCell, null>) => {
+      if (
+        editing.editingCell &&
+        (editing.editingCell.rowId !== next.rowId ||
+          editing.editingCell.columnId !== next.columnId)
+      ) {
+        editing.cancelEditing();
+      }
       if (controlledActiveCell === undefined) {
         setUncontrolledActiveCell(next);
       }
       onActiveCellChange?.(next);
     },
-    [controlledActiveCell, onActiveCellChange]
+    [controlledActiveCell, editing, onActiveCellChange]
   );
+
+  const startActiveCellEditing = React.useCallback(() => {
+    if (!activeCell) return false;
+
+    const row = tableRows.find((item) => item.id === activeCell.rowId);
+    const column = visibleColumns.find((item) => item.id === activeCell.columnId);
+    if (!row || !column) return false;
+
+    const isEditable = resolveEditableCell({
+      row,
+      column,
+      readOnly: resolvedReadOnly,
+      isCellEditable,
+    });
+    if (!isEditable) return false;
+
+    editing.startEditing({
+      rowId: activeCell.rowId,
+      columnId: activeCell.columnId,
+      value: row.getValue(column.id),
+    });
+    return true;
+  }, [activeCell, editing, isCellEditable, resolvedReadOnly, tableRows, visibleColumns]);
 
   React.useEffect(() => {
     if (controlledActiveCell !== undefined) return;
@@ -147,6 +183,13 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
         return;
       }
 
+      if (event.key === 'Enter' || event.key === 'F2') {
+        if (startActiveCellEditing()) {
+          event.preventDefault();
+          return;
+        }
+      }
+
       if (!isActiveCellNavigationKey(event.key)) return;
 
       const next = resolveNextActiveCell({
@@ -161,7 +204,15 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       event.preventDefault();
       setActiveCell(next);
     },
-    [activeCell, clipboard, columnIds, rangeSelection, rowIds, setActiveCell]
+    [
+      activeCell,
+      clipboard,
+      columnIds,
+      rangeSelection,
+      rowIds,
+      setActiveCell,
+      startActiveCellEditing,
+    ]
   );
 
   return (
@@ -194,9 +245,17 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
         rangeSelections={rangeSelection.selections}
         readOnly={resolvedReadOnly}
         isCellEditable={isCellEditable}
+        editSelectOnFocus={editSelectOnFocus}
+        editorFactory={editorFactory}
+        onCellValueChange={onCellValueChange}
         getRowHeight={getRowHeight}
         activeCell={activeCell}
         onActiveCellChange={setActiveCell}
+        editingCell={editing.editingCell}
+        draftValue={editing.draftValue}
+        setDraftValue={editing.setDraftValue}
+        onEditStart={editing.startEditing}
+        onEditCancel={editing.cancelEditing}
       />
     </div>
   );

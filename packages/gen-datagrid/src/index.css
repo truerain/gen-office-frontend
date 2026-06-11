@@ -55,6 +55,7 @@
   );
   display: flex;
   align-items: center;
+  user-select: none;
 }
 
 .gen-datagrid__cell[data-active-cell='true'] {
@@ -64,4 +65,22 @@
 
 .gen-datagrid__cell[data-selected-cell='true'] {
   background: color-mix(in srgb, #0969da 12%, transparent);
+}
+
+.gen-datagrid__cell[data-editing-cell='true'] {
+  padding: 0 4px;
+}
+
+.gen-datagrid__editor {
+  width: 100%;
+  min-width: 0;
+  height: calc(100% - 6px);
+  border: 1px solid #0969da;
+  border-radius: 2px;
+  font: inherit;
+  user-select: text;
+}
+
+.gen-datagrid__editor--textarea {
+  resize: none;
 }

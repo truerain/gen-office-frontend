@@ -30,6 +30,22 @@ function resolveCellCoordFromTarget(root: HTMLElement | null, target: EventTarge
   return { rowId, columnId };
 }
 
+function isScrollbarMouseDown(root: HTMLElement, event: React.MouseEvent<HTMLElement>) {
+  const rect = root.getBoundingClientRect();
+  const hasVerticalScrollbar = root.scrollHeight > root.clientHeight;
+  const hasHorizontalScrollbar = root.scrollWidth > root.clientWidth;
+  const isInVerticalScrollbar =
+    hasVerticalScrollbar &&
+    event.clientX >= rect.left + root.clientWidth &&
+    event.clientX <= rect.right;
+  const isInHorizontalScrollbar =
+    hasHorizontalScrollbar &&
+    event.clientY >= rect.top + root.clientHeight &&
+    event.clientY <= rect.bottom;
+
+  return isInVerticalScrollbar || isInHorizontalScrollbar;
+}
+
 export function useRangeSelection({
   rootRef,
   enabled,
@@ -87,13 +103,16 @@ export function useRangeSelection({
       if (!enabled) return;
       if (event.button !== 0) return;
 
-      const coord = resolveCellCoordFromTarget(rootRef.current, event.target);
+      const root = rootRef.current;
+      const coord = resolveCellCoordFromTarget(root, event.target);
       if (!coord) {
-        if (event.target === rootRef.current) {
+        if (root && event.target === root && !isScrollbarMouseDown(root, event)) {
           setSelections([]);
         }
         return;
       }
+
+      event.preventDefault();
 
       const previousSelection = selections[selections.length - 1] ?? null;
       const nextAnchor = event.shiftKey && previousSelection ? previousSelection.anchor : coord;

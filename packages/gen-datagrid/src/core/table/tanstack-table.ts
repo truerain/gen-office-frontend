@@ -20,6 +20,7 @@ declare module '@tanstack/react-table' {
     editOptions?: readonly GenDataGridEditOption[];
     getEditOptions?: (ctx: GenDataGridEditableContext<TData>) => readonly GenDataGridEditOption[];
     editPlaceholder?: string;
+    editSelectOnFocus?: boolean;
     renderEditor?: (ctx: GenDataGridEditorContext<TData>) => React.ReactNode;
   }
 }

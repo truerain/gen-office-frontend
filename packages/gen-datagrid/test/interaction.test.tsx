@@ -168,7 +168,9 @@ describe('GenDataGrid interaction contract', () => {
   it('selects a cell range with root-level mouse delegation', async () => {
     const { container } = renderGrid();
 
-    fireEvent.mouseDown(getCell(container, '1', 'name'), { button: 0 });
+    expect(fireEvent.mouseDown(getCell(container, '1', 'name'), { button: 0 })).toBe(
+      false
+    );
     fireEvent.mouseOver(getCell(container, '2', 'age'));
     fireEvent.mouseUp(window);
 
@@ -178,6 +180,14 @@ describe('GenDataGrid interaction contract', () => {
       expect(getCell(container, '2', 'name').dataset.selectedCell).toBe('true');
       expect(getCell(container, '2', 'age').dataset.selectedCell).toBe('true');
     });
+  });
+
+  it('does not prevent native mouse behavior outside range selection targets', async () => {
+    const { container } = renderGrid();
+    const root = container.querySelector<HTMLElement>('[data-grid-id="test-grid"]');
+    if (!root) throw new Error('Missing grid root');
+
+    expect(fireEvent.mouseDown(root, { button: 0 })).toBe(true);
   });
 
   it('extends the last range from its anchor with Shift selection', async () => {
@@ -316,6 +326,47 @@ describe('GenDataGrid interaction contract', () => {
     });
   });
 
+  it('keeps selection when the root scrollbar is clicked', async () => {
+    const { container } = renderGrid();
+    const root = container.querySelector<HTMLElement>('[data-grid-id="test-grid"]');
+    if (!root) throw new Error('Missing grid root');
+
+    Object.defineProperty(root, 'clientWidth', {
+      configurable: true,
+      value: 180,
+    });
+    Object.defineProperty(root, 'clientHeight', {
+      configurable: true,
+      value: 100,
+    });
+    Object.defineProperty(root, 'scrollHeight', {
+      configurable: true,
+      value: 160,
+    });
+    root.getBoundingClientRect = () =>
+      ({
+        left: 0,
+        top: 0,
+        right: 200,
+        bottom: 120,
+        width: 200,
+        height: 120,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      }) as DOMRect;
+
+    fireEvent.mouseDown(getCell(container, '1', 'name'), { button: 0 });
+    fireEvent.mouseOver(getCell(container, '2', 'age'));
+    fireEvent.mouseUp(window);
+    fireEvent.mouseDown(root, { button: 0, clientX: 190, clientY: 20 });
+
+    await waitFor(() => {
+      expect(getCell(container, '1', 'name').dataset.selectedCell).toBe('true');
+      expect(getCell(container, '2', 'age').dataset.selectedCell).toBe('true');
+    });
+  });
+
   it('exposes imperative clearSelection and copySelection actions', async () => {
     const gridRef = React.createRef<GenDataGridHandle>();
     const { container } = render(
@@ -442,6 +493,295 @@ describe('GenDataGrid interaction contract', () => {
 
     await waitFor(() => {
       expect(getCell(container, '1', 'name').dataset.editableCell).toBe('true');
+    });
+  });
+
+  it('starts default cell editing on double click', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="double-click-edit-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+
+    await waitFor(() => {
+      const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+      expect(firstCell.dataset.editingCell).toBe('true');
+      expect(editor?.value).toBe('Ada');
+    });
+  });
+
+  it('starts default cell editing with Enter or F2 on the active cell', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="keyboard-edit-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    firstCell.focus();
+    fireEvent.keyDown(firstCell, { key: 'F2' });
+
+    await waitFor(() => {
+      expect(
+        firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]')
+      ).not.toBeNull();
+    });
+  });
+
+  it('starts editing when an editable active cell is clicked again', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="active-cell-reclick-edit-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+      />
+    );
+
+    const secondRowNameCell = getCell(container, '2', 'name');
+    fireEvent.mouseDown(secondRowNameCell, { button: 0 });
+
+    await waitFor(() => {
+      expect(secondRowNameCell.dataset.activeCell).toBe('true');
+      expect(secondRowNameCell.dataset.editingCell).toBeUndefined();
+    });
+
+    fireEvent.mouseDown(secondRowNameCell, { button: 0 });
+
+    await waitFor(() => {
+      expect(secondRowNameCell.dataset.editingCell).toBe('true');
+      expect(
+        secondRowNameCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]')
+      ).not.toBeNull();
+    });
+  });
+
+  it('selects default input text on focus when editSelectOnFocus is enabled', async () => {
+    const selectSpy = vi
+      .spyOn(window.HTMLInputElement.prototype, 'select')
+      .mockImplementation(() => undefined);
+    const { container } = render(
+      <GenDataGrid
+        gridId="select-on-focus-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        editSelectOnFocus
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.focus(editor);
+
+    expect(selectSpy).toHaveBeenCalled();
+    selectSpy.mockRestore();
+  });
+
+  it('uses column editSelectOnFocus before the grid default', async () => {
+    const selectSpy = vi
+      .spyOn(window.HTMLInputElement.prototype, 'select')
+      .mockImplementation(() => undefined);
+    const { container } = render(
+      <GenDataGrid
+        gridId="column-select-on-focus-grid"
+        data={rows}
+        columns={[
+          {
+            accessorKey: 'name',
+            header: 'Name',
+            meta: { editable: true, editSelectOnFocus: false },
+          },
+        ]}
+        getRowId={(row) => row.id}
+        editSelectOnFocus
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.focus(editor);
+
+    expect(selectSpy).not.toHaveBeenCalled();
+    selectSpy.mockRestore();
+  });
+
+  it('cancels cell editing with Escape', async () => {
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="cancel-edit-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.change(editor, { target: { value: 'Ada Lovelace' } });
+    fireEvent.keyDown(editor, { key: 'Escape' });
+
+    await waitFor(() => {
+      expect(firstCell.dataset.editingCell).toBeUndefined();
+      expect(firstCell.querySelector('input[aria-label="name editor"]')).toBeNull();
+      expect(onCellValueChange).not.toHaveBeenCalled();
+    });
+  });
+
+  it('cancels cell editing when another cell is activated', async () => {
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="activate-other-cell-edit-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    await waitFor(() => {
+      expect(firstCell.dataset.editingCell).toBe('true');
+    });
+
+    fireEvent.mouseDown(getCell(container, '2', 'name'), { button: 0 });
+
+    await waitFor(() => {
+      expect(firstCell.dataset.editingCell).toBeUndefined();
+      expect(firstCell.querySelector('input[aria-label="name editor"]')).toBeNull();
+      expect(onCellValueChange).not.toHaveBeenCalled();
+    });
+  });
+
+  it('does not intercept mouse down inside a select editor', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="select-editor-grid"
+        data={rows}
+        columns={[
+          {
+            accessorKey: 'name',
+            header: 'Name',
+            meta: {
+              editType: 'select',
+              editOptions: [
+                { label: 'Ada', value: 'Ada' },
+                { label: 'Grace', value: 'Grace' },
+              ],
+            },
+          },
+        ]}
+        getRowId={(row) => row.id}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLSelectElement>(
+      'select[aria-label="name editor"]'
+    );
+    if (!editor) throw new Error('Missing select editor');
+
+    expect(fireEvent.mouseDown(editor, { button: 0 })).toBe(true);
+    expect(firstCell.dataset.editingCell).toBe('true');
+  });
+
+  it('commits cell editing with Enter', async () => {
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="commit-edit-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.change(editor, { target: { value: 'Ada Lovelace' } });
+    fireEvent.keyDown(editor, { key: 'Enter' });
+
+    await waitFor(() => {
+      expect(onCellValueChange).toHaveBeenCalledWith({
+        row: rows[0],
+        rowId: '1',
+        rowIndex: 0,
+        columnId: 'name',
+        previousValue: 'Ada',
+        value: 'Ada Lovelace',
+      });
+      expect(firstCell.dataset.editingCell).toBeUndefined();
+    });
+  });
+
+  it('renders custom editors and applies values through editor context', async () => {
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="custom-editor-grid"
+        data={rows}
+        columns={[
+          {
+            accessorKey: 'name',
+            header: 'Name',
+            meta: {
+              editable: true,
+              renderEditor: ({ applyValue }) => (
+                <button type="button" onClick={() => applyValue('Custom Ada')}>
+                  Apply custom value
+                </button>
+              ),
+            },
+          },
+        ]}
+        getRowId={(row) => row.id}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const button = firstCell.querySelector<HTMLButtonElement>('button');
+    if (!button) throw new Error('Missing custom editor');
+
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(onCellValueChange).toHaveBeenCalledWith({
+        row: rows[0],
+        rowId: '1',
+        rowIndex: 0,
+        columnId: 'name',
+        previousValue: 'Ada',
+        value: 'Custom Ada',
+      });
     });
   });
 
