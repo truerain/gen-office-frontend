@@ -136,7 +136,7 @@ State API는 controlled/uncontrolled 상태 계약이다. TanStack feature state
 | `defaultColumnPinning` | `{ left?: string[]; right?: string[] }` | uncontrolled initial pinning |
 | `onColumnPinningChange` | `(next: ColumnPinningState) => void` | pinning callback |
 
-Implementation status: `columnOrder`, `columnVisibility`, and `columnSizing` are wired through the Phase 1 TanStack adapter. Pinning state remains planned for the pinning gate.
+Implementation status: `columnOrder`, `columnVisibility`, `columnSizing`, and `columnPinning` are wired through the TanStack adapter. The initial Gate 5 pinning slice renders sticky pinned header/body cell markers and offsets. Resize handles, reorder UI, and pinning-zone reorder normalization remain pending.
 
 설계 원칙:
 

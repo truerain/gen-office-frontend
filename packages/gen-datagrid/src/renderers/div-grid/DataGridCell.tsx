@@ -13,6 +13,12 @@ type DataGridCellProps = {
   isSelected: boolean;
   isEditable: boolean;
   isEditing: boolean;
+  pinning?: {
+    pinned: 'left' | 'right' | false;
+    isLastLeftPinned: boolean;
+    isFirstRightPinned: boolean;
+    style: React.CSSProperties;
+  };
   onActivate: (coord: { rowId: string; columnId: string }) => void;
   onEditStart?: (coord: { rowId: string; columnId: string }) => void;
   children: React.ReactNode;
@@ -25,6 +31,7 @@ export function DataGridCell({
   isSelected,
   isEditable,
   isEditing,
+  pinning,
   onActivate,
   onEditStart,
   children,
@@ -40,7 +47,16 @@ export function DataGridCell({
       data-selected-cell={isSelected ? 'true' : undefined}
       data-editable-cell={isEditable ? 'true' : undefined}
       data-editing-cell={isEditing ? 'true' : undefined}
+      data-pinned-cell={pinning?.pinned || undefined}
+      data-pinned-edge={
+        pinning?.isLastLeftPinned
+          ? 'left-end'
+          : pinning?.isFirstRightPinned
+            ? 'right-start'
+            : undefined
+      }
       className="gen-datagrid__cell"
+      style={pinning?.style}
       tabIndex={isActive ? 0 : -1}
       onMouseDown={(event) => {
         if (event.button !== 0) return;

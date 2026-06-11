@@ -106,6 +106,23 @@ test('uses TanStack column order, visibility, and sizing state', () => {
   assert.match(markup, />37</);
 });
 
+test('renders pinned column markers and sticky offsets', () => {
+  const markup = renderToStaticMarkup(
+    React.createElement(GenDataGrid, {
+      ...requiredProps,
+      columnPinning: { left: ['name'], right: ['age'] },
+    })
+  );
+
+  assert.match(markup, /data-colid="name" data-pinned-cell="left"/);
+  assert.match(markup, /data-colid="age" data-pinned-cell="right"/);
+  assert.match(markup, /data-pinned-edge="left-end"/);
+  assert.match(markup, /data-pinned-edge="right-start"/);
+  assert.match(markup, /position:sticky/);
+  assert.match(markup, /left:0/);
+  assert.match(markup, /right:0/);
+});
+
 test('supports per-row height in non-virtualized rendering', () => {
   const markup = renderToStaticMarkup(
     React.createElement(GenDataGrid, {

@@ -380,3 +380,12 @@ Records meaningful GenDataGrid implementation decisions and progress.
   - baseline build and SSR/source tests cover the public export, div DOM contract, row height, root-scoped lookup, and TanStack column state.
   - Vitest/jsdom interaction tests cover editable markers, edit entry, commit/cancel, blur commit, Tab/Shift+Tab navigation, custom editor context, reserved prop warnings, range selection guards, clipboard copy, and multiple-grid ownership.
   - `../architecture/gate-4-architecture.md` documents the current editing component relationship, runtime flow, implemented API surface, and deferred features.
+
+### Gate 5 Pinning State Baseline
+
+- Added public `columnPinning`, `defaultColumnPinning`, and `onColumnPinningChange` props.
+- Wired column pinning through `useDataGridTable` controlled/uncontrolled state.
+- Added `features/pinning/pinningStyles.ts` for shared sticky offset styles and pinned-edge DOM marker calculation.
+- Updated header and body cells to render pinned markers and sticky offsets.
+- Added `../architecture/gate-5-architecture.md` for the initial Gate 5 structure.
+- Added baseline SSR coverage for pinned column markers and sticky offsets.

@@ -4,6 +4,8 @@
 import * as React from 'react';
 import { flexRender, type HeaderGroup } from '@tanstack/react-table';
 
+import { getColumnPinningInfo } from '../../features/pinning/pinningStyles';
+
 type DataGridHeaderProps<TData> = {
   headerGroups: HeaderGroup<TData>[];
   gridTemplateColumns: string;
@@ -24,6 +26,7 @@ export function DataGridHeader<TData>({
         >
           {headerGroup.headers.map((header) => {
             const columnId = header.column.id;
+            const pinning = getColumnPinningInfo(header.column);
             return (
             <div
               key={header.id}
@@ -31,7 +34,16 @@ export function DataGridHeader<TData>({
               data-gen-datagrid-cell="true"
               data-cell-kind="header"
               data-colid={columnId}
+              data-pinned-cell={pinning.pinned || undefined}
+              data-pinned-edge={
+                pinning.isLastLeftPinned
+                  ? 'left-end'
+                  : pinning.isFirstRightPinned
+                    ? 'right-start'
+                    : undefined
+              }
               className="gen-datagrid__header-cell"
+              style={pinning.style}
             >
               {header.isPlaceholder
                 ? null

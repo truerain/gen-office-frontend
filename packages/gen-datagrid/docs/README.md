@@ -16,6 +16,7 @@ Indexes GenDataGrid planning, architecture, reference, and log documents.
 - [Gate 1-2 Architecture](architecture/gate-1-2-architecture.md)
 - [Gate 3 Architecture](architecture/gate-3-architecture.md)
 - [Gate 4 Architecture](architecture/gate-4-architecture.md)
+- [Gate 5 Architecture](architecture/gate-5-architecture.md)
 
 ## Reference
 

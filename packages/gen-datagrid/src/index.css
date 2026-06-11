@@ -38,6 +38,7 @@
   text-overflow: ellipsis;
   border-right: 1px solid #d0d7de;
   border-bottom: 1px solid #d0d7de;
+  background: inherit;
 }
 
 .gen-datagrid__header-cell {
@@ -69,6 +70,21 @@
 
 .gen-datagrid__cell[data-editing-cell='true'] {
   padding: 0 4px;
+}
+
+.gen-datagrid__header-cell[data-pinned-cell],
+.gen-datagrid__cell[data-pinned-cell] {
+  background: #ffffff;
+}
+
+.gen-datagrid__header-cell[data-pinned-edge='left-end'],
+.gen-datagrid__cell[data-pinned-edge='left-end'] {
+  box-shadow: 6px 0 8px -8px rgb(31 35 40 / 45%);
+}
+
+.gen-datagrid__header-cell[data-pinned-edge='right-start'],
+.gen-datagrid__cell[data-pinned-edge='right-start'] {
+  box-shadow: -6px 0 8px -8px rgb(31 35 40 / 45%);
 }
 
 .gen-datagrid__editor {

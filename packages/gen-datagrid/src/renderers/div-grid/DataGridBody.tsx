@@ -14,6 +14,7 @@ import { createEditorContext } from '../../features/editing/editorContext';
 import { resolveNextEditableCell } from '../../features/editing/editNavigation';
 import { renderCellEditor } from '../../features/editing/renderEditor';
 import type { GenDataGridEditingCell } from '../../features/editing/useCellEditing';
+import { getColumnPinningInfo } from '../../features/pinning/pinningStyles';
 import {
   isCellInRangeSelections,
   type GenDataGridRangeSelections,
@@ -148,6 +149,7 @@ export function DataGridBody<TData>({
               });
               const isEditing =
                 editingCell?.rowId === rowId && editingCell.columnId === columnId;
+              const pinning = getColumnPinningInfo(cell.column);
               const commit = (nextValue = draftValue) => {
                 onCellValueChange?.({
                   row: row.original,
@@ -225,6 +227,7 @@ export function DataGridBody<TData>({
                   })}
                   isEditable={isEditable}
                   isEditing={isEditing}
+                  pinning={pinning}
                   onActivate={activateCell}
                   onEditStart={() => {
                     if (!isEditable) return;
