@@ -10,6 +10,7 @@ import {
   getFirstActiveCell,
   isActiveCellNavigationKey,
   resolveNextActiveCell,
+  resolveNextLinearCell,
 } from '../../features/active-cell/navigation';
 import { resolveEditableCell } from '../../features/editing/editableCell';
 import { useCellEditing } from '../../features/editing/useCellEditing';
@@ -35,6 +36,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     readOnly,
     readonly,
     editSelectOnFocus,
+    editCommitOnBlur,
     editorFactory,
     isCellEditable,
     onCellValueChange,
@@ -104,19 +106,12 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
 
   const setActiveCell = React.useCallback(
     (next: Exclude<typeof activeCell, null>) => {
-      if (
-        editing.editingCell &&
-        (editing.editingCell.rowId !== next.rowId ||
-          editing.editingCell.columnId !== next.columnId)
-      ) {
-        editing.cancelEditing();
-      }
       if (controlledActiveCell === undefined) {
         setUncontrolledActiveCell(next);
       }
       onActiveCellChange?.(next);
     },
-    [controlledActiveCell, editing, onActiveCellChange]
+    [controlledActiveCell, onActiveCellChange]
   );
 
   const startActiveCellEditing = React.useCallback(() => {
@@ -190,6 +185,20 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
         }
       }
 
+      if (event.key === 'Tab') {
+        const next = resolveNextLinearCell({
+          activeCell,
+          rowIds,
+          columnIds,
+          direction: event.shiftKey ? -1 : 1,
+        });
+        if (!next || next === activeCell) return;
+
+        event.preventDefault();
+        setActiveCell(next);
+        return;
+      }
+
       if (!isActiveCellNavigationKey(event.key)) return;
 
       const next = resolveNextActiveCell({
@@ -246,6 +255,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
         readOnly={resolvedReadOnly}
         isCellEditable={isCellEditable}
         editSelectOnFocus={editSelectOnFocus}
+        editCommitOnBlur={editCommitOnBlur}
         editorFactory={editorFactory}
         onCellValueChange={onCellValueChange}
         getRowHeight={getRowHeight}

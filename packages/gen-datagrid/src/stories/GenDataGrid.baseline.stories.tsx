@@ -12,6 +12,7 @@ type Person = {
   id: string;
   name: string;
   role: string;
+  score: number;
   location: string;
   note: string;
 };
@@ -21,6 +22,7 @@ const data: Person[] = [
     id: '1',
     name: 'Ada Lovelace',
     role: 'Engineer',
+    score: 95,
     location: 'London',
     note: 'Default row height',
   },
@@ -28,6 +30,7 @@ const data: Person[] = [
     id: '2',
     name: 'Grace Hopper',
     role: 'Computer Scientist',
+    score: 91,
     location: 'Arlington',
     note: 'Tall row from getRowHeight',
   },
@@ -35,6 +38,7 @@ const data: Person[] = [
     id: '3',
     name: 'Katherine Johnson',
     role: 'Mathematician',
+    score: 98,
     location: 'White Sulphur Springs',
     note: 'Use arrow keys after clicking a cell',
   },
@@ -42,6 +46,7 @@ const data: Person[] = [
     id: '4',
     name: 'Alan Turing',
     role: 'Researcher',
+    score: 89,
     location: 'Wilmslow',
     note: 'Horizontal overflow appears on narrow containers',
   },
@@ -50,6 +55,7 @@ const data: Person[] = [
 const columns: ColumnDef<Person, unknown>[] = [
   { accessorKey: 'name', header: 'Name', size: 180 },
   { accessorKey: 'role', header: 'Role', size: 220 },
+  { accessorKey: 'score', header: 'Score', size: 100 },
   { accessorKey: 'location', header: 'Location', size: 180 },
   { accessorKey: 'note', header: 'Note', size: 320 },
 ];
@@ -69,6 +75,12 @@ const editableColumns: ColumnDef<Person, unknown>[] = [
         { label: 'Researcher', value: 'Researcher' },
       ],
     },
+  },
+  {
+    accessorKey: 'score',
+    header: 'Score',
+    size: 100,
+    meta: { editable: true, editType: 'number' },
   },
   { accessorKey: 'location', header: 'Location', size: 180, meta: { editable: true } },
   {
@@ -143,7 +155,12 @@ export const Gate4Editing: Story = {
       ({ rowId, columnId, value }: GenDataGridCellValueChange<Person>) => {
         setEditableData((previous) =>
           previous.map((row) =>
-            row.id === rowId ? { ...row, [columnId]: value } : row
+            row.id === rowId
+              ? {
+                  ...row,
+                  [columnId]: columnId === 'score' ? Number(value) : value,
+                }
+              : row
           )
         );
       },
@@ -161,6 +178,7 @@ export const Gate4Editing: Story = {
           rowHeight={36}
           headerHeight={40}
           editSelectOnFocus
+          editCommitOnBlur
           onCellValueChange={handleCellValueChange}
           style={{
             height: 260,

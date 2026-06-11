@@ -200,13 +200,14 @@ Feature API는 각 기능의 enable flag, option, event callback을 묶는다.
 | `readOnly` | `boolean` | MVP | editing 차단 |
 | `readonly` | `boolean` | MVP | 기존 GenGrid 호환 alias |
 | `editSelectOnFocus` | `boolean` | MVP | 기본 input editor focus 시 전체 선택 |
+| `editCommitOnBlur` | `boolean` | MVP | 기본 editor blur 시 commit |
 | `editOnActiveCell` | `boolean` | MVP | active cell 진입 시 edit 시작 |
 | `keepEditingOnNavigate` | `boolean` | MVP | 이동 중 edit mode 유지 |
 | `editorFactory` | `GenDataGridEditorFactory<TData>` | MVP | global editor factory |
 | `isCellEditable` | `(ctx) => boolean` | MVP | grid-level editable predicate |
 | `onCellValueChange` | `(args) => void` | MVP | committed value callback |
 
-Implementation status: `readOnly`, `readonly`, `editSelectOnFocus`, `editOnActiveCell`, `keepEditingOnNavigate`, `editorFactory`, `isCellEditable`, and `onCellValueChange` are defined as public API types. `readOnly`, `readonly`, and `isCellEditable` are wired into the editable cell predicate model. `editSelectOnFocus` is implemented for built-in input editors. `editorFactory` participates in runtime editor rendering, and committed values are emitted through `onCellValueChange`. `editOnActiveCell` and `keepEditingOnNavigate` remain deferred until the navigation-editing policy slice.
+Implementation status: `readOnly`, `readonly`, `editSelectOnFocus`, `editCommitOnBlur`, `editOnActiveCell`, `keepEditingOnNavigate`, `editorFactory`, `isCellEditable`, and `onCellValueChange` are defined as public API types. `readOnly`, `readonly`, and `isCellEditable` are wired into the editable cell predicate model. `editSelectOnFocus`, `editCommitOnBlur`, and Tab/Shift+Tab navigation are implemented for built-in editors. `editorFactory` participates in runtime editor rendering, and committed values are emitted through `onCellValueChange`. `editOnActiveCell` and `keepEditingOnNavigate` remain deferred until the navigation-editing policy slice.
 
 ### 5.2 Range Selection And Clipboard Feature
 
@@ -363,9 +364,10 @@ src/columns/cellFormat.ts
 | `getEditOptions` | row-based select options | MVP |
 | `editPlaceholder` | editor placeholder | MVP |
 | `editSelectOnFocus` | 기본 input editor focus 시 전체 선택 | MVP |
+| `editCommitOnBlur` | 기본 editor blur 시 commit | MVP |
 | `renderEditor` | custom editor | MVP |
 
-Implementation status: `editable`, `editType`, `editOptions`, `getEditOptions`, `editPlaceholder`, `editSelectOnFocus`, and `renderEditor` are defined on TanStack `ColumnMeta`. These fields are wired into the editable cell predicate model and runtime editor rendering. Column `renderEditor` has priority over grid-level `editorFactory`, then the built-in default editor is used. Column `editSelectOnFocus` overrides grid-level `editSelectOnFocus`.
+Implementation status: `editable`, `editType`, `editOptions`, `getEditOptions`, `editPlaceholder`, `editSelectOnFocus`, `editCommitOnBlur`, and `renderEditor` are defined on TanStack `ColumnMeta`. These fields are wired into the editable cell predicate model and runtime editor rendering. Column `renderEditor` has priority over grid-level `editorFactory`, then the built-in default editor is used. Column `editSelectOnFocus` and `editCommitOnBlur` override their grid-level defaults.
 
 ### 7.3 Styling Meta
 

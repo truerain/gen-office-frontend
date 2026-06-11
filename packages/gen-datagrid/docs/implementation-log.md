@@ -292,7 +292,7 @@ Records meaningful GenDataGrid implementation decisions and progress.
   - Enter commit through `onCellValueChange`
   - `applyValue(nextValue)` for custom editors
 - Kept row data mutation out of this slice. The parent must apply `onCellValueChange` to `data` if the committed value should be reflected in rendered rows.
-- Deferred blur commit, printable-key edit entry, Tab/Shift+Tab editable-cell navigation, `editOnActiveCell`, `keepEditingOnNavigate`, and paste application.
+- Deferred advanced blur/portal policy, printable-key edit entry, `editOnActiveCell`, `keepEditingOnNavigate`, and paste application.
 - Added Vitest/jsdom coverage for:
   - double-click edit entry
   - keyboard edit entry
@@ -319,21 +319,37 @@ Records meaningful GenDataGrid implementation decisions and progress.
 
 - Added `docs/cell-edit-api.md` to define Cell Edit public props, column meta, editor context, commit event, implemented behavior, and deferred policies.
 - Added grid-level `editSelectOnFocus`.
+- Added grid-level `editCommitOnBlur`.
 - Added column meta `editSelectOnFocus`.
+- Added column meta `editCommitOnBlur`.
 - Added `selectOnFocus` to `editorFactory` context.
+- Added `commitOnBlur` to `editorFactory` context.
+- Added `tabNavigate(direction)` to `editorFactory` context.
 - Wired `editSelectOnFocus` to the built-in input editor focus behavior.
-- Kept column meta precedence over the grid-level default.
+- Wired `editCommitOnBlur` to built-in editor blur behavior and other-cell activation.
+- Wired Tab/Shift+Tab to active-cell navigation outside edit mode.
+- Wired Tab/Shift+Tab inside built-in editors to commit and move to the next or previous editable cell.
+- Kept column meta precedence over the grid-level defaults.
 - Documented deferred edit policies:
   - `editOnActiveCell`
   - `keepEditingOnNavigate`
   - printable-key edit entry
-  - blur commit
-  - Tab/Shift+Tab editable-cell navigation
+  - advanced blur/portal policy
   - paste application
   - dirty state integration
 - Added Vitest/jsdom coverage for:
   - grid-level select-on-focus behavior
   - column-level select-on-focus override
+  - grid-level commit-on-blur behavior
+  - commit before other-cell activation when commit-on-blur is enabled
+  - Tab/Shift+Tab active-cell navigation
+  - Tab/Shift+Tab edit commit and editable-cell navigation
+
+### Gate 4 Storybook Number Editor Sample
+
+- Added a `Score` number column to the Gate 4 editing Storybook scenario.
+- Wired the column with `meta.editType: 'number'`.
+- Converted committed `score` values back to `number` in the Storybook example state update.
 
 ### Range Selection Native Text Selection Guard
 

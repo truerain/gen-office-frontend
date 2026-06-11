@@ -80,18 +80,21 @@ flowchart LR
 - Editor rendering priority is column `renderEditor`, then grid `editorFactory`, then built-in default editor.
 - Built-in editors support text, number, date, select, textarea, and checkbox surfaces.
 - `editSelectOnFocus` can select built-in input editor text on focus; column meta overrides the grid-level prop.
+- `editCommitOnBlur` can commit built-in editor values on blur or before activating another cell; column meta overrides the grid-level prop.
 - Enter and F2 start editing the active editable cell.
 - Clicking an already active editable cell starts editing.
 - Double-click starts editing the clicked editable cell.
 - Escape cancels editing without emitting `onCellValueChange`.
 - Enter commits the draft value through `onCellValueChange`; GenDataGrid does not mutate row data in this slice.
+- Blur commits the draft value when `editCommitOnBlur` is enabled.
+- Tab and Shift+Tab move active cell inside the grid; while editing, they commit the current value and move to the next or previous editable cell.
 
-## Implemented State Surface
+## Public And Implemented API Surface
 
 - `readOnly`
 - `readonly`
-- `editOnActiveCell`
-- `keepEditingOnNavigate`
+- `editSelectOnFocus`
+- `editCommitOnBlur`
 - `editorFactory`
 - `isCellEditable`
 - `onCellValueChange`
@@ -100,6 +103,8 @@ flowchart LR
 - column meta `editOptions`
 - column meta `getEditOptions`
 - column meta `editPlaceholder`
+- column meta `editSelectOnFocus`
+- column meta `editCommitOnBlur`
 - column meta `renderEditor`
 - `useCellEditing`
 - default editor rendering
@@ -107,12 +112,17 @@ flowchart LR
 - Enter/F2/double-click edit entry
 - Escape cancel
 - Enter commit
+- blur commit for built-in editors when `editCommitOnBlur` is enabled
+- Tab/Shift+Tab active-cell navigation
+- Tab/Shift+Tab edit commit and editable-cell navigation
+
+Deferred public props:
+
+- `editOnActiveCell`
+- `keepEditingOnNavigate`
 
 ## Deferred Features
 
-- blur commit
+- advanced blur/portal commit policy
 - printable-key edit entry
-- Tab and Shift+Tab editable-cell navigation
-- `editOnActiveCell`
-- `keepEditingOnNavigate`
 - paste application into editable cells

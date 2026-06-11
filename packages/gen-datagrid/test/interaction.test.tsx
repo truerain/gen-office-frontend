@@ -109,6 +109,24 @@ describe('GenDataGrid interaction contract', () => {
     });
   });
 
+  it('moves the active cell with Tab and Shift+Tab inside the grid', async () => {
+    const { container } = renderGrid();
+
+    const firstCell = getCell(container, '1', 'name');
+    firstCell.focus();
+    fireEvent.keyDown(firstCell, { key: 'Tab' });
+
+    await waitFor(() => {
+      expect(getCell(container, '1', 'age').dataset.activeCell).toBe('true');
+    });
+
+    fireEvent.keyDown(getCell(container, '1', 'age'), { key: 'Tab', shiftKey: true });
+
+    await waitFor(() => {
+      expect(firstCell.dataset.activeCell).toBe('true');
+    });
+  });
+
   it('keeps keyboard navigation scoped to the focused grid', async () => {
     const { container } = render(
       <>
@@ -738,6 +756,145 @@ describe('GenDataGrid interaction contract', () => {
         value: 'Ada Lovelace',
       });
       expect(firstCell.dataset.editingCell).toBeUndefined();
+    });
+  });
+
+  it('commits built-in cell editing on blur when editCommitOnBlur is enabled', async () => {
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="blur-commit-edit-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        editCommitOnBlur
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.change(editor, { target: { value: 'Ada Blur' } });
+    fireEvent.blur(editor);
+
+    await waitFor(() => {
+      expect(onCellValueChange).toHaveBeenCalledWith({
+        row: rows[0],
+        rowId: '1',
+        rowIndex: 0,
+        columnId: 'name',
+        previousValue: 'Ada',
+        value: 'Ada Blur',
+      });
+      expect(firstCell.dataset.editingCell).toBeUndefined();
+    });
+  });
+
+  it('commits current editing cell before activating another cell when editCommitOnBlur is enabled', async () => {
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="activate-commit-edit-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        editCommitOnBlur
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    const secondCell = getCell(container, '2', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.change(editor, { target: { value: 'Ada Click Commit' } });
+    fireEvent.mouseDown(secondCell, { button: 0 });
+
+    await waitFor(() => {
+      expect(onCellValueChange).toHaveBeenCalledWith({
+        row: rows[0],
+        rowId: '1',
+        rowIndex: 0,
+        columnId: 'name',
+        previousValue: 'Ada',
+        value: 'Ada Click Commit',
+      });
+      expect(firstCell.dataset.editingCell).toBeUndefined();
+      expect(secondCell.dataset.activeCell).toBe('true');
+    });
+  });
+
+  it('commits editing and moves to the next editable cell with Tab', async () => {
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="tab-edit-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.change(editor, { target: { value: 'Ada Tab' } });
+    fireEvent.keyDown(editor, { key: 'Tab' });
+
+    await waitFor(() => {
+      expect(onCellValueChange).toHaveBeenCalledWith({
+        row: rows[0],
+        rowId: '1',
+        rowIndex: 0,
+        columnId: 'name',
+        previousValue: 'Ada',
+        value: 'Ada Tab',
+      });
+      expect(firstCell.dataset.editingCell).toBeUndefined();
+      expect(getCell(container, '2', 'name').dataset.activeCell).toBe('true');
+    });
+  });
+
+  it('commits editing and moves to the previous editable cell with Shift+Tab', async () => {
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="shift-tab-edit-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        defaultActiveCell={{ rowId: '2', columnId: 'name' }}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const secondCell = getCell(container, '2', 'name');
+    fireEvent.doubleClick(secondCell);
+    const editor = secondCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.change(editor, { target: { value: 'Grace Tab' } });
+    fireEvent.keyDown(editor, { key: 'Tab', shiftKey: true });
+
+    await waitFor(() => {
+      expect(onCellValueChange).toHaveBeenCalledWith({
+        row: rows[1],
+        rowId: '2',
+        rowIndex: 1,
+        columnId: 'name',
+        previousValue: 'Grace',
+        value: 'Grace Tab',
+      });
+      expect(secondCell.dataset.editingCell).toBeUndefined();
+      expect(getCell(container, '1', 'name').dataset.activeCell).toBe('true');
     });
   });
 

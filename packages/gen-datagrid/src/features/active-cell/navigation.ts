@@ -22,6 +22,13 @@ type ResolveNextActiveCellArgs = {
   pageRowCount?: number;
 };
 
+type ResolveNextLinearCellArgs = {
+  activeCell: GenDataGridActiveCell;
+  rowIds: string[];
+  columnIds: string[];
+  direction: 1 | -1;
+};
+
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
 }
@@ -87,4 +94,31 @@ export function isActiveCellNavigationKey(key: string): key is ActiveCellNavigat
     key === 'PageUp' ||
     key === 'PageDown'
   );
+}
+
+export function resolveNextLinearCell({
+  activeCell,
+  rowIds,
+  columnIds,
+  direction,
+}: ResolveNextLinearCellArgs): GenDataGridActiveCell {
+  if (rowIds.length === 0 || columnIds.length === 0) return null;
+  if (!activeCell) return getFirstActiveCell(rowIds, columnIds);
+
+  const currentRowIndex = rowIds.indexOf(activeCell.rowId);
+  const currentColumnIndex = columnIds.indexOf(activeCell.columnId);
+  if (currentRowIndex < 0 || currentColumnIndex < 0) {
+    return getFirstActiveCell(rowIds, columnIds);
+  }
+
+  const currentIndex = currentRowIndex * columnIds.length + currentColumnIndex;
+  const nextIndex = currentIndex + direction;
+  if (nextIndex < 0 || nextIndex >= rowIds.length * columnIds.length) {
+    return activeCell;
+  }
+
+  return {
+    rowId: rowIds[Math.floor(nextIndex / columnIds.length)],
+    columnId: columnIds[nextIndex % columnIds.length],
+  };
 }

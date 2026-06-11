@@ -86,7 +86,7 @@ range selection의 움직이는 끝 셀.
 
 - 현재 진입 방식: double-click, Enter, F2, Active Cell 재클릭.
 - 현재 종료 방식: Enter commit, Escape cancel, 다른 셀 activate 시 cancel.
-- 보류된 진입/종료 방식: printable-key entry, blur commit, Tab/Shift+Tab navigation, paste application.
+- 보류된 진입/종료 방식: printable-key entry, 고급 blur/portal commit policy, paste application.
 
 ### Draft Value
 
@@ -104,6 +104,25 @@ range selection의 움직이는 끝 셀.
 - column meta: `editSelectOnFocus`.
 - column meta가 grid prop보다 우선한다.
 - 기본값은 `false`다.
+
+### Commit On Blur
+
+기본 editor가 focus를 잃을 때 현재 draft value를 commit하는 편집 UX 옵션.
+
+- grid prop: `editCommitOnBlur`.
+- column meta: `editCommitOnBlur`.
+- column meta가 grid prop보다 우선한다.
+- 기본값은 `false`다.
+- 현재 built-in editor와 다른 cell activate 경로에 적용된다.
+- custom editor portal, select dropdown, outside click에 대한 고급 정책은 별도 refinement 대상이다.
+
+### Tab Navigation
+
+Tab 또는 Shift+Tab으로 cell을 이동하는 keyboard navigation.
+
+- 비편집 상태에서는 다음/이전 cell로 Active Cell을 이동한다.
+- edit mode에서는 현재 값을 commit하고 다음/이전 Editable Cell로 이동한다.
+- 현재 구현은 grid 내부 이동만 처리하고, 끝에 도달하면 no-op으로 처리한다.
 
 ### Commit
 
