@@ -1,8 +1,8 @@
 # GenDataGrid API Structure
 
-용어 기준: Active Cell, Selected Cell, Editing Cell, Editable Cell, Range Selection 등 공통 용어는 `docs/terminology.md`를 따른다.
+용어 기준: Active Cell, Selected Cell, Editing Cell, Editable Cell, Range Selection 등 공통 용어는 `terminology.md`를 따른다.
 
-Cell Edit API 기준: editing public props, column meta, editor context, implemented/deferred 상태는 `docs/cell-edit-api.md`를 따른다.
+Cell Edit API 기준: editing public props, column meta, editor context, implemented/deferred 상태는 `cell-edit-api.md`를 따른다.
 
 ## 1. 목적
 
@@ -207,7 +207,7 @@ Feature API는 각 기능의 enable flag, option, event callback을 묶는다.
 | `isCellEditable` | `(ctx) => boolean` | MVP | grid-level editable predicate |
 | `onCellValueChange` | `(args) => void` | MVP | committed value callback |
 
-Implementation status: `readOnly`, `readonly`, `editSelectOnFocus`, `editCommitOnBlur`, `editOnActiveCell`, `keepEditingOnNavigate`, `editorFactory`, `isCellEditable`, and `onCellValueChange` are defined as public API types. `readOnly`, `readonly`, and `isCellEditable` are wired into the editable cell predicate model. `editSelectOnFocus`, `editCommitOnBlur`, and Tab/Shift+Tab navigation are implemented for built-in editors. `editorFactory` participates in runtime editor rendering, and committed values are emitted through `onCellValueChange`. `editOnActiveCell` and `keepEditingOnNavigate` remain deferred until the navigation-editing policy slice.
+Implementation status: `readOnly`, `readonly`, `editSelectOnFocus`, `editCommitOnBlur`, `editOnActiveCell`, `keepEditingOnNavigate`, `editorFactory`, `isCellEditable`, and `onCellValueChange` are defined as public API types. `readOnly`, `readonly`, and `isCellEditable` are wired into the editable cell predicate model. `editSelectOnFocus`, `editCommitOnBlur`, and Tab/Shift+Tab navigation are implemented for built-in editors. `editorFactory` participates in runtime editor rendering, and committed values are emitted through `onCellValueChange`. `editOnActiveCell` and `keepEditingOnNavigate` are reserved public props and emit runtime warnings until the navigation-editing policy slice.
 
 ### 5.2 Range Selection And Clipboard Feature
 
@@ -322,6 +322,8 @@ type GenDataGridRenderContext<TData> = {
 | column meta `renderEditor` | `(ctx) => React.ReactNode` | column-level editor |
 | column meta `renderCell` | `(ctx) => React.ReactNode` | column-level cell render |
 
+`editorFactory` and column meta `renderEditor` receive the same `GenDataGridEditorContext`, including resolved editor metadata, select-on-focus policy, blur-commit policy, and editable-cell tab navigation.
+
 ## 7. Column API
 
 Column API는 TanStack `ColumnDef.meta`를 확장하는 public API다. 이 타입은 renderer 내부에서 export하지 않는다.
@@ -367,7 +369,7 @@ src/columns/cellFormat.ts
 | `editCommitOnBlur` | 기본 editor blur 시 commit | MVP |
 | `renderEditor` | custom editor | MVP |
 
-Implementation status: `editable`, `editType`, `editOptions`, `getEditOptions`, `editPlaceholder`, `editSelectOnFocus`, `editCommitOnBlur`, and `renderEditor` are defined on TanStack `ColumnMeta`. These fields are wired into the editable cell predicate model and runtime editor rendering. Column `renderEditor` has priority over grid-level `editorFactory`, then the built-in default editor is used. Column `editSelectOnFocus` and `editCommitOnBlur` override their grid-level defaults.
+Implementation status: `editable`, `editType`, `editOptions`, `getEditOptions`, `editPlaceholder`, `editSelectOnFocus`, `editCommitOnBlur`, and `renderEditor` are defined on TanStack `ColumnMeta`. These fields are wired into the editable cell predicate model and runtime editor rendering. Column `renderEditor` has priority over grid-level `editorFactory`, then the built-in default editor is used. Column `editSelectOnFocus` and `editCommitOnBlur` override their grid-level defaults and are exposed through the shared editor context.
 
 ### 7.3 Styling Meta
 
@@ -485,21 +487,32 @@ Nested grid는 별도 prop보다 Core DOM contract와 `gridId`로 처리한다.
 
 ```txt
 docs/
-  api/
-    core-api.md
-    state-api.md
-    feature-api.md
-    rendering-api.md
-    column-api.md
-    instance-api.md
-    extension-api.md
-  api-comparison-with-gen-grid.md
-  api-structure.md
-  div-datagrid-development-plan.md
-  mvp-test-gates.md
+  README.md
+  plan/
+    div-datagrid-development-plan.md
+    mvp-test-gates.md
+  architecture/
+    gate-1-2-architecture.md
+    gate-3-architecture.md
+    gate-4-architecture.md
+  reference/
+    terminology.md
+    cell-edit-api.md
+    api-comparison-with-gen-grid.md
+    api-structure.md
+    api/
+      core-api.md
+      state-api.md
+      feature-api.md
+      rendering-api.md
+      column-api.md
+      instance-api.md
+      extension-api.md
+  log/
+    implementation-log.md
 ```
 
-초기에는 `api-structure.md` 하나로 시작하고, 구현이 진행되면 위 문서로 분리한다.
+초기에는 `reference/api-structure.md` 하나로 시작하고, 구현이 진행되면 `reference/api/` 아래의 세부 문서로 분리한다.
 
 ## 11. GenGrid 비교 문서와의 관계
 

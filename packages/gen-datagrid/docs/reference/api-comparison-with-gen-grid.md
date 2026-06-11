@@ -140,7 +140,7 @@ Implementation status: `columnOrder`, `columnVisibility`, and `columnSizing` are
 | `readonly` | `readonly` / `readOnly` | 변경 | MVP | `readonly` 유지 + `readOnly` alias 제공 검토. |
 | 없음 | `isCellEditable` | 신규 | MVP | column meta 외 grid-level editable predicate. |
 
-Implementation status: editing public prop and column meta types are defined. `readOnly`, `readonly`, `editSelectOnFocus`, `editCommitOnBlur`, `isCellEditable`, and column meta editability are wired into the editable cell predicate model and built-in editor flow. Runtime editing now supports default/custom editor rendering, Enter/F2/double-click/active-cell-reclick edit entry, Escape cancel, Enter/blur commit, and Tab/Shift+Tab navigation through `onCellValueChange`. Data mutation, dirty-state integration, advanced blur/portal policy, and paste application remain deferred. See `docs/cell-edit-api.md` for implemented/deferred Cell Edit API status.
+Implementation status: editing public prop and column meta types are defined. `readOnly`, `readonly`, `editSelectOnFocus`, `editCommitOnBlur`, `isCellEditable`, and column meta editability are wired into the editable cell predicate model and built-in editor flow. Runtime editing now supports default/custom editor rendering, Enter/F2/double-click/active-cell-reclick edit entry, Escape cancel, Enter/blur commit, and Tab/Shift+Tab navigation through `onCellValueChange`. `editOnActiveCell` and `keepEditingOnNavigate` are reserved public props with runtime warnings. Data mutation, dirty-state integration, advanced blur/portal policy, and paste application remain deferred. See `cell-edit-api.md` for implemented/deferred Cell Edit API status.
 
 권장 editor context:
 

@@ -412,13 +412,15 @@ type GenDataGridProps<TData> = {
 
 - range selection hook 이식
 - root-level mouse delegation 적용
-- copy/copy with header/paste 구현
+- copy/copy with header 구현
+- paste parsing helper는 유지하되 paste application은 data mutation/editing policy 이후로 deferred
 - selected range overlay 또는 cell style 적용
 
 완료 기준:
 
 - drag range selection 가능
-- keyboard copy/paste 가능
+- keyboard copy 가능
+- paste application deferred 상태가 문서화됨
 - editor 내부 이벤트와 충돌하지 않음
 
 ### Phase 5. Editing
@@ -430,7 +432,8 @@ type GenDataGridProps<TData> = {
 
 완료 기준:
 
-- Enter/F2/double click/editOnActiveCell 지원
+- Enter/F2/double click/active-cell-reclick 지원
+- `editOnActiveCell`은 reserved public prop으로 유지하고 navigation-editing policy slice까지 runtime warning 처리
 - Tab/Shift+Tab 편집 이동 지원
 - blur/commit/cancel 정책 명확화
 

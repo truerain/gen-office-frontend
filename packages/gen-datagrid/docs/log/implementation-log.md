@@ -1,19 +1,19 @@
-<!-- packages/gen-datagrid/docs/implementation-log.md
+<!-- packages/gen-datagrid/docs/log/implementation-log.md
 Records meaningful GenDataGrid implementation decisions and progress.
 -->
 
 # GenDataGrid Implementation Log
 
-용어 기준: 구현 로그와 QA 보정 기록의 공통 용어는 `docs/terminology.md`를 따른다.
+용어 기준: 구현 로그와 QA 보정 기록의 공통 용어는 `../reference/terminology.md`를 따른다.
 
 ## 2026-06-08
 
 ### Documentation Baseline
 
-- Added `docs/div-datagrid-development-plan.md` to define the div-based DataGrid development direction.
-- Added `docs/mvp-test-gates.md` to define gate-based implementation and testing criteria.
-- Added `docs/api-comparison-with-gen-grid.md` to compare existing GenGrid API with proposed GenDataGrid API.
-- Added `docs/api-structure.md` to regroup GenDataGrid API into Core, State, Feature, Rendering, Column, Instance, and Extension API categories.
+- Added `../plan/div-datagrid-development-plan.md` to define the div-based DataGrid development direction.
+- Added `../plan/mvp-test-gates.md` to define gate-based implementation and testing criteria.
+- Added `../reference/api-comparison-with-gen-grid.md` to compare existing GenGrid API with proposed GenDataGrid API.
+- Added `../reference/api-structure.md` to regroup GenDataGrid API into Core, State, Feature, Rendering, Column, Instance, and Extension API categories.
 
 ### Package Baseline
 
@@ -133,7 +133,7 @@ Records meaningful GenDataGrid implementation decisions and progress.
 
 ### Architecture Diagram
 
-- Added `docs/gate-1-2-architecture.md` with Mermaid diagrams for:
+- Added `../architecture/gate-1-2-architecture.md` with Mermaid diagrams for:
   - component relationships
   - render data flow
   - active cell interaction flow
@@ -141,11 +141,11 @@ Records meaningful GenDataGrid implementation decisions and progress.
 
 ### Gate 1 And Gate 2 Completion
 
-- Marked Gate 1 and Gate 2 as complete for Gate 3 entry in `docs/mvp-test-gates.md`.
+- Marked Gate 1 and Gate 2 as complete for Gate 3 entry in `../plan/mvp-test-gates.md`.
 - Completion basis:
   - baseline build and SSR/source tests cover the div DOM contract, table tag exclusion, active cell markers, roving tab stop, root-scoped lookup, per-row height, and TanStack column state.
   - Vitest/jsdom interaction tests cover arrow key movement, multiple grid isolation, and interactive descendant keydown bypass.
-  - `docs/gate-1-2-architecture.md` documents the current component relationship, render data flow, and active cell interaction flow.
+  - `../architecture/gate-1-2-architecture.md` documents the current component relationship, render data flow, and active cell interaction flow.
 - Browser-level visual/real viewport automation remains deferred until Playwright or Storybook test runner is introduced.
 
 ### Gate 3 Range Selection Slice
@@ -158,7 +158,7 @@ Records meaningful GenDataGrid implementation decisions and progress.
 - Added Vitest/jsdom interaction coverage for:
   - drag range selection
   - interactive descendant guard for range selection
-- Added `docs/gate-3-architecture.md` for the current Gate 3 range selection architecture.
+- Added `../architecture/gate-3-architecture.md` for the current Gate 3 range selection architecture.
 
 ### Gate 3 Clipboard Copy Slice
 
@@ -264,7 +264,7 @@ Records meaningful GenDataGrid implementation decisions and progress.
   - `readOnly` disabling editable markers
   - grid-level editable predicate precedence
   - `renderEditor` columns treated as editable by default
-- Added `docs/gate-4-architecture.md` for the current Gate 4 editing predicate architecture.
+- Added `../architecture/gate-4-architecture.md` for the current Gate 4 editing predicate architecture.
 
 ### Gate 4 Editing Runtime Baseline
 
@@ -317,7 +317,7 @@ Records meaningful GenDataGrid implementation decisions and progress.
 
 ### Gate 4 Cell Edit API Surface
 
-- Added `docs/cell-edit-api.md` to define Cell Edit public props, column meta, editor context, commit event, implemented behavior, and deferred policies.
+- Added `../reference/cell-edit-api.md` to define Cell Edit public props, column meta, editor context, commit event, implemented behavior, and deferred policies.
 - Added grid-level `editSelectOnFocus`.
 - Added grid-level `editCommitOnBlur`.
 - Added column meta `editSelectOnFocus`.
@@ -325,6 +325,7 @@ Records meaningful GenDataGrid implementation decisions and progress.
 - Added `selectOnFocus` to `editorFactory` context.
 - Added `commitOnBlur` to `editorFactory` context.
 - Added `tabNavigate(direction)` to `editorFactory` context.
+- Unified `renderEditor` and `editorFactory` so both receive the same `GenDataGridEditorContext`, including resolved editor metadata, `selectOnFocus`, `commitOnBlur`, and `tabNavigate(direction)`.
 - Wired `editSelectOnFocus` to the built-in input editor focus behavior.
 - Wired `editCommitOnBlur` to built-in editor blur behavior and other-cell activation.
 - Wired Tab/Shift+Tab to active-cell navigation outside edit mode.
@@ -362,3 +363,20 @@ Records meaningful GenDataGrid implementation decisions and progress.
 - Kept selected ranges when the grid root scrollbar is clicked or dragged.
 - Preserved the existing empty root-area click behavior that clears selection.
 - Added Vitest/jsdom coverage for root scrollbar mouse down versus root empty-area mouse down.
+
+### Gate 4 Editing Runtime Refactor
+
+- Split editor context construction from `DataGridBody` into `features/editing/editorContext.ts`.
+- Split editor rendering precedence and built-in editor controls into `features/editing/renderEditor.tsx`.
+- Split editable-cell Tab target calculation into `features/editing/editNavigation.ts`.
+- Kept edit commit/cancel side effects and active-cell orchestration in `DataGridBody` so future dirty state and keep-editing navigation policies can be attached without changing row/body ownership.
+
+### Gate 4 Completion
+
+- Kept `editOnActiveCell` and `keepEditingOnNavigate` as reserved public props and added runtime warnings when they are enabled.
+- Documented paste application, data mutation, dirty-state integration, printable-key edit entry, and advanced blur/portal policy as deferred beyond Gate 4.
+- Marked Gate 4 complete for Gate 5 entry in `../plan/mvp-test-gates.md`.
+- Completion basis:
+  - baseline build and SSR/source tests cover the public export, div DOM contract, row height, root-scoped lookup, and TanStack column state.
+  - Vitest/jsdom interaction tests cover editable markers, edit entry, commit/cancel, blur commit, Tab/Shift+Tab navigation, custom editor context, reserved prop warnings, range selection guards, clipboard copy, and multiple-grid ownership.
+  - `../architecture/gate-4-architecture.md` documents the current editing component relationship, runtime flow, implemented API surface, and deferred features.

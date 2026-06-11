@@ -49,7 +49,7 @@ Examples:
 ```
 
 ```md
-<!-- packages/gen-datagrid/docs/api-structure.md
+<!-- packages/gen-datagrid/docs/reference/api-structure.md
 Documents the public API grouping for GenDataGrid.
 -->
 ```
@@ -61,15 +61,15 @@ Documents the public API grouping for GenDataGrid.
 - Do not leave implementation-only knowledge only in chat or code comments.
 - Prefer adding or updating focused docs instead of appending unrelated notes to a single large document.
 - At minimum, update one of:
-  - `docs/implementation-log.md`
-  - `docs/api-structure.md`
-  - `docs/api-comparison-with-gen-grid.md`
-  - `docs/div-datagrid-development-plan.md`
-  - `docs/mvp-test-gates.md`
+  - `docs/log/implementation-log.md`
+  - `docs/reference/api-structure.md`
+  - `docs/reference/api-comparison-with-gen-grid.md`
+  - `docs/plan/div-datagrid-development-plan.md`
+  - `docs/plan/mvp-test-gates.md`
   - a new focused document under `docs/`
-- If a code change affects a test gate, update `docs/mvp-test-gates.md`.
-- If a code change affects public API, update `docs/api-structure.md` and `docs/api-comparison-with-gen-grid.md`.
-- If a code change introduces a known limitation or deferred behavior, record it in `docs/implementation-log.md`.
+- If a code change affects a test gate, update `docs/plan/mvp-test-gates.md`.
+- If a code change affects public API, update `docs/reference/api-structure.md` and `docs/reference/api-comparison-with-gen-grid.md`.
+- If a code change introduces a known limitation or deferred behavior, record it in `docs/log/implementation-log.md`.
 
 ## Encoding Safety (Korean Text)
 

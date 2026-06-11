@@ -49,17 +49,16 @@ export type GenDataGridEditorContext<TData> = GenDataGridEditableContext<TData> 
   commit: (nextValue?: unknown) => void;
   cancel: () => void;
   applyValue: (nextValue: unknown) => void;
+  editType?: GenDataGridEditType;
+  editOptions?: readonly GenDataGridEditOption[];
+  placeholder?: string;
+  selectOnFocus?: boolean;
+  commitOnBlur?: boolean;
+  tabNavigate?: (direction: 1 | -1) => void;
 };
 
 export type GenDataGridEditorFactory<TData> = (
-  ctx: GenDataGridEditorContext<TData> & {
-    editType?: GenDataGridEditType;
-    editOptions?: readonly GenDataGridEditOption[];
-    placeholder?: string;
-    selectOnFocus?: boolean;
-    commitOnBlur?: boolean;
-    tabNavigate?: (direction: 1 | -1) => void;
-  }
+  ctx: GenDataGridEditorContext<TData>
 ) => React.ReactNode;
 
 export type GenDataGridCellValueChange<TData> = {

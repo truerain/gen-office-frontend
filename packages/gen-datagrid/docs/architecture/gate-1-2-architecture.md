@@ -1,4 +1,4 @@
-<!-- packages/gen-datagrid/docs/gate-1-2-architecture.md
+<!-- packages/gen-datagrid/docs/architecture/gate-1-2-architecture.md
 Documents the Gate 1 and Gate 2 GenDataGrid component relationships and data flow.
 -->
 

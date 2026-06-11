@@ -1,12 +1,12 @@
-<!-- packages/gen-datagrid/docs/gate-4-architecture.md
+<!-- packages/gen-datagrid/docs/architecture/gate-4-architecture.md
 Documents the Gate 4 editing architecture for GenDataGrid.
 -->
 
 # GenDataGrid Gate 4 Architecture
 
-용어 기준: Active Cell, Editable Cell, Editing Cell, Edit Mode, Draft Value, Commit, Cancel은 `docs/terminology.md`를 따른다.
+용어 기준: Active Cell, Editable Cell, Editing Cell, Edit Mode, Draft Value, Commit, Cancel은 `../reference/terminology.md`를 따른다.
 
-Cell Edit API 기준: editing public props, column meta, editor context, implemented/deferred 상태는 `docs/cell-edit-api.md`를 따른다.
+Cell Edit API 기준: editing public props, column meta, editor context, implemented/deferred 상태는 `../reference/cell-edit-api.md`를 따른다.
 
 This document describes the current Gate 4 editing API, editable cell predicate, and runtime editor rendering slice.
 
@@ -18,8 +18,11 @@ flowchart TD
   Meta["TanStack ColumnMeta<br/>editing meta"]
   Root["DataGridRoot<br/>readOnly normalization"]
   Editing["useCellEditing<br/>editing cell + draft value"]
-  Body["DataGridBody<br/>editable marker + editor rendering"]
+  Body["DataGridBody<br/>cell orchestration"]
   Predicate["editableCell<br/>predicate resolver"]
+  EditorContext["editorContext<br/>shared editor context"]
+  RenderEditor["renderEditor<br/>editor priority + built-in editors"]
+  EditNavigation["editNavigation<br/>editable-cell target"]
   Cell["DataGridCell<br/>editable/editing markers"]
   Commit["onCellValueChange<br/>commit event"]
 
@@ -29,6 +32,9 @@ flowchart TD
   Root --> Body
   Editing --> Body
   Body --> Predicate
+  Body --> EditorContext
+  Body --> RenderEditor
+  Body --> EditNavigation
   Predicate --> Cell
   Body --> Commit
 ```
@@ -78,6 +84,8 @@ flowchart LR
 - Editable cells render `data-editable-cell="true"`.
 - Editing cells render `data-editing-cell="true"`.
 - Editor rendering priority is column `renderEditor`, then grid `editorFactory`, then built-in default editor.
+- `renderEditor` and `editorFactory` receive the same `GenDataGridEditorContext`.
+- `DataGridBody` keeps row/cell orchestration while `features/editing/editorContext.ts`, `renderEditor.tsx`, and `editNavigation.ts` own editor context construction, editor rendering, and editable-cell target calculation.
 - Built-in editors support text, number, date, select, textarea, and checkbox surfaces.
 - `editSelectOnFocus` can select built-in input editor text on focus; column meta overrides the grid-level prop.
 - `editCommitOnBlur` can commit built-in editor values on blur or before activating another cell; column meta overrides the grid-level prop.
@@ -120,6 +128,8 @@ Deferred public props:
 
 - `editOnActiveCell`
 - `keepEditingOnNavigate`
+
+These props are reserved for the navigation-editing policy slice. They remain in the public type surface and emit runtime warnings when enabled, but they do not change runtime behavior in Gate 4.
 
 ## Deferred Features
 
