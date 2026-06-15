@@ -2,7 +2,11 @@
 // Provides Storybook pages for visually checking the GenDataGrid baseline gates.
 
 import type { Meta, StoryObj } from '@storybook/react';
-import type { ColumnDef } from '@tanstack/react-table';
+import type {
+  ColumnDef,
+  ColumnOrderState,
+  ColumnPinningState,
+} from '@tanstack/react-table';
 import * as React from 'react';
 
 import type { GenDataGridCellValueChange } from '../GenDataGrid.types';
@@ -175,6 +179,71 @@ export const Gate4Editing: Story = {
           getRowId={(row) => row.id}
           gridId="storybook-gen-datagrid-editing"
           defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+          rowHeight={36}
+          headerHeight={40}
+          editSelectOnFocus
+          editCommitOnBlur
+          onCellValueChange={handleCellValueChange}
+          style={{
+            height: 260,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+      </div>
+    );
+  },
+};
+
+export const Gate5PinningSizingReorder: Story = {
+  render: () => {
+    const [gridData, setGridData] = React.useState(data);
+    const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>([
+      'name',
+      'role',
+      'score',
+      'location',
+      'note',
+    ]);
+    const [columnPinning, setColumnPinning] = React.useState<ColumnPinningState>({
+      left: ['name', 'role'],
+    });
+
+    const handleCellValueChange = React.useCallback(
+      ({ rowId, columnId, value }: GenDataGridCellValueChange<Person>) => {
+        setGridData((previous) =>
+          previous.map((row) =>
+            row.id === rowId
+              ? {
+                  ...row,
+                  [columnId]: columnId === 'score' ? Number(value) : value,
+                }
+              : row
+          )
+        );
+      },
+      []
+    );
+
+    return (
+      <div style={{ width: 620, padding: 16 }}>
+        <GenDataGrid<Person>
+          data={gridData}
+          columns={editableColumns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-5"
+          defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+          defaultSelectedRanges={[
+            {
+              anchor: { rowId: '1', columnId: 'name' },
+              focus: { rowId: '2', columnId: 'score' },
+            },
+          ]}
+          columnPinning={columnPinning}
+          onColumnPinningChange={setColumnPinning}
+          columnOrder={columnOrder}
+          onColumnOrderChange={setColumnOrder}
           rowHeight={36}
           headerHeight={40}
           editSelectOnFocus

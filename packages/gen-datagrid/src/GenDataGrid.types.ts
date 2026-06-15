@@ -5,6 +5,7 @@ import type * as React from 'react';
 import type {
   ColumnDef,
   ColumnOrderState,
+  ColumnPinningState,
   ColumnSizingState,
   VisibilityState,
 } from '@tanstack/react-table';
@@ -89,6 +90,9 @@ export type GenDataGridProps<TData> = {
   defaultSelectedRanges?: GenDataGridRangeSelections;
   onSelectedRangesChange?: (next: GenDataGridRangeSelections) => void;
   enableClipboard?: boolean;
+  enablePinning?: boolean;
+  enableColumnSizing?: boolean;
+  enableColumnReorder?: boolean;
   clipboardOptions?: {
     includeHeader?: boolean;
   };
@@ -101,6 +105,9 @@ export type GenDataGridProps<TData> = {
   columnSizing?: ColumnSizingState;
   defaultColumnSizing?: ColumnSizingState;
   onColumnSizingChange?: (next: ColumnSizingState) => void;
+  columnPinning?: ColumnPinningState;
+  defaultColumnPinning?: ColumnPinningState;
+  onColumnPinningChange?: (next: ColumnPinningState) => void;
   gridId?: string;
   getGridId?: () => string;
   activeCell?: GenDataGridActiveCell;

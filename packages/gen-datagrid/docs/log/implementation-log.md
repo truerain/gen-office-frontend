@@ -386,3 +386,58 @@ Records meaningful GenDataGrid implementation decisions and progress.
   - baseline build and SSR/source tests cover the public export, div DOM contract, row height, root-scoped lookup, and TanStack column state.
   - Vitest/jsdom interaction tests cover editable markers, edit entry, commit/cancel, blur commit, Tab/Shift+Tab navigation, custom editor context, reserved prop warnings, range selection guards, clipboard copy, and multiple-grid ownership.
   - `../architecture/gate-4-architecture.md` documents the current editing component relationship, runtime flow, implemented API surface, and deferred features.
+
+### Gate 5 Pinning State Baseline
+
+- Added public `columnPinning`, `defaultColumnPinning`, and `onColumnPinningChange` props.
+- Added public `enablePinning`, `enableColumnSizing`, and `enableColumnReorder` feature flags.
+- Wired column pinning through `useDataGridTable` controlled/uncontrolled state.
+- Added `features/pinning/pinningStyles.ts` for shared sticky offset styles and pinned-edge DOM marker calculation.
+- Updated header and body cells to render pinned markers and sticky offsets.
+- Added `../architecture/gate-5-architecture.md` for the initial Gate 5 structure.
+- Added baseline SSR coverage for pinned column markers and sticky offsets.
+
+### Gate 5 Resize And Reorder Baseline
+
+- Enabled TanStack column resizing with `columnResizeMode: 'onChange'`.
+- Added header resize handle DOM using `header.getResizeHandler()`.
+- Added `features/reorder/columnReorder.ts` to normalize same-zone column reorder and block cross-zone reorder.
+- Added header drag/drop reorder wiring through `table.setColumnOrder()`.
+- Added baseline SSR coverage for resize/reorder affordances.
+- Added Vitest coverage for same-zone reorder and cross-zone blocking.
+
+### Gate 5 Completion And Visual Test Guide
+
+- Gate 5 완료 기준을 `../plan/mvp-test-gates.md`에 반영했다.
+- pinned header/body/editor의 z-index 계층을 분리해 sticky header, pinned cell, inline editor가 같은 z-index를 공유하지 않도록 조정했다.
+- selected pinned cell이 pinned white background에 의해 선택 배경을 잃지 않도록 CSS를 보정했다.
+- Storybook에 `Gate5PinningSizingReorder` 시나리오를 추가해 left/right pinning, horizontal scroll, selected range, editable cell, controlled reorder 조합을 확인할 수 있게 했다.
+- `../qa/gate-5-visual-test-guide.md`를 추가해 Gate 5 화면 테스트 기준, 실패 조건, 자동화 후보를 문서화했다.
+- `../README.md`와 `../architecture/gate-5-architecture.md`에서 Gate 5 완료 상태와 화면 테스트 가이드 링크를 갱신했다.
+
+### Gate 5 Resize Drag Guard
+
+- resize handle에서 시작한 drag가 header reorder drag로 해석되지 않도록 `DataGridHeader`에서 resize handle `dragstart`, `mousedown`, `touchstart` 전파를 차단했다.
+- header `onDragStart`에서도 resize handle을 drag source로 감지하면 reorder 시작을 취소하도록 보강했다.
+- resize handle drag가 `onColumnOrderChange`를 호출하지 않는 Vitest/jsdom 회귀 테스트를 추가했다.
+- `../qa/gate-5-visual-test-guide.md`에 resize 중 header reorder drag ghost가 뜨면 실패라는 화면 테스트 기준을 추가했다.
+### Gate 5 Reorder Handle Separation
+
+- header cell 전체의 `draggable` 속성을 제거하고 header content 영역만 `data-column-reorder-handle="true"` drag source로 분리했다.
+- resize handle은 draggable ancestor 밖의 sibling으로 남겨 column 경계 drag가 native reorder drag로 승격되지 않도록 했다.
+- reorder interaction test를 header cell drag에서 reorder handle drag 기준으로 갱신했다.
+- resize handle과 column 경계에서 reorder가 시작되면 실패하도록 Gate 5 화면 테스트 가이드를 보강했다.
+
+### Gate 5 Reorder Handle Button
+
+- header text 영역 대신 명시적인 reorder handle 버튼을 추가했다.
+- reorder handle 버튼에 `data-column-reorder-handle="true"`와 `draggable`을 부여하고, header label/text는 drag source에서 제외했다.
+- resize handle, header label/text, reorder handle 버튼의 역할을 Gate 5 화면 테스트 가이드와 architecture 문서에 반영했다.
+
+### Gate 5 Pinned Order And Resize Target Fix
+
+- pinned column의 실제 표시 순서는 `columnOrder`가 아니라 `columnPinning.left/right` 배열이 결정하므로 pinned zone reorder 시 matching pinning 배열도 함께 재정렬하도록 수정했다.
+- header, body, navigation column ids, `grid-template-columns`가 같은 left/center/right ordered visible column model을 사용하도록 정렬 기준을 통일했다.
+- body는 TanStack `row.getLeftVisibleCells()`, `row.getCenterVisibleCells()`, `row.getRightVisibleCells()` 순서로 cell을 렌더링하도록 수정했다.
+- Storybook Gate 5 시나리오의 `columnPinning`을 state로 관리해 pinned column끼리 reorder해도 화면에 반영되도록 했다.
+- pinned column order와 grid template order가 일치하는 SSR 회귀 테스트와 uncontrolled pinned reorder interaction 테스트를 추가했다.

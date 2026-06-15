@@ -14,6 +14,7 @@ import { createEditorContext } from '../../features/editing/editorContext';
 import { resolveNextEditableCell } from '../../features/editing/editNavigation';
 import { renderCellEditor } from '../../features/editing/renderEditor';
 import type { GenDataGridEditingCell } from '../../features/editing/useCellEditing';
+import { getColumnPinningInfo } from '../../features/pinning/pinningStyles';
 import {
   isCellInRangeSelections,
   type GenDataGridRangeSelections,
@@ -29,6 +30,7 @@ type DataGridBodyProps<TData> = {
   columnIds: readonly string[];
   rangeSelections: GenDataGridRangeSelections;
   readOnly?: boolean;
+  enablePinning?: boolean;
   isCellEditable?: (ctx: GenDataGridEditableContext<TData>) => boolean;
   editSelectOnFocus?: boolean;
   editCommitOnBlur?: boolean;
@@ -56,6 +58,7 @@ export function DataGridBody<TData>({
   columnIds,
   rangeSelections,
   readOnly,
+  enablePinning = true,
   isCellEditable,
   editSelectOnFocus,
   editCommitOnBlur,
@@ -70,10 +73,18 @@ export function DataGridBody<TData>({
   onEditStart,
   onEditCancel,
 }: DataGridBodyProps<TData>) {
+  const getOrderedVisibleCells = (row: Row<TData>) =>
+    enablePinning
+      ? [
+          ...row.getLeftVisibleCells(),
+          ...row.getCenterVisibleCells(),
+          ...row.getRightVisibleCells(),
+        ]
+      : row.getVisibleCells();
+
   const getEditableCells = () =>
     rows.flatMap((row) =>
-      row
-        .getVisibleCells()
+      getOrderedVisibleCells(row)
         .filter((cell) =>
           resolveEditableCell({
             row,
@@ -137,7 +148,7 @@ export function DataGridBody<TData>({
               ['--gen-datagrid-current-row-height' as string]: `${resolvedRowHeight}px`,
             }}
           >
-            {row.getVisibleCells().map((cell) => {
+            {getOrderedVisibleCells(row).map((cell) => {
               const columnId = cell.column.id;
               const editableContext = createEditableContext({ row, column: cell.column });
               const isEditable = resolveEditableCell({
@@ -148,6 +159,9 @@ export function DataGridBody<TData>({
               });
               const isEditing =
                 editingCell?.rowId === rowId && editingCell.columnId === columnId;
+              const pinning = enablePinning
+                ? getColumnPinningInfo(cell.column, { zIndex: isEditing ? 5 : 2 })
+                : undefined;
               const commit = (nextValue = draftValue) => {
                 onCellValueChange?.({
                   row: row.original,
@@ -225,6 +239,7 @@ export function DataGridBody<TData>({
                   })}
                   isEditable={isEditable}
                   isEditing={isEditing}
+                  pinning={pinning}
                   onActivate={activateCell}
                   onEditStart={() => {
                     if (!isEditable) return;

@@ -6,6 +6,7 @@ import {
   getCoreRowModel,
   useReactTable,
   type ColumnOrderState,
+  type ColumnPinningState,
   type ColumnSizingState,
   type OnChangeFn,
   type Updater,
@@ -34,6 +35,10 @@ export function useDataGridTable<TData>({
   columnSizing,
   defaultColumnSizing,
   onColumnSizingChange,
+  columnPinning,
+  defaultColumnPinning,
+  onColumnPinningChange,
+  enableColumnSizing = true,
 }: GenDataGridProps<TData>) {
   const rows = data ?? defaultData ?? [];
   const [uncontrolledColumnOrder, setUncontrolledColumnOrder] =
@@ -42,10 +47,13 @@ export function useDataGridTable<TData>({
     React.useState<VisibilityState>(() => defaultColumnVisibility ?? {});
   const [uncontrolledColumnSizing, setUncontrolledColumnSizing] =
     React.useState<ColumnSizingState>(() => defaultColumnSizing ?? {});
+  const [uncontrolledColumnPinning, setUncontrolledColumnPinning] =
+    React.useState<ColumnPinningState>(() => defaultColumnPinning ?? {});
 
   const resolvedColumnOrder = columnOrder ?? uncontrolledColumnOrder;
   const resolvedColumnVisibility = columnVisibility ?? uncontrolledColumnVisibility;
   const resolvedColumnSizing = columnSizing ?? uncontrolledColumnSizing;
+  const resolvedColumnPinning = columnPinning ?? uncontrolledColumnPinning;
 
   const handleColumnOrderChange = React.useCallback<OnChangeFn<ColumnOrderState>>(
     (updater) => {
@@ -80,6 +88,17 @@ export function useDataGridTable<TData>({
     [columnSizing, onColumnSizingChange, resolvedColumnSizing]
   );
 
+  const handleColumnPinningChange = React.useCallback<OnChangeFn<ColumnPinningState>>(
+    (updater) => {
+      const next = resolveUpdater(updater, resolvedColumnPinning);
+      if (columnPinning === undefined) {
+        setUncontrolledColumnPinning(next);
+      }
+      onColumnPinningChange?.(next);
+    },
+    [columnPinning, onColumnPinningChange, resolvedColumnPinning]
+  );
+
   return useReactTable({
     data: rows,
     columns,
@@ -89,9 +108,13 @@ export function useDataGridTable<TData>({
       columnOrder: resolvedColumnOrder,
       columnVisibility: resolvedColumnVisibility,
       columnSizing: resolvedColumnSizing,
+      columnPinning: resolvedColumnPinning,
     },
     onColumnOrderChange: handleColumnOrderChange,
     onColumnVisibilityChange: handleColumnVisibilityChange,
     onColumnSizingChange: handleColumnSizingChange,
+    onColumnPinningChange: handleColumnPinningChange,
+    enableColumnResizing: enableColumnSizing,
+    columnResizeMode: 'onChange',
   });
 }

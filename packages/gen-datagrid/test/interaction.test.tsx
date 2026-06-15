@@ -51,6 +51,50 @@ function getCell(root: ParentNode, rowId: string, columnId: string) {
   return cell;
 }
 
+function getHeaderCell(root: ParentNode, columnId: string) {
+  const cell = root.querySelector<HTMLElement>(
+    `[data-gen-datagrid-cell="true"][data-cell-kind="header"][data-colid="${columnId}"]`
+  );
+  if (!cell) {
+    throw new Error(`Missing header cell ${columnId}`);
+  }
+  return cell;
+}
+
+function getResizeHandle(root: ParentNode, columnId: string) {
+  const headerCell = getHeaderCell(root, columnId);
+  const handle = headerCell.querySelector<HTMLElement>(
+    '[data-column-resize-handle="true"]'
+  );
+  if (!handle) {
+    throw new Error(`Missing resize handle ${columnId}`);
+  }
+  return handle;
+}
+
+function getReorderHandle(root: ParentNode, columnId: string) {
+  const headerCell = getHeaderCell(root, columnId);
+  const handle = headerCell.querySelector<HTMLElement>(
+    '[data-column-reorder-handle="true"]'
+  );
+  if (!handle) {
+    throw new Error(`Missing reorder handle ${columnId}`);
+  }
+  return handle;
+}
+
+function createDataTransfer() {
+  const store = new Map<string, string>();
+  return {
+    effectAllowed: '',
+    dropEffect: '',
+    setData: vi.fn((type: string, value: string) => {
+      store.set(type, value);
+    }),
+    getData: vi.fn((type: string) => store.get(type) ?? ''),
+  };
+}
+
 function renderGrid(gridId = 'test-grid') {
   return render(
     <GenDataGrid
@@ -988,6 +1032,117 @@ describe('GenDataGrid interaction contract', () => {
     });
 
     warnSpy.mockRestore();
+  });
+
+  it('reorders columns by dragging headers inside the same pinning zone', async () => {
+    const onColumnOrderChange = vi.fn();
+    const onColumnPinningChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="reorder-grid"
+        data={rows}
+        columns={editableColumns}
+        getRowId={(row) => row.id}
+        columnPinning={{ left: ['name', 'age'] }}
+        onColumnOrderChange={onColumnOrderChange}
+        onColumnPinningChange={onColumnPinningChange}
+      />
+    );
+
+    const nameHeader = getHeaderCell(container, 'name');
+    const ageHeader = getHeaderCell(container, 'age');
+    const ageDragHandle = getReorderHandle(container, 'age');
+    const dataTransfer = createDataTransfer();
+
+    fireEvent.dragStart(ageDragHandle, { dataTransfer });
+    fireEvent.dragOver(nameHeader, { dataTransfer });
+    fireEvent.drop(nameHeader, { dataTransfer });
+
+    await waitFor(() => {
+      expect(onColumnOrderChange).toHaveBeenCalledWith(['age', 'name']);
+      expect(onColumnPinningChange).toHaveBeenCalledWith({
+        left: ['age', 'name'],
+      });
+    });
+  });
+
+  it('reorders pinned columns visually when pinning state is uncontrolled', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="uncontrolled-pinned-reorder-grid"
+        data={rows}
+        columns={editableColumns}
+        getRowId={(row) => row.id}
+        defaultColumnPinning={{ left: ['name', 'age'] }}
+      />
+    );
+
+    const nameHeader = getHeaderCell(container, 'name');
+    const ageDragHandle = getReorderHandle(container, 'age');
+    const dataTransfer = createDataTransfer();
+
+    fireEvent.dragStart(ageDragHandle, { dataTransfer });
+    fireEvent.dragOver(nameHeader, { dataTransfer });
+    fireEvent.drop(nameHeader, { dataTransfer });
+
+    await waitFor(() => {
+      const headerColumnIds = Array.from(
+        container.querySelectorAll<HTMLElement>(
+          '[data-gen-datagrid-cell="true"][data-cell-kind="header"]'
+        )
+      ).map((headerCell) => headerCell.dataset.colid);
+
+      expect(headerColumnIds.slice(0, 2)).toEqual(['age', 'name']);
+    });
+  });
+
+  it('blocks header drag reorder across pinning zones', async () => {
+    const onColumnOrderChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="blocked-reorder-grid"
+        data={rows}
+        columns={editableColumns}
+        getRowId={(row) => row.id}
+        columnPinning={{ left: ['name'], right: ['age'] }}
+        onColumnOrderChange={onColumnOrderChange}
+      />
+    );
+
+    const nameHeader = getHeaderCell(container, 'name');
+    const nameDragHandle = getReorderHandle(container, 'name');
+    const ageHeader = getHeaderCell(container, 'age');
+    const dataTransfer = createDataTransfer();
+
+    fireEvent.dragStart(nameDragHandle, { dataTransfer });
+    fireEvent.dragOver(ageHeader, { dataTransfer });
+    fireEvent.drop(ageHeader, { dataTransfer });
+
+    expect(onColumnOrderChange).not.toHaveBeenCalled();
+  });
+
+  it('does not start header reorder dragging from a resize handle', async () => {
+    const onColumnOrderChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="resize-handle-drag-grid"
+        data={rows}
+        columns={editableColumns}
+        getRowId={(row) => row.id}
+        onColumnOrderChange={onColumnOrderChange}
+      />
+    );
+
+    const resizeHandle = getResizeHandle(container, 'name');
+    const ageHeader = getHeaderCell(container, 'age');
+    const dataTransfer = createDataTransfer();
+
+    fireEvent.dragStart(resizeHandle, { dataTransfer });
+    fireEvent.dragOver(ageHeader, { dataTransfer });
+    fireEvent.drop(ageHeader, { dataTransfer });
+
+    expect(dataTransfer.setData).not.toHaveBeenCalled();
+    expect(onColumnOrderChange).not.toHaveBeenCalled();
   });
 
   it('does not start range selection from interactive descendants', async () => {

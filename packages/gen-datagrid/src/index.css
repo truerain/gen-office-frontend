@@ -21,7 +21,7 @@
 .gen-datagrid__header {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 3;
 }
 
 .gen-datagrid__row {
@@ -38,14 +38,72 @@
   text-overflow: ellipsis;
   border-right: 1px solid #d0d7de;
   border-bottom: 1px solid #d0d7de;
+  background: inherit;
 }
 
 .gen-datagrid__header-cell {
+  position: relative;
   height: var(--gen-datagrid-header-height, 40px);
   display: flex;
   align-items: center;
+  gap: 2px;
   font-weight: 600;
   background: #f6f8fa;
+}
+
+.gen-datagrid__reorder-handle {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -4px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  color: #57606a;
+  background: transparent;
+}
+
+.gen-datagrid__reorder-handle:hover,
+.gen-datagrid__reorder-handle:focus-visible {
+  color: #24292f;
+  background: color-mix(in srgb, #57606a 12%, transparent);
+  outline: none;
+}
+
+.gen-datagrid__header-content {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gen-datagrid__reorder-handle[data-column-reorder-handle='true'] {
+  cursor: grab;
+}
+
+.gen-datagrid__reorder-handle[data-column-reorder-handle='true']:active {
+  cursor: grabbing;
+}
+
+.gen-datagrid__resize-handle {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 6px;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  cursor: col-resize;
+  background: transparent;
+}
+
+.gen-datagrid__resize-handle:hover,
+.gen-datagrid__resize-handle:focus-visible {
+  background: color-mix(in srgb, #0969da 35%, transparent);
+  outline: none;
 }
 
 .gen-datagrid__cell {
@@ -69,6 +127,33 @@
 
 .gen-datagrid__cell[data-editing-cell='true'] {
   padding: 0 4px;
+}
+
+.gen-datagrid__header-cell[data-pinned-cell],
+.gen-datagrid__cell[data-pinned-cell] {
+  background: #ffffff;
+}
+
+.gen-datagrid__cell[data-pinned-cell][data-selected-cell='true'] {
+  background: color-mix(in srgb, #0969da 12%, #ffffff);
+}
+
+.gen-datagrid__cell[data-pinned-cell][data-active-cell='true'] {
+  outline-color: #0969da;
+}
+
+.gen-datagrid__cell[data-pinned-cell][data-editing-cell='true'] {
+  box-shadow: 0 0 0 1px #0969da inset;
+}
+
+.gen-datagrid__header-cell[data-pinned-edge='left-end'],
+.gen-datagrid__cell[data-pinned-edge='left-end'] {
+  box-shadow: 6px 0 8px -8px rgb(31 35 40 / 45%);
+}
+
+.gen-datagrid__header-cell[data-pinned-edge='right-start'],
+.gen-datagrid__cell[data-pinned-edge='right-start'] {
+  box-shadow: -6px 0 8px -8px rgb(31 35 40 / 45%);
 }
 
 .gen-datagrid__editor {

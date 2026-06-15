@@ -250,6 +250,8 @@ Status: complete for Gate 5 entry. Gate 4 defines the public editing API, TanSta
 
 ## 8. Gate 5. Column Pinning, Sizing, Reorder
 
+Status: complete for Gate 6 entry. Gate 5 wires `columnPinning`, `defaultColumnPinning`, and `onColumnPinningChange` through the TanStack adapter, adds shared sticky pinning style calculation, renders pinned header/body DOM markers, exposes resize handles, and supports same-zone header drag reorder. Pinning-zone reorder normalization blocks cross-zone moves. Pinned header/body/editor z-index layers are separated, selected pinned cells keep their selection background, and `Gate5PinningSizingReorder` provides the Storybook visual-check scenario. Manual browser verification guidance is documented in `../qa/gate-5-visual-test-guide.md`.
+
 ### 목표
 
 div grid layout에서 column sizing, sticky pinning, reorder를 안정화한다.

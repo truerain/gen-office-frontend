@@ -106,6 +106,46 @@ test('uses TanStack column order, visibility, and sizing state', () => {
   assert.match(markup, />37</);
 });
 
+test('renders pinned column markers and sticky offsets', () => {
+  const markup = renderToStaticMarkup(
+    React.createElement(GenDataGrid, {
+      ...requiredProps,
+      columnPinning: { left: ['name'], right: ['age'] },
+    })
+  );
+
+  assert.match(markup, /data-colid="name" data-pinned-cell="left"/);
+  assert.match(markup, /data-colid="age" data-pinned-cell="right"/);
+  assert.match(markup, /data-pinned-edge="left-end"/);
+  assert.match(markup, /data-pinned-edge="right-start"/);
+  assert.match(markup, /position:sticky/);
+  assert.match(markup, /left:0/);
+  assert.match(markup, /right:0/);
+});
+
+test('uses pinning order for rendered columns and grid template', () => {
+  const markup = renderToStaticMarkup(
+    React.createElement(GenDataGrid, {
+      ...requiredProps,
+      columnPinning: { left: ['age', 'name'] },
+    })
+  );
+
+  assert.match(markup, /grid-template-columns:80px 120px/);
+  assert.match(markup, /data-colid="age" data-pinned-cell="left"/);
+  assert.match(markup, /data-colid="name" data-pinned-cell="left"/);
+  assert.ok(markup.indexOf('data-colid="age"') < markup.indexOf('data-colid="name"'));
+});
+
+test('renders Gate 5 header resize and reorder affordances', () => {
+  const markup = renderToStaticMarkup(React.createElement(GenDataGrid, requiredProps));
+
+  assert.match(markup, /data-resizable-column="true"/);
+  assert.match(markup, /data-reorderable-column="true"/);
+  assert.match(markup, /data-column-resize-handle="true"/);
+  assert.match(markup, /draggable="true"/);
+});
+
 test('supports per-row height in non-virtualized rendering', () => {
   const markup = renderToStaticMarkup(
     React.createElement(GenDataGrid, {
