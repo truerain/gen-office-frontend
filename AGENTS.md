@@ -1,39 +1,107 @@
-# Gen-Office Frontend — Agent Rules
+# GenOffice Frontend Agent Rules
 
-> 공통: [`../AGENTS.md`](../AGENTS.md) · 문서 [`../docs/`](../docs/README.md) · Cursor [`../.cursor/rules/project-core.mdc`](../.cursor/rules/project-core.mdc)
+This file defines the working rules for AI coding agents in the GenOffice frontend repository.
 
-워크스페이스는 **상위 `100 gen-office`** 기준. 이 파일은 프론트·GenGrid 상세 규칙입니다.
+Use this file as the shared instruction source across Codex, ChatGPT, Claude, Gemini, Cursor, Copilot, and other coding agents. If another tool has its own instruction file, mirror the same project rules from this document instead of creating conflicting guidance.
 
-## 문서 (SSOT)
+## Repository Context
 
-- 통합 문서 정본: `../docs/` (이후 `gen-office-docs` repo)
-- 새 가이드는 `../docs/`에만. `frontend/docs/`는 **이전 스텁**만
-- 레거시: `docs/gen-grid/layout-contract.md` 등 — 이전 전까지 참고
+- This repository is the frontend workspace for GenOffice, a React-based framework for building enterprise back-office applications.
+- The repository is a pnpm monorepo with apps under `apps/*` and reusable packages under `packages/*`.
+- The main package scope is `@gen-office/*`.
+- The primary demo app is `apps/demo`.
+- The integrated Storybook app is `apps/storybook-all`.
 
-## 아키텍처 (demo)
+## Core Stack
 
-- **네비**: URL 라우터 없음 → MDI 탭 + DB 메뉴 `componentName`
-- **로딩**: `apps/demo/src/app/config/componentRegistry.dynamic.ts` lazy map
-- **API**: `apps/demo/src/shared/api/http.ts` — `credentials: 'include'`, envelope `{ success, code, data }`
-- **인증**: `shared/api/auth.ts`, 세션 쿠키 — [session-login](../docs/guides/auth/session-login.md) (상위 `docs/` 있을 때)
+- React 18
+- TypeScript 5.7
+- Vite
+- pnpm 9
+- Turbo
+- Nx
+- Storybook 8
 
-## 빠른 검증
+## Package Boundaries
 
-```bash
-pnpm install && pnpm build && pnpm demo
-pnpm lint
+Keep package responsibilities clear.
+
+- `packages/theme`: design tokens, global styles, fonts, and theme primitives.
+- `packages/ui`: domain-neutral UI components.
+- `packages/utils`: shared utility functions.
+- `packages/mdi`: multiple document interface layout and tab/window behavior.
+- `packages/gen-grid`: core grid package based on TanStack Table.
+- `packages/gen-grid-crud`: CRUD behavior built on top of GenGrid.
+- `packages/gen-grid-chart`: grid and chart integration.
+- `packages/gen-chart`: chart components.
+- `packages/gen-datagrid`: experimental or alternative data grid implementation.
+- `packages/tsconfig`: shared TypeScript configuration.
+
+Preferred dependency direction:
+
+```text
+apps -> feature packages -> ui -> theme/utils
 ```
 
-배포: Vercel — 이 repo 루트(또는 `frontend`를 root directory로 설정).
+Avoid reverse dependencies and circular dependencies.
 
-## Source File Header Comments
+Large feature components with heavy third-party engines should usually become separate feature packages instead of being added to `packages/ui`. For example, a rich HTML editor should be considered as a package such as `@gen-office/html-editor` because it may own editor engine dependencies, serialization, sanitization, toolbar commands, and editor-specific policies.
 
-- When creating a new source file under `frontend`, add a short header comment at the top.
-- The header should state the workspace-relative file path, the file's purpose and creation date.
-- Apply this to source-like files such as `.ts`, `.tsx`, `.js`, `.jsx`, `.css`, `.scss`, `.md`, `.mjs`, and `.cjs`.
-- Do not add header comments to formats that do not support comments, such as `.json`.
-- Do not duplicate headers. If an existing file already has a clear header comment, preserve it.
-- Keep the header concise and avoid legal/copyright text unless explicitly requested.
+## Documentation Rules
+
+- Update documentation when changing public APIs, package boundaries, behavior contracts, setup steps, or architectural decisions.
+- Put project-level documentation under `docs/`.
+- Put package-specific documentation in the relevant package directory when it is only useful for that package.
+- Do not leave important implementation decisions only in chat history.
+- Keep README files focused on orientation, setup, and public usage.
+
+## Work Log Rules
+
+- Every file-changing task must leave a written log.
+- For repository-level changes, update `docs/logs/work-log.md`.
+- For architecture, package boundary, or technology decisions, update `docs/logs/decisions.md`.
+- For package-specific source, API, behavior, or documentation changes, update that package's `docs/implementation-log.md`.
+- Write all work log and decision log entries in Korean.
+- Log entries should be concise but must include the date, summary, changed area, and relevant files.
+- Do not rely on chat history as the only record of why a change was made.
+- If a change intentionally skips a log update, explain the reason in the final response.
+
+## AI Coding Workflow
+
+- Default to Plan Mode for all development work.
+- In Plan Mode, do not modify source files, configuration files, documentation, or generated assets until the user explicitly asks you to implement, code, edit, apply, or update files.
+- Before editing files, first inspect the relevant context, explain the proposed plan, and wait for the user's confirmation.
+- A discussion about possible design, architecture, package boundaries, or implementation approach is not permission to edit files.
+- A request to "review", "analyze", "plan", "recommend", "explain", or "think through" is not permission to edit files.
+- Start modifying files only after the user clearly requests implementation, for example: "implement it", "make the change", "edit the file", "apply this", "코딩해줘", "수정해줘", or equivalent wording.
+- If the user asks a direct question, answer the question first and do not make code changes unless implementation is also explicitly requested.
+- Read `README.md` and this `AGENTS.md` before making significant changes.
+- Inspect the existing code and package conventions before proposing new abstractions.
+- Prefer existing patterns, local helpers, and package boundaries over new one-off structures.
+- Keep edits scoped to the requested change.
+- Do not refactor unrelated code while solving a narrow task.
+- If user changes are present, preserve them and work with them.
+- Do not revert files unless the user explicitly asks for it.
+- Do not delete files unless the user explicitly requests it or the deletion is clearly part of the requested change.
+
+## Source Editing Rules
+
+- Treat all text files as UTF-8.
+- Prefer patch-based edits for text changes.
+- Avoid tools or commands that can rewrite Korean text as CP949/ANSI.
+- If a file contains Korean text, verify that no mojibake was introduced.
+- Keep comments concise and useful.
+- Do not add legal or copyright headers unless requested.
+
+## New Source Files
+
+When creating a new source-like file under this repository, add a short header comment if the file format supports comments.
+
+The header should state:
+
+- repository-relative file path
+- purpose of the file
+- creation date when useful
 
 Examples:
 
@@ -54,7 +122,7 @@ Documents the public API grouping for GenDataGrid.
 -->
 ```
 
-## GenDataGrid Documentation Log
+Do not add such headers to formats that do not support comments, such as JSON.
 
 - When implementing or changing `packages/gen-datagrid`, update documentation under `packages/gen-datagrid/docs`.
 - Record meaningful implementation decisions, API changes, test gate updates, known limitations, and migration notes.
@@ -71,42 +139,68 @@ Documents the public API grouping for GenDataGrid.
 - If a code change affects public API, update `docs/reference/api-structure.md` and `docs/reference/api-comparison-with-gen-grid.md`.
 - If a code change introduces a known limitation or deferred behavior, record it in `docs/log/implementation-log.md`.
 
-## Encoding Safety (Korean Text)
+When touching `packages/gen-grid` or `packages/gen-grid-crud`:
 
-- Treat all source text files as UTF-8.
-- Prefer `apply_patch` for editing text files.
-- Do not rewrite files using PowerShell `Get-Content`/`Set-Content` unless absolutely required.
-- If shell-based rewrite is required, read/write with explicit UTF-8 and no BOM.
-- Avoid any operation that can implicitly decode as CP949/ANSI.
-- If a file contains Korean, verify no mojibake before commit.
+- Preserve layout stability in demo pages using `GenGridCrud`.
+- Do not force a default `mergedGridProps.height` in `GenGridCrud`; consumers should set `gridProps.height` when needed.
+- Keep flex height chains intact with `min-height: 0` where required.
+- Keep action bars single-line unless a design explicitly requires wrapping.
+- Horizontal overflow should scroll instead of clipping or wrapping controls unexpectedly.
+- Check related documents under `docs/gen-grid/` when changing layout behavior.
+
+## GenDataGrid Documentation
+
+When implementing or changing `packages/gen-datagrid`, update documentation under `packages/gen-datagrid/docs` when relevant.
+
+Record:
+
+- meaningful implementation decisions
+- API changes
+- test gate updates
+- known limitations
+- migration notes
+
+At minimum, consider updating one of:
+
+- `packages/gen-datagrid/docs/implementation-log.md`
+- `packages/gen-datagrid/docs/api-structure.md`
+- `packages/gen-datagrid/docs/api-comparison-with-gen-grid.md`
+- `packages/gen-datagrid/docs/div-datagrid-development-plan.md`
+- `packages/gen-datagrid/docs/mvp-test-gates.md`
+
+## Verification
+
+Use the narrowest meaningful verification for the change.
+
+For setup, build, run, and troubleshooting steps, refer to `docs/01.BUILD_GUIDE.md`.
+
+Common commands:
+
+```bash
+pnpm build
+pnpm lint
+pnpm test
+pnpm -C apps/demo build
+pnpm -C packages/gen-grid exec tsc -p tsconfig.json --noEmit
+pnpm -C packages/gen-grid-crud exec tsc -p tsconfig.json --noEmit
+pnpm -C packages/ui build
+```
+
+If verification cannot be run, explain why in the final response.
 
 ## Pre-commit Guard
 
-- `.githooks/pre-commit` runs `node scripts/check-encoding.mjs --staged`.
-- The check blocks commits for:
-  - UTF-8 BOM
-  - invalid UTF-8 / replacement character (`\uFFFD`)
-  - suspicious mojibake patterns in Hangul lines
+The repository has an encoding guard:
 
-## GenGrid Layout Guard
+```bash
+node scripts/check-encoding.mjs --staged
+```
 
-- If touching `packages/gen-grid` or `packages/gen-grid-crud`, verify layout stability in demo pages using `GenGridCrud`.
-- Keep `GenGridCrud` height chain intact:
-  - Do not force `mergedGridProps.height` default in `GenGridCrud`; consumer/page should set `gridProps.height` when needed.
-  - Keep `.gridArea > *` with `flex: 1 1 auto` and `min-height: 0` (avoid unconditional `height: 100%`).
-- Keep ActionBar single-line behavior:
-  - no wrapping in action groups
-  - horizontal overflow should scroll, not clip/wrap controls.
-- Reference before/after changes:
-  - `docs/gen-grid/layout-contract.md`
-  - `docs/gen-grid/layout-regression-playbook.md`
+The guard blocks:
 
-## Source Editing Safety (when apply_patch is unavailable)
+- UTF-8 BOM
+- invalid UTF-8
+- replacement characters
+- suspicious mojibake patterns in Korean text
 
-- Keep edits minimal: one file and one logical block at a time.
-- Before edit, capture target context lines and verify exact location.
-- Do not use broad/global replacement across the whole file.
-- Allow only single-match replacement (exact string or regex). If match count is not 1, stop.
-- After each edit, immediately verify changed lines and `git diff -- <file>`.
-- Run relevant typecheck/build after code edits (`tsc --noEmit` when applicable).
-- If unexpected diff, mojibake, or syntax issue appears, stop and fix before additional edits.
+Run the guard when editing Korean documentation or files that previously had encoding issues.

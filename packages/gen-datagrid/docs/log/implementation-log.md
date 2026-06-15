@@ -2,7 +2,7 @@
 Records meaningful GenDataGrid implementation decisions and progress.
 -->
 
-# GenDataGrid Implementation Log
+## 2026-06-15
 
 용어 기준: 구현 로그와 QA 보정 기록의 공통 용어는 `../reference/terminology.md`를 따른다.
 
