@@ -4,6 +4,22 @@
 
 ## 2026-06-15
 
+### 로그 역순 정렬 규칙 추가
+
+- 새 로그 항목을 파일 앞쪽에 추가하도록 `AGENTS.md` 규칙을 보강했습니다.
+- 로그 파일은 최신 항목이 위로 오도록 역순으로 관리합니다.
+- 같은 날짜 섹션 안에서도 최신 작업을 위에 추가합니다.
+
+변경 영역:
+
+- 문서 관리 체계
+- AI 코딩 규칙
+
+관련 파일:
+
+- `AGENTS.md`
+- `docs/logs/work-log.md`
+
 ### 작업 로그 관리 시작
 
 - 리포지토리 수준의 작업 로그 관리를 시작했습니다.
@@ -57,3 +73,22 @@
 - `docs/logs/work-log.md`
 - `docs/logs/decisions.md`
 - `packages/*/docs/implementation-log.md`
+
+### 충돌 해결 후 에이전트 규칙 보강
+
+- 다른 작업에서 정리된 `gen-datagrid` 문서 구조를 인정하고, `AGENTS.md`의 `GenDataGrid` 문서 경로를 현재 구조에 맞췄습니다.
+- 중복된 `GenDataGrid` 문서 규칙을 정리했습니다.
+- 깨진 한국어 로그 내용을 읽을 수 있는 한국어로 다시 정리했습니다.
+
+변경 영역:
+
+- AI 에이전트 규칙
+- 문서 로그
+- GenDataGrid 문서 경로
+
+관련 파일:
+
+- `AGENTS.md`
+- `docs/logs/work-log.md`
+- `docs/logs/decisions.md`
+- `packages/gen-datagrid/docs/log/implementation-log.md`

@@ -6,6 +6,12 @@ Records meaningful GenDataGrid implementation decisions and progress.
 
 용어 기준: 구현 로그와 QA 보정 기록의 공통 용어는 `../reference/terminology.md`를 따른다.
 
+### 문서 로그 경로 정합성 확인
+
+- 충돌 해결 후 `gen-datagrid` 문서 구조가 `docs/log`, `docs/reference`, `docs/plan`, `docs/architecture`로 유지되는 것을 확인했습니다.
+- `AGENTS.md`의 GenDataGrid 문서 규칙을 현재 문서 구조에 맞춰 정리했습니다.
+- 이전 경로인 `packages/gen-datagrid/docs/implementation-log.md`는 다시 생성하지 않기로 했습니다.
+
 ## 2026-06-08
 
 ### Documentation Baseline

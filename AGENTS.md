@@ -60,9 +60,12 @@ Large feature components with heavy third-party engines should usually become se
 - Every file-changing task must leave a written log.
 - For repository-level changes, update `docs/logs/work-log.md`.
 - For architecture, package boundary, or technology decisions, update `docs/logs/decisions.md`.
-- For package-specific source, API, behavior, or documentation changes, update that package's `docs/implementation-log.md`.
+- For package-specific source, API, behavior, or documentation changes, update that package's implementation log. Most packages use `docs/implementation-log.md`; packages with a deeper docs structure may use a package-specific path such as `docs/log/implementation-log.md`.
 - Write all work log and decision log entries in Korean.
 - Log entries should be concise but must include the date, summary, changed area, and relevant files.
+- Keep log files in reverse chronological order.
+- Add new log entries near the top of the file.
+- Within the same date section, place the newest entry first.
 - Do not rely on chat history as the only record of why a change was made.
 - If a change intentionally skips a log update, explain the reason in the final response.
 
@@ -124,20 +127,7 @@ Documents the public API grouping for GenDataGrid.
 
 Do not add such headers to formats that do not support comments, such as JSON.
 
-- When implementing or changing `packages/gen-datagrid`, update documentation under `packages/gen-datagrid/docs`.
-- Record meaningful implementation decisions, API changes, test gate updates, known limitations, and migration notes.
-- Do not leave implementation-only knowledge only in chat or code comments.
-- Prefer adding or updating focused docs instead of appending unrelated notes to a single large document.
-- At minimum, update one of:
-  - `docs/log/implementation-log.md`
-  - `docs/reference/api-structure.md`
-  - `docs/reference/api-comparison-with-gen-grid.md`
-  - `docs/plan/div-datagrid-development-plan.md`
-  - `docs/plan/mvp-test-gates.md`
-  - a new focused document under `docs/`
-- If a code change affects a test gate, update `docs/plan/mvp-test-gates.md`.
-- If a code change affects public API, update `docs/reference/api-structure.md` and `docs/reference/api-comparison-with-gen-grid.md`.
-- If a code change introduces a known limitation or deferred behavior, record it in `docs/log/implementation-log.md`.
+## GenGrid And GenGridCrud Rules
 
 When touching `packages/gen-grid` or `packages/gen-grid-crud`:
 
@@ -162,11 +152,15 @@ Record:
 
 At minimum, consider updating one of:
 
-- `packages/gen-datagrid/docs/implementation-log.md`
-- `packages/gen-datagrid/docs/api-structure.md`
-- `packages/gen-datagrid/docs/api-comparison-with-gen-grid.md`
-- `packages/gen-datagrid/docs/div-datagrid-development-plan.md`
-- `packages/gen-datagrid/docs/mvp-test-gates.md`
+- `packages/gen-datagrid/docs/log/implementation-log.md`
+- `packages/gen-datagrid/docs/reference/api-structure.md`
+- `packages/gen-datagrid/docs/reference/api-comparison-with-gen-grid.md`
+- `packages/gen-datagrid/docs/plan/div-datagrid-development-plan.md`
+- `packages/gen-datagrid/docs/plan/mvp-test-gates.md`
+
+If a code change affects a test gate, update `packages/gen-datagrid/docs/plan/mvp-test-gates.md`.
+If a code change affects public API, update `packages/gen-datagrid/docs/reference/api-structure.md` and `packages/gen-datagrid/docs/reference/api-comparison-with-gen-grid.md`.
+If a code change introduces a known limitation or deferred behavior, record it in `packages/gen-datagrid/docs/log/implementation-log.md`.
 
 ## Verification
 
