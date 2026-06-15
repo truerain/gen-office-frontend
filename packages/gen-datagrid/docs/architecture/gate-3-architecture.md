@@ -1,10 +1,10 @@
-<!-- packages/gen-datagrid/docs/gate-3-architecture.md
+<!-- packages/gen-datagrid/docs/architecture/gate-3-architecture.md
 Documents the Gate 3 range selection architecture for GenDataGrid.
 -->
 
 # GenDataGrid Gate 3 Architecture
 
-용어 기준: Active Cell, Selected Cell, Range Selection, Anchor Cell, Focus Cell, Copy Selection은 `docs/terminology.md`를 따른다.
+용어 기준: Active Cell, Selected Cell, Range Selection, Anchor Cell, Focus Cell, Copy Selection은 `../reference/terminology.md`를 따른다.
 
 This document describes the current Gate 3 range selection and clipboard copy slice. Clipboard paste support is still deferred.
 

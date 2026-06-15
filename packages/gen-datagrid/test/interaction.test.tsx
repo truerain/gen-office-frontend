@@ -900,6 +900,7 @@ describe('GenDataGrid interaction contract', () => {
 
   it('renders custom editors and applies values through editor context', async () => {
     const onCellValueChange = vi.fn();
+    const editorContextSpy = vi.fn();
     const { container } = render(
       <GenDataGrid
         gridId="custom-editor-grid"
@@ -910,11 +911,24 @@ describe('GenDataGrid interaction contract', () => {
             header: 'Name',
             meta: {
               editable: true,
-              renderEditor: ({ applyValue }) => (
-                <button type="button" onClick={() => applyValue('Custom Ada')}>
-                  Apply custom value
-                </button>
-              ),
+              editType: 'text',
+              editPlaceholder: 'Custom placeholder',
+              editSelectOnFocus: true,
+              editCommitOnBlur: true,
+              renderEditor: (ctx) => {
+                editorContextSpy({
+                  editType: ctx.editType,
+                  placeholder: ctx.placeholder,
+                  selectOnFocus: ctx.selectOnFocus,
+                  commitOnBlur: ctx.commitOnBlur,
+                  hasTabNavigate: typeof ctx.tabNavigate === 'function',
+                });
+                return (
+                  <button type="button" onClick={() => ctx.applyValue('Custom Ada')}>
+                    Apply custom value
+                  </button>
+                );
+              },
             },
           },
         ]}
@@ -928,6 +942,14 @@ describe('GenDataGrid interaction contract', () => {
     const button = firstCell.querySelector<HTMLButtonElement>('button');
     if (!button) throw new Error('Missing custom editor');
 
+    expect(editorContextSpy).toHaveBeenCalledWith({
+      editType: 'text',
+      placeholder: 'Custom placeholder',
+      selectOnFocus: true,
+      commitOnBlur: true,
+      hasTabNavigate: true,
+    });
+
     fireEvent.click(button);
 
     await waitFor(() => {
@@ -940,6 +962,32 @@ describe('GenDataGrid interaction contract', () => {
         value: 'Custom Ada',
       });
     });
+  });
+
+  it('warns when reserved editing policy props are enabled', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    render(
+      <GenDataGrid
+        gridId="reserved-editing-props-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        editOnActiveCell
+        keepEditingOnNavigate
+      />
+    );
+
+    await waitFor(() => {
+      expect(warnSpy).toHaveBeenCalledWith(
+        'GenDataGrid: editOnActiveCell is reserved for a later editing policy slice and is not implemented yet.'
+      );
+      expect(warnSpy).toHaveBeenCalledWith(
+        'GenDataGrid: keepEditingOnNavigate is reserved for a later editing policy slice and is not implemented yet.'
+      );
+    });
+
+    warnSpy.mockRestore();
   });
 
   it('does not start range selection from interactive descendants', async () => {

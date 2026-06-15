@@ -1,8 +1,8 @@
 # GenDataGrid MVP Test Gates
 
-용어 기준: Active Cell, Selected Cell, Editing Cell, Editable Cell, Range Selection 등 공통 용어는 `docs/terminology.md`를 따른다.
+용어 기준: Active Cell, Selected Cell, Editing Cell, Editable Cell, Range Selection 등 공통 용어는 `../reference/terminology.md`를 따른다.
 
-Cell Edit API 기준: editing public props, column meta, editor context, implemented/deferred 상태는 `docs/cell-edit-api.md`를 따른다.
+Cell Edit API 기준: editing public props, column meta, editor context, implemented/deferred 상태는 `../reference/cell-edit-api.md`를 따른다.
 
 ## 1. 목적
 
@@ -55,7 +55,7 @@ Cell Edit API 기준: editing public props, column meta, editor context, impleme
 
 ## 4. Gate 1. Div Renderer Contract
 
-Status: complete for Gate 3 entry. The div renderer contract is fixed around root/header/body/cell data attributes, table tags are blocked by baseline tests, and header/body layout uses a shared TanStack visible column model. Non-virtualized `getRowHeight` is implemented. A baseline Storybook page exists for visual checks. Architecture is documented in `docs/gate-1-2-architecture.md`.
+Status: complete for Gate 3 entry. The div renderer contract is fixed around root/header/body/cell data attributes, table tags are blocked by baseline tests, and header/body layout uses a shared TanStack visible column model. Non-virtualized `getRowHeight` is implemented. A baseline Storybook page exists for visual checks. Architecture is documented in `../architecture/gate-1-2-architecture.md`.
 
 ### 목표
 
@@ -172,7 +172,7 @@ range selection과 clipboard 동작을 root-level event delegation 위에서 구
 - Ctrl/Meta additive selection이 가능하다.
 - `Ctrl/Cmd + C` copy가 가능하다.
 - header 포함 copy가 가능하다.
-- `Ctrl/Cmd + V` paste가 가능하다.
+- paste application은 data mutation과 editing policy가 도입될 때까지 deferred다.
 - editor 내부 input/select/contenteditable 클릭은 range selection을 시작하지 않는다.
 - multiple grid 상황에서 focused grid만 clipboard action을 처리한다.
 
@@ -180,25 +180,25 @@ range selection과 clipboard 동작을 root-level event delegation 위에서 구
 
 - range bounds 계산 테스트
 - copy matrix 변환 테스트
-- paste matrix 적용 테스트
+- paste text parsing helper 테스트
 - focused grid clipboard ownership 테스트
 
 ### 수동/시각 테스트
 
 - drag selection 표시
 - pinned column 포함 selection
-- 빈 셀 포함 copy/paste
-- 숫자/문자/date paste
+- 빈 셀 포함 copy
+- paste application deferred 상태 확인
 
 ### 실패 조건
 
 - 부모 grid가 nested grid selection을 시작한다.
 - clipboard가 active/focused grid가 아닌 grid data를 읽는다.
-- editor 입력 중 copy/paste가 grid action으로 가로채진다.
+- editor 입력 중 copy가 grid action으로 가로채진다.
 
 ## 7. Gate 4. Editing
 
-Status: in progress. Gate 4 now defines the public editing API, TanStack column meta surface, editable cell predicate model, internal cell editing state, default editor rendering, custom `renderEditor`/`editorFactory` rendering, `editSelectOnFocus`, `editCommitOnBlur`, Enter/F2/double-click/active-cell-reclick edit entry, Escape cancel, Enter/blur commit, and Tab/Shift+Tab navigation through `onCellValueChange`. Editable cells render `data-editable-cell="true"` and active editors render `data-editing-cell="true"`. Printable-key edit entry, `editOnActiveCell`, `keepEditingOnNavigate`, advanced blur/portal policy, and paste application remain deferred.
+Status: complete for Gate 5 entry. Gate 4 defines the public editing API, TanStack column meta surface, editable cell predicate model, internal cell editing state, shared `GenDataGridEditorContext`, default editor rendering, custom `renderEditor`/`editorFactory` rendering, `editSelectOnFocus`, `editCommitOnBlur`, Enter/F2/double-click/active-cell-reclick edit entry, Escape cancel, Enter/blur commit, and Tab/Shift+Tab navigation through `onCellValueChange`. Editable cells render `data-editable-cell="true"` and active editors render `data-editing-cell="true"`. `editOnActiveCell` and `keepEditingOnNavigate` remain reserved public props with runtime warnings. Printable-key edit entry, advanced blur/portal policy, dirty-state integration, data mutation, and paste application remain deferred.
 
 ### 목표
 
@@ -223,7 +223,7 @@ Status: in progress. Gate 4 now defines the public editing API, TanStack column 
 - Enter commit 가능
 - Tab/Shift+Tab으로 다음/이전 editable cell 이동 가능
 - custom editor가 commit/cancel/apply API를 사용할 수 있다.
-- editing 중 navigation key 정책이 옵션에 맞게 동작한다.
+- Tab/Shift+Tab이 현재 edit value를 commit하고 다음/이전 editable cell을 active로 이동한다.
 - 다른 grid 클릭 시 현재 grid editor가 정책에 맞게 종료된다.
 
 ### 자동 테스트
@@ -239,7 +239,7 @@ Status: in progress. Gate 4 now defines the public editing API, TanStack column 
 - inline editor focus ring
 - editor overflow/dropdown
 - date/select/checkbox editor
-- keepEditingOnNavigate 옵션
+- reserved editing policy props warning
 
 ### 실패 조건
 

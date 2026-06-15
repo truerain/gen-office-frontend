@@ -117,14 +117,27 @@ Examples:
 ```
 
 ```md
-<!-- packages/gen-datagrid/docs/api-structure.md
+<!-- packages/gen-datagrid/docs/reference/api-structure.md
 Documents the public API grouping for GenDataGrid.
 -->
 ```
 
 Do not add such headers to formats that do not support comments, such as JSON.
 
-## GenGrid And GenGridCrud Rules
+- When implementing or changing `packages/gen-datagrid`, update documentation under `packages/gen-datagrid/docs`.
+- Record meaningful implementation decisions, API changes, test gate updates, known limitations, and migration notes.
+- Do not leave implementation-only knowledge only in chat or code comments.
+- Prefer adding or updating focused docs instead of appending unrelated notes to a single large document.
+- At minimum, update one of:
+  - `docs/log/implementation-log.md`
+  - `docs/reference/api-structure.md`
+  - `docs/reference/api-comparison-with-gen-grid.md`
+  - `docs/plan/div-datagrid-development-plan.md`
+  - `docs/plan/mvp-test-gates.md`
+  - a new focused document under `docs/`
+- If a code change affects a test gate, update `docs/plan/mvp-test-gates.md`.
+- If a code change affects public API, update `docs/reference/api-structure.md` and `docs/reference/api-comparison-with-gen-grid.md`.
+- If a code change introduces a known limitation or deferred behavior, record it in `docs/log/implementation-log.md`.
 
 When touching `packages/gen-grid` or `packages/gen-grid-crud`:
 

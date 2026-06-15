@@ -1,4 +1,4 @@
-<!-- packages/gen-datagrid/docs/terminology.md
+<!-- packages/gen-datagrid/docs/reference/terminology.md
 Defines shared terminology for GenDataGrid development.
 -->
 
