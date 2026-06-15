@@ -1,4 +1,4 @@
-# GenDataGrid 구현 로그
+# Theme 구현 로그
 
 ## 2026-06-15
 
