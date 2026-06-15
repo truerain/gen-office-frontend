@@ -12,10 +12,36 @@ type ReorderColumnOrderArgs = {
   targetColumnId: string;
 };
 
-function getPinningZone(columnId: string, columnPinning?: ColumnPinningState): PinningZone {
+type ReorderColumnPinningArgs = {
+  columnPinning?: ColumnPinningState;
+  movingColumnId: string;
+  targetColumnId: string;
+};
+
+export function getColumnPinningZone(
+  columnId: string,
+  columnPinning?: ColumnPinningState
+): PinningZone {
   if (columnPinning?.left?.includes(columnId)) return 'left';
   if (columnPinning?.right?.includes(columnId)) return 'right';
   return 'center';
+}
+
+function reorderIds(
+  columnIds: readonly string[],
+  movingColumnId: string,
+  targetColumnId: string
+) {
+  if (movingColumnId === targetColumnId) return columnIds;
+
+  const movingIndex = columnIds.indexOf(movingColumnId);
+  const targetIndex = columnIds.indexOf(targetColumnId);
+  if (movingIndex < 0 || targetIndex < 0) return columnIds;
+
+  const next = [...columnIds];
+  const [moving] = next.splice(movingIndex, 1);
+  next.splice(targetIndex, 0, moving);
+  return next;
 }
 
 export function reorderColumnOrder({
@@ -25,16 +51,34 @@ export function reorderColumnOrder({
   targetColumnId,
 }: ReorderColumnOrderArgs) {
   if (movingColumnId === targetColumnId) return columnOrder;
-  if (getPinningZone(movingColumnId, columnPinning) !== getPinningZone(targetColumnId, columnPinning)) {
+  if (
+    getColumnPinningZone(movingColumnId, columnPinning) !==
+    getColumnPinningZone(targetColumnId, columnPinning)
+  ) {
     return columnOrder;
   }
 
-  const movingIndex = columnOrder.indexOf(movingColumnId);
-  const targetIndex = columnOrder.indexOf(targetColumnId);
-  if (movingIndex < 0 || targetIndex < 0) return columnOrder;
+  return reorderIds(columnOrder, movingColumnId, targetColumnId);
+}
 
-  const next = [...columnOrder];
-  const [moving] = next.splice(movingIndex, 1);
-  next.splice(targetIndex, 0, moving);
-  return next;
+export function reorderColumnPinning({
+  columnPinning,
+  movingColumnId,
+  targetColumnId,
+}: ReorderColumnPinningArgs): ColumnPinningState {
+  const zone = getColumnPinningZone(movingColumnId, columnPinning);
+  if (zone !== getColumnPinningZone(targetColumnId, columnPinning)) {
+    return columnPinning ?? {};
+  }
+
+  if (zone === 'center') return columnPinning ?? {};
+
+  const currentZoneIds = columnPinning?.[zone] ?? [];
+  const nextZoneIds = reorderIds(currentZoneIds, movingColumnId, targetColumnId);
+  if (nextZoneIds === currentZoneIds) return columnPinning ?? {};
+
+  return {
+    ...columnPinning,
+    [zone]: nextZoneIds,
+  };
 }

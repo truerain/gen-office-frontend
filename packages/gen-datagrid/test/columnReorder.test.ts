@@ -3,7 +3,11 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { reorderColumnOrder } from '../src/features/reorder/columnReorder';
+import {
+  getColumnPinningZone,
+  reorderColumnOrder,
+  reorderColumnPinning,
+} from '../src/features/reorder/columnReorder';
 
 describe('reorderColumnOrder', () => {
   it('moves columns inside the same pinning zone', () => {
@@ -28,5 +32,35 @@ describe('reorderColumnOrder', () => {
         targetColumnId: 'age',
       })
     ).toBe(columnOrder);
+  });
+
+  it('moves column pinning order inside the same pinned zone', () => {
+    expect(
+      reorderColumnPinning({
+        columnPinning: { left: ['name', 'age'], right: ['city'] },
+        movingColumnId: 'age',
+        targetColumnId: 'name',
+      })
+    ).toEqual({ left: ['age', 'name'], right: ['city'] });
+  });
+
+  it('keeps pinning state when moving a center column', () => {
+    const columnPinning = { left: ['name'], right: ['city'] };
+
+    expect(
+      reorderColumnPinning({
+        columnPinning,
+        movingColumnId: 'age',
+        targetColumnId: 'role',
+      })
+    ).toBe(columnPinning);
+  });
+
+  it('resolves column pinning zones', () => {
+    const columnPinning = { left: ['name'], right: ['city'] };
+
+    expect(getColumnPinningZone('name', columnPinning)).toBe('left');
+    expect(getColumnPinningZone('city', columnPinning)).toBe('right');
+    expect(getColumnPinningZone('age', columnPinning)).toBe('center');
   });
 });

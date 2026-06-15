@@ -1,10 +1,10 @@
 <!-- packages/gen-datagrid/docs/README.md
-Indexes GenDataGrid planning, architecture, reference, and log documents.
+Indexes GenDataGrid planning, architecture, reference, QA, and log documents.
 -->
 
 # GenDataGrid Docs
 
-현재 상태: Gate 4 Editing 완료, 다음 단계는 Gate 5 Column Pinning, Sizing, Reorder.
+현재 상태: Gate 5 Column Pinning, Sizing, Reorder 완료. 다음 단계는 Gate 6 Filtering, Footer, Pagination, Dirty State.
 
 ## Plan
 
@@ -24,6 +24,10 @@ Indexes GenDataGrid planning, architecture, reference, and log documents.
 - [API Structure](reference/api-structure.md)
 - [API Comparison With GenGrid](reference/api-comparison-with-gen-grid.md)
 - [Cell Edit API](reference/cell-edit-api.md)
+
+## QA
+
+- [Gate 5 Visual Test Guide](qa/gate-5-visual-test-guide.md)
 
 ## Log
 

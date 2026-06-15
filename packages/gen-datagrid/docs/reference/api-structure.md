@@ -136,7 +136,7 @@ State API는 controlled/uncontrolled 상태 계약이다. TanStack feature state
 | `defaultColumnPinning` | `{ left?: string[]; right?: string[] }` | uncontrolled initial pinning |
 | `onColumnPinningChange` | `(next: ColumnPinningState) => void` | pinning callback |
 
-Implementation status: `columnOrder`, `columnVisibility`, `columnSizing`, and `columnPinning` are wired through the TanStack adapter. Gate 5 renders sticky pinned header/body cell markers and offsets, exposes resize handles, supports same-zone header drag reorder, and blocks cross-zone reorder through pinning-zone normalization. Browser-level visual verification remains pending.
+Implementation status: `columnOrder`, `columnVisibility`, `columnSizing`, and `columnPinning` are wired through the TanStack adapter. Gate 5 renders sticky pinned header/body cell markers and offsets, exposes resize handles, supports same-zone header drag reorder, and blocks cross-zone reorder through pinning-zone normalization. Pinned z-index layering and selected pinned cell styling are implemented. Browser-level visual verification guidance is documented in `../qa/gate-5-visual-test-guide.md`.
 
 설계 원칙:
 

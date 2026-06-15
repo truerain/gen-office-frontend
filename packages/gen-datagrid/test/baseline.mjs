@@ -123,6 +123,20 @@ test('renders pinned column markers and sticky offsets', () => {
   assert.match(markup, /right:0/);
 });
 
+test('uses pinning order for rendered columns and grid template', () => {
+  const markup = renderToStaticMarkup(
+    React.createElement(GenDataGrid, {
+      ...requiredProps,
+      columnPinning: { left: ['age', 'name'] },
+    })
+  );
+
+  assert.match(markup, /grid-template-columns:80px 120px/);
+  assert.match(markup, /data-colid="age" data-pinned-cell="left"/);
+  assert.match(markup, /data-colid="name" data-pinned-cell="left"/);
+  assert.ok(markup.indexOf('data-colid="age"') < markup.indexOf('data-colid="name"'));
+});
+
 test('renders Gate 5 header resize and reorder affordances', () => {
   const markup = renderToStaticMarkup(React.createElement(GenDataGrid, requiredProps));
 

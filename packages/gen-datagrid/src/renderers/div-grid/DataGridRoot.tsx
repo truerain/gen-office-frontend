@@ -66,7 +66,15 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
   );
   const table = useDataGridTable(props);
   const tableRows = table.getRowModel().rows;
-  const visibleColumns = table.getVisibleLeafColumns();
+  const visibleColumns = (
+    enablePinning
+      ? [
+          ...table.getLeftLeafColumns(),
+          ...table.getCenterLeafColumns(),
+          ...table.getRightLeafColumns(),
+        ]
+      : table.getVisibleLeafColumns()
+  ).filter((column) => column.getIsVisible());
   const headerGroups = table.getHeaderGroups();
   const rowIds = React.useMemo(() => tableRows.map((row) => row.id), [tableRows]);
   const columnIds = React.useMemo(
@@ -250,6 +258,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       <DataGridHeader
         table={table}
         headerGroups={headerGroups}
+        columns={visibleColumns}
         gridTemplateColumns={gridTemplateColumns}
         enablePinning={enablePinning}
         enableColumnSizing={enableColumnSizing}

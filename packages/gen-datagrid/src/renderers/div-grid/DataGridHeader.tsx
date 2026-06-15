@@ -2,14 +2,20 @@
 // Renders the baseline header row for the div-based DataGrid renderer.
 
 import * as React from 'react';
-import { flexRender, type HeaderGroup, type Table } from '@tanstack/react-table';
+import { flexRender, type Column, type HeaderGroup, type Table } from '@tanstack/react-table';
+import { GripVertical } from 'lucide-react';
 
 import { getColumnPinningInfo } from '../../features/pinning/pinningStyles';
-import { reorderColumnOrder } from '../../features/reorder/columnReorder';
+import {
+  getColumnPinningZone,
+  reorderColumnOrder,
+  reorderColumnPinning,
+} from '../../features/reorder/columnReorder';
 
 type DataGridHeaderProps<TData> = {
   table: Table<TData>;
   headerGroups: HeaderGroup<TData>[];
+  columns: Column<TData, unknown>[];
   gridTemplateColumns: string;
   enablePinning?: boolean;
   enableColumnSizing?: boolean;
@@ -19,6 +25,7 @@ type DataGridHeaderProps<TData> = {
 export function DataGridHeader<TData>({
   table,
   headerGroups,
+  columns,
   gridTemplateColumns,
   enablePinning = true,
   enableColumnSizing = true,
@@ -36,10 +43,15 @@ export function DataGridHeader<TData>({
           className="gen-datagrid__row"
           style={{ gridTemplateColumns }}
         >
-          {headerGroup.headers.map((header) => {
-            const columnId = header.column.id;
-            const pinning = enablePinning ? getColumnPinningInfo(header.column) : undefined;
-            const canResize = enableColumnSizing && header.column.getCanResize();
+          {columns.map((column) => {
+            const header = headerGroup.headers.find((item) => item.column.id === column.id);
+            if (!header) return null;
+
+            const columnId = column.id;
+            const pinning = enablePinning
+              ? getColumnPinningInfo(column, { zIndex: 4 })
+              : undefined;
+            const canResize = enableColumnSizing && column.getCanResize();
             const canReorder = enableColumnReorder && !header.isPlaceholder;
             return (
             <div
@@ -58,15 +70,8 @@ export function DataGridHeader<TData>({
               }
               data-resizable-column={canResize ? 'true' : undefined}
               data-reorderable-column={canReorder ? 'true' : undefined}
-              draggable={canReorder}
               className="gen-datagrid__header-cell"
               style={pinning?.style}
-              onDragStart={(event) => {
-                if (!canReorder) return;
-                dragColumnId.current = columnId;
-                event.dataTransfer.effectAllowed = 'move';
-                event.dataTransfer.setData('text/plain', columnId);
-              }}
               onDragOver={(event) => {
                 if (!canReorder || !dragColumnId.current) return;
                 event.preventDefault();
@@ -80,19 +85,52 @@ export function DataGridHeader<TData>({
                 dragColumnId.current = null;
                 if (!movingColumnId) return;
                 const currentOrder = table.getAllLeafColumns().map((column) => column.id);
+                const movingZone = getColumnPinningZone(movingColumnId, columnPinning);
                 const nextOrder = reorderColumnOrder({
                   columnOrder: currentOrder,
                   columnPinning,
                   movingColumnId,
                   targetColumnId: columnId,
                 });
-                if (nextOrder === currentOrder) return;
-                table.setColumnOrder([...nextOrder]);
-              }}
-              onDragEnd={() => {
-                dragColumnId.current = null;
+                const nextPinning = reorderColumnPinning({
+                  columnPinning,
+                  movingColumnId,
+                  targetColumnId: columnId,
+                });
+                const didReorderColumnOrder = nextOrder !== currentOrder;
+                const didReorderColumnPinning =
+                  movingZone !== 'center' && nextPinning !== columnPinning;
+
+                if (!didReorderColumnOrder && !didReorderColumnPinning) {
+                  return;
+                }
+                if (didReorderColumnOrder) {
+                  table.setColumnOrder([...nextOrder]);
+                }
+                if (didReorderColumnPinning) {
+                  table.setColumnPinning(nextPinning);
+                }
               }}
             >
+              {canReorder ? (
+                <button
+                  type="button"
+                  aria-label={`Reorder ${columnId}`}
+                  data-column-reorder-handle="true"
+                  className="gen-datagrid__reorder-handle"
+                  draggable
+                  onDragStart={(event) => {
+                    dragColumnId.current = columnId;
+                    event.dataTransfer.effectAllowed = 'move';
+                    event.dataTransfer.setData('text/plain', columnId);
+                  }}
+                  onDragEnd={() => {
+                    dragColumnId.current = null;
+                  }}
+                >
+                  <GripVertical aria-hidden="true" size={14} strokeWidth={1.8} />
+                </button>
+              ) : null}
               <div className="gen-datagrid__header-content">
                 {header.isPlaceholder
                   ? null
@@ -104,8 +142,19 @@ export function DataGridHeader<TData>({
                   aria-label={`Resize ${columnId}`}
                   data-column-resize-handle="true"
                   className="gen-datagrid__resize-handle"
-                  onMouseDown={header.getResizeHandler()}
-                  onTouchStart={header.getResizeHandler()}
+                  draggable={false}
+                  onDragStart={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  }}
+                  onMouseDown={(event) => {
+                    event.stopPropagation();
+                    header.getResizeHandler()(event);
+                  }}
+                  onTouchStart={(event) => {
+                    event.stopPropagation();
+                    header.getResizeHandler()(event);
+                  }}
                 />
               ) : null}
             </div>

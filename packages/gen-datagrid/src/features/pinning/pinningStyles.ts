@@ -12,7 +12,8 @@ export type GenDataGridPinningInfo = {
 };
 
 export function getColumnPinningInfo<TData>(
-  column: Column<TData, unknown>
+  column: Column<TData, unknown>,
+  options?: { zIndex?: number }
 ): GenDataGridPinningInfo {
   const pinned = column.getIsPinned();
   const isLastLeftPinned = pinned === 'left' && column.getIsLastColumn('left');
@@ -29,7 +30,7 @@ export function getColumnPinningInfo<TData>(
             position: 'sticky',
             left: pinned === 'left' ? `${column.getStart('left')}px` : undefined,
             right: pinned === 'right' ? `${column.getAfter('right')}px` : undefined,
-            zIndex: 2,
+            zIndex: options?.zIndex ?? 2,
           },
   };
 }
