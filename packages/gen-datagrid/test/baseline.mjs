@@ -123,6 +123,15 @@ test('renders pinned column markers and sticky offsets', () => {
   assert.match(markup, /right:0/);
 });
 
+test('renders Gate 5 header resize and reorder affordances', () => {
+  const markup = renderToStaticMarkup(React.createElement(GenDataGrid, requiredProps));
+
+  assert.match(markup, /data-resizable-column="true"/);
+  assert.match(markup, /data-reorderable-column="true"/);
+  assert.match(markup, /data-column-resize-handle="true"/);
+  assert.match(markup, /draggable="true"/);
+});
+
 test('supports per-row height in non-virtualized rendering', () => {
   const markup = renderToStaticMarkup(
     React.createElement(GenDataGrid, {

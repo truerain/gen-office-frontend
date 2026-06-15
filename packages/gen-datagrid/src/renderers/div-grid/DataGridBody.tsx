@@ -30,6 +30,7 @@ type DataGridBodyProps<TData> = {
   columnIds: readonly string[];
   rangeSelections: GenDataGridRangeSelections;
   readOnly?: boolean;
+  enablePinning?: boolean;
   isCellEditable?: (ctx: GenDataGridEditableContext<TData>) => boolean;
   editSelectOnFocus?: boolean;
   editCommitOnBlur?: boolean;
@@ -57,6 +58,7 @@ export function DataGridBody<TData>({
   columnIds,
   rangeSelections,
   readOnly,
+  enablePinning = true,
   isCellEditable,
   editSelectOnFocus,
   editCommitOnBlur,
@@ -149,7 +151,7 @@ export function DataGridBody<TData>({
               });
               const isEditing =
                 editingCell?.rowId === rowId && editingCell.columnId === columnId;
-              const pinning = getColumnPinningInfo(cell.column);
+              const pinning = enablePinning ? getColumnPinningInfo(cell.column) : undefined;
               const commit = (nextValue = draftValue) => {
                 onCellValueChange?.({
                   row: row.original,

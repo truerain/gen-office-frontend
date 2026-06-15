@@ -38,6 +38,7 @@ export function useDataGridTable<TData>({
   columnPinning,
   defaultColumnPinning,
   onColumnPinningChange,
+  enableColumnSizing = true,
 }: GenDataGridProps<TData>) {
   const rows = data ?? defaultData ?? [];
   const [uncontrolledColumnOrder, setUncontrolledColumnOrder] =
@@ -113,5 +114,7 @@ export function useDataGridTable<TData>({
     onColumnVisibilityChange: handleColumnVisibilityChange,
     onColumnSizingChange: handleColumnSizingChange,
     onColumnPinningChange: handleColumnPinningChange,
+    enableColumnResizing: enableColumnSizing,
+    columnResizeMode: 'onChange',
   });
 }

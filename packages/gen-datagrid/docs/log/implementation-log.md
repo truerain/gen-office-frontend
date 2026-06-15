@@ -384,8 +384,18 @@ Records meaningful GenDataGrid implementation decisions and progress.
 ### Gate 5 Pinning State Baseline
 
 - Added public `columnPinning`, `defaultColumnPinning`, and `onColumnPinningChange` props.
+- Added public `enablePinning`, `enableColumnSizing`, and `enableColumnReorder` feature flags.
 - Wired column pinning through `useDataGridTable` controlled/uncontrolled state.
 - Added `features/pinning/pinningStyles.ts` for shared sticky offset styles and pinned-edge DOM marker calculation.
 - Updated header and body cells to render pinned markers and sticky offsets.
 - Added `../architecture/gate-5-architecture.md` for the initial Gate 5 structure.
 - Added baseline SSR coverage for pinned column markers and sticky offsets.
+
+### Gate 5 Resize And Reorder Baseline
+
+- Enabled TanStack column resizing with `columnResizeMode: 'onChange'`.
+- Added header resize handle DOM using `header.getResizeHandler()`.
+- Added `features/reorder/columnReorder.ts` to normalize same-zone column reorder and block cross-zone reorder.
+- Added header drag/drop reorder wiring through `table.setColumnOrder()`.
+- Added baseline SSR coverage for resize/reorder affordances.
+- Added Vitest coverage for same-zone reorder and cross-zone blocking.

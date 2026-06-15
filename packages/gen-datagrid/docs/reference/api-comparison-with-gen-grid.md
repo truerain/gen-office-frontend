@@ -115,7 +115,7 @@ Implementation status: `enableRangeSelection`, `selectedRanges`, `defaultSelecte
 | `totalRowCount` | `totalRowCount` | 유지 | MVP | manual/server pagination count. |
 | `pageSizeOptions` | `pageSizeOptions` | 유지 | MVP | pagination page size options. |
 
-Implementation status: `columnOrder`, `columnVisibility`, `columnSizing`, and `columnPinning` are implemented through the TanStack adapter. The initial Gate 5 pinning slice renders sticky pinned header/body cells. Resize handles, reorder UI, and pinning-zone reorder normalization remain pending.
+Implementation status: `columnOrder`, `columnVisibility`, `columnSizing`, and `columnPinning` are implemented through the TanStack adapter. Gate 5 renders sticky pinned header/body cells, exposes resize handles, supports same-zone header drag reorder, and blocks cross-zone reorder through pinning-zone normalization. Browser-level visual verification remains pending.
 
 ## 6. Filtering API
 

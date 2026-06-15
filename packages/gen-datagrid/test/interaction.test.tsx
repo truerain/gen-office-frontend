@@ -51,6 +51,28 @@ function getCell(root: ParentNode, rowId: string, columnId: string) {
   return cell;
 }
 
+function getHeaderCell(root: ParentNode, columnId: string) {
+  const cell = root.querySelector<HTMLElement>(
+    `[data-gen-datagrid-cell="true"][data-cell-kind="header"][data-colid="${columnId}"]`
+  );
+  if (!cell) {
+    throw new Error(`Missing header cell ${columnId}`);
+  }
+  return cell;
+}
+
+function createDataTransfer() {
+  const store = new Map<string, string>();
+  return {
+    effectAllowed: '',
+    dropEffect: '',
+    setData: vi.fn((type: string, value: string) => {
+      store.set(type, value);
+    }),
+    getData: vi.fn((type: string) => store.get(type) ?? ''),
+  };
+}
+
 function renderGrid(gridId = 'test-grid') {
   return render(
     <GenDataGrid
@@ -988,6 +1010,56 @@ describe('GenDataGrid interaction contract', () => {
     });
 
     warnSpy.mockRestore();
+  });
+
+  it('reorders columns by dragging headers inside the same pinning zone', async () => {
+    const onColumnOrderChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="reorder-grid"
+        data={rows}
+        columns={editableColumns}
+        getRowId={(row) => row.id}
+        columnPinning={{ left: ['name', 'age'] }}
+        onColumnOrderChange={onColumnOrderChange}
+      />
+    );
+
+    const nameHeader = getHeaderCell(container, 'name');
+    const ageHeader = getHeaderCell(container, 'age');
+    const dataTransfer = createDataTransfer();
+
+    fireEvent.dragStart(ageHeader, { dataTransfer });
+    fireEvent.dragOver(nameHeader, { dataTransfer });
+    fireEvent.drop(nameHeader, { dataTransfer });
+
+    await waitFor(() => {
+      expect(onColumnOrderChange).toHaveBeenCalledWith(['age', 'name']);
+    });
+  });
+
+  it('blocks header drag reorder across pinning zones', async () => {
+    const onColumnOrderChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="blocked-reorder-grid"
+        data={rows}
+        columns={editableColumns}
+        getRowId={(row) => row.id}
+        columnPinning={{ left: ['name'], right: ['age'] }}
+        onColumnOrderChange={onColumnOrderChange}
+      />
+    );
+
+    const nameHeader = getHeaderCell(container, 'name');
+    const ageHeader = getHeaderCell(container, 'age');
+    const dataTransfer = createDataTransfer();
+
+    fireEvent.dragStart(nameHeader, { dataTransfer });
+    fireEvent.dragOver(ageHeader, { dataTransfer });
+    fireEvent.drop(ageHeader, { dataTransfer });
+
+    expect(onColumnOrderChange).not.toHaveBeenCalled();
   });
 
   it('does not start range selection from interactive descendants', async () => {

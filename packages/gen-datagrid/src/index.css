@@ -42,11 +42,44 @@
 }
 
 .gen-datagrid__header-cell {
+  position: relative;
   height: var(--gen-datagrid-header-height, 40px);
   display: flex;
   align-items: center;
   font-weight: 600;
   background: #f6f8fa;
+}
+
+.gen-datagrid__header-content {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gen-datagrid__header-cell[data-reorderable-column='true'] {
+  cursor: grab;
+}
+
+.gen-datagrid__header-cell[data-reorderable-column='true']:active {
+  cursor: grabbing;
+}
+
+.gen-datagrid__resize-handle {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 6px;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  cursor: col-resize;
+  background: transparent;
+}
+
+.gen-datagrid__resize-handle:hover,
+.gen-datagrid__resize-handle:focus-visible {
+  background: color-mix(in srgb, #0969da 35%, transparent);
+  outline: none;
 }
 
 .gen-datagrid__cell {

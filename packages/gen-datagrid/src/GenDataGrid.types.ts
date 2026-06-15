@@ -90,6 +90,9 @@ export type GenDataGridProps<TData> = {
   defaultSelectedRanges?: GenDataGridRangeSelections;
   onSelectedRangesChange?: (next: GenDataGridRangeSelections) => void;
   enableClipboard?: boolean;
+  enablePinning?: boolean;
+  enableColumnSizing?: boolean;
+  enableColumnReorder?: boolean;
   clipboardOptions?: {
     includeHeader?: boolean;
   };

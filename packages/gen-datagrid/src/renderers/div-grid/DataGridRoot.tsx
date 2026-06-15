@@ -48,6 +48,9 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     defaultSelectedRanges,
     onSelectedRangesChange,
     enableClipboard = true,
+    enablePinning = true,
+    enableColumnSizing = true,
+    enableColumnReorder = true,
     clipboardOptions,
     className,
     style,
@@ -244,7 +247,14 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       onMouseDown={rangeSelection.handleMouseDown}
       onMouseOver={rangeSelection.handleMouseOver}
     >
-      <DataGridHeader headerGroups={headerGroups} gridTemplateColumns={gridTemplateColumns} />
+      <DataGridHeader
+        table={table}
+        headerGroups={headerGroups}
+        gridTemplateColumns={gridTemplateColumns}
+        enablePinning={enablePinning}
+        enableColumnSizing={enableColumnSizing}
+        enableColumnReorder={enableColumnReorder}
+      />
       <DataGridBody
         rows={tableRows}
         gridTemplateColumns={gridTemplateColumns}
@@ -253,6 +263,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
         columnIds={columnIds}
         rangeSelections={rangeSelection.selections}
         readOnly={resolvedReadOnly}
+        enablePinning={enablePinning}
         isCellEditable={isCellEditable}
         editSelectOnFocus={editSelectOnFocus}
         editCommitOnBlur={editCommitOnBlur}

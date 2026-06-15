@@ -1,0 +1,32 @@
+// packages/gen-datagrid/test/columnReorder.test.ts
+// Verifies column reorder normalization for pinned zones.
+
+import { describe, expect, it } from 'vitest';
+
+import { reorderColumnOrder } from '../src/features/reorder/columnReorder';
+
+describe('reorderColumnOrder', () => {
+  it('moves columns inside the same pinning zone', () => {
+    expect(
+      reorderColumnOrder({
+        columnOrder: ['name', 'age', 'city'],
+        columnPinning: { left: ['name', 'age'] },
+        movingColumnId: 'age',
+        targetColumnId: 'name',
+      })
+    ).toEqual(['age', 'name', 'city']);
+  });
+
+  it('blocks moves across pinning zones', () => {
+    const columnOrder = ['name', 'age', 'city'];
+
+    expect(
+      reorderColumnOrder({
+        columnOrder,
+        columnPinning: { left: ['name'], right: ['city'] },
+        movingColumnId: 'name',
+        targetColumnId: 'age',
+      })
+    ).toBe(columnOrder);
+  });
+});
