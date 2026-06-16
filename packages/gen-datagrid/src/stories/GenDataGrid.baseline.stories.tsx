@@ -388,11 +388,14 @@ export const Gate6FilteringFooterPaginationDirtyState: Story = {
     return (
       <div style={{ width: 820, padding: 16 }}>
         <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-          <button type="button" onClick={() => gridRef.current?.deleteRows(['10'])}>
-            Mark row 10 deleted
+          <button type="button" onClick={() => gridRef.current?.deleteRows(['1'])}>
+            Mark row 1 deleted
           </button>
           <button type="button" onClick={() => gridRef.current?.resetDirtyState()}>
             Reset dirty markers
+          </button>
+          <button type="button" onClick={() => gridRef.current?.clearColumnFilters()}>
+            Clear column filters
           </button>
         </div>
         <GenDataGrid<Person>

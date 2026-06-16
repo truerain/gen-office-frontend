@@ -4,6 +4,34 @@ Records meaningful GenDataGrid implementation decisions and progress.
 
 ## 2026-06-16
 
+### Gate 6 Filtering Boundary Refactor
+
+- Moved the MVP column filter trigger/popover rendering out of `DataGridHeader` into `features/filtering/DataGridColumnFilter`.
+- Added `features/filtering/filterModel.ts` to keep the current string-input filter contract and reserve structured filter values for future operators, typed editors, and multi-condition filters.
+- Updated Gate 6 architecture and implementation plan docs so advanced filtering is treated as a later extension of the filtering boundary, not a future rewrite of header layout.
+
+### Gate 6 Filter Clear Handle API
+
+- Added `clearColumnFilters()`, `clearGlobalFilter()`, and `clearFilters()` to `GenDataGridHandle`.
+- Wired the handle methods through TanStack table filter setters so controlled and uncontrolled filter state use the same update path.
+- Added a Gate 6 Storybook button that calls `clearColumnFilters()` for visual verification.
+- Added interaction coverage for uncontrolled column filter clear and combined column/global filter clear.
+- Updated Gate 6 architecture and API reference docs with the new handle methods.
+
+### Gate 6 Column Filter Popover Visibility Fix
+
+- Fixed the column filter popover being clipped under body cells by allowing header cell overflow and raising the open filter header cell above neighboring cells.
+- Raised the whole header rowgroup while a column filter is open so sticky footer rows cannot cover the popover after filtering changes the visible row count.
+- Added a `data-filter-open="true"` marker to the header cell that owns the open filter popover.
+- Added outside-click dismissal for the open column filter popover.
+- Extended interaction coverage to verify that clicking a column filter trigger opens the popover and marks the owning header cell.
+
+### Gate 6 Dirty Reset State Sync Fix
+
+- Fixed `resetDirtyState()` so external `onDirtyStateChange` receives the same cleared dirty/deleted state that the grid body markers render.
+- Added interaction coverage for clearing deleted row state after `deleteRows()`.
+- Updated the Gate 6 Storybook delete button label to match the row id used by the action.
+
 ### Gate 5 Pinned Active Cell Scroll Correction
 
 - Fixed active-cell focus so unpinned cells are not left partially covered by left/right pinned columns after keyboard navigation or mouse activation.

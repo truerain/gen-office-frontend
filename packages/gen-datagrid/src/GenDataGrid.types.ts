@@ -24,6 +24,9 @@ export type GenDataGridHandle = {
   rootElement: HTMLDivElement | null;
   clearSelection: () => void;
   copySelection: (options?: { includeHeader?: boolean }) => Promise<boolean>;
+  clearColumnFilters: () => void;
+  clearGlobalFilter: () => void;
+  clearFilters: () => void;
   resetDirtyState: (rowIds?: readonly string[]) => void;
   commitDirtyState: (rowIds?: readonly string[]) => void;
   deleteRows: (rowIds: readonly string[]) => void;

@@ -12,7 +12,8 @@ Gate 6 adds filtering, footer rows, grid-level footer bar rendering, pagination,
 - `pagination`, `defaultPagination`, and `onPaginationChange` are public pagination state props.
 - `enableColumnFilters`, `enableGlobalFilter`, `enableFooterRow`, `enableStickyFooterRow`, `enableFooter`, `enablePagination`, and `enableDirtyState` are public feature flags.
 - `useDataGridTable` wires TanStack column filters, global filter, filtered row model, pagination state, and pagination row model.
-- `DataGridHeader` renders a column filter trigger and minimal input popover for filterable columns.
+- `DataGridHeader` delegates column filter UI to `features/filtering/DataGridColumnFilter`.
+- `features/filtering/filterModel.ts` keeps the current string filter contract and reserves structured filter values for later operators and multi-condition filters.
 - `DataGridRoot` renders the global filter input above the table viewport.
 - `.gen-datagrid__viewport` is the only table scroll container. Header, body, and footer row scroll together, while pagination and `DataGridFooterBar` stay outside the table viewport.
 - `DataGridFooterRow` renders TanStack footer groups through column `footer` definitions and shares the same ordered visible columns and `grid-template-columns` source as header/body.
@@ -22,7 +23,7 @@ Gate 6 adds filtering, footer rows, grid-level footer bar rendering, pagination,
   - `data-dirty-cell="true"`
   - `data-dirty-row="true"`
   - `data-deleted-row="true"`
-- `GenDataGridHandle` exposes `resetDirtyState(rowIds?)`, `commitDirtyState(rowIds?)`, `deleteRows(rowIds)`, and `getDirtyState()`.
+- `GenDataGridHandle` exposes filter clear actions and dirty state actions.
 - `Gate6FilteringFooterPaginationDirtyState` provides the Storybook visual-check scenario for filters, footer row, sticky footer row, pagination, dirty markers, deleted row markers, and footer bar behavior.
 - Baseline SSR coverage verifies footer row, filter trigger, pagination, footer bar, and viewport markers.
 - Vitest coverage verifies column/global filtering, pagination, dirty state, and delete-row marker behavior.
@@ -38,8 +39,9 @@ flowchart TD
   Table["useDataGridTable<br/>TanStack filters + pagination"]
   GlobalFilter["Global filter<br/>fixed above viewport"]
   Viewport["DataGrid viewport<br/>scroll container"]
-  Header["DataGridHeader<br/>column filter triggers"]
-  FilterPopover["Header filter popover<br/>column.setFilterValue"]
+  Header["DataGridHeader<br/>column filter slot"]
+  FilterModel["filterModel<br/>string MVP + structured value reservation"]
+  FilterPopover["DataGridColumnFilter<br/>trigger + input popover"]
   Body["DataGridBody<br/>filtered/paginated rows"]
   FooterRow["DataGridFooterRow<br/>footer groups"]
   ExternalFooter["DataGridFooterBar<br/>footer / renderFooter"]
@@ -64,6 +66,7 @@ flowchart TD
   Table --> FooterRow
   Table --> Pagination
   Header --> FilterPopover
+  FilterPopover --> FilterModel
   Table --> Template
   Template --> Header
   Template --> Body
@@ -73,7 +76,8 @@ flowchart TD
 ```
 
 - `useDataGridTable` wires TanStack column filters, global filter, and pagination state.
-- `DataGridHeader` renders per-column filter triggers and the inline filter popover.
+- `DataGridHeader` owns filter open state and delegates trigger/popover rendering to `DataGridColumnFilter`.
+- `filterModel` treats the current string filter value as the MVP contract and reserves object-shaped values for future operators and multi-condition filters.
 - `DataGridBody` renders the current row model and receives dirty cell/row marker sets.
 - `DataGridFooterRow` renders TanStack footer groups with the same visible column model and grid template as header/body.
 - `DataGridRoot` owns global filter input, the table viewport, pagination controls, and `DataGridFooterBar`.
@@ -112,6 +116,9 @@ Dirty state currently marks committed cell edits only. The grid does not mutate 
 
 Imperative handle additions:
 
+- `clearColumnFilters()`
+- `clearGlobalFilter()`
+- `clearFilters()`
 - `resetDirtyState(rowIds?)`
 - `commitDirtyState(rowIds?)`
 - `deleteRows(rowIds)`

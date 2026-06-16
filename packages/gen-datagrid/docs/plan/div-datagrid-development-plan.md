@@ -138,7 +138,7 @@ src/
         MonthEditor.tsx
     filtering/
       filterModel.ts
-      FilterCellPopover.tsx
+      DataGridColumnFilter.tsx
     pinning/
       pinningState.ts
     row-number/
@@ -453,6 +453,8 @@ type GenDataGridProps<TData> = {
 
 ### Phase 7. Filtering, footer, pagination
 
+- Keep the filter boundary in `features/filtering`. The MVP UI is a string-input popover, while `filterModel.ts` reserves structured values for future operators, typed editors, and multi-condition filters.
+
 - filter popover 이식
 - footer row 구현
 - pagination 구현
@@ -584,4 +586,4 @@ type GenDataGridProps<TData> = {
 
 ## Gate 6 Completion Note
 
-The active gate sequence uses `mvp-test-gates.md` as the source of truth. Gate 6 is complete for filtering, footer, pagination, and dirty state. The older phase list in this document still names Phase 6 as pinning/resizing/reorder and Phase 7 as filtering/footer/pagination; that naming is historical. Current next work is Gate 7 Virtualization.
+The active gate sequence uses `mvp-test-gates.md` as the source of truth. Gate 6 is complete for filtering, footer, pagination, and dirty state. The filter UI remains an MVP string-input popover, but the implementation now keeps the filter boundary in `features/filtering` and reserves a structured filter model for later operators, typed editors, and multi-condition filters. The older phase list in this document still names Phase 6 as pinning/resizing/reorder and Phase 7 as filtering/footer/pagination; that naming is historical. Current next work is Gate 7 Virtualization.

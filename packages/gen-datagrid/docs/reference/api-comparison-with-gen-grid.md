@@ -295,8 +295,11 @@ type GenDataGridContextMenuActionContext<TData> = {
 | 없음 | `scrollToCell(coord)` | 신규 | MVP | virtualization 포함 scroll 보정. |
 | 없음 | `clearSelection()` | 신규 | MVP | range/row selection clear. |
 | 없음 | `copySelection(options?)` | 신규 | MVP | clipboard action imperative. |
+| 없음 | `clearColumnFilters()` | 신규 | MVP | all column filters clear. |
+| 없음 | `clearGlobalFilter()` | 신규 | MVP | global filter clear. |
+| 없음 | `clearFilters()` | 신규 | MVP | column and global filters clear. |
 
-Implementation status: `rootElement`, `clearSelection()`, and `copySelection(options?)` are implemented. `scrollToCell(coord)` remains planned.
+Implementation status: `rootElement`, `clearSelection()`, `copySelection(options?)`, `clearColumnFilters()`, `clearGlobalFilter()`, and `clearFilters()` are implemented. `scrollToCell(coord)` remains planned.
 
 권장 handle:
 
@@ -313,6 +316,9 @@ type GenDataGridHandle<TData> = {
   scrollToCell: (coord: { rowId: string; columnId: string }) => void;
   clearSelection: () => void;
   copySelection: (options?: { includeHeader?: boolean }) => Promise<void>;
+  clearColumnFilters: () => void;
+  clearGlobalFilter: () => void;
+  clearFilters: () => void;
 };
 ```
 

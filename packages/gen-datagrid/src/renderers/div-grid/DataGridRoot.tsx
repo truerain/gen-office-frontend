@@ -5,6 +5,7 @@ import * as React from 'react';
 
 import type {
   GenDataGridCellValueChange,
+  GenDataGridDirtyCell,
   GenDataGridHandle,
   GenDataGridProps,
 } from '../../GenDataGrid.types';
@@ -122,23 +123,25 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
   const activeCell =
     controlledActiveCell !== undefined ? controlledActiveCell : uncontrolledActiveCell;
   const editing = useCellEditing();
-  const [dirtyCells, setDirtyCells] = React.useState<
-    Map<string, { rowId: string; columnId: string; previousValue: unknown; value: unknown }>
-  >(() => new Map());
+  const [dirtyCells, setDirtyCells] = React.useState<Map<string, GenDataGridDirtyCell>>(
+    () => new Map()
+  );
   const [deletedRowIdList, setDeletedRowIdList] = React.useState<string[]>(() => []);
 
-  const dirtyState = React.useMemo(
-    () => ({
-      cells: Array.from(dirtyCells.values()),
+  const createDirtyState = React.useCallback(
+    (cells: Map<string, GenDataGridDirtyCell>, deletedRowIds: string[]) => ({
+      cells: Array.from(cells.values()),
       rowIds: Array.from(
-        new Set([
-          ...Array.from(dirtyCells.values()).map((cell) => cell.rowId),
-          ...deletedRowIdList,
-        ])
+        new Set([...Array.from(cells.values()).map((cell) => cell.rowId), ...deletedRowIds])
       ),
-      deletedRowIds: deletedRowIdList,
+      deletedRowIds,
     }),
-    [deletedRowIdList, dirtyCells]
+    []
+  );
+
+  const dirtyState = React.useMemo(
+    () => createDirtyState(dirtyCells, deletedRowIdList),
+    [createDirtyState, deletedRowIdList, dirtyCells]
   );
   const dirtyCellIds = React.useMemo(() => new Set(dirtyCells.keys()), [dirtyCells]);
   const dirtyRowIds = React.useMemo(() => new Set(dirtyState.rowIds), [dirtyState.rowIds]);
@@ -149,30 +152,16 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
 
   const updateDirtyCells = React.useCallback(
     (
-      updater: (
-        current: Map<
-          string,
-          { rowId: string; columnId: string; previousValue: unknown; value: unknown }
-        >
-      ) => Map<string, { rowId: string; columnId: string; previousValue: unknown; value: unknown }>
+      updater: (current: Map<string, GenDataGridDirtyCell>) => Map<string, GenDataGridDirtyCell>
     ) => {
       setDirtyCells((current) => {
         const next = updater(current);
         const nextDeletedRowIds = deletedRowIdList;
-        onDirtyStateChange?.({
-          cells: Array.from(next.values()),
-          rowIds: Array.from(
-            new Set([
-              ...Array.from(next.values()).map((cell) => cell.rowId),
-              ...nextDeletedRowIds,
-            ])
-          ),
-          deletedRowIds: nextDeletedRowIds,
-        });
+        onDirtyStateChange?.(createDirtyState(next, nextDeletedRowIds));
         return next;
       });
     },
-    [deletedRowIdList, onDirtyStateChange]
+    [createDirtyState, deletedRowIdList, onDirtyStateChange]
   );
 
   const handleCellValueChange = React.useCallback(
@@ -198,18 +187,21 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
 
   const resetDirtyState = React.useCallback(
     (rowIds?: readonly string[]) => {
-      setDeletedRowIdList((current) =>
-        rowIds ? current.filter((rowId) => !new Set(rowIds).has(rowId)) : []
-      );
-      updateDirtyCells((current) => {
-        if (!rowIds) return new Map();
-        const rowIdSet = new Set(rowIds);
-        return new Map(
-          Array.from(current.entries()).filter(([, cell]) => !rowIdSet.has(cell.rowId))
-        );
-      });
+      const rowIdSet = rowIds ? new Set(rowIds) : null;
+      const nextDeletedRowIds = rowIdSet
+        ? deletedRowIdList.filter((rowId) => !rowIdSet.has(rowId))
+        : [];
+      const nextDirtyCells = rowIdSet
+        ? new Map(
+            Array.from(dirtyCells.entries()).filter(([, cell]) => !rowIdSet.has(cell.rowId))
+          )
+        : new Map<string, GenDataGridDirtyCell>();
+
+      setDeletedRowIdList(nextDeletedRowIds);
+      setDirtyCells(nextDirtyCells);
+      onDirtyStateChange?.(createDirtyState(nextDirtyCells, nextDeletedRowIds));
     },
-    [updateDirtyCells]
+    [createDirtyState, deletedRowIdList, dirtyCells, onDirtyStateChange]
   );
 
   const commitDirtyState = React.useCallback(
@@ -225,22 +217,26 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       if (uniqueRowIds.length === 0) return;
       setDeletedRowIdList((current) => {
         const next = Array.from(new Set([...current, ...uniqueRowIds]));
-        onDirtyStateChange?.({
-          cells: Array.from(dirtyCells.values()),
-          rowIds: Array.from(
-            new Set([
-              ...Array.from(dirtyCells.values()).map((cell) => cell.rowId),
-              ...next,
-            ])
-          ),
-          deletedRowIds: next,
-        });
+        onDirtyStateChange?.(createDirtyState(dirtyCells, next));
         return next;
       });
       onRowsDelete?.(uniqueRowIds);
     },
-    [dirtyCells, onDirtyStateChange, onRowsDelete]
+    [createDirtyState, dirtyCells, onDirtyStateChange, onRowsDelete]
   );
+
+  const clearColumnFilters = React.useCallback(() => {
+    table.setColumnFilters([]);
+  }, [table]);
+
+  const clearGlobalFilter = React.useCallback(() => {
+    table.setGlobalFilter(undefined);
+  }, [table]);
+
+  const clearFilters = React.useCallback(() => {
+    table.setColumnFilters([]);
+    table.setGlobalFilter(undefined);
+  }, [table]);
 
   React.useImperativeHandle(
     forwardedRootRef,
@@ -250,12 +246,18 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       },
       clearSelection: rangeSelection.clearSelection,
       copySelection: clipboard.copySelection,
+      clearColumnFilters,
+      clearGlobalFilter,
+      clearFilters,
       resetDirtyState,
       commitDirtyState,
       deleteRows,
       getDirtyState: () => dirtyState,
     }),
     [
+      clearColumnFilters,
+      clearFilters,
+      clearGlobalFilter,
       clipboard.copySelection,
       commitDirtyState,
       dirtyState,

@@ -416,8 +416,11 @@ Instance API는 `ref` handle로 제공한다.
 | `scrollToCell(coord)` | scoped scroll | MVP |
 | `clearSelection()` | selection clear | MVP |
 | `copySelection(options)` | selection copy | MVP |
+| `clearColumnFilters()` | column filter clear | MVP |
+| `clearGlobalFilter()` | global filter clear | MVP |
+| `clearFilters()` | column/global filter clear | MVP |
 
-Implementation status: `rootElement`, `clearSelection()`, and `copySelection(options)` are implemented. `scrollToCell(coord)` remains planned.
+Implementation status: `rootElement`, `clearSelection()`, `copySelection(options)`, `clearColumnFilters()`, `clearGlobalFilter()`, and `clearFilters()` are implemented. `scrollToCell(coord)` remains planned.
 
 설계 원칙:
 

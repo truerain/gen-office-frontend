@@ -1311,8 +1311,10 @@ describe('GenDataGrid interaction contract', () => {
   });
 
   it('filters rows from a header filter popover', async () => {
+    const gridRef = React.createRef<GenDataGridHandle>();
     const { container } = render(
       <GenDataGrid
+        ref={gridRef}
         gridId="filter-grid"
         data={rows}
         columns={columns}
@@ -1328,6 +1330,14 @@ describe('GenDataGrid interaction contract', () => {
     if (!trigger) throw new Error('Missing filter trigger');
 
     fireEvent.click(trigger);
+    expect(nameHeader.dataset.filterOpen).toBe('true');
+    expect(
+      container.querySelector('[data-gen-datagrid-header="true"]')?.getAttribute(
+        'data-filter-open'
+      )
+    ).toBe('true');
+    expect(nameHeader.querySelector('[data-column-filter-popover="true"]')).not.toBeNull();
+
     const input = nameHeader.querySelector<HTMLInputElement>(
       'input[aria-label="Filter name value"]'
     );
@@ -1342,6 +1352,68 @@ describe('GenDataGrid interaction contract', () => {
           '[data-gen-datagrid-cell="true"][data-cell-kind="body"][data-rowid="1"]'
         )
       ).toBeNull();
+    });
+
+    fireEvent.mouseDown(document.body);
+
+    await waitFor(() => {
+      expect(nameHeader.dataset.filterOpen).toBeUndefined();
+      expect(nameHeader.querySelector('[data-column-filter-popover="true"]')).toBeNull();
+    });
+
+    gridRef.current?.clearColumnFilters();
+
+    await waitFor(() => {
+      expect(getCell(container, '1', 'name').textContent).toContain('Ada');
+      expect(getCell(container, '2', 'name').textContent).toContain('Grace');
+    });
+  });
+
+  it('clears column and global filters through the imperative handle', async () => {
+    const gridRef = React.createRef<GenDataGridHandle>();
+    const { container } = render(
+      <GenDataGrid
+        ref={gridRef}
+        gridId="clear-filters-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableColumnFilters
+        enableGlobalFilter
+      />
+    );
+
+    const globalInput = container.querySelector<HTMLInputElement>(
+      'input[aria-label="Global filter"]'
+    );
+    if (!globalInput) throw new Error('Missing global filter input');
+    fireEvent.change(globalInput, { target: { value: 'Ada' } });
+
+    const nameHeader = getHeaderCell(container, 'name');
+    const trigger = nameHeader.querySelector<HTMLButtonElement>(
+      '[data-column-filter-trigger="true"]'
+    );
+    if (!trigger) throw new Error('Missing filter trigger');
+    fireEvent.click(trigger);
+    const columnInput = nameHeader.querySelector<HTMLInputElement>(
+      'input[aria-label="Filter name value"]'
+    );
+    if (!columnInput) throw new Error('Missing filter input');
+    fireEvent.change(columnInput, { target: { value: 'Grace' } });
+
+    await waitFor(() => {
+      expect(
+        container.querySelector('[data-gen-datagrid-cell="true"][data-cell-kind="body"]')
+      ).toBeNull();
+    });
+
+    gridRef.current?.clearFilters();
+
+    await waitFor(() => {
+      expect(globalInput.value).toBe('');
+      expect(columnInput.value).toBe('');
+      expect(getCell(container, '1', 'name').textContent).toContain('Ada');
+      expect(getCell(container, '2', 'name').textContent).toContain('Grace');
     });
   });
 
@@ -1440,6 +1512,11 @@ describe('GenDataGrid interaction contract', () => {
     await waitFor(() => {
       expect(firstCell.dataset.dirtyCell).toBeUndefined();
       expect(gridRef.current?.getDirtyState().rowIds).toEqual([]);
+      expect(onDirtyStateChange).toHaveBeenLastCalledWith({
+        cells: [],
+        rowIds: [],
+        deletedRowIds: [],
+      });
     });
   });
 
@@ -1471,6 +1548,20 @@ describe('GenDataGrid interaction contract', () => {
         cells: [],
         rowIds: ['2'],
         deletedRowIds: ['2'],
+      });
+    });
+
+    gridRef.current?.resetDirtyState();
+
+    await waitFor(() => {
+      expect(gridRef.current?.getDirtyState().deletedRowIds).toEqual([]);
+      expect(getCell(container, '2', 'name').closest('[role="row"]')?.getAttribute(
+        'data-deleted-row'
+      )).toBeNull();
+      expect(onDirtyStateChange).toHaveBeenLastCalledWith({
+        cells: [],
+        rowIds: [],
+        deletedRowIds: [],
       });
     });
   });

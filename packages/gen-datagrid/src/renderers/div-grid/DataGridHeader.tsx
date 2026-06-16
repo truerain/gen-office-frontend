@@ -3,8 +3,9 @@
 
 import * as React from 'react';
 import { flexRender, type Column, type HeaderGroup, type Table } from '@tanstack/react-table';
-import { Funnel, GripVertical } from 'lucide-react';
+import { GripVertical } from 'lucide-react';
 
+import { DataGridColumnFilter } from '../../features/filtering/DataGridColumnFilter';
 import { getColumnPinningInfo } from '../../features/pinning/pinningStyles';
 import {
   getColumnPinningZone,
@@ -34,11 +35,34 @@ export function DataGridHeader<TData>({
   enableColumnFilters = false,
 }: DataGridHeaderProps<TData>) {
   const dragColumnId = React.useRef<string | null>(null);
+  const headerRef = React.useRef<HTMLDivElement | null>(null);
   const [openFilterColumnId, setOpenFilterColumnId] = React.useState<string | null>(null);
   const columnPinning = enablePinning ? table.getState().columnPinning : undefined;
 
+  React.useEffect(() => {
+    if (!openFilterColumnId) return;
+
+    const handleDocumentMouseDown = (event: MouseEvent) => {
+      const header = headerRef.current;
+      if (!header || header.contains(event.target as Node)) return;
+      setOpenFilterColumnId(null);
+    };
+
+    document.addEventListener('mousedown', handleDocumentMouseDown, true);
+
+    return () => {
+      document.removeEventListener('mousedown', handleDocumentMouseDown, true);
+    };
+  }, [openFilterColumnId]);
+
   return (
-    <div role="rowgroup" data-gen-datagrid-header="true" className="gen-datagrid__header">
+    <div
+      ref={headerRef}
+      role="rowgroup"
+      data-gen-datagrid-header="true"
+      data-filter-open={openFilterColumnId ? 'true' : undefined}
+      className="gen-datagrid__header"
+    >
       {headerGroups.map((headerGroup) => (
         <div
           key={headerGroup.id}
@@ -58,7 +82,6 @@ export function DataGridHeader<TData>({
             const canReorder = enableColumnReorder && !header.isPlaceholder;
             const canFilter =
               enableColumnFilters && !header.isPlaceholder && column.getCanFilter();
-            const filterValue = column.getFilterValue();
             return (
             <div
               key={header.id}
@@ -76,6 +99,7 @@ export function DataGridHeader<TData>({
               }
               data-resizable-column={canResize ? 'true' : undefined}
               data-reorderable-column={canReorder ? 'true' : undefined}
+              data-filter-open={openFilterColumnId === columnId ? 'true' : undefined}
               className="gen-datagrid__header-cell"
               style={pinning?.style}
               onDragOver={(event) => {
@@ -143,67 +167,14 @@ export function DataGridHeader<TData>({
                   : flexRender(header.column.columnDef.header, header.getContext())}
               </div>
               {canFilter ? (
-                <div className="gen-datagrid__filter">
-                  <button
-                    type="button"
-                    aria-label={`Filter ${columnId}`}
-                    aria-expanded={openFilterColumnId === columnId}
-                    data-column-filter-trigger="true"
-                    data-filter-active={
-                      filterValue !== undefined && filterValue !== '' ? 'true' : undefined
-                    }
-                    className="gen-datagrid__filter-trigger"
-                    onClick={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
-                      setOpenFilterColumnId((current) =>
-                        current === columnId ? null : columnId
-                      );
-                    }}
-                    onMouseDown={(event) => {
-                      event.stopPropagation();
-                    }}
-                  >
-                    <Funnel aria-hidden="true" size={13} strokeWidth={1.8} />
-                  </button>
-                  {openFilterColumnId === columnId ? (
-                    <div
-                      role="dialog"
-                      aria-label={`Filter ${columnId}`}
-                      data-column-filter-popover="true"
-                      className="gen-datagrid__filter-popover"
-                      onMouseDown={(event) => {
-                        event.stopPropagation();
-                      }}
-                    >
-                      <input
-                        aria-label={`Filter ${columnId} value`}
-                        className="gen-datagrid__filter-input"
-                        value={filterValue == null ? '' : String(filterValue)}
-                        onChange={(event) => {
-                          column.setFilterValue(event.target.value || undefined);
-                        }}
-                        onKeyDown={(event) => {
-                          if (event.key === 'Escape') {
-                            setOpenFilterColumnId(null);
-                          }
-                        }}
-                      />
-                      <button
-                        type="button"
-                        aria-label={`Clear filter ${columnId}`}
-                        className="gen-datagrid__filter-clear"
-                        onClick={(event) => {
-                          event.preventDefault();
-                          column.setFilterValue(undefined);
-                          setOpenFilterColumnId(null);
-                        }}
-                      >
-                        Clear
-                      </button>
-                    </div>
-                  ) : null}
-                </div>
+                <DataGridColumnFilter
+                  column={column}
+                  columnId={columnId}
+                  open={openFilterColumnId === columnId}
+                  onOpenChange={(open) => {
+                    setOpenFilterColumnId(open ? columnId : null);
+                  }}
+                />
               ) : null}
               {canResize ? (
                 <button

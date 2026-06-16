@@ -298,7 +298,7 @@ div grid layout에서 column sizing, sticky pinning, reorder를 안정화한다.
 
 ## 9. Gate 6. Filtering, Footer, Pagination, Dirty State
 
-Status: complete for Gate 7 entry. Gate 6 wires column/global filter state, pagination state, footer rows, external footer rendering, dirty cell/row markers, and dirty-state imperative handle methods. Header filter popovers and the global filter input are intentionally minimal MVP controls. Manual/server filtering, page-size selection, row deletion mutation, and dataVersion baseline integration remain deferred.
+Status: complete for Gate 7 entry. Gate 6 wires column/global filter state, pagination state, footer rows, external footer rendering, dirty cell/row markers, filter clear handle methods, and dirty-state imperative handle methods. Header filter popovers and the global filter input are intentionally minimal MVP controls. The filter boundary lives in `features/filtering`, with `filterModel.ts` reserving structured values for later operators, typed editors, and multi-condition filters. Manual/server filtering, page-size selection, row deletion mutation, and dataVersion baseline integration remain deferred.
 
 ### 목표
 
