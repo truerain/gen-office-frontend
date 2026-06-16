@@ -4,7 +4,8 @@ Indexes GenDataGrid planning, architecture, reference, QA, and log documents.
 
 # GenDataGrid Docs
 
-현재 상태: Gate 5 Column Pinning, Sizing, Reorder 완료. 다음 단계는 Gate 6 Filtering, Footer, Pagination, Dirty State.
+현재 상태: Gate 6 Filtering, Footer, Pagination, Dirty State 완료. 다음 단계는 Gate 7 Virtualization.
+
 
 ## Plan
 
@@ -17,6 +18,7 @@ Indexes GenDataGrid planning, architecture, reference, QA, and log documents.
 - [Gate 3 Architecture](architecture/gate-3-architecture.md)
 - [Gate 4 Architecture](architecture/gate-4-architecture.md)
 - [Gate 5 Architecture](architecture/gate-5-architecture.md)
+- [Gate 6 Architecture](architecture/gate-6-architecture.md)
 
 ## Reference
 

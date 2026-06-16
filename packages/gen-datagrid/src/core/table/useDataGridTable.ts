@@ -3,12 +3,16 @@
 
 import * as React from 'react';
 import {
+  getFilteredRowModel,
   getCoreRowModel,
+  getPaginationRowModel,
   useReactTable,
+  type ColumnFiltersState,
   type ColumnOrderState,
   type ColumnPinningState,
   type ColumnSizingState,
   type OnChangeFn,
+  type PaginationState,
   type Updater,
   type VisibilityState,
 } from '@tanstack/react-table';
@@ -38,7 +42,17 @@ export function useDataGridTable<TData>({
   columnPinning,
   defaultColumnPinning,
   onColumnPinningChange,
+  columnFilters,
+  defaultColumnFilters,
+  onColumnFiltersChange,
+  globalFilter,
+  defaultGlobalFilter,
+  onGlobalFilterChange,
+  pagination,
+  defaultPagination,
+  onPaginationChange,
   enableColumnSizing = true,
+  enablePagination = false,
 }: GenDataGridProps<TData>) {
   const rows = data ?? defaultData ?? [];
   const [uncontrolledColumnOrder, setUncontrolledColumnOrder] =
@@ -49,11 +63,21 @@ export function useDataGridTable<TData>({
     React.useState<ColumnSizingState>(() => defaultColumnSizing ?? {});
   const [uncontrolledColumnPinning, setUncontrolledColumnPinning] =
     React.useState<ColumnPinningState>(() => defaultColumnPinning ?? {});
+  const [uncontrolledColumnFilters, setUncontrolledColumnFilters] =
+    React.useState<ColumnFiltersState>(() => defaultColumnFilters ?? []);
+  const [uncontrolledGlobalFilter, setUncontrolledGlobalFilter] =
+    React.useState<unknown>(() => defaultGlobalFilter ?? '');
+  const [uncontrolledPagination, setUncontrolledPagination] =
+    React.useState<PaginationState>(() => defaultPagination ?? { pageIndex: 0, pageSize: 10 });
 
   const resolvedColumnOrder = columnOrder ?? uncontrolledColumnOrder;
   const resolvedColumnVisibility = columnVisibility ?? uncontrolledColumnVisibility;
   const resolvedColumnSizing = columnSizing ?? uncontrolledColumnSizing;
   const resolvedColumnPinning = columnPinning ?? uncontrolledColumnPinning;
+  const resolvedColumnFilters = columnFilters ?? uncontrolledColumnFilters;
+  const resolvedGlobalFilter =
+    globalFilter !== undefined ? globalFilter : uncontrolledGlobalFilter;
+  const resolvedPagination = pagination ?? uncontrolledPagination;
 
   const handleColumnOrderChange = React.useCallback<OnChangeFn<ColumnOrderState>>(
     (updater) => {
@@ -99,21 +123,62 @@ export function useDataGridTable<TData>({
     [columnPinning, onColumnPinningChange, resolvedColumnPinning]
   );
 
+  const handleColumnFiltersChange = React.useCallback<OnChangeFn<ColumnFiltersState>>(
+    (updater) => {
+      const next = resolveUpdater(updater, resolvedColumnFilters);
+      if (columnFilters === undefined) {
+        setUncontrolledColumnFilters(next);
+      }
+      onColumnFiltersChange?.(next);
+    },
+    [columnFilters, onColumnFiltersChange, resolvedColumnFilters]
+  );
+
+  const handleGlobalFilterChange = React.useCallback<OnChangeFn<unknown>>(
+    (updater) => {
+      const next = resolveUpdater(updater, resolvedGlobalFilter);
+      if (globalFilter === undefined) {
+        setUncontrolledGlobalFilter(next);
+      }
+      onGlobalFilterChange?.(next);
+    },
+    [globalFilter, onGlobalFilterChange, resolvedGlobalFilter]
+  );
+
+  const handlePaginationChange = React.useCallback<OnChangeFn<PaginationState>>(
+    (updater) => {
+      const next = resolveUpdater(updater, resolvedPagination);
+      if (pagination === undefined) {
+        setUncontrolledPagination(next);
+      }
+      onPaginationChange?.(next);
+    },
+    [onPaginationChange, pagination, resolvedPagination]
+  );
+
   return useReactTable({
     data: rows,
     columns,
     getRowId,
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: enablePagination ? getPaginationRowModel() : undefined,
     state: {
       columnOrder: resolvedColumnOrder,
       columnVisibility: resolvedColumnVisibility,
       columnSizing: resolvedColumnSizing,
       columnPinning: resolvedColumnPinning,
+      columnFilters: resolvedColumnFilters,
+      globalFilter: resolvedGlobalFilter,
+      pagination: resolvedPagination,
     },
     onColumnOrderChange: handleColumnOrderChange,
     onColumnVisibilityChange: handleColumnVisibilityChange,
     onColumnSizingChange: handleColumnSizingChange,
     onColumnPinningChange: handleColumnPinningChange,
+    onColumnFiltersChange: handleColumnFiltersChange,
+    onGlobalFilterChange: handleGlobalFilterChange,
+    onPaginationChange: handlePaginationChange,
     enableColumnResizing: enableColumnSizing,
     columnResizeMode: 'onChange',
   });

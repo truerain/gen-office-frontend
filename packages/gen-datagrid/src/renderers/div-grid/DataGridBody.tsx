@@ -36,6 +36,9 @@ type DataGridBodyProps<TData> = {
   editCommitOnBlur?: boolean;
   editorFactory?: GenDataGridEditorFactory<TData>;
   onCellValueChange?: (args: GenDataGridCellValueChange<TData>) => void;
+  dirtyCellIds?: ReadonlySet<string>;
+  dirtyRowIds?: ReadonlySet<string>;
+  deletedRowIds?: ReadonlySet<string>;
   getRowHeight?: (args: {
     row: TData;
     rowId: string;
@@ -64,6 +67,9 @@ export function DataGridBody<TData>({
   editCommitOnBlur,
   editorFactory,
   onCellValueChange,
+  dirtyCellIds,
+  dirtyRowIds,
+  deletedRowIds,
   getRowHeight,
   activeCell,
   onActiveCellChange,
@@ -142,6 +148,8 @@ export function DataGridBody<TData>({
             role="row"
             data-rowid={rowId}
             data-row-index={rowIndex}
+            data-dirty-row={dirtyRowIds?.has(rowId) ? 'true' : undefined}
+            data-deleted-row={deletedRowIds?.has(rowId) ? 'true' : undefined}
             className="gen-datagrid__row"
             style={{
               gridTemplateColumns,
@@ -239,6 +247,7 @@ export function DataGridBody<TData>({
                   })}
                   isEditable={isEditable}
                   isEditing={isEditing}
+                  isDirty={dirtyCellIds?.has(`${rowId}::${columnId}`)}
                   pinning={pinning}
                   onActivate={activateCell}
                   onEditStart={() => {

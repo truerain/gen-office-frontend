@@ -2,6 +2,7 @@
 // Defines root-scoped DOM selectors for GenDataGrid.
 
 export const gridRootSelector = '[data-gen-datagrid-root="true"]';
+export const gridViewportSelector = '[data-gen-datagrid-viewport="true"]';
 export const gridCellSelector = '[data-gen-datagrid-cell="true"]';
 export const bodyCellSelector =
   '[data-gen-datagrid-cell="true"][data-cell-kind="body"][data-rowid][data-colid]';

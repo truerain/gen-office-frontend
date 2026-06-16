@@ -543,3 +543,21 @@ docs/
 7. Extension API는 타입 방향만 확정하고 public prop 공개는 보류
 
 이 순서가 지켜져야 구현 중 props와 내부 구조가 계속 변경되는 문제를 줄일 수 있다.
+
+## Gate 6 Implementation Notes
+
+Gate 6 implemented the following public API surface in `GenDataGrid.types.ts`:
+
+- Filtering state: `enableColumnFilters`, `enableGlobalFilter`, `columnFilters`, `defaultColumnFilters`, `onColumnFiltersChange`, `globalFilter`, `defaultGlobalFilter`, `onGlobalFilterChange`.
+- Footer rendering: `enableFooterRow`, `enableStickyFooterRow`, `footerRowHeight`, `enableFooter`, `footer`, `renderFooter`.
+- Pagination state: `enablePagination`, `pagination`, `defaultPagination`, `onPaginationChange`.
+- Dirty state: `enableDirtyState`, `onDirtyStateChange`, `GenDataGridDirtyCell`, `GenDataGridDirtyState`.
+- Render context: `GenDataGridRenderContext<TData>` currently provides `table`, filtered `rows`, `dirtyState`, and `pagination`.
+- Handle additions: `resetDirtyState(rowIds?)`, `commitDirtyState(rowIds?)`, and `getDirtyState()`.
+
+Current limitations:
+
+- Filtering and pagination are client-side MVP wiring through TanStack row models.
+- Filter UI is a minimal header popover with string input; advanced operators and typed editors are deferred.
+- `commitDirtyState` clears dirty markers. Data mutation and baseline acceptance remain consumer-owned until a later data ownership slice.
+- `deleteRows(rowIds)` emits a delete request and marks rows as deleted; actual row deletion mutation and `dataVersion` dirty baseline reset are deferred.

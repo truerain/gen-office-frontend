@@ -7,6 +7,7 @@ import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
 
 import { GenDataGrid } from '../src';
 import type { GenDataGridHandle } from '../src';
+import { focusCellInRoot } from '../src/core/dom/cellDom';
 
 type Person = {
   id: string;
@@ -138,6 +139,74 @@ afterEach(() => {
 });
 
 describe('GenDataGrid interaction contract', () => {
+  it('scrolls an active body cell out from under pinned columns when focusing', async () => {
+    const root = document.createElement('div');
+    const viewport = document.createElement('div');
+    const pinnedHeader = document.createElement('div');
+    const targetCell = document.createElement('div');
+
+    viewport.dataset.genDatagridViewport = 'true';
+    pinnedHeader.dataset.genDatagridCell = 'true';
+    pinnedHeader.dataset.cellKind = 'header';
+    pinnedHeader.dataset.pinnedCell = 'left';
+    targetCell.dataset.genDatagridCell = 'true';
+    targetCell.dataset.cellKind = 'body';
+    targetCell.dataset.rowid = '1';
+    targetCell.dataset.colid = 'role';
+    targetCell.tabIndex = 0;
+
+    Object.defineProperty(viewport, 'scrollLeft', {
+      configurable: true,
+      writable: true,
+      value: 100,
+    });
+    viewport.getBoundingClientRect = () =>
+      ({
+        left: 0,
+        right: 300,
+        top: 0,
+        bottom: 200,
+        width: 300,
+        height: 200,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      }) as DOMRect;
+    pinnedHeader.getBoundingClientRect = () =>
+      ({
+        left: 0,
+        right: 120,
+        top: 0,
+        bottom: 40,
+        width: 120,
+        height: 40,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      }) as DOMRect;
+    targetCell.getBoundingClientRect = () =>
+      ({
+        left: 100,
+        right: 220,
+        top: 40,
+        bottom: 76,
+        width: 120,
+        height: 36,
+        x: 100,
+        y: 40,
+        toJSON: () => ({}),
+      }) as DOMRect;
+
+    viewport.append(pinnedHeader, targetCell);
+    root.append(viewport);
+    document.body.append(root);
+
+    expect(focusCellInRoot(root, { rowId: '1', columnId: 'role' })).toBe(true);
+    expect(viewport.scrollLeft).toBe(80);
+
+    root.remove();
+  });
+
   it('moves the active cell with arrow keys', async () => {
     const { container } = renderGrid();
 
@@ -1238,6 +1307,171 @@ describe('GenDataGrid interaction contract', () => {
       expect(window.navigator.clipboard.writeText).toHaveBeenCalledWith(
         'Ada\nGrace'
       );
+    });
+  });
+
+  it('filters rows from a header filter popover', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="filter-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableColumnFilters
+      />
+    );
+
+    const nameHeader = getHeaderCell(container, 'name');
+    const trigger = nameHeader.querySelector<HTMLButtonElement>(
+      '[data-column-filter-trigger="true"]'
+    );
+    if (!trigger) throw new Error('Missing filter trigger');
+
+    fireEvent.click(trigger);
+    const input = nameHeader.querySelector<HTMLInputElement>(
+      'input[aria-label="Filter name value"]'
+    );
+    if (!input) throw new Error('Missing filter input');
+
+    fireEvent.change(input, { target: { value: 'Grace' } });
+
+    await waitFor(() => {
+      expect(getCell(container, '2', 'name').textContent).toContain('Grace');
+      expect(
+        container.querySelector(
+          '[data-gen-datagrid-cell="true"][data-cell-kind="body"][data-rowid="1"]'
+        )
+      ).toBeNull();
+    });
+  });
+
+  it('applies controlled global filter state to the row model', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="global-filter-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableGlobalFilter
+        globalFilter="Ada"
+      />
+    );
+
+    await waitFor(() => {
+      expect(getCell(container, '1', 'name').textContent).toContain('Ada');
+      expect(
+        container.querySelector(
+          '[data-gen-datagrid-cell="true"][data-cell-kind="body"][data-rowid="2"]'
+        )
+      ).toBeNull();
+    });
+  });
+
+  it('paginates rows with uncontrolled pagination controls', async () => {
+    const { container, getByText } = render(
+      <GenDataGrid
+        gridId="pagination-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enablePagination
+        defaultPagination={{ pageIndex: 0, pageSize: 1 }}
+      />
+    );
+
+    expect(getCell(container, '1', 'name').textContent).toContain('Ada');
+    expect(
+      container.querySelector(
+        '[data-gen-datagrid-cell="true"][data-cell-kind="body"][data-rowid="2"]'
+      )
+    ).toBeNull();
+
+    fireEvent.click(getByText('Next'));
+
+    await waitFor(() => {
+      expect(getCell(container, '2', 'name').textContent).toContain('Grace');
+    });
+  });
+
+  it('marks dirty cells and exposes dirty state imperative actions', async () => {
+    const gridRef = React.createRef<GenDataGridHandle>();
+    const onDirtyStateChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        ref={gridRef}
+        gridId="dirty-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        onDirtyStateChange={onDirtyStateChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.change(editor, { target: { value: 'Ada Dirty' } });
+    fireEvent.keyDown(editor, { key: 'Enter' });
+
+    await waitFor(() => {
+      expect(firstCell.dataset.dirtyCell).toBe('true');
+      expect(firstCell.closest('[role="row"]')?.getAttribute('data-dirty-row')).toBe(
+        'true'
+      );
+      expect(gridRef.current?.getDirtyState().rowIds).toEqual(['1']);
+      expect(onDirtyStateChange).toHaveBeenLastCalledWith({
+        cells: [
+          {
+            rowId: '1',
+            columnId: 'name',
+            previousValue: 'Ada',
+            value: 'Ada Dirty',
+          },
+        ],
+        rowIds: ['1'],
+        deletedRowIds: [],
+      });
+    });
+
+    gridRef.current?.resetDirtyState(['1']);
+
+    await waitFor(() => {
+      expect(firstCell.dataset.dirtyCell).toBeUndefined();
+      expect(gridRef.current?.getDirtyState().rowIds).toEqual([]);
+    });
+  });
+
+  it('marks deleted rows through the imperative deleteRows action', async () => {
+    const gridRef = React.createRef<GenDataGridHandle>();
+    const onRowsDelete = vi.fn();
+    const onDirtyStateChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        ref={gridRef}
+        gridId="delete-rows-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        onRowsDelete={onRowsDelete}
+        onDirtyStateChange={onDirtyStateChange}
+      />
+    );
+
+    gridRef.current?.deleteRows(['2']);
+
+    await waitFor(() => {
+      expect(onRowsDelete).toHaveBeenCalledWith(['2']);
+      expect(gridRef.current?.getDirtyState().deletedRowIds).toEqual(['2']);
+      expect(getCell(container, '2', 'name').closest('[role="row"]')?.getAttribute(
+        'data-deleted-row'
+      )).toBe('true');
+      expect(onDirtyStateChange).toHaveBeenLastCalledWith({
+        cells: [],
+        rowIds: ['2'],
+        deletedRowIds: ['2'],
+      });
     });
   });
 });

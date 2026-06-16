@@ -4,9 +4,12 @@
 import type * as React from 'react';
 import type {
   ColumnDef,
+  ColumnFiltersState,
   ColumnOrderState,
   ColumnPinningState,
   ColumnSizingState,
+  PaginationState,
+  Table,
   VisibilityState,
 } from '@tanstack/react-table';
 
@@ -21,6 +24,10 @@ export type GenDataGridHandle = {
   rootElement: HTMLDivElement | null;
   clearSelection: () => void;
   copySelection: (options?: { includeHeader?: boolean }) => Promise<boolean>;
+  resetDirtyState: (rowIds?: readonly string[]) => void;
+  commitDirtyState: (rowIds?: readonly string[]) => void;
+  deleteRows: (rowIds: readonly string[]) => void;
+  getDirtyState: () => GenDataGridDirtyState;
 };
 
 export type GenDataGridEditType =
@@ -71,6 +78,26 @@ export type GenDataGridCellValueChange<TData> = {
   value: unknown;
 };
 
+export type GenDataGridDirtyCell = {
+  rowId: string;
+  columnId: string;
+  previousValue: unknown;
+  value: unknown;
+};
+
+export type GenDataGridDirtyState = {
+  cells: GenDataGridDirtyCell[];
+  rowIds: string[];
+  deletedRowIds: string[];
+};
+
+export type GenDataGridRenderContext<TData> = {
+  table: Table<TData>;
+  rows: TData[];
+  dirtyState: GenDataGridDirtyState;
+  pagination: PaginationState;
+};
+
 export type GenDataGridProps<TData> = {
   data?: TData[];
   defaultData?: TData[];
@@ -93,9 +120,25 @@ export type GenDataGridProps<TData> = {
   enablePinning?: boolean;
   enableColumnSizing?: boolean;
   enableColumnReorder?: boolean;
+  enableColumnFilters?: boolean;
+  enableGlobalFilter?: boolean;
+  enableFooterRow?: boolean;
+  enableStickyFooterRow?: boolean;
+  enableFooter?: boolean;
+  enablePagination?: boolean;
+  enableDirtyState?: boolean;
   clipboardOptions?: {
     includeHeader?: boolean;
   };
+  columnFilters?: ColumnFiltersState;
+  defaultColumnFilters?: ColumnFiltersState;
+  onColumnFiltersChange?: (next: ColumnFiltersState) => void;
+  globalFilter?: unknown;
+  defaultGlobalFilter?: unknown;
+  onGlobalFilterChange?: (next: unknown) => void;
+  pagination?: PaginationState;
+  defaultPagination?: PaginationState;
+  onPaginationChange?: (next: PaginationState) => void;
   columnOrder?: ColumnOrderState;
   defaultColumnOrder?: ColumnOrderState;
   onColumnOrderChange?: (next: ColumnOrderState) => void;
@@ -120,6 +163,11 @@ export type GenDataGridProps<TData> = {
     rowIndex: number;
   }) => number | undefined;
   headerHeight?: number;
+  footerRowHeight?: number;
+  footer?: React.ReactNode;
+  renderFooter?: (ctx: GenDataGridRenderContext<TData>) => React.ReactNode;
+  onDirtyStateChange?: (next: GenDataGridDirtyState) => void;
+  onRowsDelete?: (rowIds: string[]) => void;
   className?: string;
   style?: React.CSSProperties;
 };

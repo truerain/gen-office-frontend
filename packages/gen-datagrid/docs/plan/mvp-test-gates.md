@@ -298,6 +298,8 @@ div grid layout에서 column sizing, sticky pinning, reorder를 안정화한다.
 
 ## 9. Gate 6. Filtering, Footer, Pagination, Dirty State
 
+Status: complete for Gate 7 entry. Gate 6 wires column/global filter state, pagination state, footer rows, external footer rendering, dirty cell/row markers, and dirty-state imperative handle methods. Header filter popovers and the global filter input are intentionally minimal MVP controls. Manual/server filtering, page-size selection, row deletion mutation, and dataVersion baseline integration remain deferred.
+
 ### 목표
 
 MVP 사용에 필요한 데이터 조작 기능을 붙인다.
@@ -524,3 +526,4 @@ MVP 이후 확장 기능은 별도 gate로 관리한다.
 `gen-datagrid`는 최종 구현이 완료되어야 실사용 가치가 있다. 따라서 gate는 release milestone이 아니라 구조 검증 장치다.
 
 가장 중요한 gate는 Gate 1과 Gate 2다. DOM contract와 scoped focus가 흔들리면 selection, editing, virtualization, grid in grid는 모두 다시 작성해야 한다. 초기 구현 속도보다 이 두 gate의 엄격한 통과 기준을 우선한다.
+

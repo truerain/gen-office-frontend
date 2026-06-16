@@ -115,7 +115,8 @@ src/
       DataGridVirtualBody.tsx
       DataGridRow.tsx
       DataGridCell.tsx
-      DataGridFooter.tsx
+      DataGridFooterRow.tsx
+      DataGridFooterBar.tsx
       gridTemplate.ts
       divGrid.module.css
     overlays/
@@ -580,3 +581,7 @@ type GenDataGridProps<TData> = {
 5. selection, editing, pinning, virtualization을 순서대로 붙인다.
 
 이 순서를 지켜야 기존 `gen-grid`의 table 의존과 거대 layout 파일 구조가 새 패키지에 반복되지 않는다.
+
+## Gate 6 Completion Note
+
+The active gate sequence uses `mvp-test-gates.md` as the source of truth. Gate 6 is complete for filtering, footer, pagination, and dirty state. The older phase list in this document still names Phase 6 as pinning/resizing/reorder and Phase 7 as filtering/footer/pagination; that naming is historical. Current next work is Gate 7 Virtualization.

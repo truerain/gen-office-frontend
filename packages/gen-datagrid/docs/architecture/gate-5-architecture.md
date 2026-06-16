@@ -49,6 +49,7 @@ flowchart TD
 - Header label text and resize handles are separate from the draggable reorder source so native drag from the column boundary or label area cannot promote into column reorder.
 - Pinned header, body, and editing cells use separate z-index layers so sticky headers, active cells, and inline editors do not fight for the same stacking order.
 - Selected pinned body cells keep their selection background instead of being reset to the pinned white background.
+- Root-scoped focus uses the grid viewport marker and pinned header bounds to keep active unpinned cells fully visible outside left/right pinned overlays during keyboard navigation and mouse activation.
 - `Gate5PinningSizingReorder` provides the Storybook visual-check scenario for pinning, sizing, reorder, range selection, and editing combinations.
 - Baseline SSR coverage verifies pinned markers, sticky offset output, and resize/reorder affordances.
 - Vitest coverage verifies same-zone reorder and cross-zone blocking.

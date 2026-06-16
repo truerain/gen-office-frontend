@@ -8,6 +8,8 @@ export { GenDataGrid } from './GenDataGrid';
 export type {
   GenDataGridActiveCell,
   GenDataGridCellValueChange,
+  GenDataGridDirtyCell,
+  GenDataGridDirtyState,
   GenDataGridEditableContext,
   GenDataGridEditorContext,
   GenDataGridEditorFactory,
@@ -15,6 +17,7 @@ export type {
   GenDataGridEditType,
   GenDataGridHandle,
   GenDataGridProps,
+  GenDataGridRenderContext,
 } from './GenDataGrid.types';
 export type {
   GenDataGridCellCoord,

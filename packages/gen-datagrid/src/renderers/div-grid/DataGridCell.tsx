@@ -13,6 +13,7 @@ type DataGridCellProps = {
   isSelected: boolean;
   isEditable: boolean;
   isEditing: boolean;
+  isDirty?: boolean;
   pinning?: {
     pinned: 'left' | 'right' | false;
     isLastLeftPinned: boolean;
@@ -31,6 +32,7 @@ export function DataGridCell({
   isSelected,
   isEditable,
   isEditing,
+  isDirty,
   pinning,
   onActivate,
   onEditStart,
@@ -47,6 +49,7 @@ export function DataGridCell({
       data-selected-cell={isSelected ? 'true' : undefined}
       data-editable-cell={isEditable ? 'true' : undefined}
       data-editing-cell={isEditing ? 'true' : undefined}
+      data-dirty-cell={isDirty ? 'true' : undefined}
       data-pinned-cell={pinning?.pinned || undefined}
       data-pinned-edge={
         pinning?.isLastLeftPinned

@@ -3,7 +3,11 @@
 
 import * as React from 'react';
 
-import type { GenDataGridHandle, GenDataGridProps } from '../../GenDataGrid.types';
+import type {
+  GenDataGridCellValueChange,
+  GenDataGridHandle,
+  GenDataGridProps,
+} from '../../GenDataGrid.types';
 import { focusCellInRoot } from '../../core/dom/cellDom';
 import { useDataGridTable } from '../../core/table/useDataGridTable';
 import {
@@ -17,6 +21,8 @@ import { useCellEditing } from '../../features/editing/useCellEditing';
 import { useClipboardActions } from '../../features/range-selection/useClipboardActions';
 import { useRangeSelection } from '../../features/range-selection/useRangeSelection';
 import { DataGridBody } from './DataGridBody';
+import { DataGridFooterBar } from './DataGridFooterBar';
+import { DataGridFooterRow } from './DataGridFooterRow';
 import { DataGridHeader } from './DataGridHeader';
 import { buildGridTemplateColumnsFromModel } from './gridTemplate';
 
@@ -51,12 +57,24 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     enablePinning = true,
     enableColumnSizing = true,
     enableColumnReorder = true,
+    enableColumnFilters = false,
+    enableGlobalFilter = false,
+    enableFooterRow = false,
+    enableStickyFooterRow = false,
+    enableFooter = false,
+    enablePagination = false,
+    enableDirtyState = true,
     clipboardOptions,
+    footer,
+    renderFooter,
+    onDirtyStateChange,
+    onRowsDelete,
     className,
     style,
     rowHeight = 36,
     getRowHeight,
     headerHeight = 40,
+    footerRowHeight = 36,
   } = props;
   const rootRef = React.useRef<HTMLDivElement | null>(null);
   const reactId = React.useId();
@@ -76,6 +94,8 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       : table.getVisibleLeafColumns()
   ).filter((column) => column.getIsVisible());
   const headerGroups = table.getHeaderGroups();
+  const footerGroups = table.getFooterGroups();
+  const filteredRows = table.getFilteredRowModel().rows;
   const rowIds = React.useMemo(() => tableRows.map((row) => row.id), [tableRows]);
   const columnIds = React.useMemo(
     () => visibleColumns.map((column) => column.id),
@@ -102,6 +122,125 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
   const activeCell =
     controlledActiveCell !== undefined ? controlledActiveCell : uncontrolledActiveCell;
   const editing = useCellEditing();
+  const [dirtyCells, setDirtyCells] = React.useState<
+    Map<string, { rowId: string; columnId: string; previousValue: unknown; value: unknown }>
+  >(() => new Map());
+  const [deletedRowIdList, setDeletedRowIdList] = React.useState<string[]>(() => []);
+
+  const dirtyState = React.useMemo(
+    () => ({
+      cells: Array.from(dirtyCells.values()),
+      rowIds: Array.from(
+        new Set([
+          ...Array.from(dirtyCells.values()).map((cell) => cell.rowId),
+          ...deletedRowIdList,
+        ])
+      ),
+      deletedRowIds: deletedRowIdList,
+    }),
+    [deletedRowIdList, dirtyCells]
+  );
+  const dirtyCellIds = React.useMemo(() => new Set(dirtyCells.keys()), [dirtyCells]);
+  const dirtyRowIds = React.useMemo(() => new Set(dirtyState.rowIds), [dirtyState.rowIds]);
+  const deletedRowIds = React.useMemo(
+    () => new Set(deletedRowIdList),
+    [deletedRowIdList]
+  );
+
+  const updateDirtyCells = React.useCallback(
+    (
+      updater: (
+        current: Map<
+          string,
+          { rowId: string; columnId: string; previousValue: unknown; value: unknown }
+        >
+      ) => Map<string, { rowId: string; columnId: string; previousValue: unknown; value: unknown }>
+    ) => {
+      setDirtyCells((current) => {
+        const next = updater(current);
+        const nextDeletedRowIds = deletedRowIdList;
+        onDirtyStateChange?.({
+          cells: Array.from(next.values()),
+          rowIds: Array.from(
+            new Set([
+              ...Array.from(next.values()).map((cell) => cell.rowId),
+              ...nextDeletedRowIds,
+            ])
+          ),
+          deletedRowIds: nextDeletedRowIds,
+        });
+        return next;
+      });
+    },
+    [deletedRowIdList, onDirtyStateChange]
+  );
+
+  const handleCellValueChange = React.useCallback(
+    (args: GenDataGridCellValueChange<TData>) => {
+      if (enableDirtyState && !Object.is(args.previousValue, args.value)) {
+        updateDirtyCells((current) => {
+          const next = new Map(current);
+          const key = `${args.rowId}::${args.columnId}`;
+          const existing = next.get(key);
+          next.set(key, {
+            rowId: args.rowId,
+            columnId: args.columnId,
+            previousValue: existing?.previousValue ?? args.previousValue,
+            value: args.value,
+          });
+          return next;
+        });
+      }
+      onCellValueChange?.(args);
+    },
+    [enableDirtyState, onCellValueChange, updateDirtyCells]
+  );
+
+  const resetDirtyState = React.useCallback(
+    (rowIds?: readonly string[]) => {
+      setDeletedRowIdList((current) =>
+        rowIds ? current.filter((rowId) => !new Set(rowIds).has(rowId)) : []
+      );
+      updateDirtyCells((current) => {
+        if (!rowIds) return new Map();
+        const rowIdSet = new Set(rowIds);
+        return new Map(
+          Array.from(current.entries()).filter(([, cell]) => !rowIdSet.has(cell.rowId))
+        );
+      });
+    },
+    [updateDirtyCells]
+  );
+
+  const commitDirtyState = React.useCallback(
+    (rowIds?: readonly string[]) => {
+      resetDirtyState(rowIds);
+    },
+    [resetDirtyState]
+  );
+
+  const deleteRows = React.useCallback(
+    (rowIdsToDelete: readonly string[]) => {
+      const uniqueRowIds = Array.from(new Set(rowIdsToDelete));
+      if (uniqueRowIds.length === 0) return;
+      setDeletedRowIdList((current) => {
+        const next = Array.from(new Set([...current, ...uniqueRowIds]));
+        onDirtyStateChange?.({
+          cells: Array.from(dirtyCells.values()),
+          rowIds: Array.from(
+            new Set([
+              ...Array.from(dirtyCells.values()).map((cell) => cell.rowId),
+              ...next,
+            ])
+          ),
+          deletedRowIds: next,
+        });
+        return next;
+      });
+      onRowsDelete?.(uniqueRowIds);
+    },
+    [dirtyCells, onDirtyStateChange, onRowsDelete]
+  );
 
   React.useImperativeHandle(
     forwardedRootRef,
@@ -111,8 +250,20 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       },
       clearSelection: rangeSelection.clearSelection,
       copySelection: clipboard.copySelection,
+      resetDirtyState,
+      commitDirtyState,
+      deleteRows,
+      getDirtyState: () => dirtyState,
     }),
-    [clipboard.copySelection, forwardedRootRef, rangeSelection.clearSelection]
+    [
+      clipboard.copySelection,
+      commitDirtyState,
+      dirtyState,
+      deleteRows,
+      forwardedRootRef,
+      rangeSelection.clearSelection,
+      resetDirtyState,
+    ]
   );
 
   const setActiveCell = React.useCallback(
@@ -255,38 +406,100 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       onMouseDown={rangeSelection.handleMouseDown}
       onMouseOver={rangeSelection.handleMouseOver}
     >
-      <DataGridHeader
-        table={table}
-        headerGroups={headerGroups}
-        columns={visibleColumns}
-        gridTemplateColumns={gridTemplateColumns}
-        enablePinning={enablePinning}
-        enableColumnSizing={enableColumnSizing}
-        enableColumnReorder={enableColumnReorder}
-      />
-      <DataGridBody
-        rows={tableRows}
-        gridTemplateColumns={gridTemplateColumns}
-        rowHeight={rowHeight}
-        rowIds={rowIds}
-        columnIds={columnIds}
-        rangeSelections={rangeSelection.selections}
-        readOnly={resolvedReadOnly}
-        enablePinning={enablePinning}
-        isCellEditable={isCellEditable}
-        editSelectOnFocus={editSelectOnFocus}
-        editCommitOnBlur={editCommitOnBlur}
-        editorFactory={editorFactory}
-        onCellValueChange={onCellValueChange}
-        getRowHeight={getRowHeight}
-        activeCell={activeCell}
-        onActiveCellChange={setActiveCell}
-        editingCell={editing.editingCell}
-        draftValue={editing.draftValue}
-        setDraftValue={editing.setDraftValue}
-        onEditStart={editing.startEditing}
-        onEditCancel={editing.cancelEditing}
-      />
+      {enableGlobalFilter ? (
+        <div className="gen-datagrid__global-filter" data-global-filter="true">
+          <input
+            aria-label="Global filter"
+            className="gen-datagrid__global-filter-input"
+            value={table.getState().globalFilter == null ? '' : String(table.getState().globalFilter)}
+            onChange={(event) => {
+              table.setGlobalFilter(event.target.value || undefined);
+            }}
+          />
+        </div>
+      ) : null}
+      <div className="gen-datagrid__viewport" data-gen-datagrid-viewport="true">
+        <DataGridHeader
+          table={table}
+          headerGroups={headerGroups}
+          columns={visibleColumns}
+          gridTemplateColumns={gridTemplateColumns}
+          enablePinning={enablePinning}
+          enableColumnSizing={enableColumnSizing}
+          enableColumnReorder={enableColumnReorder}
+          enableColumnFilters={enableColumnFilters}
+        />
+        <DataGridBody
+          rows={tableRows}
+          gridTemplateColumns={gridTemplateColumns}
+          rowHeight={rowHeight}
+          rowIds={rowIds}
+          columnIds={columnIds}
+          rangeSelections={rangeSelection.selections}
+          readOnly={resolvedReadOnly}
+          enablePinning={enablePinning}
+          isCellEditable={isCellEditable}
+          editSelectOnFocus={editSelectOnFocus}
+          editCommitOnBlur={editCommitOnBlur}
+          editorFactory={editorFactory}
+          onCellValueChange={handleCellValueChange}
+          dirtyCellIds={dirtyCellIds}
+          dirtyRowIds={dirtyRowIds}
+          deletedRowIds={deletedRowIds}
+          getRowHeight={getRowHeight}
+          activeCell={activeCell}
+          onActiveCellChange={setActiveCell}
+          editingCell={editing.editingCell}
+          draftValue={editing.draftValue}
+          setDraftValue={editing.setDraftValue}
+          onEditStart={editing.startEditing}
+          onEditCancel={editing.cancelEditing}
+        />
+        {enableFooterRow ? (
+          <DataGridFooterRow
+            table={table}
+            footerGroups={footerGroups}
+            columns={visibleColumns}
+            gridTemplateColumns={gridTemplateColumns}
+            enablePinning={enablePinning}
+            sticky={enableStickyFooterRow}
+            footerRowHeight={footerRowHeight}
+          />
+        ) : null}
+      </div>
+      {enablePagination ? (
+        <div className="gen-datagrid__pagination" data-gen-datagrid-pagination="true">
+          <button
+            type="button"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            Previous
+          </button>
+          <span className="gen-datagrid__pagination-status">
+            {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
+          </span>
+          <button
+            type="button"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Next
+          </button>
+        </div>
+      ) : null}
+      {enableFooter && (renderFooter || footer) ? (
+        <DataGridFooterBar>
+          {renderFooter
+            ? renderFooter({
+                table,
+                rows: filteredRows.map((row) => row.original),
+                dirtyState,
+                pagination: table.getState().pagination,
+              })
+            : footer}
+        </DataGridFooterBar>
+      ) : null}
     </div>
   );
 }

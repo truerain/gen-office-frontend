@@ -33,6 +33,7 @@ Storybook에서 다음 스토리를 사용한다.
    - active cell outline이 pinned cell 위에서 잘리지 않는다.
 
 2. Horizontal scroll
+   - When only `name` is left pinned, horizontally scroll until `role` is partly covered by the pinned area, then move/click focus into `role`. The grid must adjust horizontal scroll until the active `role` cell is fully visible outside the pinned overlay.
    - 가운데 column만 좌우로 움직인다.
    - left/right pinned column은 흔들리거나 겹치지 않는다.
    - left pinned column이 2개 이상일 때 표시 순서와 shadow edge가 `columnPinning.left` 순서를 따른다.
@@ -60,6 +61,7 @@ Storybook에서 다음 스토리를 사용한다.
 
 ## 실패 기준
 
+- An active unpinned cell remains partially covered by a left/right pinned column after keyboard navigation or mouse activation.
 - pinned column이 scroll 중 움직인다.
 - header와 body column boundary가 1px 이상 지속적으로 어긋난다.
 - pinned column 표시 순서와 resize target이 서로 다른 column을 가리킨다.

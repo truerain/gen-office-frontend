@@ -2,6 +2,57 @@
 Records meaningful GenDataGrid implementation decisions and progress.
 -->
 
+## 2026-06-16
+
+### Gate 5 Pinned Active Cell Scroll Correction
+
+- Fixed active-cell focus so unpinned cells are not left partially covered by left/right pinned columns after keyboard navigation or mouse activation.
+- `focusCellInRoot` now focuses with `preventScroll`, keeps the native nearest scroll behavior, then adjusts the grid viewport `scrollLeft` against pinned header bounds.
+- Added Vitest/jsdom coverage for the case where a `role` body cell is partly hidden under a left pinned `name` column.
+- Updated Gate 5 architecture and visual QA docs with the pinned-overlay focus regression condition.
+
+### Gate 6 Architecture 문서 포맷 정리
+
+- `docs/architecture/gate-6-architecture.md`의 앞부분을 기존 gate 문서와 같은 형식으로 정리했습니다.
+- 제목 아래에 Gate 6 요약 문장을 추가하고 `Implemented Slice`를 `Component Relationship` 앞에 배치했습니다.
+- 구현된 API, 렌더러, viewport scroll 구조, dirty/delete marker, Storybook 시나리오, 테스트 커버리지를 한눈에 볼 수 있게 정리했습니다.
+
+### Gate 6 Storybook 스크롤 구조 보정
+
+- `.gen-datagrid` root의 직접 스크롤을 제거하고 `.gen-datagrid__viewport`를 table 전용 scroll container로 추가했습니다.
+- header/body/footer row는 viewport 안에서 함께 가로/세로 스크롤되고, pagination과 `DataGridFooterBar`는 viewport 밖에 고정되도록 구조를 분리했습니다.
+- Gate 6 Storybook 데이터 수를 늘려 세로 스크롤과 sticky footer row를 실제로 확인할 수 있게 조정했습니다.
+- `data-gen-datagrid-viewport="true"` DOM marker와 architecture 문서 설명을 추가했습니다.
+
+### Footer 컴포넌트 명칭 정리
+
+- column-aligned footer row 컴포넌트를 `DataGridFooterRow`로 정리했습니다.
+- grid-level footer 영역을 `DataGridFooterBar` 컴포넌트로 분리했습니다.
+- DOM marker는 `data-gen-datagrid-footer-row="true"`와 `data-gen-datagrid-footer-bar="true"`로 구분했습니다.
+- architecture, plan, baseline test를 새 명칭에 맞춰 갱신했습니다.
+
+### Gate 6 Storybook 시나리오 추가
+
+- `src/stories/GenDataGrid.baseline.stories.tsx`에 `Gate6FilteringFooterPaginationDirtyState` 스토리를 추가했습니다.
+- column/global filter, footer row, sticky footer row, pagination, dirty marker, deleted row marker, external footer summary를 한 화면에서 확인할 수 있게 구성했습니다.
+- 확인 명령:
+  - `pnpm -C frontend\packages\gen-datagrid exec tsc -p tsconfig.json --noEmit`
+  - `pnpm -C frontend\packages\gen-datagrid test`
+  - `pnpm -C frontend\apps\storybook-all build`
+
+### Gate 6 Filtering, Footer, Pagination, Dirty State 구현
+
+- `src/core/table/useDataGridTable.ts`에 column filter, global filter, pagination controlled/uncontrolled state를 연결했습니다.
+- `src/renderers/div-grid/DataGridFooterRow.tsx`를 추가하고 footer row가 header/body와 같은 `grid-template-columns` source를 사용하도록 구성했습니다.
+- `DataGridHeader`에 column filter trigger와 input popover를 추가했고, `DataGridRoot`에 global filter input, pagination controls, `DataGridFooterBar`를 연결했습니다.
+- `onCellValueChange` 흐름에서 dirty cell/row marker를 관리하고 `resetDirtyState`, `commitDirtyState`, `deleteRows`, `getDirtyState` imperative API를 추가했습니다.
+- `test/baseline.mjs`와 `test/interaction.test.tsx`에 Gate 6 footer/filter/pagination/dirty state 검증을 추가했습니다.
+- 확인 명령:
+  - `pnpm -C frontend\packages\gen-datagrid exec tsc -p tsconfig.json --noEmit`
+  - `pnpm -C frontend\packages\gen-datagrid run test:interaction`
+  - `pnpm -C frontend\packages\gen-datagrid run test:baseline`
+
+
 ## 2026-06-15
 
 용어 기준: 구현 로그와 QA 보정 기록의 공통 용어는 `../reference/terminology.md`를 따른다.

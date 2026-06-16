@@ -521,3 +521,22 @@ type GenDataGridProps<TData> =
 - provider/context public export 여부
 
 이 API가 정해져야 디렉터리 구조와 내부 hook 책임이 흔들리지 않는다.
+
+## Gate 6 Implementation Notes
+
+Gate 6 keeps the GenGrid-compatible names for footer and pagination where practical, but the div renderer uses explicit DOM markers instead of table footer tags.
+
+Implemented:
+
+- `enableColumnFilters` for the current GenDataGrid column-filter UI flag. Existing docs that mention `enableFiltering` should be treated as the broader future alias until naming is finalized.
+- `enableGlobalFilter`, `columnFilters`, `defaultColumnFilters`, `onColumnFiltersChange`, `globalFilter`, `defaultGlobalFilter`, `onGlobalFilterChange`.
+- `enableFooterRow`, `enableStickyFooterRow`, `enableFooter`, `footer`, `renderFooter`.
+- `enablePagination`, `pagination`, `defaultPagination`, `onPaginationChange`.
+- Dirty tracking through `enableDirtyState`, `onDirtyStateChange`, and handle methods `resetDirtyState`, `commitDirtyState`, `getDirtyState`.
+
+Deferred from the GenGrid comparison surface:
+
+- Manual/server filtering and pagination total row count.
+- Page size option UI.
+- Row deletion data mutation. `deleteRows(rowIds)` is implemented as an imperative delete request plus deleted-row marker.
+- Dirty comparison customization and `dataVersion` baseline reset.

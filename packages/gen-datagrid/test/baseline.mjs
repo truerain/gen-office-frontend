@@ -36,6 +36,7 @@ test('renders the baseline div grid root contract', () => {
 
   assert.match(markup, /role="grid"/);
   assert.match(markup, /data-gen-datagrid-root="true"/);
+  assert.match(markup, /data-gen-datagrid-viewport="true"/);
   assert.match(markup, /class="gen-datagrid test-grid"/);
   assert.match(markup, /height:120px/);
 });
@@ -144,6 +145,42 @@ test('renders Gate 5 header resize and reorder affordances', () => {
   assert.match(markup, /data-reorderable-column="true"/);
   assert.match(markup, /data-column-resize-handle="true"/);
   assert.match(markup, /draggable="true"/);
+});
+
+test('renders Gate 6 footer row with the shared grid template', () => {
+  const markup = renderToStaticMarkup(
+    React.createElement(GenDataGrid, {
+      ...requiredProps,
+      enableFooterRow: true,
+      columns: [
+        { accessorKey: 'name', header: 'Name', footer: 'Total', size: 120 },
+        { accessorKey: 'age', header: 'Age', footer: '78', size: 80 },
+      ],
+    })
+  );
+
+  assert.match(markup, /data-gen-datagrid-footer-row="true"/);
+  assert.match(markup, /data-cell-kind="footer"/);
+  assert.match(markup, />Total</);
+  assert.equal((markup.match(/grid-template-columns:120px 80px/g) ?? []).length, 4);
+});
+
+test('renders Gate 6 filter and pagination affordances only when enabled', () => {
+  const markup = renderToStaticMarkup(
+    React.createElement(GenDataGrid, {
+      ...requiredProps,
+      enableColumnFilters: true,
+      enableGlobalFilter: true,
+      enablePagination: true,
+      enableFooter: true,
+      footer: React.createElement('span', null, 'Grid footer'),
+    })
+  );
+
+  assert.match(markup, /data-column-filter-trigger="true"/);
+  assert.match(markup, /data-global-filter="true"/);
+  assert.match(markup, /data-gen-datagrid-pagination="true"/);
+  assert.match(markup, /data-gen-datagrid-footer-bar="true"/);
 });
 
 test('supports per-row height in non-virtualized rendering', () => {
