@@ -65,6 +65,83 @@ Recommended Gate 4.1 policy axes:
   - portal-safe blur ignore
   - modal-owned lifecycle
 
+## Gate 4.1-b Agreed Design
+
+### Public API shape
+
+```ts
+type GenDataGridEditStartTriggers = {
+  reclick?: boolean;
+  doubleClick?: boolean;
+  enter?: boolean;
+  f2?: boolean;
+  printableKey?: boolean;
+};
+
+type GenDataGridEditContinuationTriggers = {
+  click?: boolean;
+  tab?: boolean;
+  arrowKey?: boolean;
+};
+
+type GenDataGridEditPolicy = {
+  startTriggers?: GenDataGridEditStartTriggers;
+  continueTriggers?: GenDataGridEditContinuationTriggers;
+  openOnEditStart?: boolean;
+};
+```
+
+- grid-level: `editPolicy?: GenDataGridEditPolicy`
+- column-level: `meta.editPolicy?: GenDataGridEditPolicy`
+- resolution: column override first, then grid default, then internal defaults
+
+### Agreed default behavior
+
+- `startTriggers`
+  - `reclick: true`
+  - `doubleClick: true`
+  - `enter: true`
+  - `f2: true`
+  - `printableKey: true`
+- `continueTriggers`
+  - `click: false`
+  - `tab: true`
+  - `arrowKey: false`
+- `openOnEditStart: false`
+
+### Trigger semantics
+
+- `reclick`
+  - click on the already active cell
+- `doubleClick`
+  - independent double-click entry trigger
+  - should remain logically separate from `reclick`
+- `continueTriggers`
+  - evaluated when editing is already active and focus/active-cell movement targets another cell
+  - `click`, `tab`, and `arrowKey` share the same continuation meaning: whether the destination cell should immediately re-enter editing
+
+### Continuation behavior
+
+- previous editing cell defaults to `commit` before moving
+- if the destination cell is not editable, move `activeCell` only
+- when continuation enters the next editable cell, `openOnEditStart` applies the same way as any other edit-start path
+
+### Open-on-edit-start scope
+
+- Gate 4.1-b keeps `openOnEditStart` as a boolean only
+- grid default and column override are both supported
+- intended primarily for popup-style editors such as `select`, datepicker, and modal-based custom editors
+- trigger-specific open policies are deferred until a later follow-up
+
+## Gate 4.1-b Implementation Order
+
+1. Add `GenDataGridEditPolicy` public types and TanStack column meta support.
+2. Resolve merged edit policy in the editing runtime from grid props and column meta.
+3. Apply `startTriggers` to mouse and keyboard edit-entry paths.
+4. Apply `continueTriggers` to edit-preserving `click` / `Tab` / Arrow navigation.
+5. Propagate `openOnEditStart` through built-in and custom editor context.
+6. Add Storybook and interaction coverage for grid default, column override, and continuation behavior.
+
 ## Built-in Editor Expectations
 
 - `text`, `number`, `textarea`

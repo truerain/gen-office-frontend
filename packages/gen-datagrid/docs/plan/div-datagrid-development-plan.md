@@ -511,10 +511,28 @@ type GenDataGridProps<TData> = {
   - initial draft replacement policy
   - IME-safe entry guard
 - Gate 4.1-b edit entry and opening policy
-  - `editOnActiveCell`
-  - open-on-edit-start for built-in and custom editors
-  - built-in `select` immediate open behavior
-  - custom popover/modal editor open-on-mount contract
+  - `editPolicy` public API with grid default and column override
+  - `startTriggers`
+    - `reclick: true`
+    - `doubleClick: true`
+    - `enter: true`
+    - `f2: true`
+    - `printableKey: true`
+  - `continueTriggers`
+    - `click: false`
+    - `tab: true`
+    - `arrowKey: false`
+  - `openOnEditStart: false` default with grid-level and column-level override
+  - previous editing cell defaults to `commit` before continuation movement
+  - non-editable destination cell moves `activeCell` only
+  - keep `openOnEditStart` as boolean in this slice; trigger-specific open rules deferred
+  - implementation order
+    - add public type and column meta support
+    - resolve merged edit policy
+    - apply start triggers
+    - apply continuation triggers
+    - propagate `openOnEditStart`
+    - add Storybook and interaction coverage
 - Gate 4.1-c navigation while editing
   - `keepEditingOnNavigate`
   - commit/cancel/keep policy on Arrow and Tab navigation

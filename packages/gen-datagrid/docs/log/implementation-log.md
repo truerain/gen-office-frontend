@@ -10,6 +10,16 @@ Records meaningful GenDataGrid implementation decisions and progress.
 - Refined `docs/plan/div-datagrid-development-plan.md` so Gate 4.1 is split into printable-key entry, opening policy, navigation policy, and blur/portal policy sub-slices.
 - Added `docs/reference/gate-4-1-editing-policy-notes.md` to capture built-in editor expectations and the automated/manual test split before implementation starts.
 
+### Gate 4.1-b Editing Policy Decisions
+
+- Recorded the agreed Gate 4.1-b API shape as `editPolicy` with `startTriggers`, `continueTriggers`, and `openOnEditStart`.
+- Fixed the initial default trigger set:
+  - start: `reclick`, `doubleClick`, `enter`, `f2`, `printableKey`
+  - continue: `click: false`, `tab: true`, `arrowKey: false`
+- Fixed continuation behavior so the previous cell defaults to `commit`, the destination non-editable cell becomes active-only, and `openOnEditStart` applies equally to continuation entry.
+- Kept `openOnEditStart` as a boolean for this slice, with grid default and column override support, and deferred trigger-specific open rules.
+- Added the agreed Gate 4.1-b implementation order to the architecture and plan documents; runtime implementation is intentionally deferred to the next session.
+
 ### Gate 3.1 Keyboard Selection And Scroll Handle
 
 - Added `docs/architecture/gate-3-1-keyboard-selection-architecture.md` to lock the Gate 3.1 scope around keyboard range extension and imperative cell scrolling.
