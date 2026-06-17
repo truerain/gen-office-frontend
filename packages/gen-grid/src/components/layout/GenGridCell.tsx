@@ -968,15 +968,27 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
         !isEditing && semanticType === 'amount' && deltaDirection === 'up'
           ? bodyStyles.semanticAmountDeltaUp
           : '',
+        !isEditing && semanticType === 'amount' && deltaDirection === 'up' && amountNegativeColor
+          ? bodyStyles.semanticAmountDeltaUpColor
+          : '',
         !isEditing && semanticType === 'amount' && deltaDirection === 'down'
           ? bodyStyles.semanticAmountDeltaDown
+          : '',
+        !isEditing && semanticType === 'amount' && deltaDirection === 'down' && amountNegativeColor
+          ? bodyStyles.semanticAmountDeltaDownColor
           : '',
         !isEditing && percentMode === 'delta' ? bodyStyles.semanticPercentDelta : '',
         !isEditing && semanticType === 'percent' && deltaDirection === 'up'
           ? bodyStyles.semanticPercentDeltaUp
           : '',
+        !isEditing && semanticType === 'percent' && deltaDirection === 'up' && amountNegativeColor
+          ? bodyStyles.semanticPercentDeltaUpColor
+          : '',
         !isEditing && semanticType === 'percent' && deltaDirection === 'down'
           ? bodyStyles.semanticPercentDeltaDown
+          : '',
+        !isEditing && semanticType === 'percent' && deltaDirection === 'down' && amountNegativeColor
+          ? bodyStyles.semanticPercentDeltaDownColor
           : '',
         metaCellClassName ?? '',
         getCellClassName?.({
