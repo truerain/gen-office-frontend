@@ -4,6 +4,16 @@ Records meaningful GenDataGrid implementation decisions and progress.
 
 ## 2026-06-17
 
+### Gate 3.1 Keyboard Selection And Scroll Handle
+
+- Added `docs/architecture/gate-3-1-keyboard-selection-architecture.md` to lock the Gate 3.1 scope around keyboard range extension and imperative cell scrolling.
+- Added `Shift` keyboard range extension so Arrow/Home/End/PageUp/PageDown can move `activeCell` while preserving the current range anchor.
+- Kept plain keyboard navigation collapsing selection back to the destination cell so mouse and keyboard selection ownership stay aligned.
+- Added `GenDataGridHandle.scrollToCell(coord)` and bridged virtualized rows through the existing row-visibility path before retrying root-scoped cell scrolling.
+- Added Storybook coverage for keyboard range selection plus `scrollToCell()` jumps in a large virtualized grid.
+- Added interaction coverage for `Shift + Arrow` range extension and imperative `scrollToCell()` behavior.
+- Verified `pnpm -C frontend/packages/gen-datagrid test` passes after the Gate 3.1 slice.
+
 ### Gate 7 Scroll-seeking Placeholder Follow-up
 
 - Added a Phase 8 follow-up note to `docs/plan/div-datagrid-development-plan.md` for large-jump scrollbar handling.

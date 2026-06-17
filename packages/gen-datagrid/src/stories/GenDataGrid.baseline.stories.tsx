@@ -520,3 +520,56 @@ export const Gate7Virtualization: Story = {
     );
   },
 };
+
+export const Phase91KeyboardSelectionAndScroll: Story = {
+  render: () => {
+    const gridRef = React.useRef<GenDataGridHandle>(null);
+
+    return (
+      <div style={{ width: 920, padding: 16 }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() =>
+              gridRef.current?.scrollToCell({ rowId: '5000', columnId: 'location' })
+            }
+          >
+            Scroll to row 5000 location
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              gridRef.current?.scrollToCell({ rowId: '9000', columnId: 'note' })
+            }
+          >
+            Scroll to row 9000 note
+          </button>
+        </div>
+        <GenDataGrid<Person>
+          ref={gridRef}
+          data={gate7Data}
+          columns={columns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-phase-9-1"
+          defaultActiveCell={{ rowId: '3', columnId: 'name' }}
+          defaultSelectedRanges={[
+            {
+              anchor: { rowId: '3', columnId: 'name' },
+              focus: { rowId: '3', columnId: 'name' },
+            },
+          ]}
+          defaultColumnPinning={{ left: ['name'] }}
+          enableVirtualization
+          rowHeight={36}
+          headerHeight={40}
+          style={{
+            height: 420,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+      </div>
+    );
+  },
+};

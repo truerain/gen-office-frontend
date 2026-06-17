@@ -366,6 +366,33 @@ describe('GenDataGrid interaction contract', () => {
     });
   });
 
+  it('extends range selection with Shift+Arrow while preserving the original anchor', async () => {
+    const { container } = renderGrid();
+
+    const firstCell = getCell(container, '1', 'name');
+    firstCell.focus();
+    fireEvent.keyDown(firstCell, { key: 'ArrowRight', shiftKey: true });
+
+    await waitFor(() => {
+      expect(getCell(container, '1', 'age').dataset.activeCell).toBe('true');
+      expect(getCell(container, '1', 'name').dataset.selectedCell).toBe('true');
+      expect(getCell(container, '1', 'age').dataset.selectedCell).toBe('true');
+    });
+
+    fireEvent.keyDown(getCell(container, '1', 'age'), {
+      key: 'ArrowDown',
+      shiftKey: true,
+    });
+
+    await waitFor(() => {
+      expect(getCell(container, '2', 'age').dataset.activeCell).toBe('true');
+      expect(getCell(container, '1', 'name').dataset.selectedCell).toBe('true');
+      expect(getCell(container, '1', 'age').dataset.selectedCell).toBe('true');
+      expect(getCell(container, '2', 'name').dataset.selectedCell).toBe('true');
+      expect(getCell(container, '2', 'age').dataset.selectedCell).toBe('true');
+    });
+  });
+
   it('does not extend range selection when the hovered cell changes without pointer movement', async () => {
     const { container } = renderGrid();
 
@@ -616,6 +643,33 @@ describe('GenDataGrid interaction contract', () => {
     });
   });
 
+  it('exposes imperative scrollToCell without changing the active cell', async () => {
+    const gridRef = React.createRef<GenDataGridHandle>();
+    const onActiveCellChange = vi.fn();
+    const scrollIntoViewSpy = vi.spyOn(window.HTMLElement.prototype, 'scrollIntoView');
+    render(
+      <GenDataGrid
+        ref={gridRef}
+        gridId="scroll-to-cell-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+        onActiveCellChange={onActiveCellChange}
+      />
+    );
+
+    gridRef.current?.scrollToCell({ rowId: '2', columnId: 'age' });
+
+    await waitFor(() => {
+      expect(onActiveCellChange).not.toHaveBeenCalled();
+      expect(scrollIntoViewSpy).toHaveBeenCalled();
+      expect(getCell(document.body, '2', 'age').dataset.activeCell).not.toBe('true');
+    });
+
+    scrollIntoViewSpy.mockRestore();
+  });
+
   it('emits clearSelection without mutating controlled selection', async () => {
     const gridRef = React.createRef<GenDataGridHandle>();
     const onSelectedRangesChange = vi.fn();
@@ -710,6 +764,51 @@ describe('GenDataGrid interaction contract', () => {
     await waitFor(() => {
       expect(container.querySelector('[data-rowid="1"]')).toBeNull();
       expect(container.querySelector('[data-rowid="100"]')).not.toBeNull();
+    });
+  });
+
+  it('keeps keyboard ownership after manual virtual scroll moves the active row out of range', async () => {
+    const onActiveCellChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="virtual-scroll-keyboard-ownership-grid"
+        data={virtualRows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableVirtualization
+        defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+        onActiveCellChange={onActiveCellChange}
+        style={{ height: 240, width: 320 }}
+      />
+    );
+
+    const root = container.querySelector<HTMLElement>(
+      '[data-grid-id="virtual-scroll-keyboard-ownership-grid"]'
+    );
+    const viewport = container.querySelector<HTMLElement>('[data-gen-datagrid-viewport="true"]');
+    if (!root || !viewport) throw new Error('Missing virtual grid root');
+
+    getCell(container, '1', 'name').focus();
+
+    Object.defineProperty(viewport, 'scrollTop', {
+      configurable: true,
+      writable: true,
+      value: 3600,
+    });
+    fireEvent.scroll(viewport);
+
+    await waitFor(() => {
+      expect(container.querySelector('[data-rowid="1"]')).toBeNull();
+      expect(document.activeElement).toBe(root);
+    });
+
+    fireEvent.keyDown(root, { key: 'ArrowDown' });
+
+    await waitFor(() => {
+      expect(onActiveCellChange).toHaveBeenCalledWith({
+        rowId: '2',
+        columnId: 'name',
+      });
     });
   });
 

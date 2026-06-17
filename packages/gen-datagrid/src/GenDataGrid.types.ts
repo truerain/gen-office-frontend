@@ -13,7 +13,10 @@ import type {
   VisibilityState,
 } from '@tanstack/react-table';
 
-import type { GenDataGridRangeSelections } from './features/range-selection/rangeSelection';
+import type {
+  GenDataGridCellCoord,
+  GenDataGridRangeSelections,
+} from './features/range-selection/rangeSelection';
 
 export type GenDataGridActiveCell = {
   rowId: string;
@@ -24,6 +27,7 @@ export type GenDataGridHandle = {
   rootElement: HTMLDivElement | null;
   clearSelection: () => void;
   copySelection: (options?: { includeHeader?: boolean }) => Promise<boolean>;
+  scrollToCell: (coord: GenDataGridCellCoord) => void;
   clearColumnFilters: () => void;
   clearGlobalFilter: () => void;
   clearFilters: () => void;

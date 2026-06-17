@@ -110,6 +110,7 @@ sequenceDiagram
 - Selection supports controlled and uncontrolled state through `selectedRanges`, `defaultSelectedRanges`, and `onSelectedRangesChange`.
 - Normal mouse selection replaces existing ranges.
 - Shift selection extends the last range from its anchor.
+- `Shift` keyboard navigation extends the last range from its anchor while moving `activeCell`.
 - Ctrl/Meta selection appends a separate range.
 - Selection rendering uses per-cell `data-selected-cell="true"` markers.
 - Active cell state remains separate from range selection state.

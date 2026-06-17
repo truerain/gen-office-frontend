@@ -428,7 +428,7 @@ Instance API는 `ref` handle로 제공한다.
 | `clearGlobalFilter()` | global filter clear | MVP |
 | `clearFilters()` | column/global filter clear | MVP |
 
-Implementation status: `rootElement`, `clearSelection()`, `copySelection(options)`, `clearColumnFilters()`, `clearGlobalFilter()`, and `clearFilters()` are implemented. `scrollToCell(coord)` remains planned.
+Implementation status: `rootElement`, `clearSelection()`, `copySelection(options)`, `scrollToCell(coord)`, `clearColumnFilters()`, `clearGlobalFilter()`, and `clearFilters()` are implemented.
 
 설계 원칙:
 

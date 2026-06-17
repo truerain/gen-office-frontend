@@ -18,9 +18,21 @@ export function focusCellInRoot(root: HTMLElement | null, coord: GenDataGridCell
   if (!cell) return false;
 
   cell.focus({ preventScroll: true });
+  scrollCellElementIntoView(root, cell);
+  return true;
+}
+
+export function scrollCellIntoViewInRoot(root: HTMLElement | null, coord: GenDataGridCellCoord) {
+  const cell = findCellInRoot(root, coord);
+  if (!cell) return false;
+
+  scrollCellElementIntoView(root, cell);
+  return true;
+}
+
+function scrollCellElementIntoView(root: HTMLElement | null, cell: HTMLElement) {
   cell.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   scrollCellIntoUnpinnedViewport(root, cell);
-  return true;
 }
 
 function scrollCellIntoUnpinnedViewport(root: HTMLElement | null, cell: HTMLElement) {

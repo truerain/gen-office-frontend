@@ -499,10 +499,49 @@ type GenDataGridProps<TData> = {
 - keyboard navigation 중 virtual row focus 정상
 
 ### Phase 9. Advanced features
+#### Gate 3.1 Keyboard and selection follow-up
+
+- `Shift + Arrow` range selection
+- keyboard navigation anchor/focus policy alignment with mouse selection
+- `scrollToCell(coord)` imperative handle
+
+#### Gate 4.1 Editing policy follow-up
+
+- printable-key edit entry
+- `editOnActiveCell`
+- `keepEditingOnNavigate`
+- advanced blur/portal commit policy
+
+#### Gate 4.2 Clipboard and mutation follow-up
+
+- clipboard paste application into editable cells
+- paste-to-selection policy for multi-cell ranges
+- dirty-state integration for pasted values
+
+#### Gate 6.1 Filtering, pagination, and data ownership follow-up
+
+- manual/server filtering contract
+- manual/server pagination totals
+- page-size selector
+- delete-row data mutation
+- dirty baseline integration with `dataVersion`
+
+#### Gate 7.1 Virtualization extension follow-up
+
+- auto-scroll while drag range selection crosses beyond the current viewport
+- selection overlay for pinned/virtualized layouts
+- dynamic row measurement while virtualization is enabled
+- column virtualization
+- browser screenshot automation for large-row scenarios
+
+#### Gate 8.1 Advanced row model and nested composition
 
 - tree row model
 - master-detail row
 - nested grid
+
+#### Gate 8.2 Merge, span, and validation UI
+
 - visual row merge
 - grouped header span
 - validation UI

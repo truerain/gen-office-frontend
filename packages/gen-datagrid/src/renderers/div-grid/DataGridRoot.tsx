@@ -9,7 +9,11 @@ import type {
   GenDataGridHandle,
   GenDataGridProps,
 } from '../../GenDataGrid.types';
-import { focusCellInRoot } from '../../core/dom/cellDom';
+import {
+  findCellInRoot,
+  focusCellInRoot,
+  scrollCellIntoViewInRoot,
+} from '../../core/dom/cellDom';
 import { useDataGridTable } from '../../core/table/useDataGridTable';
 import {
   getFirstActiveCell,
@@ -246,6 +250,32 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     table.setGlobalFilter(undefined);
   }, [table]);
 
+  const scrollToCell = React.useCallback(
+    (coord: { rowId: string; columnId: string }) => {
+      const rowIndex = rowIds.indexOf(coord.rowId);
+      if (enableVirtualization && rowIndex >= 0) {
+        virtualBodyRef.current?.scrollToRowIndex(rowIndex);
+      }
+
+      const scrollVisibleCell = () => {
+        if (scrollCellIntoViewInRoot(rootRef.current, coord)) {
+          return;
+        }
+        requestAnimationFrame(() => {
+          scrollCellIntoViewInRoot(rootRef.current, coord);
+        });
+      };
+
+      if (enableVirtualization && rowIndex >= 0) {
+        requestAnimationFrame(scrollVisibleCell);
+        return;
+      }
+
+      scrollVisibleCell();
+    },
+    [enableVirtualization, rowIds]
+  );
+
   React.useImperativeHandle(
     forwardedRootRef,
     () => ({
@@ -254,6 +284,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       },
       clearSelection: rangeSelection.clearSelection,
       copySelection: clipboard.copySelection,
+      scrollToCell,
       clearColumnFilters,
       clearGlobalFilter,
       clearFilters,
@@ -273,6 +304,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       forwardedRootRef,
       rangeSelection.clearSelection,
       resetDirtyState,
+      scrollToCell,
     ]
   );
 
@@ -398,6 +430,10 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
 
       event.preventDefault();
       setActiveCell(next);
+      if (enableRangeSelection && event.shiftKey) {
+        rangeSelection.extendSelectionTo(next, activeCell ?? next);
+        return;
+      }
       if (enableRangeSelection) {
         rangeSelection.setSingleSelection(next);
       }
@@ -414,11 +450,35 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     ]
   );
 
+  const handleViewportScroll = React.useCallback(() => {
+    if (!enableVirtualization || !activeCell) return;
+
+    const root = rootRef.current;
+    if (!root) return;
+
+    const restoreRootFocusIfNeeded = () => {
+      if (findCellInRoot(root, activeCell)) {
+        return;
+      }
+
+      const activeElement = document.activeElement as HTMLElement | null;
+      if (activeElement && root.contains(activeElement) && activeElement !== document.body) {
+        return;
+      }
+
+      root.focus({ preventScroll: true });
+    };
+
+    restoreRootFocusIfNeeded();
+    requestAnimationFrame(restoreRootFocusIfNeeded);
+  }, [activeCell, enableVirtualization]);
+
   return (
     <div
       ref={(node) => {
         rootRef.current = node;
       }}
+      tabIndex={enableVirtualization ? -1 : undefined}
       role="grid"
       data-gen-datagrid-root="true"
       data-grid-id={resolvedGridId}
@@ -450,6 +510,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
         ref={setViewportElement}
         className="gen-datagrid__viewport"
         data-gen-datagrid-viewport="true"
+        onScroll={handleViewportScroll}
       >
         <DataGridHeader
           table={table}
