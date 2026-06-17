@@ -507,10 +507,22 @@ type GenDataGridProps<TData> = {
 
 #### Gate 4.1 Editing policy follow-up
 
-- printable-key edit entry
-- `editOnActiveCell`
-- `keepEditingOnNavigate`
-- advanced blur/portal commit policy
+- Gate 4.1-a printable-key edit entry
+  - initial draft replacement policy
+  - IME-safe entry guard
+- Gate 4.1-b edit entry and opening policy
+  - `editOnActiveCell`
+  - open-on-edit-start for built-in and custom editors
+  - built-in `select` immediate open behavior
+  - custom popover/modal editor open-on-mount contract
+- Gate 4.1-c navigation while editing
+  - `keepEditingOnNavigate`
+  - commit/cancel/keep policy on Arrow and Tab navigation
+- Gate 4.1-d advanced blur and portal policy
+  - inline blur commit
+  - portal-safe blur ignore
+  - modal-owned edit lifecycle
+  - native date editor stays manual-visual verification; custom datepicker policy can be automated separately
 
 #### Gate 4.2 Clipboard and mutation follow-up
 

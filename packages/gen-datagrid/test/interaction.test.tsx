@@ -1074,6 +1074,58 @@ describe('GenDataGrid interaction contract', () => {
     });
   });
 
+  it('starts default cell editing with a printable key and replaces the initial draft', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="printable-key-edit-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    firstCell.focus();
+    fireEvent.keyDown(firstCell, { key: 'Z' });
+
+    const editor = await waitFor(() =>
+      firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]')
+    );
+
+    expect(editor).not.toBeNull();
+    expect(editor?.value).toBe('Z');
+  });
+
+  it('does not auto-select the editor text when editing starts from a printable key', async () => {
+    const selectSpy = vi
+      .spyOn(window.HTMLInputElement.prototype, 'select')
+      .mockImplementation(() => undefined);
+    const { container } = render(
+      <GenDataGrid
+        gridId="printable-key-no-autoselect-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+        editSelectOnFocus
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    firstCell.focus();
+    fireEvent.keyDown(firstCell, { key: 'Z' });
+
+    const editor = await waitFor(() =>
+      firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]')
+    );
+
+    expect(editor).not.toBeNull();
+    expect(editor?.value).toBe('Z');
+    expect(selectSpy).not.toHaveBeenCalled();
+    selectSpy.mockRestore();
+  });
+
   it('starts editing when an editable active cell is clicked again', async () => {
     const { container } = render(
       <GenDataGrid
@@ -1183,6 +1235,45 @@ describe('GenDataGrid interaction contract', () => {
       expect(firstCell.querySelector('input[aria-label="name editor"]')).toBeNull();
       expect(onCellValueChange).not.toHaveBeenCalled();
     });
+  });
+
+  it('re-enters default cell editing with a printable key after Escape cancel', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="cancel-reenter-edit-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    firstCell.focus();
+    fireEvent.keyDown(firstCell, { key: 'A' });
+
+    let editor = await waitFor(() =>
+      firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]')
+    );
+    expect(editor).not.toBeNull();
+
+    fireEvent.keyDown(editor as HTMLInputElement, { key: 'Escape' });
+
+    await waitFor(() => {
+      expect(firstCell.dataset.editingCell).toBeUndefined();
+      expect(firstCell.querySelector('input[aria-label="name editor"]')).toBeNull();
+      expect(firstCell.dataset.activeCell).toBe('true');
+      expect(document.activeElement).toBe(firstCell);
+    });
+
+    fireEvent.keyDown(firstCell, { key: 'B' });
+
+    editor = await waitFor(() =>
+      firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]')
+    );
+
+    expect(editor).not.toBeNull();
+    expect(editor?.value).toBe('B');
   });
 
   it('cancels cell editing when another cell is activated', async () => {

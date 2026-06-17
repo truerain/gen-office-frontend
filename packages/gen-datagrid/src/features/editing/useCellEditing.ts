@@ -6,6 +6,7 @@ import * as React from 'react';
 export type GenDataGridEditingCell = {
   rowId: string;
   columnId: string;
+  suppressSelectOnFocus?: boolean;
 };
 
 export type StartCellEditingArgs = GenDataGridEditingCell & {
@@ -16,10 +17,13 @@ export function useCellEditing() {
   const [editingCell, setEditingCell] = React.useState<GenDataGridEditingCell | null>(null);
   const [draftValue, setDraftValue] = React.useState<unknown>(undefined);
 
-  const startEditing = React.useCallback(({ rowId, columnId, value }: StartCellEditingArgs) => {
-    setEditingCell({ rowId, columnId });
-    setDraftValue(value);
-  }, []);
+  const startEditing = React.useCallback(
+    ({ rowId, columnId, value, suppressSelectOnFocus }: StartCellEditingArgs) => {
+      setEditingCell({ rowId, columnId, suppressSelectOnFocus });
+      setDraftValue(value);
+    },
+    []
+  );
 
   const cancelEditing = React.useCallback(() => {
     setEditingCell(null);

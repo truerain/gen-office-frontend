@@ -146,7 +146,10 @@ export function DataGridBodyRow<TData>({
         };
         const meta = cell.column.columnDef.meta;
         const editOptions = meta?.getEditOptions?.(editableContext) ?? meta?.editOptions;
-        const selectOnFocus = meta?.editSelectOnFocus ?? editSelectOnFocus ?? false;
+        const selectOnFocus =
+          editingCell?.suppressSelectOnFocus
+            ? false
+            : (meta?.editSelectOnFocus ?? editSelectOnFocus ?? false);
         const commitOnBlur = meta?.editCommitOnBlur ?? editCommitOnBlur ?? false;
         const handleTabNavigate = (direction: 1 | -1) => {
           const next = resolveNextEditableCell({

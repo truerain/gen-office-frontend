@@ -573,3 +573,50 @@ export const Phase91KeyboardSelectionAndScroll: Story = {
     );
   },
 };
+
+export const Gate41VirtualEditingPolicy: Story = {
+  render: () => {
+    const [gridData, setGridData] = React.useState(gate7Data);
+
+    const handleCellValueChange = React.useCallback(
+      ({ rowId, columnId, value }: GenDataGridCellValueChange<Person>) => {
+        setGridData((previous) =>
+          previous.map((row) =>
+            row.id === rowId
+              ? {
+                  ...row,
+                  [columnId]: columnId === 'score' ? Number(value) : value,
+                }
+              : row
+          )
+        );
+      },
+      []
+    );
+
+    return (
+      <div style={{ width: 920, padding: 16 }}>
+        <GenDataGrid<Person>
+          data={gridData}
+          columns={editableColumns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-4-1-virtual"
+          defaultActiveCell={{ rowId: '5000', columnId: 'name' }}
+          defaultColumnPinning={{ left: ['name'] }}
+          enableVirtualization
+          editSelectOnFocus
+          editCommitOnBlur
+          onCellValueChange={handleCellValueChange}
+          rowHeight={36}
+          headerHeight={40}
+          style={{
+            height: 420,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+      </div>
+    );
+  },
+};

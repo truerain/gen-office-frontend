@@ -35,6 +35,13 @@ import {
 } from './DataGridVirtualBody';
 import { buildGridTemplateColumnsFromModel } from './gridTemplate';
 
+function isPrintableEditKey(event: React.KeyboardEvent<HTMLDivElement>) {
+  if (event.ctrlKey || event.metaKey || event.altKey) return false;
+  if (event.key.length !== 1) return false;
+  if (event.key === ' ') return true;
+  return event.key.trim().length === 1;
+}
+
 type DataGridRootProps<TData> = GenDataGridProps<TData> & {
   rootRef: React.ForwardedRef<GenDataGridHandle>;
 };
@@ -318,7 +325,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     [controlledActiveCell, onActiveCellChange]
   );
 
-  const startActiveCellEditing = React.useCallback(() => {
+  const startActiveCellEditing = React.useCallback((options?: { initialValue?: unknown }) => {
     if (!activeCell) return false;
 
     const row = tableRows.find((item) => item.id === activeCell.rowId);
@@ -336,10 +343,26 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     editing.startEditing({
       rowId: activeCell.rowId,
       columnId: activeCell.columnId,
-      value: row.getValue(column.id),
+      value: options?.initialValue ?? row.getValue(column.id),
+      suppressSelectOnFocus: options?.initialValue !== undefined,
     });
     return true;
   }, [activeCell, editing, isCellEditable, resolvedReadOnly, tableRows, visibleColumns]);
+
+  const cancelEditingAndRestoreFocus = React.useCallback(() => {
+    editing.cancelEditing();
+    const targetCell = activeCell;
+    if (!targetCell) return;
+
+    requestAnimationFrame(() => {
+      if (focusCellInRoot(rootRef.current, targetCell)) {
+        return;
+      }
+      requestAnimationFrame(() => {
+        focusCellInRoot(rootRef.current, targetCell);
+      });
+    });
+  }, [activeCell, editing]);
 
   React.useEffect(() => {
     if (controlledActiveCell !== undefined) return;
@@ -400,6 +423,13 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
         }
       }
 
+      if (!editing.editingCell && isPrintableEditKey(event)) {
+        if (startActiveCellEditing({ initialValue: event.key })) {
+          event.preventDefault();
+          return;
+        }
+      }
+
       if (event.key === 'Tab') {
         const next = resolveNextLinearCell({
           activeCell,
@@ -441,6 +471,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     [
       activeCell,
       clipboard,
+      editing.editingCell,
       enableRangeSelection,
       columnIds,
       rangeSelection,
@@ -548,7 +579,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             draftValue={editing.draftValue}
             setDraftValue={editing.setDraftValue}
             onEditStart={editing.startEditing}
-            onEditCancel={editing.cancelEditing}
+            onEditCancel={cancelEditingAndRestoreFocus}
             scrollSeeking={scrollSeeking}
             virtualBodyRef={virtualBodyRef}
           />
@@ -577,7 +608,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             draftValue={editing.draftValue}
             setDraftValue={editing.setDraftValue}
             onEditStart={editing.startEditing}
-            onEditCancel={editing.cancelEditing}
+            onEditCancel={cancelEditingAndRestoreFocus}
           />
         )}
         {enableFooterRow ? (
