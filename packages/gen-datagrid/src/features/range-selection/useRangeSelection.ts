@@ -64,6 +64,7 @@ export function useRangeSelection({
   const selections = selectedRanges ?? uncontrolledSelections;
   const [dragAnchor, setDragAnchor] = React.useState<GenDataGridCellCoord | null>(null);
   const [dragMode, setDragMode] = React.useState<'replace' | 'append' | null>(null);
+  const dragPointerRef = React.useRef<{ x: number; y: number } | null>(null);
 
   const setSelections = React.useCallback(
     (
@@ -92,6 +93,7 @@ export function useRangeSelection({
     const stopSelection = () => {
       setDragAnchor(null);
       setDragMode(null);
+      dragPointerRef.current = null;
     };
 
     window.addEventListener('mouseup', stopSelection);
@@ -133,6 +135,7 @@ export function useRangeSelection({
         setDragMode('replace');
       }
       setDragAnchor(nextAnchor);
+      dragPointerRef.current = { x: event.clientX, y: event.clientY };
     },
     [enabled, rootRef, selections, setSelections]
   );
@@ -144,6 +147,15 @@ export function useRangeSelection({
 
       const coord = resolveCellCoordFromTarget(rootRef.current, event.target);
       if (!coord) return;
+
+      const dragPointer = dragPointerRef.current;
+      if (dragPointer) {
+        const deltaX = Math.abs(event.clientX - dragPointer.x);
+        const deltaY = Math.abs(event.clientY - dragPointer.y);
+        if (deltaX < 2 && deltaY < 2) {
+          return;
+        }
+      }
 
       setSelections((current) => {
         const nextRange: GenDataGridRangeSelection = {

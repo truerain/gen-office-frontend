@@ -130,6 +130,7 @@ export type GenDataGridProps<TData> = {
   enableFooter?: boolean;
   enablePagination?: boolean;
   enableDirtyState?: boolean;
+  enableVirtualization?: boolean;
   clipboardOptions?: {
     includeHeader?: boolean;
   };

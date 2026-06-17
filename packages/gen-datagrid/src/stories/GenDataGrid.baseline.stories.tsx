@@ -113,6 +113,15 @@ const gate6Data: Person[] = [
   },
 ];
 
+const gate7Data: Person[] = Array.from({ length: 10000 }, (_, index) => ({
+  id: String(index + 1),
+  name: `Person ${index + 1}`,
+  role: ['Engineer', 'Researcher', 'Mathematician', 'Computer Scientist'][index % 4],
+  score: 70 + (index % 31),
+  location: ['London', 'Arlington', 'Boston', 'Hampton'][index % 4],
+  note: index === 4999 ? 'Jump target for active cell restore' : `Virtual row ${index + 1}`,
+}));
+
 const columns: ColumnDef<Person, unknown>[] = [
   { accessorKey: 'name', header: 'Name', size: 180 },
   { accessorKey: 'role', header: 'Role', size: 220 },
@@ -444,4 +453,34 @@ export const Gate6FilteringFooterPaginationDirtyState: Story = {
       </div>
     );
   },
+};
+
+export const Gate7Virtualization: Story = {
+  render: () => (
+    <div style={{ width: 920, padding: 16 }}>
+      <GenDataGrid<Person>
+        data={gate7Data}
+        columns={columns}
+        getRowId={(row) => row.id}
+        gridId="storybook-gen-datagrid-gate-7"
+        defaultActiveCell={{ rowId: '5000', columnId: 'name' }}
+        defaultSelectedRanges={[
+          {
+            anchor: { rowId: '5000', columnId: 'name' },
+            focus: { rowId: '5000', columnId: 'score' },
+          },
+        ]}
+        defaultColumnPinning={{ left: ['name'] }}
+        enableVirtualization
+        rowHeight={36}
+        headerHeight={40}
+        style={{
+          height: 420,
+          border: '1px solid #d0d7de',
+          borderRadius: 6,
+          background: '#fff',
+        }}
+      />
+    </div>
+  ),
 };

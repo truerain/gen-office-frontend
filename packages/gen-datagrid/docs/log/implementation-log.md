@@ -2,6 +2,20 @@
 Records meaningful GenDataGrid implementation decisions and progress.
 -->
 
+## 2026-06-17
+
+### Gate 7 Virtualization 시작
+
+- Added `docs/architecture/gate-7-architecture.md` before implementation to lock the Gate 7 slice around body-only virtualization, fixed row height, active-cell restore, pinning, and range-selection restoration.
+- Added public `enableVirtualization` support to `GenDataGridProps` and wired `DataGridRoot` to switch between `DataGridBody` and the new `DataGridVirtualBody`.
+- Added `renderers/div-grid/DataGridVirtualBody.tsx` with `@tanstack/react-virtual` and kept virtualization scoped to body rows while header, footer row, pagination, and footer bar remain outside the virtualizer.
+- Extracted `DataGridBodyRow` so standard and virtual body rendering share the same body-cell DOM contract, editing flow, dirty markers, selection styling, and pinning behavior.
+- Active-cell focus restore now bridges through virtualization by scrolling to the target row index before retrying root-scoped cell focus.
+- Added interaction coverage for reduced virtual row rendering, active-cell restore, pinned markers on rendered virtual rows, and selection restoration for rows that re-enter the virtual window.
+- Added baseline coverage for the virtualized body DOM markers and a `Gate7Virtualization` Storybook scenario with 10,000 rows plus pinned columns.
+- Added `docs/qa/gate-7-visual-test-guide.md` so the remaining browser-only Gate 7 checks have an explicit manual checklist.
+- Updated API and architecture docs so Gate 7 reflects the current fixed-height virtualization constraints instead of unimplemented public options.
+
 ## 2026-06-16
 
 ### Gate 6 Filtering Boundary Refactor

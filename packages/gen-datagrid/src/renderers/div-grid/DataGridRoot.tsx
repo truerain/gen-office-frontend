@@ -25,6 +25,10 @@ import { DataGridBody } from './DataGridBody';
 import { DataGridFooterBar } from './DataGridFooterBar';
 import { DataGridFooterRow } from './DataGridFooterRow';
 import { DataGridHeader } from './DataGridHeader';
+import {
+  DataGridVirtualBody,
+  type DataGridVirtualBodyHandle,
+} from './DataGridVirtualBody';
 import { buildGridTemplateColumnsFromModel } from './gridTemplate';
 
 type DataGridRootProps<TData> = GenDataGridProps<TData> & {
@@ -65,6 +69,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     enableFooter = false,
     enablePagination = false,
     enableDirtyState = true,
+    enableVirtualization = false,
     clipboardOptions,
     footer,
     renderFooter,
@@ -78,6 +83,8 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     footerRowHeight = 36,
   } = props;
   const rootRef = React.useRef<HTMLDivElement | null>(null);
+  const [viewportElement, setViewportElement] = React.useState<HTMLDivElement | null>(null);
+  const virtualBodyRef = React.useRef<DataGridVirtualBodyHandle | null>(null);
   const reactId = React.useId();
   const resolvedGridId = React.useMemo(
     () => gridId ?? getGridId?.() ?? `gen-datagrid-${reactId.replace(/:/g, '')}`,
@@ -313,11 +320,22 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
 
   React.useEffect(() => {
     if (!activeCell) return;
+    if (enableVirtualization) {
+      const activeRowIndex = rowIds.indexOf(activeCell.rowId);
+      if (activeRowIndex >= 0) {
+        virtualBodyRef.current?.scrollToRowIndex(activeRowIndex);
+      }
+    }
     const frame = requestAnimationFrame(() => {
-      focusCellInRoot(rootRef.current, activeCell);
+      if (focusCellInRoot(rootRef.current, activeCell)) {
+        return;
+      }
+      requestAnimationFrame(() => {
+        focusCellInRoot(rootRef.current, activeCell);
+      });
     });
     return () => cancelAnimationFrame(frame);
-  }, [activeCell]);
+  }, [activeCell, enableVirtualization, rowIds]);
 
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -420,7 +438,11 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
           />
         </div>
       ) : null}
-      <div className="gen-datagrid__viewport" data-gen-datagrid-viewport="true">
+      <div
+        ref={setViewportElement}
+        className="gen-datagrid__viewport"
+        data-gen-datagrid-viewport="true"
+      >
         <DataGridHeader
           table={table}
           headerGroups={headerGroups}
@@ -431,32 +453,63 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
           enableColumnReorder={enableColumnReorder}
           enableColumnFilters={enableColumnFilters}
         />
-        <DataGridBody
-          rows={tableRows}
-          gridTemplateColumns={gridTemplateColumns}
-          rowHeight={rowHeight}
-          rowIds={rowIds}
-          columnIds={columnIds}
-          rangeSelections={rangeSelection.selections}
-          readOnly={resolvedReadOnly}
-          enablePinning={enablePinning}
-          isCellEditable={isCellEditable}
-          editSelectOnFocus={editSelectOnFocus}
-          editCommitOnBlur={editCommitOnBlur}
-          editorFactory={editorFactory}
-          onCellValueChange={handleCellValueChange}
-          dirtyCellIds={dirtyCellIds}
-          dirtyRowIds={dirtyRowIds}
-          deletedRowIds={deletedRowIds}
-          getRowHeight={getRowHeight}
-          activeCell={activeCell}
-          onActiveCellChange={setActiveCell}
-          editingCell={editing.editingCell}
-          draftValue={editing.draftValue}
-          setDraftValue={editing.setDraftValue}
-          onEditStart={editing.startEditing}
-          onEditCancel={editing.cancelEditing}
-        />
+        {enableVirtualization ? (
+          <DataGridVirtualBody
+            rows={tableRows}
+            gridTemplateColumns={gridTemplateColumns}
+            rowHeight={rowHeight}
+            headerHeight={headerHeight}
+            rowIds={rowIds}
+            columnIds={columnIds}
+            rangeSelections={rangeSelection.selections}
+            viewportElement={viewportElement}
+            readOnly={resolvedReadOnly}
+            enablePinning={enablePinning}
+            isCellEditable={isCellEditable}
+            editSelectOnFocus={editSelectOnFocus}
+            editCommitOnBlur={editCommitOnBlur}
+            editorFactory={editorFactory}
+            onCellValueChange={handleCellValueChange}
+            dirtyCellIds={dirtyCellIds}
+            dirtyRowIds={dirtyRowIds}
+            deletedRowIds={deletedRowIds}
+            activeCell={activeCell}
+            onActiveCellChange={setActiveCell}
+            editingCell={editing.editingCell}
+            draftValue={editing.draftValue}
+            setDraftValue={editing.setDraftValue}
+            onEditStart={editing.startEditing}
+            onEditCancel={editing.cancelEditing}
+            virtualBodyRef={virtualBodyRef}
+          />
+        ) : (
+          <DataGridBody
+            rows={tableRows}
+            gridTemplateColumns={gridTemplateColumns}
+            rowHeight={rowHeight}
+            rowIds={rowIds}
+            columnIds={columnIds}
+            rangeSelections={rangeSelection.selections}
+            readOnly={resolvedReadOnly}
+            enablePinning={enablePinning}
+            isCellEditable={isCellEditable}
+            editSelectOnFocus={editSelectOnFocus}
+            editCommitOnBlur={editCommitOnBlur}
+            editorFactory={editorFactory}
+            onCellValueChange={handleCellValueChange}
+            dirtyCellIds={dirtyCellIds}
+            dirtyRowIds={dirtyRowIds}
+            deletedRowIds={deletedRowIds}
+            getRowHeight={getRowHeight}
+            activeCell={activeCell}
+            onActiveCellChange={setActiveCell}
+            editingCell={editing.editingCell}
+            draftValue={editing.draftValue}
+            setDraftValue={editing.setDraftValue}
+            onEditStart={editing.startEditing}
+            onEditCancel={editing.cancelEditing}
+          />
+        )}
         {enableFooterRow ? (
           <DataGridFooterRow
             table={table}

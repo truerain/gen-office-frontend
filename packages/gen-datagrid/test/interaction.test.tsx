@@ -20,6 +20,12 @@ const rows: Person[] = [
   { id: '2', name: 'Grace', age: 41 },
 ];
 
+const virtualRows: Person[] = Array.from({ length: 200 }, (_, index) => ({
+  id: String(index + 1),
+  name: `Person ${index + 1}`,
+  age: 20 + (index % 50),
+}));
+
 const columns = [
   { accessorKey: 'name', header: 'Name', size: 120 },
   { accessorKey: 'age', header: 'Age', size: 80 },
@@ -108,6 +114,12 @@ function renderGrid(gridId = 'test-grid') {
 }
 
 beforeAll(() => {
+  class ResizeObserverMock {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+
   Object.defineProperty(window.HTMLElement.prototype, 'scrollIntoView', {
     configurable: true,
     value: vi.fn(),
@@ -130,6 +142,15 @@ beforeAll(() => {
       writeText: vi.fn().mockResolvedValue(undefined),
       readText: vi.fn().mockResolvedValue(''),
     },
+  });
+
+  Object.defineProperty(window, 'ResizeObserver', {
+    configurable: true,
+    value: ResizeObserverMock,
+  });
+  Object.defineProperty(globalThis, 'ResizeObserver', {
+    configurable: true,
+    value: ResizeObserverMock,
   });
 });
 
@@ -299,10 +320,14 @@ describe('GenDataGrid interaction contract', () => {
   it('selects a cell range with root-level mouse delegation', async () => {
     const { container } = renderGrid();
 
-    expect(fireEvent.mouseDown(getCell(container, '1', 'name'), { button: 0 })).toBe(
-      false
-    );
-    fireEvent.mouseOver(getCell(container, '2', 'age'));
+    expect(
+      fireEvent.mouseDown(getCell(container, '1', 'name'), {
+        button: 0,
+        clientX: 10,
+        clientY: 10,
+      })
+    ).toBe(false);
+    fireEvent.mouseOver(getCell(container, '2', 'age'), { clientX: 30, clientY: 40 });
     fireEvent.mouseUp(window);
 
     await waitFor(() => {
@@ -310,6 +335,28 @@ describe('GenDataGrid interaction contract', () => {
       expect(getCell(container, '1', 'age').dataset.selectedCell).toBe('true');
       expect(getCell(container, '2', 'name').dataset.selectedCell).toBe('true');
       expect(getCell(container, '2', 'age').dataset.selectedCell).toBe('true');
+    });
+  });
+
+  it('does not extend range selection when the hovered cell changes without pointer movement', async () => {
+    const { container } = renderGrid();
+
+    fireEvent.mouseDown(getCell(container, '1', 'name'), {
+      button: 0,
+      clientX: 24,
+      clientY: 24,
+    });
+    fireEvent.mouseOver(getCell(container, '2', 'age'), {
+      clientX: 24,
+      clientY: 24,
+    });
+    fireEvent.mouseUp(window);
+
+    await waitFor(() => {
+      expect(getCell(container, '1', 'name').dataset.selectedCell).toBe('true');
+      expect(getCell(container, '1', 'age').dataset.selectedCell).toBeUndefined();
+      expect(getCell(container, '2', 'name').dataset.selectedCell).toBeUndefined();
+      expect(getCell(container, '2', 'age').dataset.selectedCell).toBeUndefined();
     });
   });
 
@@ -410,8 +457,12 @@ describe('GenDataGrid interaction contract', () => {
       />
     );
 
-    fireEvent.mouseDown(getCell(container, '1', 'name'), { button: 0 });
-    fireEvent.mouseOver(getCell(container, '2', 'age'));
+    fireEvent.mouseDown(getCell(container, '1', 'name'), {
+      button: 0,
+      clientX: 10,
+      clientY: 10,
+    });
+    fireEvent.mouseOver(getCell(container, '2', 'age'), { clientX: 30, clientY: 40 });
     fireEvent.mouseUp(window);
 
     await waitFor(() => {
@@ -430,8 +481,8 @@ describe('GenDataGrid interaction contract', () => {
     const { container } = renderGrid();
 
     const firstCell = getCell(container, '1', 'name');
-    fireEvent.mouseDown(firstCell, { button: 0 });
-    fireEvent.mouseOver(getCell(container, '2', 'age'));
+    fireEvent.mouseDown(firstCell, { button: 0, clientX: 10, clientY: 10 });
+    fireEvent.mouseOver(getCell(container, '2', 'age'), { clientX: 30, clientY: 40 });
     fireEvent.mouseUp(window);
     fireEvent.keyDown(firstCell, { key: 'Escape' });
 
@@ -446,8 +497,12 @@ describe('GenDataGrid interaction contract', () => {
     const root = container.querySelector<HTMLElement>('[data-grid-id="test-grid"]');
     if (!root) throw new Error('Missing grid root');
 
-    fireEvent.mouseDown(getCell(container, '1', 'name'), { button: 0 });
-    fireEvent.mouseOver(getCell(container, '2', 'age'));
+    fireEvent.mouseDown(getCell(container, '1', 'name'), {
+      button: 0,
+      clientX: 10,
+      clientY: 10,
+    });
+    fireEvent.mouseOver(getCell(container, '2', 'age'), { clientX: 30, clientY: 40 });
     fireEvent.mouseUp(window);
     fireEvent.mouseDown(root, { button: 0 });
 
@@ -487,8 +542,12 @@ describe('GenDataGrid interaction contract', () => {
         toJSON: () => ({}),
       }) as DOMRect;
 
-    fireEvent.mouseDown(getCell(container, '1', 'name'), { button: 0 });
-    fireEvent.mouseOver(getCell(container, '2', 'age'));
+    fireEvent.mouseDown(getCell(container, '1', 'name'), {
+      button: 0,
+      clientX: 10,
+      clientY: 10,
+    });
+    fireEvent.mouseOver(getCell(container, '2', 'age'), { clientX: 30, clientY: 40 });
     fireEvent.mouseUp(window);
     fireEvent.mouseDown(root, { button: 0, clientX: 190, clientY: 20 });
 
@@ -510,8 +569,12 @@ describe('GenDataGrid interaction contract', () => {
       />
     );
 
-    fireEvent.mouseDown(getCell(container, '1', 'name'), { button: 0 });
-    fireEvent.mouseOver(getCell(container, '1', 'age'));
+    fireEvent.mouseDown(getCell(container, '1', 'name'), {
+      button: 0,
+      clientX: 10,
+      clientY: 10,
+    });
+    fireEvent.mouseOver(getCell(container, '1', 'age'), { clientX: 30, clientY: 10 });
     fireEvent.mouseUp(window);
 
     await gridRef.current?.copySelection();
@@ -566,6 +629,160 @@ describe('GenDataGrid interaction contract', () => {
     await waitFor(() => {
       expect(getCell(container, '1', 'name').dataset.editableCell).toBe('true');
       expect(getCell(container, '1', 'age').dataset.editableCell).toBeUndefined();
+    });
+  });
+
+  it('renders only a visible virtual row range when virtualization is enabled', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="virtual-grid"
+        data={virtualRows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableVirtualization
+        style={{ height: 240, width: 320 }}
+      />
+    );
+
+    await waitFor(() => {
+      const renderedRows = container.querySelectorAll(
+        '[data-gen-datagrid-body="true"][data-virtualized-body="true"] [data-virtualized-row="true"]'
+      );
+      expect(renderedRows.length).toBeGreaterThan(0);
+      expect(renderedRows.length).toBeLessThan(virtualRows.length);
+    });
+  });
+
+  it('updates the rendered virtual row window on scroll', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="virtual-scroll-grid"
+        data={virtualRows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableVirtualization
+        style={{ height: 240, width: 320 }}
+      />
+    );
+
+    const viewport = container.querySelector<HTMLElement>('[data-gen-datagrid-viewport="true"]');
+    if (!viewport) throw new Error('Missing virtual viewport');
+
+    await waitFor(() => {
+      expect(getCell(container, '1', 'name')).toBeTruthy();
+    });
+
+    Object.defineProperty(viewport, 'scrollTop', {
+      configurable: true,
+      writable: true,
+      value: 3600,
+    });
+    fireEvent.scroll(viewport);
+
+    await waitFor(() => {
+      expect(container.querySelector('[data-rowid="1"]')).toBeNull();
+      expect(container.querySelector('[data-rowid="100"]')).not.toBeNull();
+    });
+  });
+
+  it('does not scroll a clicked virtual row to the top when it is already visible', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="virtual-visible-click-grid"
+        data={virtualRows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableVirtualization
+        style={{ height: 240, width: 320 }}
+      />
+    );
+
+    const viewport = container.querySelector<HTMLElement>('[data-gen-datagrid-viewport="true"]');
+    if (!viewport) throw new Error('Missing virtual viewport');
+
+    Object.defineProperty(viewport, 'scrollTop', {
+      configurable: true,
+      writable: true,
+      value: 360,
+    });
+    fireEvent.scroll(viewport);
+
+    await waitFor(() => {
+      expect(container.querySelector('[data-rowid="12"]')).not.toBeNull();
+    });
+
+    fireEvent.mouseDown(getCell(container, '12', 'name'), {
+      button: 0,
+      clientX: 10,
+      clientY: 10,
+    });
+    fireEvent.mouseUp(window);
+
+    await waitFor(() => {
+      expect(viewport.scrollTop).toBe(360);
+      expect(getCell(container, '12', 'name').dataset.activeCell).toBe('true');
+    });
+  });
+
+  it('restores the active virtual row after scrolling it into range', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="virtual-active-grid"
+        data={virtualRows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableVirtualization
+        activeCell={{ rowId: '120', columnId: 'name' }}
+        style={{ height: 240, width: 320 }}
+      />
+    );
+
+    await waitFor(() => {
+      expect(getCell(container, '120', 'name').dataset.activeCell).toBe('true');
+    });
+  });
+
+  it('keeps pinned cell markers on rendered virtual rows', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="virtual-pinned-grid"
+        data={virtualRows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableVirtualization
+        columnPinning={{ left: ['name'] }}
+        activeCell={{ rowId: '80', columnId: 'name' }}
+        style={{ height: 240, width: 320 }}
+      />
+    );
+
+    await waitFor(() => {
+      expect(getCell(container, '80', 'name').dataset.pinnedCell).toBe('left');
+    });
+  });
+
+  it('restores controlled selection styling when a virtual row enters the rendered range', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="virtual-selection-grid"
+        data={virtualRows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableVirtualization
+        activeCell={{ rowId: '90', columnId: 'name' }}
+        selectedRanges={[
+          {
+            anchor: { rowId: '90', columnId: 'name' },
+            focus: { rowId: '90', columnId: 'age' },
+          },
+        ]}
+        style={{ height: 240, width: 320 }}
+      />
+    );
+
+    await waitFor(() => {
+      expect(getCell(container, '90', 'name').dataset.selectedCell).toBe('true');
+      expect(getCell(container, '90', 'age').dataset.selectedCell).toBe('true');
     });
   });
 
@@ -1242,8 +1459,8 @@ describe('GenDataGrid interaction contract', () => {
     const { container } = renderGrid();
 
     const firstCell = getCell(container, '1', 'name');
-    fireEvent.mouseDown(firstCell, { button: 0 });
-    fireEvent.mouseOver(getCell(container, '2', 'age'));
+    fireEvent.mouseDown(firstCell, { button: 0, clientX: 10, clientY: 10 });
+    fireEvent.mouseOver(getCell(container, '2', 'age'), { clientX: 30, clientY: 40 });
     fireEvent.mouseUp(window);
     fireEvent.keyDown(firstCell, { key: 'c', ctrlKey: true });
 
@@ -1258,8 +1475,8 @@ describe('GenDataGrid interaction contract', () => {
     const { container } = renderGrid();
 
     const firstCell = getCell(container, '1', 'name');
-    fireEvent.mouseDown(firstCell, { button: 0 });
-    fireEvent.mouseOver(getCell(container, '1', 'age'));
+    fireEvent.mouseDown(firstCell, { button: 0, clientX: 10, clientY: 10 });
+    fireEvent.mouseOver(getCell(container, '1', 'age'), { clientX: 30, clientY: 10 });
     fireEvent.mouseUp(window);
     fireEvent.keyDown(firstCell, { key: 'c', ctrlKey: true, shiftKey: true });
 
@@ -1294,11 +1511,11 @@ describe('GenDataGrid interaction contract', () => {
 
     const gridAFirstCell = getCell(gridA, '1', 'name');
     const gridBFirstCell = getCell(gridB, '1', 'name');
-    fireEvent.mouseDown(gridAFirstCell, { button: 0 });
-    fireEvent.mouseOver(getCell(gridA, '1', 'age'));
+    fireEvent.mouseDown(gridAFirstCell, { button: 0, clientX: 10, clientY: 10 });
+    fireEvent.mouseOver(getCell(gridA, '1', 'age'), { clientX: 30, clientY: 10 });
     fireEvent.mouseUp(window);
-    fireEvent.mouseDown(gridBFirstCell, { button: 0 });
-    fireEvent.mouseOver(getCell(gridB, '2', 'name'));
+    fireEvent.mouseDown(gridBFirstCell, { button: 0, clientX: 10, clientY: 10 });
+    fireEvent.mouseOver(getCell(gridB, '2', 'name'), { clientX: 10, clientY: 40 });
     fireEvent.mouseUp(window);
 
     fireEvent.keyDown(gridBFirstCell, { key: 'c', ctrlKey: true });

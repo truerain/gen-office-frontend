@@ -275,8 +275,13 @@ Implementation status: `enableRangeSelection`, `selectedRanges`, `defaultSelecte
 | API | Type | 우선순위 | 설명 |
 | --- | --- | --- | --- |
 | `enableVirtualization` | `boolean` | MVP | row virtualization |
-| `overscan` | `number` | MVP | virtualizer overscan |
-| `virtualizationMode` | `'fixed' \| 'dynamic'` | Extension | virtualized rendering의 dynamic measurement는 후속 지원 |
+
+현재 Gate 7 slice에서는 다음 제약이 적용된다.
+
+- virtualization은 body row에만 적용된다.
+- row height는 `rowHeight` 기반 fixed height만 지원한다.
+- `getRowHeight`는 `enableVirtualization !== true`일 때만 반영된다.
+- overscan과 dynamic measurement는 내부 구현 또는 후속 확장 범위로 남겨 둔다.
 
 ## 6. Rendering API
 

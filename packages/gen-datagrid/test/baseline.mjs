@@ -196,6 +196,21 @@ test('supports per-row height in non-virtualized rendering', () => {
   assert.match(markup, /--gen-datagrid-current-row-height:72px/);
 });
 
+test('renders the virtualized body contract when virtualization is enabled', () => {
+  const markup = renderToStaticMarkup(
+    React.createElement(GenDataGrid, {
+      ...requiredProps,
+      enableVirtualization: true,
+      activeCell: { rowId: '1', columnId: 'name' },
+      style: { height: 240 },
+    })
+  );
+
+  assert.match(markup, /data-virtualized-body="true"/);
+  assert.match(markup, /data-virtualized-row="true"/);
+  assert.match(markup, /aria-rowcount="2"/);
+});
+
 test('keeps cell lookup root-scoped in DOM helpers', () => {
   const cellDomSource = readFileSync('./src/core/dom/cellDom.ts', 'utf8');
 

@@ -1,7 +1,7 @@
 // packages/gen-datagrid/src/renderers/div-grid/DataGridBody.tsx
 // Renders baseline body rows for the div-based DataGrid renderer.
 
-import { flexRender, type Row } from '@tanstack/react-table';
+import type { Row } from '@tanstack/react-table';
 
 import type {
   GenDataGridActiveCell,
@@ -10,17 +10,9 @@ import type {
   GenDataGridEditorFactory,
 } from '../../GenDataGrid.types';
 import { createEditableContext, resolveEditableCell } from '../../features/editing/editableCell';
-import { createEditorContext } from '../../features/editing/editorContext';
-import { resolveNextEditableCell } from '../../features/editing/editNavigation';
-import { renderCellEditor } from '../../features/editing/renderEditor';
 import type { GenDataGridEditingCell } from '../../features/editing/useCellEditing';
-import { getColumnPinningInfo } from '../../features/pinning/pinningStyles';
-import {
-  isCellInRangeSelections,
-  type GenDataGridRangeSelections,
-} from '../../features/range-selection/rangeSelection';
-import { DataGridCell } from './DataGridCell';
-import { formatCellValue } from './cellValue';
+import type { GenDataGridRangeSelections } from '../../features/range-selection/rangeSelection';
+import { DataGridBodyRow } from './DataGridBodyRow';
 
 type DataGridBodyProps<TData> = {
   rows: Row<TData>[];
@@ -79,29 +71,6 @@ export function DataGridBody<TData>({
   onEditStart,
   onEditCancel,
 }: DataGridBodyProps<TData>) {
-  const getOrderedVisibleCells = (row: Row<TData>) =>
-    enablePinning
-      ? [
-          ...row.getLeftVisibleCells(),
-          ...row.getCenterVisibleCells(),
-          ...row.getRightVisibleCells(),
-        ]
-      : row.getVisibleCells();
-
-  const getEditableCells = () =>
-    rows.flatMap((row) =>
-      getOrderedVisibleCells(row)
-        .filter((cell) =>
-          resolveEditableCell({
-            row,
-            column: cell.column,
-            readOnly,
-            isCellEditable,
-          })
-        )
-        .map((cell) => ({ rowId: row.id, columnId: cell.column.id }))
-    );
-
   const activateCell = (next: Exclude<GenDataGridActiveCell, null>) => {
     if (
       editingCell &&
@@ -143,123 +112,33 @@ export function DataGridBody<TData>({
         const resolvedRowHeight =
           getRowHeight?.({ row: row.original, rowId, rowIndex }) ?? rowHeight;
         return (
-          <div
+          <DataGridBodyRow
             key={rowId}
-            role="row"
-            data-rowid={rowId}
-            data-row-index={rowIndex}
-            data-dirty-row={dirtyRowIds?.has(rowId) ? 'true' : undefined}
-            data-deleted-row={deletedRowIds?.has(rowId) ? 'true' : undefined}
-            className="gen-datagrid__row"
-            style={{
-              gridTemplateColumns,
-              ['--gen-datagrid-current-row-height' as string]: `${resolvedRowHeight}px`,
-            }}
-          >
-            {getOrderedVisibleCells(row).map((cell) => {
-              const columnId = cell.column.id;
-              const editableContext = createEditableContext({ row, column: cell.column });
-              const isEditable = resolveEditableCell({
-                row,
-                column: cell.column,
-                readOnly,
-                isCellEditable,
-              });
-              const isEditing =
-                editingCell?.rowId === rowId && editingCell.columnId === columnId;
-              const pinning = enablePinning
-                ? getColumnPinningInfo(cell.column, { zIndex: isEditing ? 5 : 2 })
-                : undefined;
-              const commit = (nextValue = draftValue) => {
-                onCellValueChange?.({
-                  row: row.original,
-                  rowId,
-                  rowIndex,
-                  columnId,
-                  previousValue: editableContext.value,
-                  value: nextValue,
-                });
-                onEditCancel();
-              };
-              const meta = cell.column.columnDef.meta;
-              const editOptions =
-                meta?.getEditOptions?.(editableContext) ?? meta?.editOptions;
-              const selectOnFocus = meta?.editSelectOnFocus ?? editSelectOnFocus ?? false;
-              const commitOnBlur = meta?.editCommitOnBlur ?? editCommitOnBlur ?? false;
-              const handleTabNavigate = (direction: 1 | -1) => {
-                const next = resolveNextEditableCell({
-                  editableCells: getEditableCells(),
-                  current: { rowId, columnId },
-                  direction,
-                });
-                onCellValueChange?.({
-                  row: row.original,
-                  rowId,
-                  rowIndex,
-                  columnId,
-                  previousValue: editableContext.value,
-                  value: draftValue,
-                });
-                onEditCancel();
-                if (!next || (next.rowId === rowId && next.columnId === columnId)) {
-                  return;
-                }
-                onActiveCellChange(next);
-              };
-              const editorContext = createEditorContext({
-                editableContext,
-                draftValue,
-                setDraftValue,
-                commit,
-                cancel: onEditCancel,
-                editType: meta?.editType,
-                editOptions,
-                placeholder: meta?.editPlaceholder,
-                selectOnFocus,
-                commitOnBlur,
-                tabNavigate: handleTabNavigate,
-              });
-              const content = isEditing
-                ? renderCellEditor({
-                    ctx: editorContext,
-                    renderEditor: meta?.renderEditor,
-                    editorFactory,
-                  })
-                : cell.column.columnDef.cell
-                  ? flexRender(cell.column.columnDef.cell, cell.getContext())
-                  : formatCellValue(cell.getValue());
-              return (
-                <DataGridCell
-                  key={cell.id}
-                  rowId={rowId}
-                  columnId={columnId}
-                  isActive={Boolean(
-                    activeCell &&
-                      activeCell.rowId === rowId &&
-                      activeCell.columnId === columnId
-                  )}
-                  isSelected={isCellInRangeSelections({
-                    rowId,
-                    columnId,
-                    rowIds,
-                    columnIds,
-                    selections: rangeSelections,
-                  })}
-                  isEditable={isEditable}
-                  isEditing={isEditing}
-                  isDirty={dirtyCellIds?.has(`${rowId}::${columnId}`)}
-                  pinning={pinning}
-                  onActivate={activateCell}
-                  onEditStart={() => {
-                    if (!isEditable) return;
-                    onEditStart({ rowId, columnId, value: editableContext.value });
-                  }}
-                >
-                  {content}
-                </DataGridCell>
-              );
-            })}
-          </div>
+            row={row}
+            rows={rows}
+            gridTemplateColumns={gridTemplateColumns}
+            rowHeight={resolvedRowHeight}
+            rowIds={rowIds}
+            columnIds={columnIds}
+            rangeSelections={rangeSelections}
+            readOnly={readOnly}
+            enablePinning={enablePinning}
+            isCellEditable={isCellEditable}
+            editSelectOnFocus={editSelectOnFocus}
+            editCommitOnBlur={editCommitOnBlur}
+            editorFactory={editorFactory}
+            onCellValueChange={onCellValueChange}
+            dirtyCellIds={dirtyCellIds}
+            dirtyRowIds={dirtyRowIds}
+            deletedRowIds={deletedRowIds}
+            activeCell={activeCell}
+            onActiveCellChange={activateCell}
+            editingCell={editingCell}
+            draftValue={draftValue}
+            setDraftValue={setDraftValue}
+            onEditStart={onEditStart}
+            onEditCancel={onEditCancel}
+          />
         );
       })}
     </div>
