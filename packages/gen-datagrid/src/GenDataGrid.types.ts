@@ -94,6 +94,13 @@ export type GenDataGridDirtyState = {
   deletedRowIds: string[];
 };
 
+export type GenDataGridScrollSeekingOptions = {
+  enabled?: boolean;
+  jumpThresholdRows?: number;
+  jumpThresholdViewports?: number;
+  resetDelayMs?: number;
+};
+
 export type GenDataGridRenderContext<TData> = {
   table: Table<TData>;
   rows: TData[];
@@ -131,6 +138,7 @@ export type GenDataGridProps<TData> = {
   enablePagination?: boolean;
   enableDirtyState?: boolean;
   enableVirtualization?: boolean;
+  scrollSeeking?: boolean | GenDataGridScrollSeekingOptions;
   clipboardOptions?: {
     includeHeader?: boolean;
   };

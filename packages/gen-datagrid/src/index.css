@@ -63,6 +63,10 @@
   min-width: max-content;
 }
 
+.gen-datagrid__row--placeholder {
+  pointer-events: none;
+}
+
 .gen-datagrid__body--virtual {
   position: relative;
   min-width: max-content;
@@ -237,6 +241,17 @@
   display: flex;
   align-items: center;
   user-select: none;
+}
+
+.gen-datagrid__cell--placeholder {
+  background: #ffffff;
+}
+
+.gen-datagrid__cell-placeholder-bar {
+  height: 10px;
+  display: block;
+  border-radius: 999px;
+  background: color-mix(in srgb, #8c959f 28%, transparent);
 }
 
 .gen-datagrid__cell[data-active-cell='true'] {

@@ -3,16 +3,18 @@
 
 import * as React from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import type { Row } from '@tanstack/react-table';
+import type { Cell, Row } from '@tanstack/react-table';
 
 import type {
   GenDataGridActiveCell,
   GenDataGridCellValueChange,
   GenDataGridEditableContext,
   GenDataGridEditorFactory,
+  GenDataGridScrollSeekingOptions,
 } from '../../GenDataGrid.types';
 import { createEditableContext } from '../../features/editing/editableCell';
 import type { GenDataGridEditingCell } from '../../features/editing/useCellEditing';
+import { getColumnPinningInfo } from '../../features/pinning/pinningStyles';
 import type { GenDataGridRangeSelections } from '../../features/range-selection/rangeSelection';
 import { DataGridBodyRow } from './DataGridBodyRow';
 
@@ -79,8 +81,89 @@ type DataGridVirtualBodyProps<TData> = {
   setDraftValue: (nextValue: unknown) => void;
   onEditStart: (args: GenDataGridEditingCell & { value: unknown }) => void;
   onEditCancel: () => void;
+  scrollSeeking?: boolean | GenDataGridScrollSeekingOptions;
   virtualBodyRef: React.MutableRefObject<DataGridVirtualBodyHandle | null>;
 };
+
+const defaultScrollSeekingOptions: Required<GenDataGridScrollSeekingOptions> = {
+  enabled: true,
+  jumpThresholdRows: 24,
+  jumpThresholdViewports: 2,
+  resetDelayMs: 120,
+};
+
+function getOrderedVisibleCells<TData>(row: Row<TData>, enablePinning: boolean) {
+  return enablePinning
+    ? [...row.getLeftVisibleCells(), ...row.getCenterVisibleCells(), ...row.getRightVisibleCells()]
+    : row.getVisibleCells();
+}
+
+function resolvePlaceholderWidth(cell: Cell<unknown, unknown>, index: number) {
+  const basis = Math.max(48, Math.floor(cell.column.getSize() * 0.72));
+  const variance = (index % 3) * 18;
+  return `${Math.max(36, basis - variance)}px`;
+}
+
+type VirtualPlaceholderRowProps<TData> = {
+  row: Row<TData>;
+  gridTemplateColumns: string;
+  rowHeight: number;
+  enablePinning: boolean;
+  style?: React.CSSProperties;
+};
+
+function VirtualPlaceholderRow<TData>({
+  row,
+  gridTemplateColumns,
+  rowHeight,
+  enablePinning,
+  style,
+}: VirtualPlaceholderRowProps<TData>) {
+  const orderedCells = getOrderedVisibleCells(row, enablePinning);
+
+  return (
+    <div
+      role="row"
+      aria-hidden="true"
+      data-rowid={row.id}
+      data-row-index={row.index}
+      data-virtualized-row="true"
+      data-scroll-seeking-row="true"
+      className="gen-datagrid__row gen-datagrid__row--placeholder"
+      style={{
+        gridTemplateColumns,
+        ['--gen-datagrid-current-row-height' as string]: `${rowHeight}px`,
+        ...style,
+      }}
+    >
+      {orderedCells.map((cell, index) => {
+        const pinning = enablePinning ? getColumnPinningInfo(cell.column, { zIndex: 2 }) : undefined;
+
+        return (
+          <div
+            key={cell.id}
+            role="presentation"
+            data-pinned-cell={pinning?.pinned || undefined}
+            data-pinned-edge={
+              pinning?.isLastLeftPinned
+                ? 'left-end'
+                : pinning?.isFirstRightPinned
+                  ? 'right-start'
+                  : undefined
+            }
+            className="gen-datagrid__cell gen-datagrid__cell--placeholder"
+            style={pinning?.style}
+          >
+            <span
+              className="gen-datagrid__cell-placeholder-bar"
+              style={{ width: resolvePlaceholderWidth(cell as Cell<unknown, unknown>, index) }}
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export function DataGridVirtualBody<TData>({
   rows,
@@ -108,6 +191,7 @@ export function DataGridVirtualBody<TData>({
   setDraftValue,
   onEditStart,
   onEditCancel,
+  scrollSeeking,
   virtualBodyRef,
 }: DataGridVirtualBodyProps<TData>) {
   const activateCell = React.useCallback(
@@ -145,6 +229,24 @@ export function DataGridVirtualBody<TData>({
     },
     [draftValue, editCommitOnBlur, editingCell, onActiveCellChange, onCellValueChange, onEditCancel, rows]
   );
+  const [isLargeJumpScrolling, setIsLargeJumpScrolling] = React.useState(false);
+  const lastScrollTopRef = React.useRef(0);
+  const scrollSeekingOptions = React.useMemo(() => {
+    if (scrollSeeking === false) {
+      return {
+        ...defaultScrollSeekingOptions,
+        enabled: false,
+      };
+    }
+    if (scrollSeeking === true || scrollSeeking === undefined) {
+      return defaultScrollSeekingOptions;
+    }
+    return {
+      ...defaultScrollSeekingOptions,
+      ...scrollSeeking,
+      enabled: scrollSeeking.enabled ?? true,
+    };
+  }, [scrollSeeking]);
 
   const viewportOverscan = Math.max(
     12,
@@ -167,6 +269,7 @@ export function DataGridVirtualBody<TData>({
       width: 0,
       height: rowHeight * 8,
     },
+    isScrollingResetDelay: scrollSeekingOptions.resetDelayMs,
   });
 
   const ensureRowVisible = React.useCallback(
@@ -200,6 +303,49 @@ export function DataGridVirtualBody<TData>({
   );
 
   useClientLayoutEffect(() => {
+    if (!scrollSeekingOptions.enabled) {
+      setIsLargeJumpScrolling(false);
+      return;
+    }
+
+    if (!viewportElement) {
+      setIsLargeJumpScrolling(false);
+      return;
+    }
+
+    lastScrollTopRef.current = viewportElement.scrollTop;
+
+    const handleScroll = () => {
+      const nextScrollTop = viewportElement.scrollTop;
+      const delta = Math.abs(nextScrollTop - lastScrollTopRef.current);
+      lastScrollTopRef.current = nextScrollTop;
+
+      setIsLargeJumpScrolling(
+        delta >=
+          Math.max(
+            viewportElement.clientHeight * scrollSeekingOptions.jumpThresholdViewports,
+            rowHeight * scrollSeekingOptions.jumpThresholdRows
+          )
+      );
+    };
+
+    viewportElement.addEventListener('scroll', handleScroll, { passive: true });
+    return () => viewportElement.removeEventListener('scroll', handleScroll);
+  }, [
+    rowHeight,
+    scrollSeekingOptions.enabled,
+    scrollSeekingOptions.jumpThresholdRows,
+    scrollSeekingOptions.jumpThresholdViewports,
+    viewportElement,
+  ]);
+
+  useClientLayoutEffect(() => {
+    if (!rowVirtualizer.isScrolling && isLargeJumpScrolling) {
+      setIsLargeJumpScrolling(false);
+    }
+  }, [isLargeJumpScrolling, rowVirtualizer.isScrolling]);
+
+  useClientLayoutEffect(() => {
     virtualBodyRef.current = {
       scrollToRowIndex: (rowIndex: number) => {
         ensureRowVisible(rowIndex);
@@ -220,6 +366,8 @@ export function DataGridVirtualBody<TData>({
 
   const totalSize = rowVirtualizer.getTotalSize();
   const virtualItems = rowVirtualizer.getVirtualItems();
+  const isScrollSeeking =
+    scrollSeekingOptions.enabled && rowVirtualizer.isScrolling && isLargeJumpScrolling;
 
   return (
     <div
@@ -232,6 +380,27 @@ export function DataGridVirtualBody<TData>({
       {virtualItems.map((virtualItem) => {
         const row = rows[virtualItem.index];
         if (!row) return null;
+
+        const isActiveRow = activeCell?.rowId === row.id;
+        const isEditingRow = editingCell?.rowId === row.id;
+        const rowStyle: React.CSSProperties = {
+          position: 'absolute',
+          top: `${virtualItem.start}px`,
+          left: 0,
+        };
+
+        if (isScrollSeeking && !isActiveRow && !isEditingRow) {
+          return (
+            <VirtualPlaceholderRow
+              key={row.id}
+              row={row}
+              gridTemplateColumns={gridTemplateColumns}
+              rowHeight={rowHeight}
+              enablePinning={enablePinning}
+              style={rowStyle}
+            />
+          );
+        }
 
         return (
           <DataGridBodyRow
@@ -261,11 +430,7 @@ export function DataGridVirtualBody<TData>({
             onEditStart={onEditStart}
             onEditCancel={onEditCancel}
             virtualized
-            style={{
-              position: 'absolute',
-              top: `${virtualItem.start}px`,
-              left: 0,
-            }}
+            style={rowStyle}
           />
         );
       })}

@@ -18,6 +18,7 @@ export type {
   GenDataGridHandle,
   GenDataGridProps,
   GenDataGridRenderContext,
+  GenDataGridScrollSeekingOptions,
 } from './GenDataGrid.types';
 export type {
   GenDataGridCellCoord,

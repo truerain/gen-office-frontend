@@ -338,6 +338,34 @@ describe('GenDataGrid interaction contract', () => {
     });
   });
 
+  it('resets range selection to the navigated cell on keyboard navigation', async () => {
+    const { container } = renderGrid();
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.mouseDown(firstCell, {
+      button: 0,
+      clientX: 10,
+      clientY: 10,
+    });
+    fireEvent.mouseOver(getCell(container, '2', 'age'), { clientX: 30, clientY: 40 });
+    fireEvent.mouseUp(window);
+
+    await waitFor(() => {
+      expect(getCell(container, '2', 'age').dataset.selectedCell).toBe('true');
+    });
+
+    firstCell.focus();
+    fireEvent.keyDown(firstCell, { key: 'ArrowRight' });
+
+    await waitFor(() => {
+      expect(getCell(container, '1', 'age').dataset.activeCell).toBe('true');
+      expect(getCell(container, '1', 'age').dataset.selectedCell).toBe('true');
+      expect(getCell(container, '1', 'name').dataset.selectedCell).toBeUndefined();
+      expect(getCell(container, '2', 'name').dataset.selectedCell).toBeUndefined();
+      expect(getCell(container, '2', 'age').dataset.selectedCell).toBeUndefined();
+    });
+  });
+
   it('does not extend range selection when the hovered cell changes without pointer movement', async () => {
     const { container } = renderGrid();
 
@@ -682,6 +710,68 @@ describe('GenDataGrid interaction contract', () => {
     await waitFor(() => {
       expect(container.querySelector('[data-rowid="1"]')).toBeNull();
       expect(container.querySelector('[data-rowid="100"]')).not.toBeNull();
+    });
+  });
+
+  it('disables scroll-seeking placeholders when scrollSeeking is false', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="virtual-scroll-seeking-off-grid"
+        data={virtualRows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableVirtualization
+        scrollSeeking={false}
+        style={{ height: 240, width: 320 }}
+      />
+    );
+
+    const viewport = container.querySelector<HTMLElement>('[data-gen-datagrid-viewport="true"]');
+    if (!viewport) throw new Error('Missing virtual viewport');
+
+    Object.defineProperty(viewport, 'scrollTop', {
+      configurable: true,
+      writable: true,
+      value: 3600,
+    });
+    fireEvent.scroll(viewport);
+
+    await waitFor(() => {
+      expect(container.querySelector('[data-scroll-seeking-row="true"]')).toBeNull();
+      expect(container.querySelector('[data-rowid="100"]')).not.toBeNull();
+    });
+  });
+
+  it('renders scroll-seeking placeholders when custom thresholds allow a shorter jump', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="virtual-scroll-seeking-custom-grid"
+        data={virtualRows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableVirtualization
+        scrollSeeking={{
+          enabled: true,
+          jumpThresholdRows: 4,
+          jumpThresholdViewports: 1,
+          resetDelayMs: 1000,
+        }}
+        style={{ height: 240, width: 320 }}
+      />
+    );
+
+    const viewport = container.querySelector<HTMLElement>('[data-gen-datagrid-viewport="true"]');
+    if (!viewport) throw new Error('Missing virtual viewport');
+
+    Object.defineProperty(viewport, 'scrollTop', {
+      configurable: true,
+      writable: true,
+      value: 360,
+    });
+    fireEvent.scroll(viewport);
+
+    await waitFor(() => {
+      expect(container.querySelector('[data-scroll-seeking-row="true"]')).not.toBeNull();
     });
   });
 

@@ -9,14 +9,17 @@ Gate 7 adds fixed-height row virtualization on top of the Gate 6 filtering, foot
 ## Implemented Slice
 
 - `enableVirtualization` is a public feature flag for row virtualization.
+- `scrollSeeking` is a public follow-up option for tuning or disabling large-jump placeholder rendering during virtualization.
 - Gate 7 keeps virtualization scoped to body rows. Header, footer row, pagination, and footer bar stay outside the virtualizer.
 - `renderers/div-grid/DataGridVirtualBody.tsx` owns the virtual row window and renders only the visible row range plus overscan.
+- Large-jump scroll handling now uses a scroll-seeking fallback: while a large scroll jump is still settling, non-active and non-editing virtual rows render lightweight placeholders instead of full cell content.
 - `@tanstack/react-virtual` owns viewport-based row measurement with a fixed `rowHeight`.
 - `getRowHeight` remains supported only when `enableVirtualization !== true`.
 - `DataGridRoot` owns the virtualization switch and passes the shared ordered visible column model to either `DataGridBody` or `DataGridVirtualBody`.
 - Active-cell focus restore is row/column coordinate based. When the target row is outside the current virtual range, the viewport scrolls to the row index before focus is retried.
 - Keyboard navigation keeps using the full row id order, then bridges that result into virtual scroll restoration.
 - Pinned columns keep using the existing sticky offset model from `features/pinning/pinningStyles.ts`.
+- Scroll-seeking placeholders keep the same row height, `gridTemplateColumns`, absolute row offsets, and pinned sticky offsets so the viewport does not visually collapse during large thumb drags.
 - Range selection keeps using row/column ids as its state contract so selection styling is restored when a row re-enters the virtual range.
 - Virtual body rows expose `data-row-index` and keep the existing body cell DOM contract:
   - `data-gen-datagrid-cell="true"`

@@ -175,6 +175,13 @@ export function useRangeSelection({
     selections,
     selection: selections[selections.length - 1] ?? null,
     clearSelection: () => setSelections([]),
+    setSingleSelection: (coord: GenDataGridCellCoord) =>
+      setSelections([
+        {
+          anchor: coord,
+          focus: coord,
+        },
+      ]),
     handleMouseDown,
     handleMouseOver,
   };

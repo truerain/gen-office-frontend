@@ -70,6 +70,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     enablePagination = false,
     enableDirtyState = true,
     enableVirtualization = false,
+    scrollSeeking,
     clipboardOptions,
     footer,
     renderFooter,
@@ -378,6 +379,9 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
 
         event.preventDefault();
         setActiveCell(next);
+        if (enableRangeSelection) {
+          rangeSelection.setSingleSelection(next);
+        }
         return;
       }
 
@@ -394,10 +398,14 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
 
       event.preventDefault();
       setActiveCell(next);
+      if (enableRangeSelection) {
+        rangeSelection.setSingleSelection(next);
+      }
     },
     [
       activeCell,
       clipboard,
+      enableRangeSelection,
       columnIds,
       rangeSelection,
       rowIds,
@@ -480,6 +488,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             setDraftValue={editing.setDraftValue}
             onEditStart={editing.startEditing}
             onEditCancel={editing.cancelEditing}
+            scrollSeeking={scrollSeeking}
             virtualBodyRef={virtualBodyRef}
           />
         ) : (

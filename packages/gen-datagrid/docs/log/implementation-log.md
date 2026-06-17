@@ -4,6 +4,17 @@ Records meaningful GenDataGrid implementation decisions and progress.
 
 ## 2026-06-17
 
+### Gate 7 Scroll-seeking Placeholder Follow-up
+
+- Added a Phase 8 follow-up note to `docs/plan/div-datagrid-development-plan.md` for large-jump scrollbar handling.
+- Updated `DataGridVirtualBody.tsx` so large scroll jumps can temporarily render lightweight placeholder rows while the virtualizer is still scrolling.
+- Added public `scrollSeeking` API support so consumers can disable or tune the placeholder fallback with row, viewport, and reset-delay thresholds.
+- Kept the active row and editing row on the full `DataGridBodyRow` path so focus restore, keyboard movement, and edit state remain stable during scroll settling.
+- Kept placeholder rows aligned with the existing virtualization contract by preserving row height, `gridTemplateColumns`, absolute row positioning, and pinned sticky offsets.
+- Limited the fallback to large scroll deltas so normal mouse-wheel and short scroll interactions keep rendering full rows.
+- Updated the Gate 7 Storybook scenario so scroll-seeking can be compared in default/off/aggressive modes during manual testing.
+- Verified `pnpm -C frontend/packages/gen-datagrid test` passes after the follow-up.
+
 ### Gate 7 Virtualization 시작
 
 - Added `docs/architecture/gate-7-architecture.md` before implementation to lock the Gate 7 slice around body-only virtualization, fixed row height, active-cell restore, pinning, and range-selection restoration.

@@ -466,11 +466,32 @@ type GenDataGridProps<TData> = {
 - footer row와 sticky footer 옵션 동작
 
 ### Phase 8. Virtualization
-
 - row virtualization 구현
 - active cell scroll into view 보정
 - pinned column과 virtualization 조합 검증
 - dynamic height는 별도 backlog로 분리
+
+#### Phase 8.1 Scroll-seeking follow-up
+
+- Problem:
+  - Fast scrollbar thumb drags across hundreds of pages can briefly leave the body visually empty while heavy cell content catches up.
+  - Increasing `overscan` helps nearby scrolling, but does not materially solve large jump rendering gaps.
+- Design:
+  - Keep the current row virtualizer and fixed-height row model.
+  - Add an `isScrolling`-based lightweight row path in `DataGridVirtualBody.tsx`.
+  - While the virtualizer is actively scrolling, render simplified placeholder rows for non-active and non-editing rows.
+  - Keep the active row and editing row on the full `DataGridBodyRow` path so focus restore, keyboard navigation, and edit state remain stable.
+  - Placeholder rows must preserve:
+    - the same `gridTemplateColumns`
+    - the same row height
+    - the same pinned-column sticky offsets
+    - the same absolute row positioning in the virtual body
+- Scope:
+  - This is a rendering-performance fallback only.
+  - It does not change the selection model, active-cell contract, or virtual row measurement contract.
+- QA:
+  - Verify that rapid thumb drag no longer shows a blank body region.
+  - Verify that active-cell movement, editing, pinned columns, and focus restore behave the same after scrolling settles.
 
 완료 기준:
 

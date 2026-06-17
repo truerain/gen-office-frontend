@@ -14,6 +14,7 @@ import type {
   GenDataGridCellValueChange,
   GenDataGridDirtyState,
   GenDataGridHandle,
+  GenDataGridScrollSeekingOptions,
 } from '../GenDataGrid.types';
 import { GenDataGrid } from '../index';
 
@@ -456,31 +457,66 @@ export const Gate6FilteringFooterPaginationDirtyState: Story = {
 };
 
 export const Gate7Virtualization: Story = {
-  render: () => (
-    <div style={{ width: 920, padding: 16 }}>
-      <GenDataGrid<Person>
-        data={gate7Data}
-        columns={columns}
-        getRowId={(row) => row.id}
-        gridId="storybook-gen-datagrid-gate-7"
-        defaultActiveCell={{ rowId: '5000', columnId: 'name' }}
-        defaultSelectedRanges={[
-          {
-            anchor: { rowId: '5000', columnId: 'name' },
-            focus: { rowId: '5000', columnId: 'score' },
-          },
-        ]}
-        defaultColumnPinning={{ left: ['name'] }}
-        enableVirtualization
-        rowHeight={36}
-        headerHeight={40}
-        style={{
-          height: 420,
-          border: '1px solid #d0d7de',
-          borderRadius: 6,
-          background: '#fff',
-        }}
-      />
-    </div>
-  ),
+  args: {
+    scrollSeeking: true,
+  },
+  render: (args) => {
+    const [scrollSeeking, setScrollSeeking] = React.useState<
+      boolean | GenDataGridScrollSeekingOptions
+    >(args.scrollSeeking ?? true);
+
+    React.useEffect(() => {
+      setScrollSeeking(args.scrollSeeking ?? true);
+    }, [args.scrollSeeking]);
+
+    return (
+      <div style={{ width: 920, padding: 16 }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+          <button type="button" onClick={() => setScrollSeeking(true)}>
+            Scroll seeking: default
+          </button>
+          <button type="button" onClick={() => setScrollSeeking(false)}>
+            Scroll seeking: off
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              setScrollSeeking({
+                enabled: true,
+                jumpThresholdRows: 12,
+                jumpThresholdViewports: 1,
+                resetDelayMs: 180,
+              })
+            }
+          >
+            Scroll seeking: aggressive
+          </button>
+        </div>
+        <GenDataGrid<Person>
+          data={gate7Data}
+          columns={columns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-7"
+          defaultActiveCell={{ rowId: '5000', columnId: 'name' }}
+          defaultSelectedRanges={[
+            {
+              anchor: { rowId: '5000', columnId: 'name' },
+              focus: { rowId: '5000', columnId: 'score' },
+            },
+          ]}
+          defaultColumnPinning={{ left: ['name'] }}
+          enableVirtualization
+          scrollSeeking={scrollSeeking}
+          rowHeight={36}
+          headerHeight={40}
+          style={{
+            height: 420,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+      </div>
+    );
+  },
 };
