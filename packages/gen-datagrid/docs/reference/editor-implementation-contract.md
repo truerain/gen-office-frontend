@@ -142,8 +142,10 @@ custom editor는 grid 밖에서 독자적으로 편집을 끝내지 않고, cont
 | `selectOnFocus`, `commitOnBlur` | focus/blur 정책 | implemented |
 | `tabNavigate`, `arrowNavigate` | grid orchestration 콜백 | implemented |
 | `openOnEditStart` | mount 시 open 시도 | implemented (4.1-b) |
-| `editEntryReason` | 진입 이유 | planned (4.1-d) |
-| blur ownership hint | portal/modal blur 무시 | planned (4.1-d) |
+| `editEntryReason` | 진입 이유 | implemented (4.1-d) |
+| `blurOwnership` | resolved inline/portal/modal blur ownership | implemented (4.1-d) |
+| `registerEditorSurface` / `unregisterEditorSurface` | portal/modal editor surface registration | implemented (4.1-d) |
+| `getGridRoot` / `getEditorSurfaces` | blur-boundary lookup helpers | implemented (4.1-d) |
 
 ### 4.3 Built-in editor = 참조 구현
 
@@ -215,14 +217,18 @@ Storybook 경로: `gen-datagrid / Gates / Baseline`
 src/features/editing/
   editPolicy.ts              # 4.1-b merged policy resolution
   builtinEditorKeyboard.ts   # 4.1-c built-in key ownership
+  blurPolicy.ts              # 4.1-d blur ownership and editor surface guards
+  editingCellActivation.ts   # other-cell activation commit/cancel handling
+  editingDeactivate.ts       # shared deactivate commit/cancel policy
   renderEditor.tsx           # built-in reference editors
   editorContext.ts           # shared context builder
   useCellEditing.ts          # editing state
   editNavigation.ts          # editable-cell target resolution
-  (blurPolicy.ts)            # 4.1-d 예정
 
 src/renderers/div-grid/
   DataGridRoot.tsx           # entry orchestration, root keydown
+  DataGridBody.tsx           # click continuation and other-cell activation
+  DataGridVirtualBody.tsx    # virtualized click continuation parity
   DataGridBodyRow.tsx        # per-cell editor context, tab/arrow navigate
 
 src/stories/
@@ -235,10 +241,13 @@ src/stories/
 2. **`renderEditor` 구현** — `GenDataGridEditorContext`만 사용
 3. **4.1-b 정책 연동** — `editPolicy`, `openOnEditStart` 확인
 4. **4.1-c keyboard** — grid callback(`arrowNavigate`, `tabNavigate`) 소비 여부 결정
-5. **4.1-d blur** — portal/modal이면 blur ownership 선언 (4.1-d 완료 후)
+5. **4.1-d blur** — portal/modal이면 blur ownership 선언 및 editor surface 등록
 6. **테스트·Storybook** — gate 패턴에 맞춰 추가
 
-popup/modal editor 인프라가 아직 없으면, keyboard·blur 정책만 문서화하고 구현은 4.1-d 이후로 미룬다. 정책 분류를 먼저 문서에 남기는 것만으로도 이후 작업 기준이 된다.
+Popup/modal editor infrastructure is not a separate grid renderer in Gate 4.1, but the
+shared policy surface is implemented. Custom popup/modal editors should use
+`blurOwnership`, `registerEditorSurface`, `unregisterEditorSurface`, `getGridRoot`, and
+`getEditorSurfaces` from `GenDataGridEditorContext`.
 
 ## 9. 진행 상태 요약
 

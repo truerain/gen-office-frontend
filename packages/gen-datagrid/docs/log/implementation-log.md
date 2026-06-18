@@ -638,6 +638,16 @@ Records meaningful GenDataGrid implementation decisions and progress.
 - reorder handle 버튼에 `data-column-reorder-handle="true"`와 `draggable`을 부여하고, header label/text는 drag source에서 제외했다.
 - resize handle, header label/text, reorder handle 버튼의 역할을 Gate 5 화면 테스트 가이드와 architecture 문서에 반영했다.
 
+### Gate 4.1 Documentation Status Cleanup
+
+- Updated `../reference/editor-implementation-contract.md` so `editEntryReason`,
+  `blurOwnership`, editor surface registration, and blur-boundary helpers are
+  marked as implemented for Gate 4.1-d.
+- Added current Gate 4.1-b/c/d runtime status notes to
+  `../reference/cell-edit-api.md` and `../reference/api-structure.md`.
+- Replaced stale Gate 4.1 follow-up wording for editor open-on-start and policy
+  surface extension with implemented-status wording.
+
 ### Gate 5 Pinned Order And Resize Target Fix
 
 - pinned column의 실제 표시 순서는 `columnOrder`가 아니라 `columnPinning.left/right` 배열이 결정하므로 pinned zone reorder 시 matching pinning 배열도 함께 재정렬하도록 수정했다.

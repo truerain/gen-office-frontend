@@ -211,6 +211,14 @@ Feature API는 각 기능의 enable flag, option, event callback을 묶는다.
 
 Implementation status: `readOnly`, `readonly`, `editSelectOnFocus`, `editCommitOnBlur`, `editOnActiveCell`, `keepEditingOnNavigate`, `editorFactory`, `isCellEditable`, and `onCellValueChange` are defined as public API types. `readOnly`, `readonly`, and `isCellEditable` are wired into the editable cell predicate model. `editSelectOnFocus`, `editCommitOnBlur`, and Tab/Shift+Tab navigation are implemented for built-in editors. `editorFactory` participates in runtime editor rendering, and committed values are emitted through `onCellValueChange`. `editOnActiveCell` and `keepEditingOnNavigate` are reserved public props and emit runtime warnings until the navigation-editing policy slice.
 
+Gate 4.1 status: `editPolicy` is implemented for start triggers, continuation
+triggers, `openOnEditStart`, and `blurOwnership`. Column `meta.editPolicy`
+overrides the grid policy, and column `meta.editBlurOwnership` overrides blur
+ownership directly. `GenDataGridEditorContext` exposes `arrowNavigate`,
+`openOnEditStart`, `editEntryReason`, `blurOwnership`,
+`registerEditorSurface`, `unregisterEditorSurface`, `getGridRoot`, and
+`getEditorSurfaces`.
+
 ### 5.2 Range Selection And Clipboard Feature
 
 | API | Type | 우선순위 | 설명 |
