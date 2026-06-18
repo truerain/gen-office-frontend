@@ -4,6 +4,42 @@ Records meaningful GenDataGrid implementation decisions and progress.
 
 ## 2026-06-18
 
+### Gate 4.1-d Modal Lookup Escape Fix
+
+- `ModalLookupEditor`에 `open` 상태와 셀 앵커 `input`을 추가해 Popover Lookup과 동일한 Escape 단계 정책을 적용했습니다.
+- modal에서 옵션 선택 후 셀로 돌아온 뒤 Escape를 누르면 `ctx.cancel()`이 호출되도록 수정했습니다.
+- modal이 열린 상태의 Escape/backdrop은 편집을 취소하지 않고 modal만 닫습니다.
+- 관련 파일: `src/stories/GenDataGrid.baseline.stories.tsx`
+
+### Gate 4.1-d Modal Storybook Fix
+
+- `ModalLookupEditor`를 body portal + backdrop dialog로 변경해 셀 배경과 겹쳐 보이던 인라인 UI 문제를 수정했습니다.
+- 셀에는 현재 값만 표시하고, Apply/Cancel/Escape/backdrop 클릭은 modal surface에서 처리합니다.
+
+### Gate 4.1-d Popover Storybook Fix
+
+- `Gate41DBlurPolicy`의 Popover Lookup editor가 cell `overflow: hidden`에 가려지지 않도록 `createPortal(document.body)` 기반으로 렌더링하도록 수정했습니다.
+- 편집 중 셀에 `overflow: visible`과 `z-index`를 적용해 인라인 editor overflow도 완화했습니다.
+- 관련 파일: `src/stories/GenDataGrid.baseline.stories.tsx`, `src/index.css`
+
+### Gate 4.1-d Blur And Portal Policy Implementation
+
+- `blurPolicy.ts`, `editingDeactivate.ts`, `editingCellActivation.ts`, `cellRuntime.ts`를 추가해 blur ownership과 editor surface guard를 구현했습니다.
+- public `GenDataGridEditBlurOwnership`, `GenDataGridEditEntryReason`, `editPolicy.blurOwnership`, column `meta.editBlurOwnership`를 추가했습니다.
+- `GenDataGridEditorContext`에 `editEntryReason`, `blurOwnership`, `registerEditorSurface`, `unregisterEditorSurface`, `getGridRoot`, `getEditorSurfaces`를 추가했습니다.
+- built-in editor blur는 `createEditorBlurHandler`로 통합했고, `select`는 기본 `portal` blur ownership을 사용합니다.
+- 다른 셀 activate 시 `editCommitOnBlur`와 `continueTriggers.click`, `modal` ownership을 함께 평가하도록 수정했습니다.
+- `Gate41DBlurPolicy` Storybook 시나리오와 blur/interaction 테스트를 추가했습니다.
+- 검증:
+  - `pnpm -C packages/gen-datagrid exec tsc -p tsconfig.json --noEmit`
+  - `pnpm -C packages/gen-datagrid test`
+
+### Editor Implementation Contract Documentation
+
+- `docs/reference/editor-implementation-contract.md`를 추가해 Gate 4.1을 이후 built-in/custom/popup/modal editor의 공통 구현 계약으로 정리했습니다.
+- 정책 축(진입, 연속, 열기, 키보드, blur), `GenDataGridEditorContext` 계약, built-in 참조 구현, 신규 editor 체크리스트, Storybook/테스트 기준, 구현 위치 맵을 문서화했습니다.
+- `docs/README.md`, `cell-edit-api.md`, `gate-4-1-editing-policy-architecture.md`, `gate-4-1-editing-policy-notes.md`에서 새 문서로 연결했습니다.
+
 ### Gate 4.1-c Built-in Editor Navigation Policy Implementation
 
 - `builtinEditorKeyboard.ts`를 추가해 built-in editor별 Arrow/Tab/Enter/Escape 소유권을 Gate 4.1-c 문서 기준으로 고정했습니다.

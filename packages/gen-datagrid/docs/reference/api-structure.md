@@ -4,6 +4,8 @@
 
 Cell Edit API 기준: editing public props, column meta, editor context, implemented/deferred 상태는 `cell-edit-api.md`를 따른다.
 
+Editor 구현 계약: 이후 built-in/custom editor 설계 기준은 `editor-implementation-contract.md`를 따른다.
+
 ## 1. 목적
 
 이 문서는 `GenDataGrid` API를 TanStack Table의 `Core API` / `Feature API` 구분 방식에 가깝게 재분류한다.

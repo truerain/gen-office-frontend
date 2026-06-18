@@ -6,6 +6,7 @@ import * as React from 'react';
 import type {
   GenDataGridCellValueChange,
   GenDataGridDirtyCell,
+  GenDataGridEditEntryReason,
   GenDataGridHandle,
   GenDataGridProps,
 } from '../../GenDataGrid.types';
@@ -367,7 +368,10 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     [editPolicy, visibleColumns]
   );
 
-  const startActiveCellEditing = React.useCallback((options?: { initialValue?: unknown }) => {
+  const startActiveCellEditing = React.useCallback((options?: {
+    initialValue?: unknown;
+    entryReason?: GenDataGridEditEntryReason;
+  }) => {
     if (!activeCell) return false;
 
     const row = tableRows.find((item) => item.id === activeCell.rowId);
@@ -392,6 +396,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       columnId: activeCell.columnId,
       value: options?.initialValue ?? row.getValue(column.id),
       suppressSelectOnFocus: options?.initialValue !== undefined,
+      entryReason: options?.entryReason,
     });
     return true;
   }, [activeCell, editPolicy, editing, isCellEditable, resolvedReadOnly, tableRows, visibleColumns]);
@@ -481,14 +486,16 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
           event.key === 'Enter'
             ? resolvedEditPolicy?.startTriggers.enter ?? true
             : resolvedEditPolicy?.startTriggers.f2 ?? true;
-        if (allowEditStart && startActiveCellEditing()) {
+        if (allowEditStart && startActiveCellEditing({
+          entryReason: event.key === 'Enter' ? 'enter' : 'f2',
+        })) {
           event.preventDefault();
           return;
         }
       }
 
       if (!editing.editingCell && isPrintableEditKey(event)) {
-        if (startActiveCellEditing({ initialValue: event.key })) {
+        if (startActiveCellEditing({ initialValue: event.key, entryReason: 'printableKey' })) {
           event.preventDefault();
           return;
         }
@@ -647,6 +654,10 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             setDraftValue={editing.setDraftValue}
             onEditStart={editing.startEditing}
             onEditCancel={cancelEditingAndRestoreFocus}
+            getGridRoot={() => rootRef.current}
+            getEditorSurfaces={editing.getEditorSurfaces}
+            registerEditorSurface={editing.registerEditorSurface}
+            unregisterEditorSurface={editing.unregisterEditorSurface}
             scrollSeeking={scrollSeeking}
             virtualBodyRef={virtualBodyRef}
           />
@@ -678,6 +689,10 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             setDraftValue={editing.setDraftValue}
             onEditStart={editing.startEditing}
             onEditCancel={cancelEditingAndRestoreFocus}
+            getGridRoot={() => rootRef.current}
+            getEditorSurfaces={editing.getEditorSurfaces}
+            registerEditorSurface={editing.registerEditorSurface}
+            unregisterEditorSurface={editing.unregisterEditorSurface}
           />
         )}
         {enableFooterRow ? (

@@ -3,6 +3,8 @@
 
 import type {
   GenDataGridEditableContext,
+  GenDataGridEditBlurOwnership,
+  GenDataGridEditEntryReason,
   GenDataGridEditOption,
   GenDataGridEditorContext,
   GenDataGridEditType,
@@ -22,6 +24,12 @@ type CreateEditorContextArgs<TData> = {
   tabNavigate?: (direction: 1 | -1) => void;
   arrowNavigate?: (key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight') => void;
   openOnEditStart?: boolean;
+  editEntryReason?: GenDataGridEditEntryReason;
+  blurOwnership?: GenDataGridEditBlurOwnership;
+  registerEditorSurface?: (element: HTMLElement) => void;
+  unregisterEditorSurface?: (element: HTMLElement) => void;
+  getGridRoot?: () => HTMLElement | null;
+  getEditorSurfaces?: () => Iterable<HTMLElement>;
 };
 
 export function createEditorContext<TData>({
@@ -38,6 +46,12 @@ export function createEditorContext<TData>({
   tabNavigate,
   arrowNavigate,
   openOnEditStart,
+  editEntryReason,
+  blurOwnership,
+  registerEditorSurface,
+  unregisterEditorSurface,
+  getGridRoot,
+  getEditorSurfaces,
 }: CreateEditorContextArgs<TData>): GenDataGridEditorContext<TData> {
   return {
     ...editableContext,
@@ -57,5 +71,11 @@ export function createEditorContext<TData>({
     tabNavigate,
     arrowNavigate,
     openOnEditStart,
+    editEntryReason,
+    blurOwnership,
+    registerEditorSurface,
+    unregisterEditorSurface,
+    getGridRoot,
+    getEditorSurfaces,
   };
 }

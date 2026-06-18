@@ -264,6 +264,9 @@
 }
 
 .gen-datagrid__cell[data-editing-cell='true'] {
+  position: relative;
+  z-index: 4;
+  overflow: visible;
   padding: 0 4px;
 }
 

@@ -3,6 +3,8 @@
 
 import * as React from 'react';
 
+import type { GenDataGridEditEntryReason } from '../../GenDataGrid.types';
+
 const interactiveTargetSelector =
   'input,select,textarea,button,[contenteditable="true"]';
 
@@ -24,7 +26,11 @@ type DataGridCellProps = {
     style: React.CSSProperties;
   };
   onActivate: (coord: { rowId: string; columnId: string }) => void;
-  onEditStart?: (coord: { rowId: string; columnId: string }) => void;
+  onEditStart?: (coord: {
+    rowId: string;
+    columnId: string;
+    entryReason: GenDataGridEditEntryReason;
+  }) => void;
   children: React.ReactNode;
 };
 
@@ -75,14 +81,14 @@ export function DataGridCell({
         }
         event.preventDefault();
         if (allowReclickEdit && isActive && isEditable && !isEditing) {
-          onEditStart?.({ rowId, columnId });
+          onEditStart?.({ rowId, columnId, entryReason: 'reclick' });
           return;
         }
         onActivate({ rowId, columnId });
       }}
       onDoubleClick={() => {
         if (!allowDoubleClickEdit || !isEditable) return;
-        onEditStart?.({ rowId, columnId });
+        onEditStart?.({ rowId, columnId, entryReason: 'doubleClick' });
       }}
     >
       {children}

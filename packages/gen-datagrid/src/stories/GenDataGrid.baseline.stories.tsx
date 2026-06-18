@@ -9,13 +9,16 @@ import type {
   PaginationState,
 } from '@tanstack/react-table';
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 
 import type {
   GenDataGridCellValueChange,
   GenDataGridDirtyState,
+  GenDataGridEditorContext,
   GenDataGridHandle,
   GenDataGridScrollSeekingOptions,
 } from '../GenDataGrid.types';
+import { createEditorBlurHandler } from '../features/editing/blurPolicy';
 import { GenDataGrid } from '../index';
 
 type Person = {
@@ -708,6 +711,358 @@ export const Gate41CEditNavigation: Story = {
           }}
           onCellValueChange={handleCellValueChange}
           rowHeight={64}
+          headerHeight={40}
+          style={{
+            height: 320,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+      </div>
+    );
+  },
+};
+
+function PopoverLookupEditor({ ctx }: { ctx: GenDataGridEditorContext<Person> }) {
+  const anchorRef = React.useRef<HTMLInputElement | null>(null);
+  const surfaceRef = React.useRef<HTMLDivElement | null>(null);
+  const [open, setOpen] = React.useState(true);
+  const [position, setPosition] = React.useState({ top: 0, left: 0, width: 180 });
+
+  const updatePosition = React.useCallback(() => {
+    const anchor = anchorRef.current;
+    if (!anchor) return;
+    const rect = anchor.getBoundingClientRect();
+    setPosition({
+      top: rect.bottom + 4,
+      left: rect.left,
+      width: Math.max(rect.width, 180),
+    });
+  }, []);
+
+  React.useLayoutEffect(() => {
+    if (!open) return;
+    updatePosition();
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [open, updatePosition]);
+
+  React.useEffect(() => {
+    const surface = surfaceRef.current;
+    if (!surface) return;
+    ctx.registerEditorSurface?.(surface);
+    return () => ctx.unregisterEditorSurface?.(surface);
+  }, [ctx, open]);
+
+  const handleBlur = React.useMemo(
+    () =>
+      createEditorBlurHandler({
+        blurOwnership: ctx.blurOwnership ?? 'inline',
+        commitOnBlur: ctx.commitOnBlur,
+        gridRoot: ctx.getGridRoot?.() ?? null,
+        getEditorSurfaces: () => ctx.getEditorSurfaces?.() ?? [],
+        commit: () => ctx.commit(),
+      }),
+    [ctx]
+  );
+
+  const popover =
+    open && typeof document !== 'undefined'
+      ? createPortal(
+          <div
+            ref={surfaceRef}
+            data-gen-datagrid-editor-surface="true"
+            role="listbox"
+            onKeyDown={(event) => {
+              if (event.key !== 'Escape') return;
+              event.preventDefault();
+              setOpen(false);
+              anchorRef.current?.focus();
+            }}
+            style={{
+              position: 'fixed',
+              top: position.top,
+              left: position.left,
+              minWidth: position.width,
+              zIndex: 1000,
+              padding: 8,
+              border: '1px solid #d0d7de',
+              borderRadius: 6,
+              background: '#fff',
+              boxShadow: '0 8px 24px rgba(27, 31, 36, 0.12)',
+            }}
+          >
+            {['London', 'Arlington', 'Cambridge'].map((option) => (
+              <button
+                key={option}
+                type="button"
+                style={{ display: 'block', width: '100%', textAlign: 'left', marginBottom: 4 }}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => {
+                  ctx.setDraftValue(option);
+                  setOpen(false);
+                }}
+              >
+                {option}
+              </button>
+            ))}
+          </div>,
+          document.body
+        )
+      : null;
+
+  return (
+    <>
+      <input
+        ref={anchorRef}
+        aria-label={`${ctx.columnId} editor`}
+        className="gen-datagrid__editor"
+        value={String(ctx.draftValue ?? '')}
+        onFocus={() => {
+          setOpen(true);
+          updatePosition();
+        }}
+        onChange={(event) => ctx.setDraftValue(event.target.value)}
+        onBlur={handleBlur}
+        onKeyDown={(event) => {
+          if (event.key !== 'Escape') return;
+          event.preventDefault();
+          if (open) {
+            setOpen(false);
+            return;
+          }
+          ctx.cancel();
+        }}
+      />
+      {popover}
+    </>
+  );
+}
+
+function ModalLookupEditor({ ctx }: { ctx: GenDataGridEditorContext<Person> }) {
+  const anchorRef = React.useRef<HTMLInputElement | null>(null);
+  const surfaceRef = React.useRef<HTMLDivElement | null>(null);
+  const [open, setOpen] = React.useState(true);
+
+  const closeModal = React.useCallback(() => {
+    setOpen(false);
+    requestAnimationFrame(() => anchorRef.current?.focus());
+  }, []);
+
+  React.useEffect(() => {
+    if (!open) return;
+    const surface = surfaceRef.current;
+    if (!surface) return;
+    ctx.registerEditorSurface?.(surface);
+    return () => ctx.unregisterEditorSurface?.(surface);
+  }, [ctx, open]);
+
+  const handleBlur = React.useMemo(
+    () =>
+      createEditorBlurHandler({
+        blurOwnership: ctx.blurOwnership ?? 'inline',
+        commitOnBlur: ctx.commitOnBlur,
+        gridRoot: ctx.getGridRoot?.() ?? null,
+        getEditorSurfaces: () => ctx.getEditorSurfaces?.() ?? [],
+        commit: () => ctx.commit(),
+      }),
+    [ctx]
+  );
+
+  const modal =
+    open && typeof document !== 'undefined'
+      ? createPortal(
+          <div
+            ref={surfaceRef}
+            data-gen-datagrid-editor-surface="true"
+            role="presentation"
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 1100,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 24,
+            }}
+          >
+            <button
+              type="button"
+              aria-label="Close modal editor"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={closeModal}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                border: 'none',
+                padding: 0,
+                background: 'rgba(27, 31, 36, 0.45)',
+                cursor: 'default',
+              }}
+            />
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label={`${ctx.columnId} modal editor`}
+              onMouseDown={(event) => event.stopPropagation()}
+              onKeyDown={(event) => {
+                if (event.key !== 'Escape') return;
+                event.preventDefault();
+                closeModal();
+              }}
+              style={{
+                position: 'relative',
+                zIndex: 1,
+                width: 'min(360px, 100%)',
+                padding: 16,
+                border: '1px solid #d0d7de',
+                borderRadius: 8,
+                background: '#fff',
+                boxShadow: '0 16px 48px rgba(27, 31, 36, 0.24)',
+              }}
+            >
+              <div style={{ marginBottom: 12, fontSize: 14, fontWeight: 600 }}>Modal Lookup</div>
+              <div style={{ marginBottom: 12, color: '#57606a', fontSize: 13 }}>
+                Current value: {String(ctx.value ?? '')}
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                {['Modal Alpha', 'Modal Beta', 'Modal Gamma'].map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    style={{ display: 'block', width: '100%', textAlign: 'left', marginBottom: 4 }}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => {
+                      ctx.setDraftValue(option);
+                      closeModal();
+                    }}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <button type="button" onClick={() => ctx.cancel()}>
+                  Cancel
+                </button>
+                <button type="button" onClick={() => ctx.commit()}>
+                  Apply
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )
+      : null;
+
+  return (
+    <>
+      <input
+        ref={anchorRef}
+        aria-label={`${ctx.columnId} editor`}
+        className="gen-datagrid__editor"
+        value={String(ctx.draftValue ?? '')}
+        onFocus={() => setOpen(true)}
+        onChange={(event) => ctx.setDraftValue(event.target.value)}
+        onBlur={handleBlur}
+        onKeyDown={(event) => {
+          if (event.key !== 'Escape') return;
+          event.preventDefault();
+          if (open) {
+            closeModal();
+            return;
+          }
+          ctx.cancel();
+        }}
+      />
+      {modal}
+    </>
+  );
+}
+
+export const Gate41DBlurPolicy: Story = {
+  render: () => {
+    const [gridData, setGridData] = React.useState(data);
+
+    const handleCellValueChange = React.useCallback(
+      ({ rowId, columnId, value }: GenDataGridCellValueChange<Person>) => {
+        setGridData((previous) =>
+          previous.map((row) =>
+            row.id === rowId
+              ? {
+                  ...row,
+                  [columnId]: value,
+                }
+              : row
+          )
+        );
+      },
+      []
+    );
+
+    const blurColumns: ColumnDef<Person, unknown>[] = [
+      {
+        accessorKey: 'name',
+        header: 'Name',
+        size: 160,
+        meta: { editable: true },
+      },
+      {
+        accessorKey: 'location',
+        header: 'Popover Lookup',
+        size: 220,
+        meta: {
+          editable: true,
+          editBlurOwnership: 'portal',
+          renderEditor: (ctx) => <PopoverLookupEditor ctx={ctx} />,
+        },
+      },
+      {
+        accessorKey: 'role',
+        header: 'Role Select',
+        size: 200,
+        meta: {
+          editType: 'select',
+          editOptions: [
+            { label: 'Engineer', value: 'Engineer' },
+            { label: 'Computer Scientist', value: 'Computer Scientist' },
+            { label: 'Mathematician', value: 'Mathematician' },
+            { label: 'Researcher', value: 'Researcher' },
+          ],
+        },
+      },
+      {
+        accessorKey: 'note',
+        header: 'Modal Lookup',
+        size: 240,
+        meta: {
+          editable: true,
+          editBlurOwnership: 'modal',
+          renderEditor: (ctx) => <ModalLookupEditor ctx={ctx} />,
+        },
+      },
+    ];
+
+    return (
+      <div style={{ width: 920, padding: 16 }}>
+        <p style={{ margin: '0 0 12px', color: '#57606a', fontSize: 13 }}>
+          Gate 4.1-d manual checks: popover lookup uses a body portal; modal lookup uses a
+          backdrop dialog portal; select defaults to portal blur ownership.
+        </p>
+        <GenDataGrid<Person>
+          data={gridData}
+          columns={blurColumns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-4-1-d"
+          defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+          editCommitOnBlur
+          onCellValueChange={handleCellValueChange}
+          rowHeight={36}
           headerHeight={40}
           style={{
             height: 320,

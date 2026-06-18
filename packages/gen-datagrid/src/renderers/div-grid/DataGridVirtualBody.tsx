@@ -13,9 +13,8 @@ import type {
   GenDataGridEditorFactory,
   GenDataGridScrollSeekingOptions,
 } from '../../GenDataGrid.types';
-import { resolveEditPolicy } from '../../features/editing/editPolicy';
-import { createEditableContext } from '../../features/editing/editableCell';
-import { resolveEditableCell } from '../../features/editing/editableCell';
+import { deactivateEditingForCellActivation } from '../../features/editing/editingCellActivation';
+import { resolveCellEditingRuntime } from '../../features/editing/cellRuntime';
 import type { GenDataGridEditingCell } from '../../features/editing/useCellEditing';
 import { getColumnPinningInfo } from '../../features/pinning/pinningStyles';
 import type { GenDataGridRangeSelections } from '../../features/range-selection/rangeSelection';
@@ -86,6 +85,10 @@ type DataGridVirtualBodyProps<TData> = {
   setDraftValue: (nextValue: unknown) => void;
   onEditStart: (args: GenDataGridEditingCell & { value: unknown }) => void;
   onEditCancel: () => void;
+  getGridRoot?: () => HTMLElement | null;
+  getEditorSurfaces?: () => Iterable<HTMLElement>;
+  registerEditorSurface?: (element: HTMLElement) => void;
+  unregisterEditorSurface?: (element: HTMLElement) => void;
   scrollSeeking?: boolean | GenDataGridScrollSeekingOptions;
   virtualBodyRef: React.MutableRefObject<DataGridVirtualBodyHandle | null>;
 };
@@ -198,35 +201,24 @@ export function DataGridVirtualBody<TData>({
   setDraftValue,
   onEditStart,
   onEditCancel,
+  getGridRoot,
+  getEditorSurfaces,
+  registerEditorSurface,
+  unregisterEditorSurface,
   scrollSeeking,
   virtualBodyRef,
 }: DataGridVirtualBodyProps<TData>) {
   const getCellRuntime = React.useCallback(
-    (coord: { rowId: string; columnId: string }) => {
-      const row = rows.find((item) => item.id === coord.rowId);
-      const tanStackCell = row?.getVisibleCells().find((cell) => cell.column.id === coord.columnId);
-      if (!row || !tanStackCell) return null;
-
-      const editableContext = createEditableContext({
-        row,
-        column: tanStackCell.column,
-      });
-      const meta = tanStackCell.column.columnDef.meta;
-
-      return {
-        row,
-        tanStackCell,
-        editableContext,
-        isEditable: resolveEditableCell({
-          row,
-          column: tanStackCell.column,
-          readOnly,
-          isCellEditable,
-        }),
-        resolvedEditPolicy: resolveEditPolicy(editPolicy, meta?.editPolicy),
-      };
-    },
-    [editPolicy, isCellEditable, readOnly, rows]
+    (coord: { rowId: string; columnId: string }) =>
+      resolveCellEditingRuntime({
+        rows,
+        coord,
+        readOnly,
+        isCellEditable,
+        editPolicy,
+        editCommitOnBlur,
+      }),
+    [editCommitOnBlur, editPolicy, isCellEditable, readOnly, rows]
   );
 
   const activateCell = React.useCallback(
@@ -236,26 +228,33 @@ export function DataGridVirtualBody<TData>({
         (editingCell.rowId !== next.rowId || editingCell.columnId !== next.columnId)
       ) {
         const editingRuntime = getCellRuntime(editingCell);
+        const nextRuntime = getCellRuntime(next);
         if (editingRuntime) {
-          onCellValueChange?.({
+          deactivateEditingForCellActivation({
             row: editingRuntime.row.original,
             rowId: editingRuntime.row.id,
             rowIndex: editingRuntime.row.index,
-            columnId: editingRuntime.tanStackCell.column.id,
+            columnId: editingCell.columnId,
             previousValue: editingRuntime.editableContext.value,
-            value: draftValue,
+            draftValue,
+            commitOnBlur: editingRuntime.commitOnBlur,
+            blurOwnership: editingRuntime.blurOwnership,
+            continueClick: nextRuntime?.resolvedEditPolicy.continueTriggers.click ?? false,
+            onCellValueChange,
+            onEditCancel,
           });
+        } else {
+          onEditCancel();
         }
-        onEditCancel();
 
         onEditingNavigate?.(next);
 
-        const nextRuntime = getCellRuntime(next);
         if (nextRuntime?.isEditable && nextRuntime.resolvedEditPolicy.continueTriggers.click) {
           onEditStart({
             rowId: next.rowId,
             columnId: next.columnId,
             value: nextRuntime.editableContext.value,
+            entryReason: 'click',
           });
         }
         return;
@@ -467,6 +466,10 @@ export function DataGridVirtualBody<TData>({
             setDraftValue={setDraftValue}
             onEditStart={onEditStart}
             onEditCancel={onEditCancel}
+            getGridRoot={getGridRoot}
+            getEditorSurfaces={getEditorSurfaces}
+            registerEditorSurface={registerEditorSurface}
+            unregisterEditorSurface={unregisterEditorSurface}
             virtualized
             style={rowStyle}
           />

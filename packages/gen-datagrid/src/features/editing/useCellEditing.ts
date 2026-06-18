@@ -3,10 +3,13 @@
 
 import * as React from 'react';
 
+import type { GenDataGridEditEntryReason } from '../../GenDataGrid.types';
+
 export type GenDataGridEditingCell = {
   rowId: string;
   columnId: string;
   suppressSelectOnFocus?: boolean;
+  entryReason?: GenDataGridEditEntryReason;
 };
 
 export type StartCellEditingArgs = GenDataGridEditingCell & {
@@ -16,19 +19,36 @@ export type StartCellEditingArgs = GenDataGridEditingCell & {
 export function useCellEditing() {
   const [editingCell, setEditingCell] = React.useState<GenDataGridEditingCell | null>(null);
   const [draftValue, setDraftValue] = React.useState<unknown>(undefined);
+  const editorSurfacesRef = React.useRef<Set<HTMLElement>>(new Set());
+
+  const clearEditorSurfaces = React.useCallback(() => {
+    editorSurfacesRef.current = new Set();
+  }, []);
+
+  const getEditorSurfaces = React.useCallback(() => editorSurfacesRef.current, []);
+
+  const registerEditorSurface = React.useCallback((element: HTMLElement) => {
+    editorSurfacesRef.current.add(element);
+  }, []);
+
+  const unregisterEditorSurface = React.useCallback((element: HTMLElement) => {
+    editorSurfacesRef.current.delete(element);
+  }, []);
 
   const startEditing = React.useCallback(
-    ({ rowId, columnId, value, suppressSelectOnFocus }: StartCellEditingArgs) => {
-      setEditingCell({ rowId, columnId, suppressSelectOnFocus });
+    ({ rowId, columnId, value, suppressSelectOnFocus, entryReason }: StartCellEditingArgs) => {
+      clearEditorSurfaces();
+      setEditingCell({ rowId, columnId, suppressSelectOnFocus, entryReason });
       setDraftValue(value);
     },
-    []
+    [clearEditorSurfaces]
   );
 
   const cancelEditing = React.useCallback(() => {
+    clearEditorSurfaces();
     setEditingCell(null);
     setDraftValue(undefined);
-  }, []);
+  }, [clearEditorSurfaces]);
 
   const isEditingCell = React.useCallback(
     ({ rowId, columnId }: GenDataGridEditingCell) =>
@@ -43,5 +63,8 @@ export function useCellEditing() {
     startEditing,
     cancelEditing,
     isEditingCell,
+    getEditorSurfaces,
+    registerEditorSurface,
+    unregisterEditorSurface,
   };
 }

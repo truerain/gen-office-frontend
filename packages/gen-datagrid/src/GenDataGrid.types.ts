@@ -50,6 +50,18 @@ export type GenDataGridEditOption = {
   value: string | number | boolean;
 };
 
+export type GenDataGridEditEntryReason =
+  | 'reclick'
+  | 'doubleClick'
+  | 'enter'
+  | 'f2'
+  | 'printableKey'
+  | 'click'
+  | 'tab'
+  | 'arrowKey';
+
+export type GenDataGridEditBlurOwnership = 'inline' | 'portal' | 'modal';
+
 export type GenDataGridEditableContext<TData> = {
   row: TData;
   rowId: string;
@@ -72,6 +84,12 @@ export type GenDataGridEditorContext<TData> = GenDataGridEditableContext<TData> 
   tabNavigate?: (direction: 1 | -1) => void;
   arrowNavigate?: (key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight') => void;
   openOnEditStart?: boolean;
+  editEntryReason?: GenDataGridEditEntryReason;
+  blurOwnership?: GenDataGridEditBlurOwnership;
+  registerEditorSurface?: (element: HTMLElement) => void;
+  unregisterEditorSurface?: (element: HTMLElement) => void;
+  getGridRoot?: () => HTMLElement | null;
+  getEditorSurfaces?: () => Iterable<HTMLElement>;
 };
 
 export type GenDataGridEditorFactory<TData> = (
@@ -125,6 +143,7 @@ export type GenDataGridEditPolicy = {
   startTriggers?: GenDataGridEditStartTriggers;
   continueTriggers?: GenDataGridEditContinuationTriggers;
   openOnEditStart?: boolean;
+  blurOwnership?: GenDataGridEditBlurOwnership;
 };
 
 export type GenDataGridRenderContext<TData> = {

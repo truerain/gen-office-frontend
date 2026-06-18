@@ -7,6 +7,7 @@ import type {
   GenDataGridEditorContext,
   GenDataGridEditorFactory,
 } from '../../GenDataGrid.types';
+import { createEditorBlurHandler } from './blurPolicy';
 import { handleBuiltinEditorKeyDown } from './builtinEditorKeyboard';
 
 function normalizeEditorValue(value: unknown) {
@@ -40,11 +41,17 @@ function DefaultCellEditor<TData>({ ctx }: { ctx: GenDataGridEditorContext<TData
   const selectRef = React.useRef<HTMLSelectElement | null>(null);
   const inputRef = React.useRef<HTMLInputElement | null>(null);
 
-  const handleBlur = (event: React.FocusEvent<HTMLElement>) => {
-    if (!ctx.commitOnBlur) return;
-    if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
-    ctx.commit();
-  };
+  const handleBlur = React.useMemo(
+    () =>
+      createEditorBlurHandler({
+        blurOwnership: ctx.blurOwnership ?? 'inline',
+        commitOnBlur: ctx.commitOnBlur,
+        gridRoot: ctx.getGridRoot?.() ?? null,
+        getEditorSurfaces: () => ctx.getEditorSurfaces?.() ?? [],
+        commit: () => ctx.commit(),
+      }),
+    [ctx]
+  );
 
   useOpenOnEditStart(selectRef, Boolean(ctx.openOnEditStart) && ctx.editType === 'select', (element) => {
     element.focus();

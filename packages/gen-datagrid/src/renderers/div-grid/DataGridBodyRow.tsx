@@ -15,6 +15,7 @@ import {
   type ActiveCellNavigationKey,
 } from '../../features/active-cell/navigation';
 import { resolveEditPolicy } from '../../features/editing/editPolicy';
+import { resolveBlurOwnership } from '../../features/editing/blurPolicy';
 import { createEditableContext, resolveEditableCell } from '../../features/editing/editableCell';
 import { createEditorContext } from '../../features/editing/editorContext';
 import { resolveNextEditableCell } from '../../features/editing/editNavigation';
@@ -55,6 +56,10 @@ type DataGridBodyRowProps<TData> = {
   setDraftValue: (nextValue: unknown) => void;
   onEditStart: (args: GenDataGridEditingCell & { value: unknown }) => void;
   onEditCancel: () => void;
+  getGridRoot?: () => HTMLElement | null;
+  getEditorSurfaces?: () => Iterable<HTMLElement>;
+  registerEditorSurface?: (element: HTMLElement) => void;
+  unregisterEditorSurface?: (element: HTMLElement) => void;
   style?: React.CSSProperties;
   virtualized?: boolean;
 };
@@ -86,6 +91,10 @@ export function DataGridBodyRow<TData>({
   setDraftValue,
   onEditStart,
   onEditCancel,
+  getGridRoot,
+  getEditorSurfaces,
+  registerEditorSurface,
+  unregisterEditorSurface,
   style,
   virtualized = false,
 }: DataGridBodyRowProps<TData>) {
@@ -153,6 +162,7 @@ export function DataGridBodyRow<TData>({
       rowId: next.rowId,
       columnId: next.columnId,
       value: nextRuntime.editableContext.value,
+      entryReason: trigger === 'tab' ? 'tab' : 'arrowKey',
     });
   };
 
@@ -206,6 +216,12 @@ export function DataGridBodyRow<TData>({
             ? false
             : (meta?.editSelectOnFocus ?? editSelectOnFocus ?? false);
         const commitOnBlur = meta?.editCommitOnBlur ?? editCommitOnBlur ?? false;
+        const blurOwnership = resolveBlurOwnership({
+          editType: meta?.editType,
+          gridPolicy: editPolicy,
+          columnPolicy: meta?.editPolicy,
+          columnBlurOwnership: meta?.editBlurOwnership,
+        });
         const handleTabNavigate = (direction: 1 | -1) => {
           const next = resolveNextEditableCell({
             editableCells: getEditableCells(),
@@ -255,6 +271,12 @@ export function DataGridBodyRow<TData>({
           tabNavigate: handleTabNavigate,
           arrowNavigate: handleArrowNavigate,
           openOnEditStart: resolvedEditPolicy.openOnEditStart,
+          editEntryReason: editingCell?.entryReason,
+          blurOwnership,
+          registerEditorSurface,
+          unregisterEditorSurface,
+          getGridRoot,
+          getEditorSurfaces,
         });
         const content = isEditing
           ? renderCellEditor({
@@ -289,9 +311,9 @@ export function DataGridBodyRow<TData>({
             allowDoubleClickEdit={resolvedEditPolicy.startTriggers.doubleClick}
             pinning={pinning}
             onActivate={onActiveCellChange}
-            onEditStart={() => {
+            onEditStart={({ entryReason }) => {
               if (!isEditable) return;
-              onEditStart({ rowId, columnId, value: editableContext.value });
+              onEditStart({ rowId, columnId, value: editableContext.value, entryReason });
             }}
           >
             {content}

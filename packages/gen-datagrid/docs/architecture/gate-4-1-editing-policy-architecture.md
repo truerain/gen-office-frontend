@@ -6,6 +6,8 @@ Documents the Gate 4.1 editing policy follow-up for GenDataGrid.
 
 Gate 4.1 completes the deferred editing-policy slice that sits on top of the existing Gate 4 editing runtime. The goal is to make edit entry, editor opening, navigation while editing, and blur/portal behavior explicit and testable.
 
+**Editor 구현 계약 요약:** [`editor-implementation-contract.md`](../reference/editor-implementation-contract.md) — 이후 built-in/custom/popup/modal editor가 따라야 할 정책 축, context API, 체크리스트, 검증 패턴.
+
 ## Scope
 
 - printable-key edit entry
@@ -246,7 +248,27 @@ Validated in this slice:
 
 Known limitation kept for follow-up:
 
-- native `select` Escape close semantics remain browser-dependent; production-grade popup editors may still need Gate 4.1-d or a custom popup editor slice
+- native `select` Escape close semantics remain browser-dependent; production-grade popup editors may still need a custom popup editor slice
+
+## Gate 4.1-d Completion
+
+Gate 4.1-d is complete.
+
+Implemented in this slice:
+
+- `blurPolicy.ts` for blur ownership resolution, editor-surface detection, and shared blur handlers
+- `editEntryReason` tracking on editing start paths
+- `GenDataGridEditBlurOwnership` on `editPolicy`, column `editBlurOwnership`, and editor context
+- `registerEditorSurface` / `unregisterEditorSurface` for portal and modal editor surfaces
+- built-in `select` defaults to `portal` blur ownership
+- modal-owned editors ignore inline blur and cancel on outside cell activation
+- click continuation still commits the previous cell before re-entering edit mode
+
+Validated in this slice:
+
+- unit coverage in `test/blurPolicy.test.ts`
+- interaction coverage for activate-without-commit, portal blur ignore, and modal-owned cancel
+- manual Storybook verification with `Gate41DBlurPolicy`
 
 ## Custom Editor Contract
 

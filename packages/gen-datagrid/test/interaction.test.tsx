@@ -7,6 +7,7 @@ import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
 
 import { GenDataGrid } from '../src';
 import type { GenDataGridHandle } from '../src';
+import { createEditorBlurHandler } from '../src/features/editing/blurPolicy';
 import { focusCellInRoot } from '../src/core/dom/cellDom';
 
 type Person = {
@@ -1448,7 +1449,7 @@ describe('GenDataGrid interaction contract', () => {
     expect(editor?.value).toBe('B');
   });
 
-  it('commits cell editing and moves active cell only when another cell is clicked', async () => {
+  it('cancels editing and moves active cell only when another cell is clicked without editCommitOnBlur', async () => {
     const onCellValueChange = vi.fn();
     const { container } = render(
       <GenDataGrid
@@ -1471,14 +1472,7 @@ describe('GenDataGrid interaction contract', () => {
     await waitFor(() => {
       expect(firstCell.dataset.editingCell).toBeUndefined();
       expect(firstCell.querySelector('input[aria-label="name editor"]')).toBeNull();
-      expect(onCellValueChange).toHaveBeenCalledWith({
-        row: rows[0],
-        rowId: '1',
-        rowIndex: 0,
-        columnId: 'name',
-        previousValue: 'Ada',
-        value: 'Ada',
-      });
+      expect(onCellValueChange).not.toHaveBeenCalled();
       expect(getCell(container, '2', 'name').dataset.activeCell).toBe('true');
       expect(getCell(container, '2', 'name').dataset.editingCell).toBeUndefined();
     });
@@ -1658,6 +1652,117 @@ describe('GenDataGrid interaction contract', () => {
         previousValue: 'Ada',
         value: 'Ada Click Commit',
       });
+      expect(firstCell.dataset.editingCell).toBeUndefined();
+      expect(secondCell.dataset.activeCell).toBe('true');
+    });
+  });
+
+  it('does not commit popover editor blur when focus moves into a registered editor surface', async () => {
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="portal-blur-edit-grid"
+        data={rows}
+        columns={[
+          {
+            accessorKey: 'name',
+            header: 'Name',
+            meta: {
+              editable: true,
+              editType: 'text',
+              renderEditor: (ctx) => {
+                const surfaceRef = React.useRef<HTMLDivElement | null>(null);
+
+                React.useEffect(() => {
+                  const surface = surfaceRef.current;
+                  if (!surface) return;
+                  ctx.registerEditorSurface?.(surface);
+                  return () => ctx.unregisterEditorSurface?.(surface);
+                }, [ctx]);
+
+                const handleBlur = createEditorBlurHandler({
+                  blurOwnership: ctx.blurOwnership ?? 'inline',
+                  commitOnBlur: ctx.commitOnBlur,
+                  gridRoot: ctx.getGridRoot?.() ?? null,
+                  getEditorSurfaces: () => ctx.getEditorSurfaces?.() ?? [],
+                  commit: () => ctx.commit(),
+                });
+
+                return (
+                  <>
+                    <input
+                      aria-label="name editor"
+                      value={String(ctx.draftValue ?? '')}
+                      onChange={(event) => ctx.setDraftValue(event.target.value)}
+                      onBlur={handleBlur}
+                    />
+                    <div ref={surfaceRef} data-gen-datagrid-editor-surface="true" role="listbox">
+                      <button type="button">Popover option</button>
+                    </div>
+                  </>
+                );
+              },
+            },
+          },
+        ]}
+        getRowId={(row) => row.id}
+        editCommitOnBlur
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    const popoverButton = firstCell.querySelector<HTMLButtonElement>(
+      'button[type="button"]'
+    );
+    if (!editor || !popoverButton) throw new Error('Missing popover editor');
+
+    fireEvent.change(editor, { target: { value: 'Ada Portal' } });
+    fireEvent.blur(editor, { relatedTarget: popoverButton });
+
+    await waitFor(() => {
+      expect(onCellValueChange).not.toHaveBeenCalled();
+      expect(firstCell.dataset.editingCell).toBe('true');
+    });
+  });
+
+  it('cancels modal-owned editing when another cell is activated', async () => {
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="modal-activate-cancel-grid"
+        data={rows}
+        columns={[
+          {
+            accessorKey: 'name',
+            header: 'Name',
+            meta: {
+              editable: true,
+              editBlurOwnership: 'modal',
+              renderEditor: (ctx) => (
+                <button type="button" onClick={() => ctx.applyValue('Modal Ada')}>
+                  Apply modal value
+                </button>
+              ),
+            },
+          },
+          { accessorKey: 'age', header: 'Age', meta: { editable: true } },
+        ]}
+        getRowId={(row) => row.id}
+        editCommitOnBlur
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    const secondCell = getCell(container, '2', 'age');
+    fireEvent.doubleClick(firstCell);
+    fireEvent.mouseDown(secondCell, { button: 0 });
+
+    await waitFor(() => {
+      expect(onCellValueChange).not.toHaveBeenCalled();
       expect(firstCell.dataset.editingCell).toBeUndefined();
       expect(secondCell.dataset.activeCell).toBe('true');
     });

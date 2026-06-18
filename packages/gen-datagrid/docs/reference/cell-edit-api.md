@@ -6,6 +6,20 @@ Documents the GenDataGrid cell editing API surface and implementation status.
 
 이 문서는 Cell Edit 관련 public API, column meta, editor context, 현재 구현 상태, 보류 항목을 정리한다. 용어 기준은 `terminology.md`를 따른다.
 
+**추가 editor 구현 기준**은 [`editor-implementation-contract.md`](editor-implementation-contract.md)를 따른다. Gate 4.1-b/c/d 정책 축, built-in 참조 구현, custom editor 체크리스트가 정리되어 있다.
+
+Gate 4.1-d에서 추가된 blur API:
+
+| API | 상태 | 설명 |
+| --- | --- | --- |
+| `editPolicy.blurOwnership` | implemented | grid-level inline/portal/modal blur ownership |
+| `meta.editBlurOwnership` | implemented | column override |
+| `ctx.editEntryReason` | implemented | 편집 진입 이유 |
+| `ctx.blurOwnership` | implemented | resolved blur ownership |
+| `ctx.registerEditorSurface` | implemented | portal/modal surface 등록 |
+| `ctx.unregisterEditorSurface` | implemented | surface 해제 |
+| `data-gen-datagrid-editor-surface="true"` | implemented | editor surface DOM marker |
+
 ## 1. Gate 4 기준
 
 Gate 4의 목표는 **cell editing의 최소 완성 UX**를 제공하는 것이다.

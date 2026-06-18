@@ -10,8 +10,8 @@ import type {
   GenDataGridEditPolicy,
   GenDataGridEditorFactory,
 } from '../../GenDataGrid.types';
-import { resolveEditPolicy } from '../../features/editing/editPolicy';
-import { createEditableContext, resolveEditableCell } from '../../features/editing/editableCell';
+import { deactivateEditingForCellActivation } from '../../features/editing/editingCellActivation';
+import { resolveCellEditingRuntime } from '../../features/editing/cellRuntime';
 import type { GenDataGridEditingCell } from '../../features/editing/useCellEditing';
 import type { GenDataGridRangeSelections } from '../../features/range-selection/rangeSelection';
 import { DataGridBodyRow } from './DataGridBodyRow';
@@ -47,6 +47,10 @@ type DataGridBodyProps<TData> = {
   setDraftValue: (nextValue: unknown) => void;
   onEditStart: (args: GenDataGridEditingCell & { value: unknown }) => void;
   onEditCancel: () => void;
+  getGridRoot?: () => HTMLElement | null;
+  getEditorSurfaces?: () => Iterable<HTMLElement>;
+  registerEditorSurface?: (element: HTMLElement) => void;
+  unregisterEditorSurface?: (element: HTMLElement) => void;
 };
 
 export function DataGridBody<TData>({
@@ -76,58 +80,58 @@ export function DataGridBody<TData>({
   setDraftValue,
   onEditStart,
   onEditCancel,
+  getGridRoot,
+  getEditorSurfaces,
+  registerEditorSurface,
+  unregisterEditorSurface,
 }: DataGridBodyProps<TData>) {
-  const getCellRuntime = (coord: { rowId: string; columnId: string }) => {
-    const row = rows.find((item) => item.id === coord.rowId);
-    const tanstackCell = row?.getVisibleCells().find((cell) => cell.column.id === coord.columnId);
-    if (!row || !tanstackCell) return null;
-
-    const editableContext = createEditableContext({
-      row,
-      column: tanstackCell.column,
-    });
-    const meta = tanstackCell.column.columnDef.meta;
-
-    return {
-      row,
-      tanstackCell,
-      editableContext,
-      isEditable: resolveEditableCell({
-        row,
-        column: tanstackCell.column,
-        readOnly,
-        isCellEditable,
-      }),
-      resolvedEditPolicy: resolveEditPolicy(editPolicy, meta?.editPolicy),
-    };
-  };
-
   const activateCell = (next: Exclude<GenDataGridActiveCell, null>) => {
     if (
       editingCell &&
       (editingCell.rowId !== next.rowId || editingCell.columnId !== next.columnId)
     ) {
-      const editingRuntime = getCellRuntime(editingCell);
+      const editingRuntime = resolveCellEditingRuntime({
+        rows,
+        coord: editingCell,
+        readOnly,
+        isCellEditable,
+        editPolicy,
+        editCommitOnBlur,
+      });
+      const nextRuntime = resolveCellEditingRuntime({
+        rows,
+        coord: next,
+        readOnly,
+        isCellEditable,
+        editPolicy,
+        editCommitOnBlur,
+      });
       if (editingRuntime) {
-        onCellValueChange?.({
+        deactivateEditingForCellActivation({
           row: editingRuntime.row.original,
           rowId: editingRuntime.row.id,
           rowIndex: editingRuntime.row.index,
-          columnId: editingRuntime.tanstackCell.column.id,
+          columnId: editingCell.columnId,
           previousValue: editingRuntime.editableContext.value,
-          value: draftValue,
+          draftValue,
+          commitOnBlur: editingRuntime.commitOnBlur,
+          blurOwnership: editingRuntime.blurOwnership,
+          continueClick: nextRuntime?.resolvedEditPolicy.continueTriggers.click ?? false,
+          onCellValueChange,
+          onEditCancel,
         });
+      } else {
+        onEditCancel();
       }
-      onEditCancel();
 
       onEditingNavigate?.(next);
 
-      const nextRuntime = getCellRuntime(next);
       if (nextRuntime?.isEditable && nextRuntime.resolvedEditPolicy.continueTriggers.click) {
         onEditStart({
           rowId: next.rowId,
           columnId: next.columnId,
           value: nextRuntime.editableContext.value,
+          entryReason: 'click',
         });
       }
       return;
@@ -172,6 +176,10 @@ export function DataGridBody<TData>({
             setDraftValue={setDraftValue}
             onEditStart={onEditStart}
             onEditCancel={onEditCancel}
+            getGridRoot={getGridRoot}
+            getEditorSurfaces={getEditorSurfaces}
+            registerEditorSurface={registerEditorSurface}
+            unregisterEditorSurface={unregisterEditorSurface}
           />
         );
       })}

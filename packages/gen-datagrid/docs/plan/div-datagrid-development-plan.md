@@ -507,6 +507,8 @@ type GenDataGridProps<TData> = {
 
 #### Gate 4.1 Editing policy follow-up
 
+Editor 구현 계약 요약: [`editor-implementation-contract.md`](../reference/editor-implementation-contract.md)
+
 - Gate 4.1-a printable-key edit entry
   - initial draft replacement policy
   - IME-safe entry guard
@@ -568,8 +570,10 @@ type GenDataGridProps<TData> = {
   - portal-safe blur ignore
   - modal-owned edit lifecycle
   - native date editor stays manual-visual verification; custom datepicker policy can be automated separately
-
-#### Gate 4.2 Clipboard and mutation follow-up
+  - status
+    - complete
+    - verified by Storybook manual testing and package interaction/unit tests
+- Gate 4.2 Clipboard and mutation follow-up
 
 - clipboard paste application into editable cells
 - paste-to-selection policy for multi-cell ranges
