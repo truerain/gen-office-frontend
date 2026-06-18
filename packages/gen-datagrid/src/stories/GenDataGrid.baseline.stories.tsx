@@ -621,6 +621,106 @@ export const Gate41VirtualEditingPolicy: Story = {
   },
 };
 
+export const Gate41CEditNavigation: Story = {
+  render: () => {
+    type NavigationPerson = Person & { active: boolean };
+    const [gridData, setGridData] = React.useState<NavigationPerson[]>(
+      data.map((row, index) => ({
+        ...row,
+        active: index % 2 === 0,
+      }))
+    );
+
+    const handleCellValueChange = React.useCallback(
+      ({ rowId, columnId, value }: GenDataGridCellValueChange<NavigationPerson>) => {
+        setGridData((previous) =>
+          previous.map((row) =>
+            row.id === rowId
+              ? {
+                  ...row,
+                  [columnId]: columnId === 'score' ? Number(value) : value,
+                }
+              : row
+          )
+        );
+      },
+      []
+    );
+
+    const navigationColumns: ColumnDef<NavigationPerson, unknown>[] = [
+      {
+        accessorKey: 'name',
+        header: 'Name',
+        size: 160,
+        meta: { editable: true, editType: 'text' },
+      },
+      {
+        accessorKey: 'role',
+        header: 'Role',
+        size: 200,
+        meta: {
+          editType: 'select',
+          editOptions: [
+            { label: 'Engineer', value: 'Engineer' },
+            { label: 'Computer Scientist', value: 'Computer Scientist' },
+            { label: 'Mathematician', value: 'Mathematician' },
+            { label: 'Researcher', value: 'Researcher' },
+          ],
+        },
+      },
+      {
+        accessorKey: 'score',
+        header: 'Score',
+        size: 90,
+        meta: { editType: 'number' },
+      },
+      {
+        accessorKey: 'note',
+        header: 'Note',
+        size: 320,
+        meta: { editType: 'textarea', editable: true },
+      },
+      {
+        accessorKey: 'active',
+        header: 'Active',
+        size: 90,
+        meta: { editType: 'checkbox' },
+      },
+    ];
+
+    return (
+      <div style={{ width: 920, padding: 16 }}>
+        <p style={{ margin: '0 0 12px', color: '#57606a', fontSize: 13 }}>
+          Gate 4.1-c manual checks: text/number/checkbox Arrow moves the grid; textarea Arrow stays
+          local and Enter inserts a newline; select Arrow stays local and Enter commits.
+        </p>
+        <GenDataGrid<NavigationPerson>
+          data={gridData}
+          columns={navigationColumns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-4-1-c"
+          defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+          editSelectOnFocus
+          editPolicy={{
+            continueTriggers: {
+              arrowKey: true,
+            },
+          }}
+          onCellValueChange={handleCellValueChange}
+          rowHeight={64}
+          headerHeight={40}
+          style={{
+            height: 320,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+      </div>
+    );
+  },
+};
+
 export const Gate41BEditPolicy: Story = {
   render: () => {
     const [gridData, setGridData] = React.useState(data);

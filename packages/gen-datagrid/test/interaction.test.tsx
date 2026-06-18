@@ -1904,6 +1904,160 @@ describe('GenDataGrid interaction contract', () => {
     });
   });
 
+  it('does not continue textarea editing with Arrow keys even when arrowKey continuation is enabled', async () => {
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="textarea-arrow-local-grid"
+        data={rows}
+        columns={[
+          { accessorKey: 'name', header: 'Name', meta: { editable: true, editType: 'textarea' } },
+          { accessorKey: 'age', header: 'Age', meta: { editable: true, editType: 'textarea' } },
+        ]}
+        getRowId={(row) => row.id}
+        editPolicy={{
+          continueTriggers: {
+            arrowKey: true,
+          },
+        }}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLTextAreaElement>('textarea[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing textarea editor');
+
+    fireEvent.change(editor, { target: { value: 'Ada\nLine 2' } });
+    fireEvent.keyDown(editor, { key: 'ArrowDown' });
+
+    await waitFor(() => {
+      expect(onCellValueChange).not.toHaveBeenCalled();
+      expect(firstCell.dataset.editingCell).toBe('true');
+      expect(getCell(container, '2', 'name').dataset.editingCell).toBeUndefined();
+    });
+  });
+
+  it('does not commit textarea editing on Enter', async () => {
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="textarea-enter-newline-grid"
+        data={rows}
+        columns={[
+          { accessorKey: 'name', header: 'Name', meta: { editable: true, editType: 'textarea' } },
+        ]}
+        getRowId={(row) => row.id}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLTextAreaElement>('textarea[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing textarea editor');
+
+    fireEvent.change(editor, { target: { value: 'Ada' } });
+    fireEvent.keyDown(editor, { key: 'Enter' });
+
+    await waitFor(() => {
+      expect(onCellValueChange).not.toHaveBeenCalled();
+      expect(firstCell.dataset.editingCell).toBe('true');
+    });
+  });
+
+  it('keeps select Arrow keys editor-local even when arrowKey continuation is enabled', async () => {
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="select-arrow-local-grid"
+        data={rows}
+        columns={[
+          {
+            accessorKey: 'name',
+            header: 'Name',
+            meta: {
+              editable: true,
+              editType: 'select',
+              editOptions: [
+                { label: 'Ada', value: 'Ada' },
+                { label: 'Grace', value: 'Grace' },
+              ],
+            },
+          },
+          { accessorKey: 'age', header: 'Age', meta: { editable: true } },
+        ]}
+        getRowId={(row) => row.id}
+        editPolicy={{
+          continueTriggers: {
+            arrowKey: true,
+          },
+        }}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLSelectElement>('select[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing select editor');
+
+    fireEvent.keyDown(editor, { key: 'ArrowDown' });
+
+    await waitFor(() => {
+      expect(onCellValueChange).not.toHaveBeenCalled();
+      expect(firstCell.dataset.editingCell).toBe('true');
+      expect(getCell(container, '2', 'name').dataset.editingCell).toBeUndefined();
+    });
+  });
+
+  it('commits select editing on Enter', async () => {
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="select-enter-commit-grid"
+        data={rows}
+        columns={[
+          {
+            accessorKey: 'name',
+            header: 'Name',
+            meta: {
+              editable: true,
+              editType: 'select',
+              editOptions: [
+                { label: 'Ada', value: 'Ada' },
+                { label: 'Grace', value: 'Grace' },
+              ],
+            },
+          },
+        ]}
+        getRowId={(row) => row.id}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLSelectElement>('select[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing select editor');
+
+    fireEvent.change(editor, { target: { value: 'Grace' } });
+    fireEvent.keyDown(editor, { key: 'Enter' });
+
+    await waitFor(() => {
+      expect(onCellValueChange).toHaveBeenCalledWith({
+        row: rows[0],
+        rowId: '1',
+        rowIndex: 0,
+        columnId: 'name',
+        previousValue: 'Ada',
+        value: 'Grace',
+      });
+      expect(firstCell.dataset.editingCell).toBeUndefined();
+    });
+  });
+
   it('renders custom editors and applies values through editor context', async () => {
     const onCellValueChange = vi.fn();
     const editorContextSpy = vi.fn();

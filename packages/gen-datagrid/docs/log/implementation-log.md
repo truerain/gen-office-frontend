@@ -2,6 +2,20 @@
 Records meaningful GenDataGrid implementation decisions and progress.
 -->
 
+## 2026-06-18
+
+### Gate 4.1-c Built-in Editor Navigation Policy Implementation
+
+- `builtinEditorKeyboard.ts`를 추가해 built-in editor별 Arrow/Tab/Enter/Escape 소유권을 Gate 4.1-c 문서 기준으로 고정했습니다.
+- `textarea`와 `select`는 Arrow 키를 grid navigation으로 넘기지 않고 editor-local/native 동작을 유지합니다.
+- `text` / `number` / `date` / `checkbox`는 Arrow 키 grid navigation, Tab 이동, Enter commit, Escape cancel 정책을 유지합니다.
+- `textarea`는 Enter commit을 막아 newline 입력을 허용합니다.
+- `renderEditor.tsx`의 중복 `onKeyDown` 분기를 공통 핸들러로 정리했습니다.
+- `Gate41CEditNavigation` Storybook 시나리오와 interaction/unit 테스트를 추가했습니다.
+- 검증:
+  - `pnpm -C packages/gen-datagrid exec tsc -p tsconfig.json --noEmit`
+  - `pnpm -C packages/gen-datagrid test`
+
 ## 2026-06-17
 
 ### Gate 4.1 Editing Policy Planning
@@ -33,6 +47,16 @@ Records meaningful GenDataGrid implementation decisions and progress.
 - Verified:
   - `pnpm -C frontend/packages/gen-datagrid exec tsc -p tsconfig.json --noEmit`
   - `pnpm -C frontend/packages/gen-datagrid test`
+
+### Gate 4.1-c Navigation Policy Reframing
+
+- Narrowed Gate 4.1-c from a broad "keep editing on navigate" placeholder into a concrete built-in editor keyboard policy slice.
+- Fixed the intended built-in policy split:
+  - `text` / `number` / `date`: Arrow grid navigation, `Tab` move, `Enter` commit, `Escape` cancel
+  - `textarea`: Arrow editor-local, `Tab` move, `Enter` newline, `Escape` cancel
+  - `select`: Arrow editor-first, `Tab` move, `Enter` confirm/commit, `Escape` native close/cancel
+  - `checkbox`: Arrow grid navigation, `Tab` move, `Enter` current built-in toggle/commit, `Escape` cancel
+- Kept popup/custom editor navigation ownership deferred until popup editor infrastructure actually exists, instead of pretending Gate 4.1-c can finalize that contract now.
 
 ### Gate 3.1 Keyboard Selection And Scroll Handle
 

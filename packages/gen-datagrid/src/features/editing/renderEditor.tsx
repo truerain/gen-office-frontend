@@ -7,30 +7,13 @@ import type {
   GenDataGridEditorContext,
   GenDataGridEditorFactory,
 } from '../../GenDataGrid.types';
+import { handleBuiltinEditorKeyDown } from './builtinEditorKeyboard';
 
 function normalizeEditorValue(value: unknown) {
   if (value == null) return '';
   if (typeof value === 'string' || typeof value === 'number') return value;
   if (typeof value === 'boolean') return value;
   return String(value);
-}
-
-function handleArrowEditorNavigation<TData>(
-  event: React.KeyboardEvent<HTMLElement>,
-  ctx: GenDataGridEditorContext<TData>
-) {
-  if (
-    event.key === 'ArrowUp' ||
-    event.key === 'ArrowDown' ||
-    event.key === 'ArrowLeft' ||
-    event.key === 'ArrowRight'
-  ) {
-    if (!ctx.arrowNavigate) return false;
-    event.preventDefault();
-    ctx.arrowNavigate(event.key);
-    return true;
-  }
-  return false;
 }
 
 function useOpenOnEditStart<TElement extends HTMLElement>(
@@ -98,20 +81,7 @@ function DefaultCellEditor<TData>({ ctx }: { ctx: GenDataGridEditorContext<TData
         }}
         onChange={(event) => ctx.setDraftValue(event.currentTarget.value)}
         onBlur={handleBlur}
-        onKeyDown={(event) => {
-          if (event.key === 'Tab') {
-            event.preventDefault();
-            ctx.tabNavigate?.(event.shiftKey ? -1 : 1);
-            return;
-          }
-          if (handleArrowEditorNavigation(event, ctx)) {
-            return;
-          }
-          if (event.key === 'Escape') {
-            event.preventDefault();
-            ctx.cancel();
-          }
-        }}
+        onKeyDown={(event) => handleBuiltinEditorKeyDown(event, ctx)}
       />
     );
   }
@@ -126,24 +96,7 @@ function DefaultCellEditor<TData>({ ctx }: { ctx: GenDataGridEditorContext<TData
         value={String(normalizeEditorValue(ctx.draftValue))}
         onChange={(event) => ctx.setDraftValue(event.currentTarget.value)}
         onBlur={handleBlur}
-        onKeyDown={(event) => {
-          if (event.key === 'Tab') {
-            event.preventDefault();
-            ctx.tabNavigate?.(event.shiftKey ? -1 : 1);
-            return;
-          }
-          if (handleArrowEditorNavigation(event, ctx)) {
-            return;
-          }
-          if (event.key === 'Enter') {
-            event.preventDefault();
-            ctx.commit();
-          }
-          if (event.key === 'Escape') {
-            event.preventDefault();
-            ctx.cancel();
-          }
-        }}
+        onKeyDown={(event) => handleBuiltinEditorKeyDown(event, ctx)}
       >
         {ctx.editOptions?.map((option) => (
           <option key={String(option.value)} value={String(option.value)}>
@@ -164,24 +117,7 @@ function DefaultCellEditor<TData>({ ctx }: { ctx: GenDataGridEditorContext<TData
         checked={Boolean(ctx.draftValue)}
         onChange={(event) => ctx.setDraftValue(event.currentTarget.checked)}
         onBlur={handleBlur}
-        onKeyDown={(event) => {
-          if (event.key === 'Tab') {
-            event.preventDefault();
-            ctx.tabNavigate?.(event.shiftKey ? -1 : 1);
-            return;
-          }
-          if (handleArrowEditorNavigation(event, ctx)) {
-            return;
-          }
-          if (event.key === 'Enter') {
-            event.preventDefault();
-            ctx.commit();
-          }
-          if (event.key === 'Escape') {
-            event.preventDefault();
-            ctx.cancel();
-          }
-        }}
+        onKeyDown={(event) => handleBuiltinEditorKeyDown(event, ctx)}
       />
     );
   }
@@ -201,24 +137,7 @@ function DefaultCellEditor<TData>({ ctx }: { ctx: GenDataGridEditorContext<TData
       }}
       onChange={(event) => ctx.setDraftValue(event.currentTarget.value)}
       onBlur={handleBlur}
-      onKeyDown={(event) => {
-        if (event.key === 'Tab') {
-          event.preventDefault();
-          ctx.tabNavigate?.(event.shiftKey ? -1 : 1);
-          return;
-        }
-        if (handleArrowEditorNavigation(event, ctx)) {
-          return;
-        }
-        if (event.key === 'Enter') {
-          event.preventDefault();
-          ctx.commit();
-        }
-        if (event.key === 'Escape') {
-          event.preventDefault();
-          ctx.cancel();
-        }
-      }}
+      onKeyDown={(event) => handleBuiltinEditorKeyDown(event, ctx)}
     />
   );
 }

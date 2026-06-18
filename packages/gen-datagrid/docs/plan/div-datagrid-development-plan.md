@@ -538,8 +538,31 @@ type GenDataGridProps<TData> = {
     - verified by Storybook manual testing and package interaction tests
     - native browser `select` immediate-open remains best-effort and may require a custom popup editor later
 - Gate 4.1-c navigation while editing
-  - `keepEditingOnNavigate`
-  - commit/cancel/keep policy on Arrow and Tab navigation
+  - built-in editor navigation policy refinement
+  - `text` / `number` / `date`
+    - Arrow: grid navigation
+    - `Tab`: commit and move
+    - `Enter`: commit
+    - `Escape`: cancel
+  - `textarea`
+    - Arrow: editor-local caret movement
+    - `Tab`: commit and move
+    - `Enter`: newline
+    - `Escape`: cancel
+  - `select`
+    - Arrow: editor-first ownership
+    - `Tab`: commit and move
+    - `Enter`: confirm / commit
+    - `Escape`: native close / cancel path
+  - `checkbox`
+    - Arrow: grid navigation
+    - `Tab`: commit and move
+    - `Enter`: current built-in toggle / commit contract
+    - `Escape`: cancel
+  - popup/custom editor navigation policy remains deferred until popup editor infrastructure exists
+  - status
+    - complete
+    - verified by Storybook manual testing and package interaction/unit tests
 - Gate 4.1-d advanced blur and portal policy
   - inline blur commit
   - portal-safe blur ignore

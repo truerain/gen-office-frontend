@@ -10,7 +10,7 @@ Gate 4.1 completes the deferred editing-policy slice that sits on top of the exi
 
 - printable-key edit entry
 - `editOnActiveCell`
-- `keepEditingOnNavigate`
+- built-in editor navigation policy while editing
 - open-on-edit-start behavior for built-in and custom editors
 - advanced blur / portal / modal editor commit policy
 
@@ -193,6 +193,61 @@ Known limitation kept for follow-up:
   - participates in edit entry and navigation policy
   - does not require a popover-open contract
 
+## Gate 4.1-c Navigation Policy
+
+Gate 4.1-c is intentionally narrower than the original placeholder wording. This slice does not introduce popup-editor infrastructure by itself. Instead, it locks the keyboard ownership policy for the built-in editors that already exist in the runtime.
+
+### Built-in editor key ownership
+
+- `text`, `number`, `date`
+  - Arrow keys: grid navigation ownership
+  - `Tab` / `Shift+Tab`: commit and move
+  - `Enter`: commit
+  - `Escape`: cancel
+- `textarea`
+  - Arrow keys: editor-local caret movement
+  - `Tab` / `Shift+Tab`: commit and move
+  - `Enter`: newline
+  - `Escape`: cancel
+- `select`
+  - Arrow keys: editor-first ownership
+  - `Tab` / `Shift+Tab`: commit and move
+  - `Enter`: confirm / commit
+  - `Escape`: close or cancel according to native control behavior
+- `checkbox`
+  - Arrow keys: grid navigation ownership
+  - `Tab` / `Shift+Tab`: commit and move
+  - `Enter`: commit / toggle contract defined by the current built-in runtime
+  - `Escape`: cancel
+
+### Scope boundary
+
+- Gate 4.1-c does not yet define a separate popup-editor lifecycle.
+- custom popover, datepicker, dropdown, and modal editors will reuse the same policy categories later, but their concrete focus/blur ownership remains part of Gate 4.1-d or a later popup-editor slice.
+- textarea is the main built-in exception and must keep editor-local Arrow and Enter behavior even when other built-in editors continue to prefer grid-owned Arrow navigation.
+
+## Gate 4.1-c Completion
+
+Gate 4.1-c is complete.
+
+Implemented in this slice:
+
+- `builtinEditorKeyboard.ts` centralizes built-in editor keyboard ownership
+- `textarea` and `select` keep Arrow keys editor-local
+- `text`, `number`, `date`, and `checkbox` keep Arrow keys on grid navigation
+- `textarea` Enter keeps newline behavior instead of commit
+- `select` Enter commits; Escape cancels through the shared editor cancel path
+
+Validated in this slice:
+
+- unit coverage in `test/builtinEditorKeyboard.test.ts`
+- interaction coverage for textarea/select Arrow ownership and select Enter commit
+- manual Storybook verification with `Gate41CEditNavigation`
+
+Known limitation kept for follow-up:
+
+- native `select` Escape close semantics remain browser-dependent; production-grade popup editors may still need Gate 4.1-d or a custom popup editor slice
+
 ## Custom Editor Contract
 
 Custom editors should receive enough context to decide whether they should open a popover or modal immediately on mount.
@@ -212,7 +267,7 @@ This keeps built-in and custom editors on one policy surface instead of creating
 
 - printable-key edit entry state transition
 - `editOnActiveCell` activation behavior
-- `keepEditingOnNavigate` behavior across Arrow/Tab navigation
+- built-in editor navigation policy across Arrow/Tab/Enter/Escape
 - `openOnEditStart` signal propagation to built-in and custom editors
 - blur commit / cancel behavior for inline editors
 - portal-safe ignore behavior through explicit editor hooks or test doubles
