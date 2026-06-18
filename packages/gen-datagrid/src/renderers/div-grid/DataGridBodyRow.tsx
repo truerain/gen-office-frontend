@@ -7,8 +7,14 @@ import type {
   GenDataGridActiveCell,
   GenDataGridCellValueChange,
   GenDataGridEditableContext,
+  GenDataGridEditPolicy,
   GenDataGridEditorFactory,
 } from '../../GenDataGrid.types';
+import {
+  resolveNextActiveCell,
+  type ActiveCellNavigationKey,
+} from '../../features/active-cell/navigation';
+import { resolveEditPolicy } from '../../features/editing/editPolicy';
 import { createEditableContext, resolveEditableCell } from '../../features/editing/editableCell';
 import { createEditorContext } from '../../features/editing/editorContext';
 import { resolveNextEditableCell } from '../../features/editing/editNavigation';
@@ -33,6 +39,7 @@ type DataGridBodyRowProps<TData> = {
   readOnly?: boolean;
   enablePinning?: boolean;
   isCellEditable?: (ctx: GenDataGridEditableContext<TData>) => boolean;
+  editPolicy?: GenDataGridEditPolicy;
   editSelectOnFocus?: boolean;
   editCommitOnBlur?: boolean;
   editorFactory?: GenDataGridEditorFactory<TData>;
@@ -42,6 +49,7 @@ type DataGridBodyRowProps<TData> = {
   deletedRowIds?: ReadonlySet<string>;
   activeCell: GenDataGridActiveCell;
   onActiveCellChange: (next: Exclude<GenDataGridActiveCell, null>) => void;
+  onEditingNavigate?: (next: Exclude<GenDataGridActiveCell, null>) => void;
   editingCell: GenDataGridEditingCell | null;
   draftValue: unknown;
   setDraftValue: (nextValue: unknown) => void;
@@ -62,6 +70,7 @@ export function DataGridBodyRow<TData>({
   readOnly,
   enablePinning = true,
   isCellEditable,
+  editPolicy,
   editSelectOnFocus,
   editCommitOnBlur,
   editorFactory,
@@ -71,6 +80,7 @@ export function DataGridBodyRow<TData>({
   deletedRowIds,
   activeCell,
   onActiveCellChange,
+  onEditingNavigate,
   editingCell,
   draftValue,
   setDraftValue,
@@ -101,6 +111,50 @@ export function DataGridBodyRow<TData>({
         )
         .map((cell) => ({ rowId: targetRow.id, columnId: cell.column.id }))
     );
+
+  const getCellRuntime = (coord: { rowId: string; columnId: string }) => {
+    const targetRow = rows.find((item) => item.id === coord.rowId);
+    const targetCell = targetRow
+      ? getOrderedVisibleCells(targetRow).find((item) => item.column.id === coord.columnId)
+      : undefined;
+    if (!targetRow || !targetCell) return null;
+
+    const editableContext = createEditableContext({
+      row: targetRow,
+      column: targetCell.column,
+    });
+
+    return {
+      editableContext,
+      isEditable: resolveEditableCell({
+        row: targetRow,
+        column: targetCell.column,
+        readOnly,
+        isCellEditable,
+      }),
+      resolvedEditPolicy: resolveEditPolicy(editPolicy, targetCell.column.columnDef.meta?.editPolicy),
+    };
+  };
+
+  const continueEditingAt = (
+    next: { rowId: string; columnId: string } | null,
+    trigger: 'tab' | 'arrowKey'
+  ) => {
+    if (!next) {
+      return;
+    }
+
+    onEditingNavigate?.(next) ?? onActiveCellChange(next);
+    const nextRuntime = getCellRuntime(next);
+    if (!nextRuntime?.isEditable || !nextRuntime.resolvedEditPolicy.continueTriggers[trigger]) {
+      return;
+    }
+    onEditStart({
+      rowId: next.rowId,
+      columnId: next.columnId,
+      value: nextRuntime.editableContext.value,
+    });
+  };
 
   const rowId = row.id;
   const rowIndex = row.index;
@@ -145,6 +199,7 @@ export function DataGridBodyRow<TData>({
           onEditCancel();
         };
         const meta = cell.column.columnDef.meta;
+        const resolvedEditPolicy = resolveEditPolicy(editPolicy, meta?.editPolicy);
         const editOptions = meta?.getEditOptions?.(editableContext) ?? meta?.editOptions;
         const selectOnFocus =
           editingCell?.suppressSelectOnFocus
@@ -166,10 +221,25 @@ export function DataGridBodyRow<TData>({
             value: draftValue,
           });
           onEditCancel();
-          if (!next || (next.rowId === rowId && next.columnId === columnId)) {
-            return;
-          }
-          onActiveCellChange(next);
+          continueEditingAt(next, 'tab');
+        };
+        const handleArrowNavigate = (key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight') => {
+          const next = resolveNextActiveCell({
+            activeCell: { rowId, columnId },
+            rowIds: [...rowIds],
+            columnIds: [...columnIds],
+            key: key as ActiveCellNavigationKey,
+          });
+          onCellValueChange?.({
+            row: row.original,
+            rowId,
+            rowIndex,
+            columnId,
+            previousValue: editableContext.value,
+            value: draftValue,
+          });
+          onEditCancel();
+          continueEditingAt(next, 'arrowKey');
         };
         const editorContext = createEditorContext({
           editableContext,
@@ -183,6 +253,8 @@ export function DataGridBodyRow<TData>({
           selectOnFocus,
           commitOnBlur,
           tabNavigate: handleTabNavigate,
+          arrowNavigate: handleArrowNavigate,
+          openOnEditStart: resolvedEditPolicy.openOnEditStart,
         });
         const content = isEditing
           ? renderCellEditor({
@@ -212,6 +284,9 @@ export function DataGridBodyRow<TData>({
             isEditable={isEditable}
             isEditing={isEditing}
             isDirty={dirtyCellIds?.has(`${rowId}::${columnId}`)}
+            editOpenOnStart={resolvedEditPolicy.openOnEditStart}
+            allowReclickEdit={resolvedEditPolicy.startTriggers.reclick}
+            allowDoubleClickEdit={resolvedEditPolicy.startTriggers.doubleClick}
             pinning={pinning}
             onActivate={onActiveCellChange}
             onEditStart={() => {

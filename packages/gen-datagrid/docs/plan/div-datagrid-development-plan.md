@@ -533,6 +533,10 @@ type GenDataGridProps<TData> = {
     - apply continuation triggers
     - propagate `openOnEditStart`
     - add Storybook and interaction coverage
+  - status
+    - complete
+    - verified by Storybook manual testing and package interaction tests
+    - native browser `select` immediate-open remains best-effort and may require a custom popup editor later
 - Gate 4.1-c navigation while editing
   - `keepEditingOnNavigate`
   - commit/cancel/keep policy on Arrow and Tab navigation

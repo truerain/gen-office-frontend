@@ -70,6 +70,8 @@ export type GenDataGridEditorContext<TData> = GenDataGridEditableContext<TData> 
   selectOnFocus?: boolean;
   commitOnBlur?: boolean;
   tabNavigate?: (direction: 1 | -1) => void;
+  arrowNavigate?: (key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight') => void;
+  openOnEditStart?: boolean;
 };
 
 export type GenDataGridEditorFactory<TData> = (
@@ -105,6 +107,26 @@ export type GenDataGridScrollSeekingOptions = {
   resetDelayMs?: number;
 };
 
+export type GenDataGridEditStartTriggers = {
+  reclick?: boolean;
+  doubleClick?: boolean;
+  enter?: boolean;
+  f2?: boolean;
+  printableKey?: boolean;
+};
+
+export type GenDataGridEditContinuationTriggers = {
+  click?: boolean;
+  tab?: boolean;
+  arrowKey?: boolean;
+};
+
+export type GenDataGridEditPolicy = {
+  startTriggers?: GenDataGridEditStartTriggers;
+  continueTriggers?: GenDataGridEditContinuationTriggers;
+  openOnEditStart?: boolean;
+};
+
 export type GenDataGridRenderContext<TData> = {
   table: Table<TData>;
   rows: TData[];
@@ -123,6 +145,7 @@ export type GenDataGridProps<TData> = {
   editCommitOnBlur?: boolean;
   editOnActiveCell?: boolean;
   keepEditingOnNavigate?: boolean;
+  editPolicy?: GenDataGridEditPolicy;
   editorFactory?: GenDataGridEditorFactory<TData>;
   isCellEditable?: (ctx: GenDataGridEditableContext<TData>) => boolean;
   onCellValueChange?: (args: GenDataGridCellValueChange<TData>) => void;

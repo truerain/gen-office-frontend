@@ -20,6 +20,20 @@ Records meaningful GenDataGrid implementation decisions and progress.
 - Kept `openOnEditStart` as a boolean for this slice, with grid default and column override support, and deferred trigger-specific open rules.
 - Added the agreed Gate 4.1-b implementation order to the architecture and plan documents; runtime implementation is intentionally deferred to the next session.
 
+### Gate 4.1-b Editing Policy Implementation
+
+- Added public `editPolicy` types and TanStack column-meta support for `startTriggers`, `continueTriggers`, and `openOnEditStart`.
+- Added merged runtime edit-policy resolution with column override precedence over grid defaults.
+- Wired `reclick`, `doubleClick`, `Enter`, `F2`, and printable-key edit entry through `startTriggers`.
+- Wired editing continuation across `click`, `Tab`, and Arrow-key movement through `continueTriggers`.
+- Kept continuation movement committing the previous cell first, preventing re-entry into non-editable destination cells, collapsing selection to the destination cell, and restoring destination editor focus when editing continues.
+- Propagated `openOnEditStart` through the shared editor context and added built-in native `select` / `date` open attempts.
+- Fixed follow-up regressions around continuation focus, selection collapse during edit-navigation, textarea select-on-focus parity, and non-editable continuation targets.
+- Added Storybook coverage through `Gate41BEditPolicy` and completed manual verification of the Gate 4.1-b checklist.
+- Verified:
+  - `pnpm -C frontend/packages/gen-datagrid exec tsc -p tsconfig.json --noEmit`
+  - `pnpm -C frontend/packages/gen-datagrid test`
+
 ### Gate 3.1 Keyboard Selection And Scroll Handle
 
 - Added `docs/architecture/gate-3-1-keyboard-selection-architecture.md` to lock the Gate 3.1 scope around keyboard range extension and imperative cell scrolling.

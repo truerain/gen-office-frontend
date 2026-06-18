@@ -1053,6 +1053,96 @@ describe('GenDataGrid interaction contract', () => {
     });
   });
 
+  it('merges grid and column editPolicy openOnEditStart values into the cell runtime contract', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="edit-policy-merge-grid"
+        data={rows}
+        columns={[
+          {
+            accessorKey: 'name',
+            header: 'Name',
+            meta: { editable: true },
+          },
+          {
+            accessorKey: 'age',
+            header: 'Age',
+            meta: {
+              editable: true,
+              editPolicy: {
+                openOnEditStart: false,
+              },
+            },
+          },
+        ]}
+        getRowId={(row) => row.id}
+        editPolicy={{
+          openOnEditStart: true,
+        }}
+      />
+    );
+
+    await waitFor(() => {
+      expect(getCell(container, '1', 'name').dataset.editOpenOnStart).toBe('true');
+      expect(getCell(container, '1', 'age').dataset.editOpenOnStart).toBeUndefined();
+    });
+  });
+
+  it('does not start editing on reclick when editPolicy disables the reclick trigger', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="reclick-disabled-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        editPolicy={{
+          startTriggers: {
+            reclick: false,
+          },
+        }}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.mouseDown(firstCell, { button: 0 });
+
+    await waitFor(() => {
+      expect(firstCell.dataset.activeCell).toBe('true');
+      expect(firstCell.dataset.editingCell).toBeUndefined();
+    });
+
+    fireEvent.mouseDown(firstCell, { button: 0 });
+
+    await waitFor(() => {
+      expect(firstCell.dataset.editingCell).toBeUndefined();
+      expect(firstCell.querySelector('input[aria-label="name editor"]')).toBeNull();
+    });
+  });
+
+  it('does not start editing on double click when editPolicy disables the doubleClick trigger', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="double-click-disabled-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        editPolicy={{
+          startTriggers: {
+            doubleClick: false,
+          },
+        }}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+
+    await waitFor(() => {
+      expect(firstCell.dataset.editingCell).toBeUndefined();
+      expect(firstCell.querySelector('input[aria-label="name editor"]')).toBeNull();
+    });
+  });
+
   it('starts default cell editing with Enter or F2 on the active cell', async () => {
     const { container } = render(
       <GenDataGrid
@@ -1071,6 +1161,31 @@ describe('GenDataGrid interaction contract', () => {
       expect(
         firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]')
       ).not.toBeNull();
+    });
+  });
+
+  it('does not start editing with Enter when editPolicy disables the enter trigger', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="enter-disabled-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        editPolicy={{
+          startTriggers: {
+            enter: false,
+          },
+        }}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    firstCell.focus();
+    fireEvent.keyDown(firstCell, { key: 'Enter' });
+
+    await waitFor(() => {
+      expect(firstCell.dataset.editingCell).toBeUndefined();
+      expect(firstCell.querySelector('input[aria-label="name editor"]')).toBeNull();
     });
   });
 
@@ -1124,6 +1239,32 @@ describe('GenDataGrid interaction contract', () => {
     expect(editor?.value).toBe('Z');
     expect(selectSpy).not.toHaveBeenCalled();
     selectSpy.mockRestore();
+  });
+
+  it('does not start editing with a printable key when editPolicy disables the printableKey trigger', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="printable-key-disabled-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+        editPolicy={{
+          startTriggers: {
+            printableKey: false,
+          },
+        }}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    firstCell.focus();
+    fireEvent.keyDown(firstCell, { key: 'Z' });
+
+    await waitFor(() => {
+      expect(firstCell.dataset.editingCell).toBeUndefined();
+      expect(firstCell.querySelector('input[aria-label="name editor"]')).toBeNull();
+    });
   });
 
   it('starts editing when an editable active cell is clicked again', async () => {
@@ -1210,6 +1351,37 @@ describe('GenDataGrid interaction contract', () => {
     selectSpy.mockRestore();
   });
 
+  it('selects default textarea text on focus when editSelectOnFocus is enabled', async () => {
+    const selectSpy = vi
+      .spyOn(window.HTMLTextAreaElement.prototype, 'select')
+      .mockImplementation(() => undefined);
+    const { container } = render(
+      <GenDataGrid
+        gridId="textarea-select-on-focus-grid"
+        data={rows}
+        columns={[
+          {
+            accessorKey: 'note',
+            header: 'Note',
+            meta: { editable: true, editType: 'textarea' },
+          },
+        ]}
+        getRowId={(row) => row.id}
+        editSelectOnFocus
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'note');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLTextAreaElement>('textarea[aria-label="note editor"]');
+    if (!editor) throw new Error('Missing textarea editor');
+
+    fireEvent.focus(editor);
+
+    expect(selectSpy).toHaveBeenCalled();
+    selectSpy.mockRestore();
+  });
+
   it('cancels cell editing with Escape', async () => {
     const onCellValueChange = vi.fn();
     const { container } = render(
@@ -1276,7 +1448,7 @@ describe('GenDataGrid interaction contract', () => {
     expect(editor?.value).toBe('B');
   });
 
-  it('cancels cell editing when another cell is activated', async () => {
+  it('commits cell editing and moves active cell only when another cell is clicked', async () => {
     const onCellValueChange = vi.fn();
     const { container } = render(
       <GenDataGrid
@@ -1299,7 +1471,59 @@ describe('GenDataGrid interaction contract', () => {
     await waitFor(() => {
       expect(firstCell.dataset.editingCell).toBeUndefined();
       expect(firstCell.querySelector('input[aria-label="name editor"]')).toBeNull();
-      expect(onCellValueChange).not.toHaveBeenCalled();
+      expect(onCellValueChange).toHaveBeenCalledWith({
+        row: rows[0],
+        rowId: '1',
+        rowIndex: 0,
+        columnId: 'name',
+        previousValue: 'Ada',
+        value: 'Ada',
+      });
+      expect(getCell(container, '2', 'name').dataset.activeCell).toBe('true');
+      expect(getCell(container, '2', 'name').dataset.editingCell).toBeUndefined();
+    });
+  });
+
+  it('continues editing on click when editPolicy enables the click continuation trigger', async () => {
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="click-continue-edit-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        editPolicy={{
+          continueTriggers: {
+            click: true,
+          },
+        }}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    const secondCell = getCell(container, '2', 'name');
+    fireEvent.doubleClick(firstCell);
+    await waitFor(() => {
+      expect(firstCell.dataset.editingCell).toBe('true');
+    });
+
+    fireEvent.mouseDown(secondCell, { button: 0 });
+
+    await waitFor(() => {
+      const secondEditor = secondCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+      expect(onCellValueChange).toHaveBeenCalledWith({
+        row: rows[0],
+        rowId: '1',
+        rowIndex: 0,
+        columnId: 'name',
+        previousValue: 'Ada',
+        value: 'Ada',
+      });
+      expect(secondCell.dataset.activeCell).toBe('true');
+      expect(secondCell.dataset.editingCell).toBe('true');
+      expect(secondEditor).not.toBeNull();
+      expect(document.activeElement).toBe(secondEditor);
     });
   });
 
@@ -1470,6 +1694,7 @@ describe('GenDataGrid interaction contract', () => {
       });
       expect(firstCell.dataset.editingCell).toBeUndefined();
       expect(getCell(container, '2', 'name').dataset.activeCell).toBe('true');
+      expect(getCell(container, '2', 'name').dataset.editingCell).toBe('true');
     });
   });
 
@@ -1505,6 +1730,177 @@ describe('GenDataGrid interaction contract', () => {
       });
       expect(secondCell.dataset.editingCell).toBeUndefined();
       expect(getCell(container, '1', 'name').dataset.activeCell).toBe('true');
+      expect(getCell(container, '1', 'name').dataset.editingCell).toBe('true');
+    });
+  });
+
+  it('moves active cell only with Tab when editPolicy disables the tab continuation trigger', async () => {
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="tab-continue-disabled-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        editPolicy={{
+          continueTriggers: {
+            tab: false,
+          },
+        }}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.change(editor, { target: { value: 'Ada Tab Off' } });
+    fireEvent.keyDown(editor, { key: 'Tab' });
+
+    await waitFor(() => {
+      expect(onCellValueChange).toHaveBeenCalledWith({
+        row: rows[0],
+        rowId: '1',
+        rowIndex: 0,
+        columnId: 'name',
+        previousValue: 'Ada',
+        value: 'Ada Tab Off',
+      });
+      expect(getCell(container, '2', 'name').dataset.activeCell).toBe('true');
+      expect(getCell(container, '2', 'name').dataset.editingCell).toBeUndefined();
+    });
+  });
+
+  it('moves active cell only with Arrow keys when editPolicy leaves the arrowKey continuation trigger disabled', async () => {
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="arrow-continue-disabled-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        defaultSelectedRanges={[
+          {
+            anchor: { rowId: '1', columnId: 'name' },
+            focus: { rowId: '1', columnId: 'name' },
+          },
+        ]}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.change(editor, { target: { value: 'Ada Arrow Off' } });
+    fireEvent.keyDown(editor, { key: 'ArrowDown' });
+
+    await waitFor(() => {
+      expect(onCellValueChange).toHaveBeenCalledWith({
+        row: rows[0],
+        rowId: '1',
+        rowIndex: 0,
+        columnId: 'name',
+        previousValue: 'Ada',
+        value: 'Ada Arrow Off',
+      });
+      expect(getCell(container, '1', 'name').dataset.selectedCell).toBeUndefined();
+      expect(getCell(container, '2', 'name').dataset.activeCell).toBe('true');
+      expect(getCell(container, '2', 'name').dataset.selectedCell).toBe('true');
+      expect(getCell(container, '2', 'name').dataset.editingCell).toBeUndefined();
+    });
+  });
+
+  it('continues editing with Arrow keys when editPolicy enables the arrowKey continuation trigger', async () => {
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="arrow-continue-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        editPolicy={{
+          continueTriggers: {
+            arrowKey: true,
+          },
+        }}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.change(editor, { target: { value: 'Ada Arrow On' } });
+    fireEvent.keyDown(editor, { key: 'ArrowDown' });
+
+    await waitFor(() => {
+      const secondEditor = getCell(container, '2', 'name').querySelector<HTMLInputElement>(
+        'input[aria-label="name editor"]'
+      );
+      expect(onCellValueChange).toHaveBeenCalledWith({
+        row: rows[0],
+        rowId: '1',
+        rowIndex: 0,
+        columnId: 'name',
+        previousValue: 'Ada',
+        value: 'Ada Arrow On',
+      });
+      expect(getCell(container, '2', 'name').dataset.activeCell).toBe('true');
+      expect(getCell(container, '2', 'name').dataset.editingCell).toBe('true');
+      expect(secondEditor).not.toBeNull();
+      expect(document.activeElement).toBe(secondEditor);
+    });
+  });
+
+  it('does not continue editing into a non-editable cell with Arrow keys', async () => {
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="arrow-noneditable-stop-grid"
+        data={rows}
+        columns={[
+          { accessorKey: 'name', header: 'Name', meta: { editable: true } },
+          { accessorKey: 'age', header: 'Age', meta: { editable: false } },
+        ]}
+        getRowId={(row) => row.id}
+        editPolicy={{
+          continueTriggers: {
+            arrowKey: true,
+          },
+        }}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.change(editor, { target: { value: 'Ada Arrow Stop' } });
+    fireEvent.keyDown(editor, { key: 'ArrowRight' });
+
+    await waitFor(() => {
+      expect(onCellValueChange).toHaveBeenCalledWith({
+        row: rows[0],
+        rowId: '1',
+        rowIndex: 0,
+        columnId: 'name',
+        previousValue: 'Ada',
+        value: 'Ada Arrow Stop',
+      });
+      expect(getCell(container, '1', 'age').dataset.activeCell).toBe('true');
+      expect(getCell(container, '1', 'age').dataset.editingCell).toBeUndefined();
+      expect(
+        getCell(container, '1', 'age').querySelector('input[aria-label="age editor"]')
+      ).toBeNull();
     });
   });
 
@@ -1532,6 +1928,8 @@ describe('GenDataGrid interaction contract', () => {
                   selectOnFocus: ctx.selectOnFocus,
                   commitOnBlur: ctx.commitOnBlur,
                   hasTabNavigate: typeof ctx.tabNavigate === 'function',
+                  hasArrowNavigate: typeof ctx.arrowNavigate === 'function',
+                  openOnEditStart: ctx.openOnEditStart,
                 });
                 return (
                   <button type="button" onClick={() => ctx.applyValue('Custom Ada')}>
@@ -1558,6 +1956,8 @@ describe('GenDataGrid interaction contract', () => {
       selectOnFocus: true,
       commitOnBlur: true,
       hasTabNavigate: true,
+      hasArrowNavigate: true,
+      openOnEditStart: false,
     });
 
     fireEvent.click(button);
@@ -1572,6 +1972,82 @@ describe('GenDataGrid interaction contract', () => {
         value: 'Custom Ada',
       });
     });
+  });
+
+  it('passes openOnEditStart to custom editors through editor context', async () => {
+    const editorContextSpy = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="custom-editor-open-on-start-grid"
+        data={rows}
+        columns={[
+          {
+            accessorKey: 'name',
+            header: 'Name',
+            meta: {
+              editable: true,
+              editPolicy: {
+                openOnEditStart: true,
+              },
+              renderEditor: (ctx) => {
+                editorContextSpy(ctx.openOnEditStart);
+                return <input aria-label="custom open editor" value={String(ctx.draftValue)} readOnly />;
+              },
+            },
+          },
+        ]}
+        getRowId={(row) => row.id}
+      />
+    );
+
+    fireEvent.doubleClick(getCell(container, '1', 'name'));
+
+    await waitFor(() => {
+      expect(editorContextSpy).toHaveBeenCalledWith(true);
+      expect(
+        getCell(container, '1', 'name').querySelector<HTMLInputElement>('input[aria-label="custom open editor"]')
+      ).not.toBeNull();
+    });
+  });
+
+  it('attempts to open the built-in select editor when openOnEditStart is enabled', async () => {
+    const clickSpy = vi
+      .spyOn(window.HTMLSelectElement.prototype, 'click')
+      .mockImplementation(() => undefined);
+    const { container } = render(
+      <GenDataGrid
+        gridId="select-open-on-start-grid"
+        data={rows}
+        columns={[
+          {
+            accessorKey: 'name',
+            header: 'Name',
+            meta: {
+              editType: 'select',
+              editOptions: [
+                { label: 'Ada', value: 'Ada' },
+                { label: 'Grace', value: 'Grace' },
+              ],
+              editPolicy: {
+                openOnEditStart: true,
+              },
+            },
+          },
+        ]}
+        getRowId={(row) => row.id}
+      />
+    );
+
+    fireEvent.doubleClick(getCell(container, '1', 'name'));
+
+    await waitFor(() => {
+      expect(clickSpy).toHaveBeenCalled();
+      expect(
+        getCell(container, '1', 'name').querySelector<HTMLSelectElement>('select[aria-label="name editor"]')
+      ).not.toBeNull();
+    });
+
+    clickSpy.mockRestore();
   });
 
   it('warns when reserved editing policy props are enabled', async () => {

@@ -14,6 +14,9 @@ type DataGridCellProps = {
   isEditable: boolean;
   isEditing: boolean;
   isDirty?: boolean;
+  editOpenOnStart?: boolean;
+  allowReclickEdit?: boolean;
+  allowDoubleClickEdit?: boolean;
   pinning?: {
     pinned: 'left' | 'right' | false;
     isLastLeftPinned: boolean;
@@ -33,6 +36,9 @@ export function DataGridCell({
   isEditable,
   isEditing,
   isDirty,
+  editOpenOnStart,
+  allowReclickEdit = true,
+  allowDoubleClickEdit = true,
   pinning,
   onActivate,
   onEditStart,
@@ -50,6 +56,7 @@ export function DataGridCell({
       data-editable-cell={isEditable ? 'true' : undefined}
       data-editing-cell={isEditing ? 'true' : undefined}
       data-dirty-cell={isDirty ? 'true' : undefined}
+      data-edit-open-on-start={editOpenOnStart ? 'true' : undefined}
       data-pinned-cell={pinning?.pinned || undefined}
       data-pinned-edge={
         pinning?.isLastLeftPinned
@@ -66,14 +73,15 @@ export function DataGridCell({
         if ((event.target as HTMLElement | null)?.closest(interactiveTargetSelector)) {
           return;
         }
-        if (isActive && isEditable && !isEditing) {
+        event.preventDefault();
+        if (allowReclickEdit && isActive && isEditable && !isEditing) {
           onEditStart?.({ rowId, columnId });
           return;
         }
         onActivate({ rowId, columnId });
       }}
       onDoubleClick={() => {
-        if (!isEditable) return;
+        if (!allowDoubleClickEdit || !isEditable) return;
         onEditStart?.({ rowId, columnId });
       }}
     >

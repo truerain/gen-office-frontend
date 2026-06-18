@@ -142,6 +142,42 @@ type GenDataGridEditPolicy = {
 5. Propagate `openOnEditStart` through built-in and custom editor context.
 6. Add Storybook and interaction coverage for grid default, column override, and continuation behavior.
 
+## Gate 4.1-b Completion
+
+Gate 4.1-b is complete.
+
+Implemented in this slice:
+
+- public `editPolicy` API on grid props and TanStack column meta
+- merged runtime edit policy resolution with grid default and column override precedence
+- start-trigger gating for:
+  - `reclick`
+  - `doubleClick`
+  - `enter`
+  - `f2`
+  - `printableKey`
+- continuation-trigger handling for:
+  - `click`
+  - `tab`
+  - `arrowKey`
+- continuation defaults:
+  - previous cell commits before movement
+  - non-editable destination becomes active-only
+  - selection collapses to the destination cell
+  - destination editor receives focus when editing continues
+- `openOnEditStart` propagation to built-in and custom editors
+- built-in open-on-start attempt for native `select` and native `date`
+
+Validated in this slice:
+
+- interaction regression coverage through `pnpm -C frontend/packages/gen-datagrid test`
+- manual Storybook verification with `Gate41BEditPolicy`
+
+Known limitation kept for follow-up:
+
+- native browser `select` popup visibility is not guaranteed from programmatic open attempts and may require a custom popup editor for production-grade immediate-open behavior
+- textarea-specific Arrow-key editing ergonomics remain a later navigation-policy concern
+
 ## Built-in Editor Expectations
 
 - `text`, `number`, `textarea`

@@ -22,6 +22,10 @@ import {
   resolveNextLinearCell,
 } from '../../features/active-cell/navigation';
 import { resolveEditableCell } from '../../features/editing/editableCell';
+import {
+  resolveEditPolicy,
+  type ResolvedGenDataGridEditPolicy,
+} from '../../features/editing/editPolicy';
 import { useCellEditing } from '../../features/editing/useCellEditing';
 import { useClipboardActions } from '../../features/range-selection/useClipboardActions';
 import { useRangeSelection } from '../../features/range-selection/useRangeSelection';
@@ -42,6 +46,23 @@ function isPrintableEditKey(event: React.KeyboardEvent<HTMLDivElement>) {
   return event.key.trim().length === 1;
 }
 
+function focusActiveEditorInRoot(
+  root: HTMLElement | null,
+  coord: { rowId: string; columnId: string }
+) {
+  const cell = findCellInRoot(root, coord);
+  if (!cell) return false;
+
+  const editor = cell.querySelector<HTMLElement>(
+    'input,select,textarea,button,[contenteditable="true"]'
+  );
+  if (!editor) return false;
+
+  scrollCellIntoViewInRoot(root, coord);
+  editor.focus({ preventScroll: true });
+  return true;
+}
+
 type DataGridRootProps<TData> = GenDataGridProps<TData> & {
   rootRef: React.ForwardedRef<GenDataGridHandle>;
 };
@@ -59,6 +80,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     readonly,
     editSelectOnFocus,
     editCommitOnBlur,
+    editPolicy,
     editorFactory,
     isCellEditable,
     onCellValueChange,
@@ -325,12 +347,37 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     [controlledActiveCell, onActiveCellChange]
   );
 
+  const navigateWhileEditing = React.useCallback(
+    (next: Exclude<typeof activeCell, null>) => {
+      setActiveCell(next);
+      if (enableRangeSelection) {
+        rangeSelection.setSingleSelection(next);
+      }
+    },
+    [enableRangeSelection, rangeSelection, setActiveCell]
+  );
+
+  const getResolvedEditPolicyForCell = React.useCallback(
+    (coord: { rowId: string; columnId: string } | null): ResolvedGenDataGridEditPolicy | null => {
+      if (!coord) return null;
+      const column = visibleColumns.find((item) => item.id === coord.columnId);
+      if (!column) return null;
+      return resolveEditPolicy(editPolicy, column.columnDef.meta?.editPolicy);
+    },
+    [editPolicy, visibleColumns]
+  );
+
   const startActiveCellEditing = React.useCallback((options?: { initialValue?: unknown }) => {
     if (!activeCell) return false;
 
     const row = tableRows.find((item) => item.id === activeCell.rowId);
     const column = visibleColumns.find((item) => item.id === activeCell.columnId);
     if (!row || !column) return false;
+
+    const resolvedEditPolicy = resolveEditPolicy(editPolicy, column.columnDef.meta?.editPolicy);
+    if (options?.initialValue !== undefined && !resolvedEditPolicy.startTriggers.printableKey) {
+      return false;
+    }
 
     const isEditable = resolveEditableCell({
       row,
@@ -347,7 +394,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       suppressSelectOnFocus: options?.initialValue !== undefined,
     });
     return true;
-  }, [activeCell, editing, isCellEditable, resolvedReadOnly, tableRows, visibleColumns]);
+  }, [activeCell, editPolicy, editing, isCellEditable, resolvedReadOnly, tableRows, visibleColumns]);
 
   const cancelEditingAndRestoreFocus = React.useCallback(() => {
     editing.cancelEditing();
@@ -383,15 +430,27 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       }
     }
     const frame = requestAnimationFrame(() => {
+      const isEditingActiveCell =
+        editing.editingCell?.rowId === activeCell.rowId &&
+        editing.editingCell.columnId === activeCell.columnId;
+      if (isEditingActiveCell && focusActiveEditorInRoot(rootRef.current, activeCell)) {
+        return;
+      }
       if (focusCellInRoot(rootRef.current, activeCell)) {
         return;
       }
       requestAnimationFrame(() => {
+        const stillEditingActiveCell =
+          editing.editingCell?.rowId === activeCell.rowId &&
+          editing.editingCell.columnId === activeCell.columnId;
+        if (stillEditingActiveCell && focusActiveEditorInRoot(rootRef.current, activeCell)) {
+          return;
+        }
         focusCellInRoot(rootRef.current, activeCell);
       });
     });
     return () => cancelAnimationFrame(frame);
-  }, [activeCell, enableVirtualization, rowIds]);
+  }, [activeCell, editing.editingCell, enableVirtualization, rowIds]);
 
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -417,7 +476,12 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       }
 
       if (event.key === 'Enter' || event.key === 'F2') {
-        if (startActiveCellEditing()) {
+        const resolvedEditPolicy = getResolvedEditPolicyForCell(activeCell);
+        const allowEditStart =
+          event.key === 'Enter'
+            ? resolvedEditPolicy?.startTriggers.enter ?? true
+            : resolvedEditPolicy?.startTriggers.f2 ?? true;
+        if (allowEditStart && startActiveCellEditing()) {
           event.preventDefault();
           return;
         }
@@ -477,6 +541,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       rangeSelection,
       rowIds,
       setActiveCell,
+      getResolvedEditPolicyForCell,
       startActiveCellEditing,
     ]
   );
@@ -566,6 +631,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             readOnly={resolvedReadOnly}
             enablePinning={enablePinning}
             isCellEditable={isCellEditable}
+            editPolicy={editPolicy}
             editSelectOnFocus={editSelectOnFocus}
             editCommitOnBlur={editCommitOnBlur}
             editorFactory={editorFactory}
@@ -575,6 +641,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             deletedRowIds={deletedRowIds}
             activeCell={activeCell}
             onActiveCellChange={setActiveCell}
+            onEditingNavigate={navigateWhileEditing}
             editingCell={editing.editingCell}
             draftValue={editing.draftValue}
             setDraftValue={editing.setDraftValue}
@@ -594,6 +661,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             readOnly={resolvedReadOnly}
             enablePinning={enablePinning}
             isCellEditable={isCellEditable}
+            editPolicy={editPolicy}
             editSelectOnFocus={editSelectOnFocus}
             editCommitOnBlur={editCommitOnBlur}
             editorFactory={editorFactory}
@@ -604,6 +672,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             getRowHeight={getRowHeight}
             activeCell={activeCell}
             onActiveCellChange={setActiveCell}
+            onEditingNavigate={navigateWhileEditing}
             editingCell={editing.editingCell}
             draftValue={editing.draftValue}
             setDraftValue={editing.setDraftValue}

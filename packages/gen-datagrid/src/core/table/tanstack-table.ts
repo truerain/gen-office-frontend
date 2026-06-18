@@ -5,6 +5,7 @@ import '@tanstack/react-table';
 import type * as React from 'react';
 
 import type {
+  GenDataGridEditPolicy,
   GenDataGridEditableContext,
   GenDataGridEditorContext,
   GenDataGridEditOption,
@@ -22,6 +23,7 @@ declare module '@tanstack/react-table' {
     editPlaceholder?: string;
     editSelectOnFocus?: boolean;
     editCommitOnBlur?: boolean;
+    editPolicy?: GenDataGridEditPolicy;
     renderEditor?: (ctx: GenDataGridEditorContext<TData>) => React.ReactNode;
   }
 }

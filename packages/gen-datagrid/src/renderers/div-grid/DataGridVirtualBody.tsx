@@ -9,10 +9,13 @@ import type {
   GenDataGridActiveCell,
   GenDataGridCellValueChange,
   GenDataGridEditableContext,
+  GenDataGridEditPolicy,
   GenDataGridEditorFactory,
   GenDataGridScrollSeekingOptions,
 } from '../../GenDataGrid.types';
+import { resolveEditPolicy } from '../../features/editing/editPolicy';
 import { createEditableContext } from '../../features/editing/editableCell';
+import { resolveEditableCell } from '../../features/editing/editableCell';
 import type { GenDataGridEditingCell } from '../../features/editing/useCellEditing';
 import { getColumnPinningInfo } from '../../features/pinning/pinningStyles';
 import type { GenDataGridRangeSelections } from '../../features/range-selection/rangeSelection';
@@ -67,6 +70,7 @@ type DataGridVirtualBodyProps<TData> = {
   readOnly?: boolean;
   enablePinning?: boolean;
   isCellEditable?: (ctx: GenDataGridEditableContext<TData>) => boolean;
+  editPolicy?: GenDataGridEditPolicy;
   editSelectOnFocus?: boolean;
   editCommitOnBlur?: boolean;
   editorFactory?: GenDataGridEditorFactory<TData>;
@@ -76,6 +80,7 @@ type DataGridVirtualBodyProps<TData> = {
   deletedRowIds?: ReadonlySet<string>;
   activeCell: GenDataGridActiveCell;
   onActiveCellChange: (next: Exclude<GenDataGridActiveCell, null>) => void;
+  onEditingNavigate?: (next: Exclude<GenDataGridActiveCell, null>) => void;
   editingCell: GenDataGridEditingCell | null;
   draftValue: unknown;
   setDraftValue: (nextValue: unknown) => void;
@@ -177,6 +182,7 @@ export function DataGridVirtualBody<TData>({
   readOnly,
   enablePinning = true,
   isCellEditable,
+  editPolicy,
   editSelectOnFocus,
   editCommitOnBlur,
   editorFactory,
@@ -186,6 +192,7 @@ export function DataGridVirtualBody<TData>({
   deletedRowIds,
   activeCell,
   onActiveCellChange,
+  onEditingNavigate,
   editingCell,
   draftValue,
   setDraftValue,
@@ -194,40 +201,69 @@ export function DataGridVirtualBody<TData>({
   scrollSeeking,
   virtualBodyRef,
 }: DataGridVirtualBodyProps<TData>) {
+  const getCellRuntime = React.useCallback(
+    (coord: { rowId: string; columnId: string }) => {
+      const row = rows.find((item) => item.id === coord.rowId);
+      const tanStackCell = row?.getVisibleCells().find((cell) => cell.column.id === coord.columnId);
+      if (!row || !tanStackCell) return null;
+
+      const editableContext = createEditableContext({
+        row,
+        column: tanStackCell.column,
+      });
+      const meta = tanStackCell.column.columnDef.meta;
+
+      return {
+        row,
+        tanStackCell,
+        editableContext,
+        isEditable: resolveEditableCell({
+          row,
+          column: tanStackCell.column,
+          readOnly,
+          isCellEditable,
+        }),
+        resolvedEditPolicy: resolveEditPolicy(editPolicy, meta?.editPolicy),
+      };
+    },
+    [editPolicy, isCellEditable, readOnly, rows]
+  );
+
   const activateCell = React.useCallback(
     (next: Exclude<GenDataGridActiveCell, null>) => {
       if (
         editingCell &&
         (editingCell.rowId !== next.rowId || editingCell.columnId !== next.columnId)
       ) {
-        const editingRow = rows.find((item) => item.id === editingCell.rowId);
-        const editingTanStackCell = editingRow
-          ?.getVisibleCells()
-          .find((cell) => cell.column.id === editingCell.columnId);
-        if (editingRow && editingTanStackCell) {
-          const editableContext = createEditableContext({
-            row: editingRow,
-            column: editingTanStackCell.column,
+        const editingRuntime = getCellRuntime(editingCell);
+        if (editingRuntime) {
+          onCellValueChange?.({
+            row: editingRuntime.row.original,
+            rowId: editingRuntime.row.id,
+            rowIndex: editingRuntime.row.index,
+            columnId: editingRuntime.tanStackCell.column.id,
+            previousValue: editingRuntime.editableContext.value,
+            value: draftValue,
           });
-          const meta = editingTanStackCell.column.columnDef.meta;
-          const commitOnBlur = meta?.editCommitOnBlur ?? editCommitOnBlur ?? false;
-          if (commitOnBlur) {
-            onCellValueChange?.({
-              row: editingRow.original,
-              rowId: editingRow.id,
-              rowIndex: editingRow.index,
-              columnId: editingTanStackCell.column.id,
-              previousValue: editableContext.value,
-              value: draftValue,
-            });
-          }
         }
         onEditCancel();
+
+        onEditingNavigate?.(next);
+
+        const nextRuntime = getCellRuntime(next);
+        if (nextRuntime?.isEditable && nextRuntime.resolvedEditPolicy.continueTriggers.click) {
+          onEditStart({
+            rowId: next.rowId,
+            columnId: next.columnId,
+            value: nextRuntime.editableContext.value,
+          });
+        }
+        return;
       }
 
       onActiveCellChange(next);
     },
-    [draftValue, editCommitOnBlur, editingCell, onActiveCellChange, onCellValueChange, onEditCancel, rows]
+    [draftValue, editingCell, getCellRuntime, onActiveCellChange, onCellValueChange, onEditCancel, onEditStart, onEditingNavigate]
   );
   const [isLargeJumpScrolling, setIsLargeJumpScrolling] = React.useState(false);
   const lastScrollTopRef = React.useRef(0);
@@ -415,6 +451,7 @@ export function DataGridVirtualBody<TData>({
             readOnly={readOnly}
             enablePinning={enablePinning}
             isCellEditable={isCellEditable}
+            editPolicy={editPolicy}
             editSelectOnFocus={editSelectOnFocus}
             editCommitOnBlur={editCommitOnBlur}
             editorFactory={editorFactory}
@@ -424,6 +461,7 @@ export function DataGridVirtualBody<TData>({
             deletedRowIds={deletedRowIds}
             activeCell={activeCell}
             onActiveCellChange={activateCell}
+            onEditingNavigate={onEditingNavigate}
             editingCell={editingCell}
             draftValue={draftValue}
             setDraftValue={setDraftValue}

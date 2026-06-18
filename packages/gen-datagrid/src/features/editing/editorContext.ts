@@ -20,6 +20,8 @@ type CreateEditorContextArgs<TData> = {
   selectOnFocus?: boolean;
   commitOnBlur?: boolean;
   tabNavigate?: (direction: 1 | -1) => void;
+  arrowNavigate?: (key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight') => void;
+  openOnEditStart?: boolean;
 };
 
 export function createEditorContext<TData>({
@@ -34,6 +36,8 @@ export function createEditorContext<TData>({
   selectOnFocus,
   commitOnBlur,
   tabNavigate,
+  arrowNavigate,
+  openOnEditStart,
 }: CreateEditorContextArgs<TData>): GenDataGridEditorContext<TData> {
   return {
     ...editableContext,
@@ -51,5 +55,7 @@ export function createEditorContext<TData>({
     selectOnFocus,
     commitOnBlur,
     tabNavigate,
+    arrowNavigate,
+    openOnEditStart,
   };
 }

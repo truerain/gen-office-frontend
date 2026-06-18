@@ -620,3 +620,115 @@ export const Gate41VirtualEditingPolicy: Story = {
     );
   },
 };
+
+export const Gate41BEditPolicy: Story = {
+  render: () => {
+    const [gridData, setGridData] = React.useState(data);
+
+    const handleCellValueChange = React.useCallback(
+      ({ rowId, columnId, value }: GenDataGridCellValueChange<Person>) => {
+        setGridData((previous) =>
+          previous.map((row) =>
+            row.id === rowId
+              ? {
+                  ...row,
+                  [columnId]: columnId === 'score' ? Number(value) : value,
+                }
+              : row
+          )
+        );
+      },
+      []
+    );
+
+    const policyColumns: ColumnDef<Person, unknown>[] = [
+      {
+        accessorKey: 'name',
+        header: 'Name',
+        size: 180,
+        meta: { editable: true },
+      },
+      {
+        accessorKey: 'role',
+        header: 'Role',
+        size: 220,
+        meta: {
+          editType: 'select',
+          editOptions: [
+            { label: 'Engineer', value: 'Engineer' },
+            { label: 'Computer Scientist', value: 'Computer Scientist' },
+            { label: 'Mathematician', value: 'Mathematician' },
+            { label: 'Researcher', value: 'Researcher' },
+          ],
+          editPolicy: {
+            openOnEditStart: true,
+          },
+        },
+      },
+      {
+        accessorKey: 'score',
+        header: 'Score',
+        size: 100,
+        meta: {
+          editable: false,
+          editType: 'number',
+          editPolicy: {
+            startTriggers: {
+              printableKey: false,
+            },
+          },
+        },
+      },
+      {
+        accessorKey: 'location',
+        header: 'Location',
+        size: 180,
+        meta: { editable: true },
+      },
+      {
+        accessorKey: 'note',
+        header: 'Note',
+        size: 320,
+        meta: { editType: 'textarea', editable: true },
+      },
+    ];
+
+    return (
+      <div style={{ width: 920, padding: 16 }}>
+        <GenDataGrid<Person>
+          data={gridData}
+          columns={policyColumns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-4-1-b"
+          defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+          editSelectOnFocus
+          enableVirtualization
+          editPolicy={{
+            startTriggers: {
+              reclick: true,
+              doubleClick: true,
+              enter: true,
+              f2: true,
+              printableKey: true,
+            },
+            continueTriggers: {
+              click: true,
+              tab: true,
+              arrowKey: true,
+            },
+            openOnEditStart: false,
+          }}
+          onCellValueChange={handleCellValueChange}
+          rowHeight={36}
+          headerHeight={40}
+          style={{
+            height: 320,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+      </div>
+    );
+  },
+};
