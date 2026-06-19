@@ -2,6 +2,51 @@
 Records meaningful GenDataGrid implementation decisions and progress.
 -->
 
+## 2026-06-19
+
+### Implementation Log 재정리
+
+- 2026-06-19 작업(Gate 4.2 paste, Gate 4.1 문서/blur 정책 정리)을 `## 2026-06-19` 섹션으로 분리했습니다.
+- `## 2026-06-17` 섹션 하단에 잘못 누적되어 있던 Gate 4.1/4.2 항목을 제거하고 날짜별로 재배치했습니다.
+- Gate 4.2 완료 상태를 development plan, reference 문서, `mvp-test-gates.md`에 반영했습니다.
+
+### Gate 4.1 / Gate 4.2 Storybook 수동 검증 완료
+
+- `Gate41BEditPolicy`, `Gate41CEditNavigation`, `Gate41DBlurPolicy`, `Gate42ClipboardPaste` Storybook 시나리오 수동 검증을 완료했습니다.
+- Popover/Modal Lookup editor portal 렌더링, Escape 단계 정책, paste `skipCell` / `cancelPaste` 동작을 확인했습니다.
+
+### Gate 4.2 Clipboard Paste MVP
+
+- public `GenDataGridPasteOptions`, `GenDataGridPasteError` 타입과 `pasteOptions` prop을 추가했습니다.
+- `features/range-selection/paste.ts`에서 active cell 기준 paste target 해석, read-only/non-editable/out-of-bounds 오류 수집, skip/cancel 정책, `onCellValueChange` emit을 구현했습니다.
+- `DataGridRoot` root-level `onPaste`에서 `clipboardData.getData('text/plain')`을 파싱해 적용합니다.
+- active editor(`input`, `select`, `textarea`, `button`, `contenteditable`) 내부 paste는 가로채지 않습니다.
+- `parseClipboardGrid` trailing newline empty row 제거, accepted paste rectangle selection 갱신, last pasted cell active 이동을 추가했습니다.
+- `enableDirtyState`가 켜진 경우 기존 `handleCellValueChange` 경로로 dirty marker가 누적됩니다.
+- `Gate42ClipboardPaste` Storybook, unit/interaction 테스트를 추가했습니다.
+- deferred: selection anchor paste, type coercion, row 생성, `text/html` paste, imperative handle paste.
+- 검증:
+  - `pnpm -C packages/gen-datagrid exec tsc -p tsconfig.json --noEmit`
+  - `pnpm -C packages/gen-datagrid test`
+
+### Gate 4.2 Paste 정책 문서
+
+- `docs/plan/gate-4-2-paste-decisions.md` decision table을 추가했습니다.
+- paste trigger, target resolution, editable filtering, error reporting, failure behavior 정책을 문서화했습니다.
+- `docs/README.md`에서 Gate 4.2 paste decisions 문서로 연결했습니다.
+
+### Gate 4.1-d Commit-On-Blur 기본값 수정
+
+- omitted `editCommitOnBlur` 해석을 cancel → commit(`true`)으로 수정했습니다.
+- 변경 파일: `src/features/editing/cellRuntime.ts`, `src/renderers/div-grid/DataGridBodyRow.tsx`.
+- `editCommitOnBlur={false}` / column `meta.editCommitOnBlur: false` explicit opt-out은 cancel을 유지합니다.
+- interaction test와 `gate-4-1-editing-policy-architecture.md`에 정책을 반영했습니다.
+
+### Gate 4.1 문서 상태 정리
+
+- `editor-implementation-contract.md`에 Gate 4.1-d context 필드(`editEntryReason`, `blurOwnership`, editor surface registration) implemented 표기를 반영했습니다.
+- `cell-edit-api.md`, `api-structure.md`에 Gate 4.1-b/c/d 및 Gate 4.2 paste runtime status를 추가했습니다.
+
 ## 2026-06-18
 
 ### Gate 4.1-d Modal Lookup Escape Fix
@@ -637,56 +682,6 @@ Records meaningful GenDataGrid implementation decisions and progress.
 - header text 영역 대신 명시적인 reorder handle 버튼을 추가했다.
 - reorder handle 버튼에 `data-column-reorder-handle="true"`와 `draggable`을 부여하고, header label/text는 drag source에서 제외했다.
 - resize handle, header label/text, reorder handle 버튼의 역할을 Gate 5 화면 테스트 가이드와 architecture 문서에 반영했다.
-
-### Gate 4.1 Documentation Status Cleanup
-
-- Updated `../reference/editor-implementation-contract.md` so `editEntryReason`,
-  `blurOwnership`, editor surface registration, and blur-boundary helpers are
-  marked as implemented for Gate 4.1-d.
-- Added current Gate 4.1-b/c/d runtime status notes to
-  `../reference/cell-edit-api.md` and `../reference/api-structure.md`.
-- Replaced stale Gate 4.1 follow-up wording for editor open-on-start and policy
-  surface extension with implemented-status wording.
-
-### Gate 4.1-d Commit-On-Blur Default Correction
-
-- Changed the default inline blur policy from cancel to commit by resolving
-  omitted `editCommitOnBlur` as `true`.
-- Kept explicit opt-out support: `editCommitOnBlur={false}` and column
-  `meta.editCommitOnBlur: false` still cancel on blur and other-cell activation.
-- Updated interaction coverage so blur commit and other-cell activation commit
-  are the default behavior, with a separate explicit false cancel test.
-- Updated terminology, Cell Edit API, editor contract, and Gate 4.1 architecture
-  docs to document the corrected Gate 4.1-d policy.
-
-### Gate 4.2 Paste Decision Document
-
-- Added `../plan/gate-4-2-paste-decisions.md` with a decision table for paste
-  trigger, clipboard source, target resolution, editable filtering, value
-  coercion, event shape, dirty-state handling, and testing policy.
-- Linked the new Gate 4.2 decision document from `../README.md`.
-- Confirmed the Gate 4.2 recommendation: keep paste errors silent by default,
-  but expose `pasteOptions` so important-data grids can report errors and
-  optionally cancel the whole paste.
-
-### Gate 4.2 Paste Application MVP
-
-- Added public paste error types and `pasteOptions` to `GenDataGridProps`.
-- Added `features/range-selection/paste.ts` to resolve active-cell paste targets,
-  collect read-only/non-editable/out-of-bounds errors, apply skip/cancel
-  behavior, and emit accepted cells through `onCellValueChange`.
-- Wired root-level paste handling in `DataGridRoot` using
-  `clipboardData.getData('text/plain')`.
-- Preserved native paste inside active editors by ignoring paste events from
-  `input`, `select`, `textarea`, `button`, and `contenteditable` descendants.
-- Updated clipboard parsing to drop the empty final row produced by trailing
-  spreadsheet newlines.
-- Added unit and interaction coverage for trailing newline parsing, plain-text
-  paste apply, non-editable skip reporting, cancel-paste failure behavior, and
-  active-editor paste bypass.
-- Added `Gate42ClipboardPaste` Storybook sample with copyable TSV text,
-  `skipCell` / `cancelPaste` controls, error reporting output, and controlled
-  data updates through `onCellValueChange`.
 
 ### Gate 5 Pinned Order And Resize Target Fix
 

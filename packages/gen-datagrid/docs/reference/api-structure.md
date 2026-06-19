@@ -237,7 +237,7 @@ mutate `data` internally.
 | `enableClipboard` | `boolean` | MVP | copy/paste 활성화 |
 | `clipboardOptions` | object | MVP | include header, value formatter 정책 |
 
-Implementation status: `enableRangeSelection`, `selectedRanges`, `defaultSelectedRanges`, `onSelectedRangesChange`, `enableClipboard`, and `clipboardOptions.includeHeader` are implemented for range selection and copy. Paste application and clipboard value formatter policy remain planned.
+Implementation status: `enableRangeSelection`, `selectedRanges`, `defaultSelectedRanges`, `onSelectedRangesChange`, `enableClipboard`, and `clipboardOptions.includeHeader` are implemented for range selection and copy. Plain-text paste application and `pasteOptions` are implemented for Gate 4.2. Clipboard value formatter policy and paste-to-selection remain deferred.
 
 설계 원칙:
 

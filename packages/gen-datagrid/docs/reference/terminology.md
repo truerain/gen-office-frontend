@@ -86,7 +86,7 @@ range selection의 움직이는 끝 셀.
 
 - 현재 진입 방식: double-click, Enter, F2, Active Cell 재클릭.
 - 현재 종료 방식: Enter commit, blur/다른 셀 activate 시 기본 commit, Escape cancel.
-- 보류된 진입/종료 방식: printable-key entry, 고급 blur/portal commit policy, paste application.
+- 보류된 진입/종료 방식: IME-safe printable-key guard, paste-to-selection, paste type coercion.
 
 ### Draft Value
 
@@ -195,8 +195,9 @@ cell 내부에 있으면서 자체 브라우저 interaction을 가져야 하는 
 
 clipboard matrix data를 grid cell에 적용하는 동작.
 
-- parsing helper는 존재한다.
-- runtime mutation은 editing/data mutation policy가 확정될 때까지 보류한다.
+- Gate 4.2 MVP: active cell 기준 plain-text paste, `pasteOptions` error reporting.
+- accepted cell은 `onCellValueChange`로 전달되며 grid는 `data`를 직접 mutate하지 않는다.
+- deferred: selection anchor paste, type coercion, row creation, `text/html` paste.
 
 ## Column State 용어
 

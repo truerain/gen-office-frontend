@@ -84,7 +84,7 @@ type GenDataGridDataProps<TData> =
 | `enableFooter` | `enableFooter` | 유지 | MVP | grid 외부 footer 영역. |
 | `enablePagination` | `enablePagination` | 유지 | MVP | pagination UI/state. |
 
-Implementation status: `enableRangeSelection`, `selectedRanges`, `defaultSelectedRanges`, and `onSelectedRangesChange` are implemented for range selection. `enableClipboard` and `clipboardOptions.includeHeader` are implemented as new copy options. Paste application remains planned until data mutation/editing policy is introduced.
+Implementation status: `enableRangeSelection`, `selectedRanges`, `defaultSelectedRanges`, and `onSelectedRangesChange` are implemented for range selection. `enableClipboard`, `clipboardOptions.includeHeader`, and Gate 4.2 plain-text `pasteOptions` are implemented. Paste-to-selection remains deferred.
 
 ## 5. Controlled State API
 
@@ -140,7 +140,7 @@ Implementation status: `columnOrder`, `columnVisibility`, `columnSizing`, and `c
 | `readonly` | `readonly` / `readOnly` | 변경 | MVP | `readonly` 유지 + `readOnly` alias 제공 검토. |
 | 없음 | `isCellEditable` | 신규 | MVP | column meta 외 grid-level editable predicate. |
 
-Implementation status: editing public prop and column meta types are defined. `readOnly`, `readonly`, `editSelectOnFocus`, `editCommitOnBlur`, `isCellEditable`, and column meta editability are wired into the editable cell predicate model and built-in editor flow. Runtime editing now supports default/custom editor rendering, Enter/F2/double-click/active-cell-reclick edit entry, Escape cancel, Enter/blur commit, and Tab/Shift+Tab navigation through `onCellValueChange`. `editOnActiveCell` and `keepEditingOnNavigate` are reserved public props with runtime warnings. Data mutation, dirty-state integration, advanced blur/portal policy, and paste application remain deferred. See `cell-edit-api.md` for implemented/deferred Cell Edit API status.
+Implementation status: editing public prop and column meta types are defined. `readOnly`, `readonly`, `editSelectOnFocus`, `editCommitOnBlur`, `isCellEditable`, and column meta editability are wired into the editable cell predicate model and built-in editor flow. Runtime editing now supports default/custom editor rendering, Enter/F2/double-click/active-cell-reclick edit entry, Escape cancel, Enter/blur commit, and Tab/Shift+Tab navigation through `onCellValueChange`. Gate 4.1 editing policy (4.1-b/c/d) and Gate 4.2 plain-text paste are implemented. `editOnActiveCell` and `keepEditingOnNavigate` are reserved public props with runtime warnings. Grid-internal data mutation remains deferred. See `cell-edit-api.md` for implemented/deferred Cell Edit API status.
 
 권장 editor context:
 

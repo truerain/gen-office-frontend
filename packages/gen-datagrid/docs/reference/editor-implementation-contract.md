@@ -25,8 +25,8 @@ Gate 4.1은 Gate 4 runtime 위에 올라간다. renderer, `useCellEditing`, `Gen
 
 Gate 4.1이 다루지 않는 것:
 
-- clipboard paste application → **Gate 4.2**
-- data mutation / dirty-state 본격 연동 → Gate 4.2 이후
+- clipboard paste application → **Gate 4.2** (plain-text MVP complete)
+- grid 내부 data mutation, batch paste callback, paste-to-selection → Gate 4.2 이후
 
 ## 2. Gate 4.1 서브 슬라이스
 
@@ -257,7 +257,8 @@ shared policy surface is implemented. Custom popup/modal editors should use
 | Gate 4.1-b `editPolicy` | complete |
 | Gate 4.1-c built-in keyboard | complete |
 | Gate 4.1-d blur / portal / modal | complete |
-| Gate 4.2 paste | planned |
+| Gate 4.2 paste (plain-text MVP) | complete |
+| Gate 4.2 paste-to-selection / type coercion | deferred |
 | `editOnActiveCell` / `keepEditingOnNavigate` | reserved, warning only |
 
 Gate 4.1이 완료되면, GenDataGrid에 붙는 모든 editor는 **같은 policy surface** 위에서 일관되게 동작해야 한다. built-in editor는 그 계약의 참조 구현이고, custom editor는 그 계약을 구현하는 소비자다.

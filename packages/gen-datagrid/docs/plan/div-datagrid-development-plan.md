@@ -576,8 +576,13 @@ Editor 구현 계약 요약: [`editor-implementation-contract.md`](../reference/
 - Gate 4.2 Clipboard and mutation follow-up
 
 - clipboard paste application into editable cells
+  - status
+    - complete (MVP)
+    - plain-text paste from active cell; `Gate42ClipboardPaste`; interaction/unit tests
 - paste-to-selection policy for multi-cell ranges
+  - deferred
 - dirty-state integration for pasted values
+  - complete via `enableDirtyState` + `onCellValueChange`
 
 #### Gate 6.1 Filtering, pagination, and data ownership follow-up
 

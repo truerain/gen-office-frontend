@@ -6,7 +6,7 @@ Documents the Gate 3 range selection architecture for GenDataGrid.
 
 용어 기준: Active Cell, Selected Cell, Range Selection, Anchor Cell, Focus Cell, Copy Selection은 `../reference/terminology.md`를 따른다.
 
-This document describes the current Gate 3 range selection and clipboard copy slice. Clipboard paste support is still deferred.
+This document describes the current Gate 3 range selection and clipboard slice. Plain-text paste application was added in Gate 4.2; paste-to-selection remains deferred.
 
 ## Component Relationship
 
@@ -117,7 +117,7 @@ sequenceDiagram
 - `Ctrl/Cmd+C` copies the current focused grid selection.
 - `Shift+Ctrl/Cmd+C` includes visible column headers in copied text.
 - `Escape`, root empty area click, and `clearSelection()` clear selected ranges.
-- Paste parsing helpers exist, but applying pasted values is deferred until data mutation and editing policies are introduced.
+- Plain-text paste application (Gate 4.2) via root-level `paste` and `pasteOptions`.
 
 ## Implemented State Surface
 
@@ -138,5 +138,5 @@ sequenceDiagram
 
 ## Deferred Features
 
-- Clipboard paste application
+- Paste-to-selection and paste type coercion
 - Selection overlay for complex pinned/virtualized layouts
