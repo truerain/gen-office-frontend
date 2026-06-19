@@ -16,6 +16,7 @@ import type {
   GenDataGridDirtyState,
   GenDataGridEditorContext,
   GenDataGridHandle,
+  GenDataGridPasteError,
   GenDataGridScrollSeekingOptions,
 } from '../GenDataGrid.types';
 import { createEditorBlurHandler } from '../features/editing/blurPolicy';
@@ -1183,6 +1184,190 @@ export const Gate41BEditPolicy: Story = {
             background: '#fff',
           }}
         />
+      </div>
+    );
+  },
+};
+
+export const Gate42ClipboardPaste: Story = {
+  render: () => {
+    const [gridData, setGridData] = React.useState(gate6Data.slice(0, 6));
+    const [errors, setErrors] = React.useState<GenDataGridPasteError[]>([]);
+    const [failureBehavior, setFailureBehavior] = React.useState<'skipCell' | 'cancelPaste'>(
+      'skipCell'
+    );
+    const sampleText = React.useMemo(
+      () =>
+        [
+          ['Paste Ada', 'Engineer', '100', 'London', 'Plain TSV value'],
+          ['Paste Grace', 'Researcher', '101', 'Arlington', 'Score column is locked'],
+          ['Paste Katherine', 'Mathematician', '102', 'Hampton', 'Errors appear below'],
+        ]
+          .map((row) => row.join('\t'))
+          .join('\n'),
+      []
+    );
+
+    const pasteColumns = React.useMemo<ColumnDef<Person, unknown>[]>(
+      () => [
+        { accessorKey: 'name', header: 'Name', size: 180, meta: { editable: true } },
+        {
+          accessorKey: 'role',
+          header: 'Role',
+          size: 220,
+          meta: {
+            editType: 'select',
+            editOptions: [
+              { label: 'Engineer', value: 'Engineer' },
+              { label: 'Computer Scientist', value: 'Computer Scientist' },
+              { label: 'Mathematician', value: 'Mathematician' },
+              { label: 'Researcher', value: 'Researcher' },
+            ],
+          },
+        },
+        {
+          accessorKey: 'score',
+          header: 'Score (locked)',
+          size: 130,
+          meta: { editable: false },
+        },
+        { accessorKey: 'location', header: 'Location', size: 180, meta: { editable: true } },
+        {
+          accessorKey: 'note',
+          header: 'Note',
+          size: 320,
+          meta: { editType: 'textarea', editable: true },
+        },
+      ],
+      []
+    );
+
+    const handleCellValueChange = React.useCallback(
+      ({ rowId, columnId, value }: GenDataGridCellValueChange<Person>) => {
+        setGridData((previous) =>
+          previous.map((row) =>
+            row.id === rowId
+              ? {
+                  ...row,
+                  [columnId]: columnId === 'score' ? Number(value) : value,
+                }
+              : row
+          )
+        );
+      },
+      []
+    );
+
+    return (
+      <div style={{ width: 980, padding: 16, display: 'grid', gap: 12 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => setFailureBehavior('skipCell')}
+            style={{
+              border: '1px solid #d0d7de',
+              borderRadius: 6,
+              background: failureBehavior === 'skipCell' ? '#0969da' : '#fff',
+              color: failureBehavior === 'skipCell' ? '#fff' : '#24292f',
+              padding: '6px 10px',
+            }}
+          >
+            Skip failed cells
+          </button>
+          <button
+            type="button"
+            onClick={() => setFailureBehavior('cancelPaste')}
+            style={{
+              border: '1px solid #d0d7de',
+              borderRadius: 6,
+              background: failureBehavior === 'cancelPaste' ? '#0969da' : '#fff',
+              color: failureBehavior === 'cancelPaste' ? '#fff' : '#24292f',
+              padding: '6px 10px',
+            }}
+          >
+            Cancel on error
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setGridData(gate6Data.slice(0, 6));
+              setErrors([]);
+            }}
+            style={{
+              border: '1px solid #d0d7de',
+              borderRadius: 6,
+              background: '#fff',
+              color: '#24292f',
+              padding: '6px 10px',
+            }}
+          >
+            Reset
+          </button>
+        </div>
+        <textarea
+          aria-label="Paste sample"
+          readOnly
+          value={sampleText}
+          style={{
+            width: '100%',
+            minHeight: 82,
+            resize: 'vertical',
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            padding: 8,
+            fontFamily: 'monospace',
+            fontSize: 12,
+          }}
+          onFocus={(event) => event.currentTarget.select()}
+        />
+        <GenDataGrid<Person>
+          data={gridData}
+          columns={pasteColumns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-4-2"
+          defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+          editSelectOnFocus
+          enableDirtyState
+          editCommitOnBlur
+          pasteOptions={{
+            errorMode: 'report',
+            failureBehavior,
+            onError: setErrors,
+          }}
+          onCellValueChange={handleCellValueChange}
+          rowHeight={36}
+          headerHeight={40}
+          style={{
+            height: 280,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+        <div
+          style={{
+            minHeight: 44,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            padding: 8,
+            background: '#f6f8fa',
+            fontSize: 12,
+            color: '#24292f',
+          }}
+        >
+          {errors.length === 0 ? (
+            <span>No paste errors</span>
+          ) : (
+            <ul style={{ margin: 0, paddingLeft: 18 }}>
+              {errors.map((error, index) => (
+                <li key={`${error.reason}-${error.rowId ?? 'row'}-${error.columnId ?? 'col'}-${index}`}>
+                  {error.reason} at {error.rowId ?? error.rowIndex}/{error.columnId ?? error.columnIndex}:{' '}
+                  {error.value}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     );
   },

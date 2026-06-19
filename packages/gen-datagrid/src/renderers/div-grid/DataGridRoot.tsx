@@ -28,6 +28,8 @@ import {
   type ResolvedGenDataGridEditPolicy,
 } from '../../features/editing/editPolicy';
 import { useCellEditing } from '../../features/editing/useCellEditing';
+import { parseClipboardGrid } from '../../features/range-selection/clipboard';
+import { applyClipboardPaste } from '../../features/range-selection/paste';
 import { useClipboardActions } from '../../features/range-selection/useClipboardActions';
 import { useRangeSelection } from '../../features/range-selection/useRangeSelection';
 import { DataGridBody } from './DataGridBody';
@@ -93,6 +95,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     defaultSelectedRanges,
     onSelectedRangesChange,
     enableClipboard = true,
+    pasteOptions,
     enablePinning = true,
     enableColumnSizing = true,
     enableColumnReorder = true,
@@ -553,6 +556,58 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     ]
   );
 
+  const handlePaste = React.useCallback(
+    (event: React.ClipboardEvent<HTMLDivElement>) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('input,select,textarea,button,[contenteditable="true"]')) {
+        return;
+      }
+      if (!enableClipboard) {
+        return;
+      }
+
+      const text = event.clipboardData.getData('text/plain');
+      if (!text) {
+        return;
+      }
+
+      const result = applyClipboardPaste({
+        matrix: parseClipboardGrid(text),
+        rows: tableRows,
+        columns: visibleColumns,
+        activeCell,
+        readOnly: resolvedReadOnly,
+        isCellEditable,
+        pasteOptions,
+        onCellValueChange: handleCellValueChange,
+        onActiveCellChange: setActiveCell,
+        setTargetRange: enableRangeSelection
+          ? (targetRange) => {
+              rangeSelection.setSingleSelection(targetRange.anchor);
+              rangeSelection.extendSelectionTo(targetRange.focus, targetRange.anchor);
+            }
+          : undefined,
+      });
+
+      if (result.appliedCellCount > 0 || result.skippedCellCount > 0) {
+        event.preventDefault();
+      }
+    },
+    [
+      activeCell,
+      enableClipboard,
+      enableRangeSelection,
+      handleCellValueChange,
+      isCellEditable,
+      pasteOptions,
+      rangeSelection,
+      resolvedReadOnly,
+      setActiveCell,
+      tableRows,
+      visibleColumns,
+    ]
+  );
+
   const handleViewportScroll = React.useCallback(() => {
     if (!enableVirtualization || !activeCell) return;
 
@@ -594,6 +649,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
         ...style,
       }}
       onKeyDown={handleKeyDown}
+      onPaste={handlePaste}
       onMouseDown={rangeSelection.handleMouseDown}
       onMouseOver={rangeSelection.handleMouseOver}
     >

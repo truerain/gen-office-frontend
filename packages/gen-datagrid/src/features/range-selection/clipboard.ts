@@ -115,5 +115,8 @@ export function parseClipboardGrid(input: string) {
 
   row.push(cell);
   rows.push(row);
+  if (rows.length > 1 && rows[rows.length - 1]?.length === 1 && rows[rows.length - 1]?.[0] === '') {
+    rows.pop();
+  }
   return rows;
 }

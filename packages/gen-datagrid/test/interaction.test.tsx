@@ -103,6 +103,12 @@ function createDataTransfer() {
   };
 }
 
+function createClipboardData(text: string) {
+  return {
+    getData: vi.fn((type: string) => (type === 'text/plain' ? text : '')),
+  };
+}
+
 function renderGrid(gridId = 'test-grid') {
   return render(
     <GenDataGrid
@@ -1449,7 +1455,7 @@ describe('GenDataGrid interaction contract', () => {
     expect(editor?.value).toBe('B');
   });
 
-  it('cancels editing and moves active cell only when another cell is clicked without editCommitOnBlur', async () => {
+  it('cancels editing and moves active cell only when editCommitOnBlur is disabled', async () => {
     const onCellValueChange = vi.fn();
     const { container } = render(
       <GenDataGrid
@@ -1457,6 +1463,7 @@ describe('GenDataGrid interaction contract', () => {
         data={rows}
         columns={editabilityColumns}
         getRowId={(row) => row.id}
+        editCommitOnBlur={false}
         onCellValueChange={onCellValueChange}
       />
     );
@@ -1587,7 +1594,7 @@ describe('GenDataGrid interaction contract', () => {
     });
   });
 
-  it('commits built-in cell editing on blur when editCommitOnBlur is enabled', async () => {
+  it('commits built-in cell editing on blur by default', async () => {
     const onCellValueChange = vi.fn();
     const { container } = render(
       <GenDataGrid
@@ -1595,7 +1602,6 @@ describe('GenDataGrid interaction contract', () => {
         data={rows}
         columns={editabilityColumns}
         getRowId={(row) => row.id}
-        editCommitOnBlur
         onCellValueChange={onCellValueChange}
       />
     );
@@ -1621,7 +1627,7 @@ describe('GenDataGrid interaction contract', () => {
     });
   });
 
-  it('commits current editing cell before activating another cell when editCommitOnBlur is enabled', async () => {
+  it('commits current editing cell before activating another cell by default', async () => {
     const onCellValueChange = vi.fn();
     const { container } = render(
       <GenDataGrid
@@ -1629,7 +1635,6 @@ describe('GenDataGrid interaction contract', () => {
         data={rows}
         columns={editabilityColumns}
         getRowId={(row) => row.id}
-        editCommitOnBlur
         onCellValueChange={onCellValueChange}
       />
     );
@@ -2499,6 +2504,152 @@ describe('GenDataGrid interaction contract', () => {
       expect(window.navigator.clipboard.writeText).toHaveBeenCalledWith(
         'Name\tAge\nAda\t37'
       );
+    });
+  });
+
+  it('pastes plain text values from the active cell into editable cells', async () => {
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="paste-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.paste(firstCell, {
+      clipboardData: createClipboardData('Lovelace\nHopper\n'),
+    });
+
+    await waitFor(() => {
+      expect(onCellValueChange).toHaveBeenCalledTimes(2);
+      expect(onCellValueChange).toHaveBeenNthCalledWith(1, {
+        row: rows[0],
+        rowId: '1',
+        rowIndex: 0,
+        columnId: 'name',
+        previousValue: 'Ada',
+        value: 'Lovelace',
+      });
+      expect(onCellValueChange).toHaveBeenNthCalledWith(2, {
+        row: rows[1],
+        rowId: '2',
+        rowIndex: 1,
+        columnId: 'name',
+        previousValue: 'Grace',
+        value: 'Hopper',
+      });
+      expect(getCell(container, '2', 'name').dataset.activeCell).toBe('true');
+      expect(getCell(container, '1', 'name').dataset.selectedCell).toBe('true');
+      expect(getCell(container, '2', 'name').dataset.selectedCell).toBe('true');
+    });
+  });
+
+  it('reports paste errors while skipping non-editable cells by default', async () => {
+    const onCellValueChange = vi.fn();
+    const onError = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="paste-skip-error-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        pasteOptions={{
+          errorMode: 'report',
+          onError,
+        }}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    fireEvent.paste(getCell(container, '1', 'name'), {
+      clipboardData: createClipboardData('Ada Paste\t99'),
+    });
+
+    await waitFor(() => {
+      expect(onCellValueChange).toHaveBeenCalledTimes(1);
+      expect(onCellValueChange).toHaveBeenCalledWith({
+        row: rows[0],
+        rowId: '1',
+        rowIndex: 0,
+        columnId: 'name',
+        previousValue: 'Ada',
+        value: 'Ada Paste',
+      });
+      expect(onError).toHaveBeenCalledWith([
+        expect.objectContaining({
+          reason: 'nonEditableCell',
+          rowId: '1',
+          columnId: 'age',
+          value: '99',
+        }),
+      ]);
+    });
+  });
+
+  it('cancels the whole paste when failureBehavior is cancelPaste', async () => {
+    const onCellValueChange = vi.fn();
+    const onError = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="paste-cancel-error-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        pasteOptions={{
+          errorMode: 'report',
+          failureBehavior: 'cancelPaste',
+          onError,
+        }}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    fireEvent.paste(getCell(container, '1', 'name'), {
+      clipboardData: createClipboardData('Ada Paste\t99'),
+    });
+
+    await waitFor(() => {
+      expect(onCellValueChange).not.toHaveBeenCalled();
+      expect(onError).toHaveBeenCalledWith([
+        expect.objectContaining({
+          reason: 'nonEditableCell',
+          rowId: '1',
+          columnId: 'age',
+          value: '99',
+        }),
+      ]);
+      expect(getCell(container, '1', 'name').dataset.activeCell).toBe('true');
+    });
+  });
+
+  it('does not intercept paste inside an active editor', async () => {
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="paste-editor-bypass-grid"
+        data={rows}
+        columns={[{ accessorKey: 'name', header: 'Name', meta: { editable: true } }]}
+        getRowId={(row) => row.id}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.paste(editor, {
+      clipboardData: createClipboardData('Editor Paste'),
+    });
+
+    await waitFor(() => {
+      expect(onCellValueChange).not.toHaveBeenCalled();
+      expect(firstCell.dataset.editingCell).toBe('true');
     });
   });
 

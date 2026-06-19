@@ -215,7 +215,7 @@ export function DataGridBodyRow<TData>({
           editingCell?.suppressSelectOnFocus
             ? false
             : (meta?.editSelectOnFocus ?? editSelectOnFocus ?? false);
-        const commitOnBlur = meta?.editCommitOnBlur ?? editCommitOnBlur ?? false;
+        const commitOnBlur = meta?.editCommitOnBlur ?? editCommitOnBlur ?? true;
         const blurOwnership = resolveBlurOwnership({
           editType: meta?.editType,
           gridPolicy: editPolicy,

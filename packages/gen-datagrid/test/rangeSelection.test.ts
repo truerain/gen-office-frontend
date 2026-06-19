@@ -68,6 +68,13 @@ describe('clipboard helpers', () => {
     ]);
   });
 
+  it('drops the empty final row from trailing spreadsheet newlines', () => {
+    expect(parseClipboardGrid('Ada\t37\nGrace\t41\n')).toEqual([
+      ['Ada', '37'],
+      ['Grace', '41'],
+    ]);
+  });
+
   it('parses quoted csv clipboard text', () => {
     expect(parseClipboardGrid('"Ada, A.",37\n"Grace ""G""",41')).toEqual([
       ['Ada, A.', '37'],

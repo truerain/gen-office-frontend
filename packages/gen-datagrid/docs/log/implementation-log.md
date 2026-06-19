@@ -648,6 +648,46 @@ Records meaningful GenDataGrid implementation decisions and progress.
 - Replaced stale Gate 4.1 follow-up wording for editor open-on-start and policy
   surface extension with implemented-status wording.
 
+### Gate 4.1-d Commit-On-Blur Default Correction
+
+- Changed the default inline blur policy from cancel to commit by resolving
+  omitted `editCommitOnBlur` as `true`.
+- Kept explicit opt-out support: `editCommitOnBlur={false}` and column
+  `meta.editCommitOnBlur: false` still cancel on blur and other-cell activation.
+- Updated interaction coverage so blur commit and other-cell activation commit
+  are the default behavior, with a separate explicit false cancel test.
+- Updated terminology, Cell Edit API, editor contract, and Gate 4.1 architecture
+  docs to document the corrected Gate 4.1-d policy.
+
+### Gate 4.2 Paste Decision Document
+
+- Added `../plan/gate-4-2-paste-decisions.md` with a decision table for paste
+  trigger, clipboard source, target resolution, editable filtering, value
+  coercion, event shape, dirty-state handling, and testing policy.
+- Linked the new Gate 4.2 decision document from `../README.md`.
+- Confirmed the Gate 4.2 recommendation: keep paste errors silent by default,
+  but expose `pasteOptions` so important-data grids can report errors and
+  optionally cancel the whole paste.
+
+### Gate 4.2 Paste Application MVP
+
+- Added public paste error types and `pasteOptions` to `GenDataGridProps`.
+- Added `features/range-selection/paste.ts` to resolve active-cell paste targets,
+  collect read-only/non-editable/out-of-bounds errors, apply skip/cancel
+  behavior, and emit accepted cells through `onCellValueChange`.
+- Wired root-level paste handling in `DataGridRoot` using
+  `clipboardData.getData('text/plain')`.
+- Preserved native paste inside active editors by ignoring paste events from
+  `input`, `select`, `textarea`, `button`, and `contenteditable` descendants.
+- Updated clipboard parsing to drop the empty final row produced by trailing
+  spreadsheet newlines.
+- Added unit and interaction coverage for trailing newline parsing, plain-text
+  paste apply, non-editable skip reporting, cancel-paste failure behavior, and
+  active-editor paste bypass.
+- Added `Gate42ClipboardPaste` Storybook sample with copyable TSV text,
+  `skipCell` / `cancelPaste` controls, error reporting output, and controlled
+  data updates through `onCellValueChange`.
+
 ### Gate 5 Pinned Order And Resize Target Fix
 
 - pinned column의 실제 표시 순서는 `columnOrder`가 아니라 `columnPinning.left/right` 배열이 결정하므로 pinned zone reorder 시 matching pinning 배열도 함께 재정렬하도록 수정했다.

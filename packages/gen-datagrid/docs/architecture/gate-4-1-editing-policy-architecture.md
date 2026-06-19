@@ -270,6 +270,18 @@ Validated in this slice:
 - interaction coverage for activate-without-commit, portal blur ignore, and modal-owned cancel
 - manual Storybook verification with `Gate41DBlurPolicy`
 
+## Gate 4.1-d Policy Correction
+
+The inline blur default is `commit`. `editCommitOnBlur` remains the grid-level
+escape hatch, and column `meta.editCommitOnBlur` remains the column-level
+override:
+
+- omitted `editCommitOnBlur`: blur and other-cell activation commit
+- `editCommitOnBlur={false}`: blur and other-cell activation cancel
+- modal-owned editors still cancel on outside cell activation regardless of the
+  inline blur default
+- portal-owned editors still ignore focus moves into registered editor surfaces
+
 ## Custom Editor Contract
 
 Custom editors should receive enough context to decide whether they should open a popover or modal immediately on mount.

@@ -217,7 +217,14 @@ overrides the grid policy, and column `meta.editBlurOwnership` overrides blur
 ownership directly. `GenDataGridEditorContext` exposes `arrowNavigate`,
 `openOnEditStart`, `editEntryReason`, `blurOwnership`,
 `registerEditorSurface`, `unregisterEditorSurface`, `getGridRoot`, and
-`getEditorSurfaces`.
+`getEditorSurfaces`. The inline blur default is commit; set
+`editCommitOnBlur={false}` or column `meta.editCommitOnBlur: false` to cancel on
+blur and other-cell activation.
+
+Gate 4.2 status: plain-text paste application is implemented. `pasteOptions`
+controls paste error reporting through `errorMode`, `failureBehavior`, and
+`onError`. Accepted paste cells reuse `onCellValueChange`; GenDataGrid does not
+mutate `data` internally.
 
 ### 5.2 Range Selection And Clipboard Feature
 

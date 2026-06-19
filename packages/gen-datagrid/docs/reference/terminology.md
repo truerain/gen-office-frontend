@@ -36,7 +36,7 @@ Defines shared terminology for GenDataGrid development.
 - Editing Cell은 commit 또는 cancel 전까지 draft value를 가진다.
 - 현재 기본 editor 흐름에서는 Enter가 commit을 수행한다.
 - Escape는 value change를 발생시키지 않고 cancel한다.
-- 현재 구현에서는 다른 셀을 activate하면 기존 editing을 commit 없이 cancel한다.
+- 기본 구현에서는 다른 셀을 activate하면 기존 editing을 commit한다. `editCommitOnBlur={false}`이면 cancel한다.
 - DOM marker: `data-editing-cell="true"`.
 
 ### Editable Cell
@@ -85,7 +85,7 @@ range selection의 움직이는 끝 셀.
 셀이 display value 대신 editor를 렌더링하는 상태.
 
 - 현재 진입 방식: double-click, Enter, F2, Active Cell 재클릭.
-- 현재 종료 방식: Enter commit, Escape cancel, 다른 셀 activate 시 cancel.
+- 현재 종료 방식: Enter commit, blur/다른 셀 activate 시 기본 commit, Escape cancel.
 - 보류된 진입/종료 방식: printable-key entry, 고급 blur/portal commit policy, paste application.
 
 ### Draft Value
@@ -112,7 +112,7 @@ range selection의 움직이는 끝 셀.
 - grid prop: `editCommitOnBlur`.
 - column meta: `editCommitOnBlur`.
 - column meta가 grid prop보다 우선한다.
-- 기본값은 `false`다.
+- 기본값은 `true`다.
 - 현재 built-in editor와 다른 cell activate 경로에 적용된다.
 - custom editor portal, select dropdown, outside click에 대한 고급 정책은 별도 refinement 대상이다.
 
@@ -137,7 +137,7 @@ edit mode를 종료하면서 편집 값을 외부로 알리는 동작.
 value change를 발생시키지 않고 edit mode를 종료하는 동작.
 
 - Escape는 cancel이다.
-- 현재 구현에서 다른 셀 activate도 cancel이다.
+- 기본 구현에서 다른 셀 activate는 commit이다. `editCommitOnBlur={false}`이면 cancel이다.
 - Cancel은 dirty state를 만들면 안 된다.
 
 ### Editor Factory

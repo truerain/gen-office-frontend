@@ -4,13 +4,14 @@ Indexes GenDataGrid planning, architecture, reference, QA, and log documents.
 
 # GenDataGrid Docs
 
-현재 상태: Gate 7 Virtualization 및 Gate 4.1 Editing Policy (4.1-b/c/d) 완료. 다음 editing follow-up은 Gate 4.2 Clipboard Paste.
+현재 상태: Gate 7 Virtualization, Gate 4.1 Editing Policy (4.1-b/c/d), Gate 4.2 Clipboard Paste 완료.
 
 
 ## Plan
 
 - [Development Plan](plan/div-datagrid-development-plan.md)
 - [MVP Test Gates](plan/mvp-test-gates.md)
+- [Gate 4.2 Paste Decisions](plan/gate-4-2-paste-decisions.md)
 
 ## Architecture
 

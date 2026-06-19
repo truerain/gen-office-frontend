@@ -118,6 +118,28 @@ export type GenDataGridDirtyState = {
   deletedRowIds: string[];
 };
 
+export type GenDataGridPasteErrorReason =
+  | 'readOnly'
+  | 'nonEditableCell'
+  | 'outOfBounds'
+  | 'parseError'
+  | 'validationError';
+
+export type GenDataGridPasteError = {
+  reason: GenDataGridPasteErrorReason;
+  rowId?: string;
+  columnId?: string;
+  rowIndex?: number;
+  columnIndex?: number;
+  value?: string;
+};
+
+export type GenDataGridPasteOptions = {
+  errorMode?: 'silent' | 'report';
+  failureBehavior?: 'skipCell' | 'cancelPaste';
+  onError?: (errors: GenDataGridPasteError[]) => void;
+};
+
 export type GenDataGridScrollSeekingOptions = {
   enabled?: boolean;
   jumpThresholdRows?: number;
@@ -173,6 +195,7 @@ export type GenDataGridProps<TData> = {
   defaultSelectedRanges?: GenDataGridRangeSelections;
   onSelectedRangesChange?: (next: GenDataGridRangeSelections) => void;
   enableClipboard?: boolean;
+  pasteOptions?: GenDataGridPasteOptions;
   enablePinning?: boolean;
   enableColumnSizing?: boolean;
   enableColumnReorder?: boolean;

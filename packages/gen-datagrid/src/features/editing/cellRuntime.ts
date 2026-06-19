@@ -59,7 +59,7 @@ export function resolveCellEditingRuntime<TData>({
       isCellEditable,
     }),
     resolvedEditPolicy: resolveEditPolicy(editPolicy, meta?.editPolicy),
-    commitOnBlur: meta?.editCommitOnBlur ?? editCommitOnBlur ?? false,
+    commitOnBlur: meta?.editCommitOnBlur ?? editCommitOnBlur ?? true,
     blurOwnership: resolveBlurOwnership({
       editType: meta?.editType,
       gridPolicy: editPolicy,
