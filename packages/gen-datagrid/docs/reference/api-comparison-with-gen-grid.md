@@ -434,8 +434,12 @@ type GenDataGridProps<TData> =
     onGlobalFilterChange?: (next: unknown) => void;
     pagination?: PaginationState;
     onPaginationChange?: (next: PaginationState) => void;
+    filterMode?: 'client' | 'manual';
+    paginationMode?: 'client' | 'manual';
     totalRowCount?: number;
     pageSizeOptions?: number[];
+    deleteRowsBehavior?: 'mark' | 'removeUncontrolled';
+    dataVersion?: number | string;
 
     editOnActiveCell?: boolean;
     keepEditingOnNavigate?: boolean;
@@ -538,11 +542,12 @@ Implemented:
 - `enableGlobalFilter`, `columnFilters`, `defaultColumnFilters`, `onColumnFiltersChange`, `globalFilter`, `defaultGlobalFilter`, `onGlobalFilterChange`.
 - `enableFooterRow`, `enableStickyFooterRow`, `enableFooter`, `footer`, `renderFooter`.
 - `enablePagination`, `pagination`, `defaultPagination`, `onPaginationChange`.
+- Gate 6.1 data ownership props: `filterMode`, `paginationMode`, `totalRowCount`, `pageSizeOptions`, `deleteRowsBehavior`, and `dataVersion`.
 - Dirty tracking through `enableDirtyState`, `onDirtyStateChange`, and handle methods `resetDirtyState`, `commitDirtyState`, `getDirtyState`.
 
 Deferred from the GenGrid comparison surface:
 
-- Manual/server filtering and pagination total row count.
-- Page size option UI.
-- Row deletion data mutation. `deleteRows(rowIds)` is implemented as an imperative delete request plus deleted-row marker.
-- Dirty comparison customization and `dataVersion` baseline reset.
+- Advanced filter operators and typed filter editors.
+- Cursor/unknown-total server pagination.
+- Controlled row deletion mutation. `deleteRows(rowIds)` still never mutates controlled `data`.
+- Dirty comparison customization.

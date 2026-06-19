@@ -4,6 +4,31 @@ Records meaningful GenDataGrid implementation decisions and progress.
 
 ## 2026-06-19
 
+### Gate 6.1 Filter Input Focus Fix
+
+- column filter popover 내부 click/key 이벤트가 grid root keyboard handling으로 전파되지 않도록 차단했습니다.
+- row model 변경 후 active-cell focus restore effect가 grid 내부 input/select/button focus를 빼앗지 않도록 interactive focus guard를 추가했습니다.
+- header filter 입력 중 focus가 grid cell로 이동하지 않는 interaction test를 보강했습니다.
+
+### Gate 6.1 Manual Filter Storybook 보정
+
+- `Gate61ManualFilteringPaginationDataOwnership` Storybook 시나리오의 server-side filtering 흉내 로직이 `name` 컬럼만 처리하던 문제를 수정했습니다.
+- manual mode 예제가 모든 column filter id를 row field 값과 비교하도록 바꿔 `Role`, `Score`, `Location`, `Note` 필터도 확인할 수 있게 했습니다.
+- manual column filter가 grid 내부 local filtering을 수행하지 않는 interaction test를 추가했습니다.
+
+### Gate 6.1 Data Ownership MVP 구현
+
+- `filterMode`, `paginationMode`, `totalRowCount`, `pageSizeOptions`, `deleteRowsBehavior`, `dataVersion` public props와 관련 타입 export를 추가했습니다.
+- `filterMode: 'manual'`에서는 local filtering을 비활성화하고, `paginationMode: 'manual'`에서는 현재 `data`를 page data로 렌더링하면서 `totalRowCount`로 page count를 계산하도록 TanStack adapter를 연결했습니다.
+- `pageSizeOptions` 기반 selector, uncontrolled `defaultData` 전용 `deleteRowsBehavior: 'removeUncontrolled'`, `dataVersion` 변경 시 dirty/deleted marker reset을 구현했습니다.
+- `Gate61ManualFilteringPaginationDataOwnership` Storybook 시나리오와 interaction test를 추가했습니다.
+
+### Gate 6.1 Data Ownership Decisions 문서 추가
+
+- `docs/plan/gate-6-1-data-ownership-decisions.md`를 추가해 manual/server filtering, manual/server pagination, page-size selector, delete-row data mutation, `dataVersion` dirty baseline reset의 MVP 정책을 정리했습니다.
+- Gate 4.2 paste decisions 문서 형식에 맞춰 recommended MVP, current status, decision table, proposed contract, implementation order, open questions를 분리했습니다.
+- `docs/README.md`와 `docs/plan/div-datagrid-development-plan.md`에서 Gate 6.1 decision 문서로 연결했습니다.
+
 ### Implementation Log 재정리
 
 - 2026-06-19 작업(Gate 4.2 paste, Gate 4.1 문서/blur 정책 정리)을 `## 2026-06-19` 섹션으로 분리했습니다.

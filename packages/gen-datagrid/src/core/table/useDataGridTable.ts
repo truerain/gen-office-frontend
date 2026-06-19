@@ -51,6 +51,9 @@ export function useDataGridTable<TData>({
   pagination,
   defaultPagination,
   onPaginationChange,
+  filterMode = 'client',
+  paginationMode = 'client',
+  totalRowCount,
   enableColumnSizing = true,
   enablePagination = false,
 }: GenDataGridProps<TData>) {
@@ -161,8 +164,9 @@ export function useDataGridTable<TData>({
     columns,
     getRowId,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: enablePagination ? getPaginationRowModel() : undefined,
+    getFilteredRowModel: filterMode === 'client' ? getFilteredRowModel() : undefined,
+    getPaginationRowModel:
+      enablePagination && paginationMode === 'client' ? getPaginationRowModel() : undefined,
     state: {
       columnOrder: resolvedColumnOrder,
       columnVisibility: resolvedColumnVisibility,
@@ -179,6 +183,9 @@ export function useDataGridTable<TData>({
     onColumnFiltersChange: handleColumnFiltersChange,
     onGlobalFilterChange: handleGlobalFilterChange,
     onPaginationChange: handlePaginationChange,
+    manualFiltering: filterMode === 'manual',
+    manualPagination: paginationMode === 'manual',
+    rowCount: paginationMode === 'manual' ? totalRowCount ?? rows.length : undefined,
     enableColumnResizing: enableColumnSizing,
     columnResizeMode: 'onChange',
   });

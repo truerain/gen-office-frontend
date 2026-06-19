@@ -55,6 +55,12 @@ export function DataGridColumnFilter<TData>({
           onMouseDown={(event) => {
             event.stopPropagation();
           }}
+          onClick={(event) => {
+            event.stopPropagation();
+          }}
+          onKeyDown={(event) => {
+            event.stopPropagation();
+          }}
         >
           <input
             aria-label={`Filter ${columnId} value`}
@@ -65,6 +71,7 @@ export function DataGridColumnFilter<TData>({
             }}
             onKeyDown={(event) => {
               if (event.key === 'Escape') {
+                event.preventDefault();
                 onOpenChange(false);
               }
             }}

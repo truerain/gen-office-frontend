@@ -12,6 +12,7 @@ Indexes GenDataGrid planning, architecture, reference, QA, and log documents.
 - [Development Plan](plan/div-datagrid-development-plan.md)
 - [MVP Test Gates](plan/mvp-test-gates.md)
 - [Gate 4.2 Paste Decisions](plan/gate-4-2-paste-decisions.md)
+- [Gate 6.1 Data Ownership Decisions](plan/gate-6-1-data-ownership-decisions.md)
 
 ## Architecture
 

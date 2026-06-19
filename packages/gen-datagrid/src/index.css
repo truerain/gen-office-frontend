@@ -346,6 +346,15 @@
   cursor: not-allowed;
 }
 
+.gen-datagrid__pagination-page-size {
+  height: 28px;
+  border: 1px solid #d0d7de;
+  border-radius: 3px;
+  color: #24292f;
+  background: #ffffff;
+  font: inherit;
+}
+
 .gen-datagrid__pagination-status {
   min-width: 48px;
   text-align: center;

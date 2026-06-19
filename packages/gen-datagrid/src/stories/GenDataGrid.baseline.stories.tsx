@@ -4,6 +4,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import type {
   ColumnDef,
+  ColumnFiltersState,
   ColumnOrderState,
   ColumnPinningState,
   PaginationState,
@@ -450,6 +451,113 @@ export const Gate6FilteringFooterPaginationDirtyState: Story = {
           renderFooter={({ table }) => (
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
               <span>Filtered rows: {table.getFilteredRowModel().rows.length}</span>
+              <span>Dirty rows: {dirtyState.rowIds.join(', ') || 'none'}</span>
+              <span>Deleted rows: {dirtyState.deletedRowIds.join(', ') || 'none'}</span>
+            </div>
+          )}
+        />
+      </div>
+    );
+  },
+};
+
+export const Gate61ManualFilteringPaginationDataOwnership: Story = {
+  render: () => {
+    const gridRef = React.useRef<GenDataGridHandle>(null);
+    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+    const [globalFilter, setGlobalFilter] = React.useState('');
+    const [pagination, setPagination] = React.useState<PaginationState>({
+      pageIndex: 0,
+      pageSize: 3,
+    });
+    const [dataVersion, setDataVersion] = React.useState(1);
+    const [dirtyState, setDirtyState] = React.useState<GenDataGridDirtyState>({
+      cells: [],
+      rowIds: [],
+      deletedRowIds: [],
+    });
+
+    const serverFilteredRows = React.useMemo(() => {
+      const globalQuery = globalFilter.trim().toLowerCase();
+      const getServerFilterValue = (row: Person, columnId: string) => {
+        const value = row[columnId as keyof Person];
+        return String(value ?? '').toLowerCase();
+      };
+
+      return data.filter((row) => {
+        const globalMatched =
+          globalQuery.length === 0 ||
+          [row.name, row.role, row.score, row.location, row.note].some((value) =>
+            String(value).toLowerCase().includes(globalQuery)
+          );
+        const columnMatched = columnFilters.every((filter) => {
+          const query = String(filter.value ?? '').trim().toLowerCase();
+          return query.length === 0 || getServerFilterValue(row, filter.id).includes(query);
+        });
+        return globalMatched && columnMatched;
+      });
+    }, [columnFilters, globalFilter]);
+
+    const serverPageRows = React.useMemo(() => {
+      const start = pagination.pageIndex * pagination.pageSize;
+      return serverFilteredRows.slice(start, start + pagination.pageSize);
+    }, [pagination.pageIndex, pagination.pageSize, serverFilteredRows]);
+
+    const resetToFirstPage = React.useCallback(
+      (updater: () => void) => {
+        updater();
+        setPagination((current) => ({ ...current, pageIndex: 0 }));
+      },
+      []
+    );
+
+    return (
+      <div style={{ width: 820, padding: 16 }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+          <button type="button" onClick={() => gridRef.current?.deleteRows(['2'])}>
+            Mark row 2 deleted
+          </button>
+          <button type="button" onClick={() => setDataVersion((version) => version + 1)}>
+            Accept server data
+          </button>
+          <span>Server total: {serverFilteredRows.length}</span>
+          <span>Data version: {dataVersion}</span>
+        </div>
+        <GenDataGrid<Person>
+          ref={gridRef}
+          data={serverPageRows}
+          columns={gate6Columns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-6-1"
+          enableColumnFilters
+          enableGlobalFilter
+          enablePagination
+          enableFooter
+          filterMode="manual"
+          paginationMode="manual"
+          totalRowCount={serverFilteredRows.length}
+          pageSizeOptions={[3, 5, 8]}
+          columnFilters={columnFilters}
+          onColumnFiltersChange={(next) => {
+            resetToFirstPage(() => setColumnFilters(next));
+          }}
+          globalFilter={globalFilter}
+          onGlobalFilterChange={(next) => {
+            resetToFirstPage(() => setGlobalFilter(String(next ?? '')));
+          }}
+          pagination={pagination}
+          onPaginationChange={setPagination}
+          dataVersion={dataVersion}
+          onDirtyStateChange={setDirtyState}
+          style={{
+            height: 330,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+          renderFooter={() => (
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+              <span>Current page rows: {serverPageRows.length}</span>
               <span>Dirty rows: {dirtyState.rowIds.join(', ') || 'none'}</span>
               <span>Deleted rows: {dirtyState.deletedRowIds.join(', ') || 'none'}</span>
             </div>

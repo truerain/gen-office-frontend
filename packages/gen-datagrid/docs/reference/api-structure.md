@@ -179,13 +179,15 @@ Implementation status: `columnOrder`, `columnVisibility`, `columnSizing`, and `c
 | `onPaginationChange` | `(next: PaginationState) => void` | pagination callback |
 | `totalRowCount` | `number` | server/manual pagination total count |
 | `pageSizeOptions` | `number[]` | page size options |
+| `paginationMode` | `'client' \| 'manual'` | client/server pagination ownership |
+| `dataVersion` | `number \| string` | external data baseline reset signal |
 
 ### 4.6 Dirty State
 
 | API | Type | 설명 |
 | --- | --- | --- |
-| `onDirtyChange` | `(dirty: boolean) => void` | 전체 dirty callback |
-| `onDirtyRowsChange` | `(rowIds: string[]) => void` | dirty row ids callback |
+| `onDirtyStateChange` | `(next: GenDataGridDirtyState) => void` | dirty state callback |
+| `deleteRowsBehavior` | `'mark' \| 'removeUncontrolled'` | delete-row data ownership policy |
 | `dirtyKeys` | `string[]` | dirty 비교 대상 field |
 | `isEqualForDirty` | `(a, b, ctx) => boolean` | custom equality |
 
@@ -248,7 +250,7 @@ Implementation status: `enableRangeSelection`, `selectedRanges`, `defaultSelecte
 
 | API | Type | 우선순위 | 설명 |
 | --- | --- | --- | --- |
-| `enableFiltering` | `boolean` | MVP | column filtering |
+| `enableColumnFilters` | `boolean` | MVP | column filtering |
 | `enableGlobalFilter` | `boolean` | MVP | global filtering |
 | `filterMode` | `'client' \| 'manual'` | MVP | client/server filtering 구분 |
 
@@ -578,14 +580,15 @@ Gate 6 implemented the following public API surface in `GenDataGrid.types.ts`:
 
 - Filtering state: `enableColumnFilters`, `enableGlobalFilter`, `columnFilters`, `defaultColumnFilters`, `onColumnFiltersChange`, `globalFilter`, `defaultGlobalFilter`, `onGlobalFilterChange`.
 - Footer rendering: `enableFooterRow`, `enableStickyFooterRow`, `footerRowHeight`, `enableFooter`, `footer`, `renderFooter`.
-- Pagination state: `enablePagination`, `pagination`, `defaultPagination`, `onPaginationChange`.
+- Pagination state: `enablePagination`, `pagination`, `defaultPagination`, `onPaginationChange`, `paginationMode`, `totalRowCount`, `pageSizeOptions`.
 - Dirty state: `enableDirtyState`, `onDirtyStateChange`, `GenDataGridDirtyCell`, `GenDataGridDirtyState`.
+- Gate 6.1 data ownership: `filterMode`, `deleteRowsBehavior`, and `dataVersion`.
 - Render context: `GenDataGridRenderContext<TData>` currently provides `table`, filtered `rows`, `dirtyState`, and `pagination`.
 - Handle additions: `resetDirtyState(rowIds?)`, `commitDirtyState(rowIds?)`, and `getDirtyState()`.
 
 Current limitations:
 
-- Filtering and pagination are client-side MVP wiring through TanStack row models.
+- Filtering and pagination default to client-side TanStack row models. `filterMode: 'manual'` disables local filtering, and `paginationMode: 'manual'` renders the current `data` as the current page while using `totalRowCount` for page count.
 - Filter UI is a minimal header popover with string input; advanced operators and typed editors are deferred.
-- `commitDirtyState` clears dirty markers. Data mutation and baseline acceptance remain consumer-owned until a later data ownership slice.
-- `deleteRows(rowIds)` emits a delete request and marks rows as deleted; actual row deletion mutation and `dataVersion` dirty baseline reset are deferred.
+- `commitDirtyState` clears dirty markers. `dataVersion` also clears dirty/deleted markers when external data is accepted.
+- `deleteRows(rowIds)` emits a delete request and marks rows as deleted. `deleteRowsBehavior: 'removeUncontrolled'` additionally removes rows from uncontrolled `defaultData`; controlled `data` remains consumer-owned.

@@ -168,6 +168,10 @@ export type GenDataGridEditPolicy = {
   blurOwnership?: GenDataGridEditBlurOwnership;
 };
 
+export type GenDataGridFilterMode = 'client' | 'manual';
+export type GenDataGridPaginationMode = 'client' | 'manual';
+export type GenDataGridDeleteRowsBehavior = 'mark' | 'removeUncontrolled';
+
 export type GenDataGridRenderContext<TData> = {
   table: Table<TData>;
   rows: TData[];
@@ -220,6 +224,12 @@ export type GenDataGridProps<TData> = {
   pagination?: PaginationState;
   defaultPagination?: PaginationState;
   onPaginationChange?: (next: PaginationState) => void;
+  filterMode?: GenDataGridFilterMode;
+  paginationMode?: GenDataGridPaginationMode;
+  totalRowCount?: number;
+  pageSizeOptions?: readonly number[];
+  deleteRowsBehavior?: GenDataGridDeleteRowsBehavior;
+  dataVersion?: string | number;
   columnOrder?: ColumnOrderState;
   defaultColumnOrder?: ColumnOrderState;
   onColumnOrderChange?: (next: ColumnOrderState) => void;

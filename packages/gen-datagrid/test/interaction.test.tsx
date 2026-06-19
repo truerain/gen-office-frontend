@@ -2726,9 +2726,11 @@ describe('GenDataGrid interaction contract', () => {
     );
     if (!input) throw new Error('Missing filter input');
 
+    input.focus();
     fireEvent.change(input, { target: { value: 'Grace' } });
 
     await waitFor(() => {
+      expect(document.activeElement).toBe(input);
       expect(getCell(container, '2', 'name').textContent).toContain('Grace');
       expect(
         container.querySelector(
@@ -2848,6 +2850,101 @@ describe('GenDataGrid interaction contract', () => {
     });
   });
 
+  it('keeps rows unfiltered when filterMode is manual', async () => {
+    const onGlobalFilterChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="manual-filter-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableGlobalFilter
+        filterMode="manual"
+        globalFilter="Ada"
+        onGlobalFilterChange={onGlobalFilterChange}
+      />
+    );
+
+    await waitFor(() => {
+      expect(getCell(container, '1', 'name').textContent).toContain('Ada');
+      expect(getCell(container, '2', 'name').textContent).toContain('Grace');
+    });
+  });
+
+  it('keeps rows unfiltered for manual column filters from any column', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="manual-column-filter-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableColumnFilters
+        filterMode="manual"
+        columnFilters={[{ id: 'age', value: '37' }]}
+      />
+    );
+
+    await waitFor(() => {
+      expect(getCell(container, '1', 'name').textContent).toContain('Ada');
+      expect(getCell(container, '2', 'name').textContent).toContain('Grace');
+    });
+  });
+
+  it('uses totalRowCount for manual pagination page count', async () => {
+    const onPaginationChange = vi.fn();
+    const { container, getByText } = render(
+      <GenDataGrid
+        gridId="manual-pagination-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enablePagination
+        paginationMode="manual"
+        totalRowCount={5}
+        defaultPagination={{ pageIndex: 0, pageSize: 2 }}
+        onPaginationChange={onPaginationChange}
+      />
+    );
+
+    expect(getByText('1 / 3')).toBeTruthy();
+    expect(getCell(container, '1', 'name').textContent).toContain('Ada');
+    expect(getCell(container, '2', 'name').textContent).toContain('Grace');
+
+    fireEvent.click(getByText('Next'));
+
+    await waitFor(() => {
+      expect(onPaginationChange).toHaveBeenLastCalledWith({ pageIndex: 1, pageSize: 2 });
+      expect(getByText('2 / 3')).toBeTruthy();
+      expect(getCell(container, '1', 'name').textContent).toContain('Ada');
+      expect(getCell(container, '2', 'name').textContent).toContain('Grace');
+    });
+  });
+
+  it('renders a page-size selector and resets to the first page on change', async () => {
+    const onPaginationChange = vi.fn();
+    const { getByLabelText, getByText } = render(
+      <GenDataGrid
+        gridId="page-size-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enablePagination
+        pageSizeOptions={[1, 2]}
+        defaultPagination={{ pageIndex: 1, pageSize: 1 }}
+        onPaginationChange={onPaginationChange}
+      />
+    );
+
+    expect(getByText('2 / 2')).toBeTruthy();
+
+    fireEvent.change(getByLabelText('Page size'), { target: { value: '2' } });
+
+    await waitFor(() => {
+      expect(onPaginationChange).toHaveBeenLastCalledWith({ pageIndex: 0, pageSize: 2 });
+      expect(getByText('1 / 1')).toBeTruthy();
+    });
+  });
+
   it('marks dirty cells and exposes dirty state imperative actions', async () => {
     const gridRef = React.createRef<GenDataGridHandle>();
     const onDirtyStateChange = vi.fn();
@@ -2946,6 +3043,84 @@ describe('GenDataGrid interaction contract', () => {
         rowIds: [],
         deletedRowIds: [],
       });
+    });
+  });
+
+  it('can remove rows from uncontrolled data when deleteRowsBehavior opts in', async () => {
+    const gridRef = React.createRef<GenDataGridHandle>();
+    const { container } = render(
+      <GenDataGrid
+        ref={gridRef}
+        gridId="delete-uncontrolled-rows-grid"
+        defaultData={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        deleteRowsBehavior="removeUncontrolled"
+      />
+    );
+
+    gridRef.current?.deleteRows(['2']);
+
+    await waitFor(() => {
+      expect(
+        container.querySelector(
+          '[data-gen-datagrid-cell="true"][data-cell-kind="body"][data-rowid="2"]'
+        )
+      ).toBeNull();
+      expect(gridRef.current?.getDirtyState().deletedRowIds).toEqual(['2']);
+    });
+  });
+
+  it('resets dirty and deleted markers when dataVersion changes', async () => {
+    const gridRef = React.createRef<GenDataGridHandle>();
+    const onDirtyStateChange = vi.fn();
+    const { container, rerender } = render(
+      <GenDataGrid
+        ref={gridRef}
+        gridId="data-version-dirty-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        dataVersion={1}
+        onDirtyStateChange={onDirtyStateChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.change(editor, { target: { value: 'Ada Dirty' } });
+    fireEvent.keyDown(editor, { key: 'Enter' });
+    gridRef.current?.deleteRows(['2']);
+
+    await waitFor(() => {
+      expect(gridRef.current?.getDirtyState().rowIds).toEqual(['1', '2']);
+    });
+
+    rerender(
+      <GenDataGrid
+        ref={gridRef}
+        gridId="data-version-dirty-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        dataVersion={2}
+        onDirtyStateChange={onDirtyStateChange}
+      />
+    );
+
+    await waitFor(() => {
+      expect(gridRef.current?.getDirtyState()).toEqual({
+        cells: [],
+        rowIds: [],
+        deletedRowIds: [],
+      });
+      expect(getCell(container, '1', 'name').dataset.dirtyCell).toBeUndefined();
+      expect(getCell(container, '2', 'name').closest('[role="row"]')?.getAttribute(
+        'data-deleted-row'
+      )).toBeNull();
     });
   });
 });

@@ -66,6 +66,10 @@ function focusActiveEditorInRoot(
   return true;
 }
 
+function isInteractiveElement(element: Element | null) {
+  return Boolean(element?.closest('input,select,textarea,button,[contenteditable="true"]'));
+}
+
 type DataGridRootProps<TData> = GenDataGridProps<TData> & {
   rootRef: React.ForwardedRef<GenDataGridHandle>;
 };
@@ -113,6 +117,9 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     renderFooter,
     onDirtyStateChange,
     onRowsDelete,
+    deleteRowsBehavior = 'mark',
+    dataVersion,
+    pageSizeOptions,
     className,
     style,
     rowHeight = 36,
@@ -128,7 +135,13 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     () => gridId ?? getGridId?.() ?? `gen-datagrid-${reactId.replace(/:/g, '')}`,
     [getGridId, gridId, reactId]
   );
-  const table = useDataGridTable(props);
+  const [uncontrolledRows, setUncontrolledRows] = React.useState<TData[]>(
+    () => defaultData ?? []
+  );
+  const table = useDataGridTable({
+    ...props,
+    defaultData: data === undefined ? uncontrolledRows : defaultData,
+  });
   const tableRows = table.getRowModel().rows;
   const visibleColumns = (
     enablePinning
@@ -194,6 +207,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     () => new Set(deletedRowIdList),
     [deletedRowIdList]
   );
+  const lastDataVersion = React.useRef(dataVersion);
 
   const updateDirtyCells = React.useCallback(
     (
@@ -256,10 +270,24 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     [resetDirtyState]
   );
 
+  React.useEffect(() => {
+    if (Object.is(lastDataVersion.current, dataVersion)) return;
+    lastDataVersion.current = dataVersion;
+    setDeletedRowIdList([]);
+    setDirtyCells(new Map());
+    onDirtyStateChange?.(createDirtyState(new Map(), []));
+  }, [createDirtyState, dataVersion, onDirtyStateChange]);
+
   const deleteRows = React.useCallback(
     (rowIdsToDelete: readonly string[]) => {
       const uniqueRowIds = Array.from(new Set(rowIdsToDelete));
       if (uniqueRowIds.length === 0) return;
+      if (data === undefined && deleteRowsBehavior === 'removeUncontrolled') {
+        const rowIdSet = new Set(uniqueRowIds);
+        setUncontrolledRows((current) =>
+          current.filter((row, index) => !rowIdSet.has(getRowId(row, index)))
+        );
+      }
       setDeletedRowIdList((current) => {
         const next = Array.from(new Set([...current, ...uniqueRowIds]));
         onDirtyStateChange?.(createDirtyState(dirtyCells, next));
@@ -267,7 +295,15 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       });
       onRowsDelete?.(uniqueRowIds);
     },
-    [createDirtyState, dirtyCells, onDirtyStateChange, onRowsDelete]
+    [
+      createDirtyState,
+      data,
+      deleteRowsBehavior,
+      dirtyCells,
+      getRowId,
+      onDirtyStateChange,
+      onRowsDelete,
+    ]
   );
 
   const clearColumnFilters = React.useCallback(() => {
@@ -431,6 +467,10 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
 
   React.useEffect(() => {
     if (!activeCell) return;
+    const activeElement = document.activeElement;
+    if (rootRef.current?.contains(activeElement) && isInteractiveElement(activeElement)) {
+      return;
+    }
     if (enableVirtualization) {
       const activeRowIndex = rowIds.indexOf(activeCell.rowId);
       if (activeRowIndex >= 0) {
@@ -463,7 +503,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       const target = event.target as HTMLElement | null;
-      if (target?.closest('input,select,textarea,button,[contenteditable="true"]')) {
+      if (isInteractiveElement(target)) {
         return;
       }
 
@@ -559,7 +599,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
   const handlePaste = React.useCallback(
     (event: React.ClipboardEvent<HTMLDivElement>) => {
       const target = event.target as HTMLElement | null;
-      if (target?.closest('input,select,textarea,button,[contenteditable="true"]')) {
+      if (isInteractiveElement(target)) {
         return;
       }
       if (!enableClipboard) {
@@ -775,6 +815,25 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
           <span className="gen-datagrid__pagination-status">
             {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
           </span>
+          {pageSizeOptions && pageSizeOptions.length > 0 ? (
+            <select
+              aria-label="Page size"
+              className="gen-datagrid__pagination-page-size"
+              value={table.getState().pagination.pageSize}
+              onChange={(event) => {
+                table.setPagination({
+                  pageIndex: 0,
+                  pageSize: Number(event.target.value),
+                });
+              }}
+            >
+              {pageSizeOptions.map((pageSize) => (
+                <option key={pageSize} value={pageSize}>
+                  {pageSize}
+                </option>
+              ))}
+            </select>
+          ) : null}
           <button
             type="button"
             onClick={() => table.nextPage()}

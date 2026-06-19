@@ -586,11 +586,16 @@ Editor 구현 계약 요약: [`editor-implementation-contract.md`](../reference/
 
 #### Gate 6.1 Filtering, pagination, and data ownership follow-up
 
+- decision document: `gate-6-1-data-ownership-decisions.md`
 - manual/server filtering contract
 - manual/server pagination totals
 - page-size selector
 - delete-row data mutation
 - dirty baseline integration with `dataVersion`
+- status
+  - complete (MVP)
+  - `filterMode`, `paginationMode`, `totalRowCount`, `pageSizeOptions`, `deleteRowsBehavior`, and `dataVersion` implemented
+  - verified by package interaction tests and `Gate61ManualFilteringPaginationDataOwnership` Storybook scenario
 
 #### Gate 7.1 Virtualization extension follow-up
 
