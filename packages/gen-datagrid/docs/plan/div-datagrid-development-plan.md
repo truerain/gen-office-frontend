@@ -605,18 +605,51 @@ Editor 구현 계약 요약: [`editor-implementation-contract.md`](../reference/
 - column virtualization
 - browser screenshot automation for large-row scenarios
 
-#### Gate 8.1 Advanced row model and nested composition
+#### Gate 8.1 Multi-grid Boundary And Ownership
 
-- tree row model
-- master-detail row
-- nested grid
+- same-page multi-grid focus ownership
+- parent/child grid keyboard event isolation
+- parent/child range selection isolation
+- focused-grid clipboard ownership
+- context menu ownership boundary
+- scoped DOM lookup regression coverage
 
-#### Gate 8.2 Merge, span, and validation UI
+#### Gate 8.2 Master-detail Row
+
+- expandable row state contract
+- fixed-height detail panel rendering
+- detail panel keyboard and mouse event boundary
+- non-virtualized master-detail baseline
+- virtualization and dynamic height remain deferred
+
+#### Gate 8.3 Nested Grid Composition
+
+- nested `GenDataGrid` inside detail panel
+- parent and child active cell independence
+- parent and child selected range independence
+- child grid copy/paste does not affect parent grid
+- Storybook nested grid boundary scenario
+
+#### Gate 8.4 Dynamic Row Height
+
+- dynamic row measurement model
+- expanded/detail row height integration
+- virtualization offset recalculation
+- focus restore after measured height changes
+
+#### Gate 8.5 Tree Row Model
+
+- tree flattening model
+- expand/collapse keyboard and mouse policy
+- active cell cleanup when children collapse
+- filtering and pagination policy for tree rows
+
+#### Gate 8.6 Merge, Span, And Validation UI
 
 - visual row merge
 - grouped header span
 - validation UI
-
+- incompatible feature warning or disabled-state policy
 완료 기준:
 
 - 각 기능이 독립 flag로 동작
