@@ -2,6 +2,14 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-06-22
+
+### AGENTS 한글 문서 편집 규칙 추가
+
+- 한글 문서 수정 시 Windows PowerShell Get-Content/Set-Content 대신 UTF-8 Node.js 스크립트를 우선 사용하도록 규칙을 추가했습니다.
+- 긴 한글 본문을 powershell.exe -Command로 전달하지 않고 Node helper script 또는 apply_patch를 사용하도록 명시했습니다.
+- 관련 파일: AGENTS.md
+
 ## 2026-06-15
 
 ### 로그 역순 정렬 규칙 추가

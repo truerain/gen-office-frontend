@@ -92,6 +92,8 @@ Large feature components with heavy third-party engines should usually become se
 - Treat all text files as UTF-8.
 - Prefer patch-based edits for text changes.
 - Avoid tools or commands that can rewrite Korean text as CP949/ANSI.
+- When editing Korean text, prefer a Node.js script that reads and writes files with explicit UTF-8, using fs.readFileSync(path, 'utf8') and fs.writeFileSync(path, next, 'utf8'), instead of Windows PowerShell Get-Content / Set-Content.
+- Do not pass long Korean document bodies through powershell.exe -Command; use a UTF-8-safe Node helper script or apply_patch.
 - If a file contains Korean text, verify that no mojibake was introduced.
 - Keep comments concise and useful.
 - Do not add legal or copyright headers unless requested.
