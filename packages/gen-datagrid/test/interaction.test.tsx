@@ -881,6 +881,154 @@ describe('GenDataGrid interaction contract', () => {
     });
   });
 
+  it('auto-scrolls virtual range selection when dragging beyond the viewport edge', async () => {
+    const onSelectedRangesChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="virtual-range-autoscroll-grid"
+        data={virtualRows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableVirtualization
+        onSelectedRangesChange={onSelectedRangesChange}
+        style={{ height: 240, width: 320 }}
+      />
+    );
+
+    const viewport = container.querySelector<HTMLElement>('[data-gen-datagrid-viewport="true"]');
+    if (!viewport) throw new Error('Missing virtual viewport');
+
+    Object.defineProperty(viewport, 'clientHeight', {
+      configurable: true,
+      value: 240,
+    });
+    Object.defineProperty(viewport, 'scrollHeight', {
+      configurable: true,
+      value: 7240,
+    });
+    viewport.getBoundingClientRect = () =>
+      ({
+        x: 0,
+        y: 0,
+        top: 0,
+        left: 0,
+        right: 320,
+        bottom: 240,
+        width: 320,
+        height: 240,
+        toJSON: () => undefined,
+      }) as DOMRect;
+
+    fireEvent.mouseDown(getCell(container, '1', 'name'), {
+      button: 0,
+      clientX: 10,
+      clientY: 20,
+    });
+
+    await waitFor(() => {
+      expect(onSelectedRangesChange).toHaveBeenLastCalledWith([
+        {
+          anchor: { rowId: '1', columnId: 'name' },
+          focus: { rowId: '1', columnId: 'name' },
+        },
+      ]);
+    });
+
+    fireEvent.mouseMove(window, { clientX: 10, clientY: 239, buttons: 1 });
+
+    await waitFor(() => {
+      expect(viewport.scrollTop).toBeGreaterThan(0);
+      const lastCall = onSelectedRangesChange.mock.calls.at(-1)?.[0];
+      expect(lastCall?.[0]).toEqual({
+        anchor: { rowId: '1', columnId: 'name' },
+        focus: { rowId: expect.not.stringMatching(/^1$/), columnId: 'name' },
+      });
+    });
+
+    fireEvent.mouseUp(window);
+  });
+
+  it('stops virtual range auto-scroll when the mouse is released outside the grid', async () => {
+    const onSelectedRangesChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="virtual-range-autoscroll-stop-grid"
+        data={virtualRows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableVirtualization
+        onSelectedRangesChange={onSelectedRangesChange}
+        style={{ height: 240, width: 320 }}
+      />
+    );
+
+    const viewport = container.querySelector<HTMLElement>('[data-gen-datagrid-viewport="true"]');
+    if (!viewport) throw new Error('Missing virtual viewport');
+
+    Object.defineProperty(viewport, 'clientHeight', {
+      configurable: true,
+      value: 240,
+    });
+    Object.defineProperty(viewport, 'clientWidth', {
+      configurable: true,
+      value: 320,
+    });
+    Object.defineProperty(viewport, 'scrollHeight', {
+      configurable: true,
+      value: 7240,
+    });
+    viewport.getBoundingClientRect = () =>
+      ({
+        x: 0,
+        y: 0,
+        top: 0,
+        left: 0,
+        right: 320,
+        bottom: 240,
+        width: 320,
+        height: 240,
+        toJSON: () => undefined,
+      }) as DOMRect;
+
+    Object.defineProperty(viewport, 'scrollTop', {
+      configurable: true,
+      writable: true,
+      value: 360,
+    });
+    fireEvent.scroll(viewport);
+
+    await waitFor(() => {
+      expect(getCell(container, '12', 'name')).toBeTruthy();
+    });
+
+    fireEvent.mouseDown(getCell(container, '12', 'name'), {
+      button: 0,
+      clientX: 10,
+      clientY: 74,
+    });
+
+    await waitFor(() => {
+      expect(onSelectedRangesChange).toHaveBeenLastCalledWith([
+        {
+          anchor: { rowId: '12', columnId: 'name' },
+          focus: { rowId: '12', columnId: 'name' },
+        },
+      ]);
+    });
+
+    fireEvent.mouseMove(window, { clientX: 10, clientY: -20, buttons: 1 });
+    fireEvent.mouseUp(window);
+    const callCountAfterMouseUp = onSelectedRangesChange.mock.calls.length;
+    const lastRangeAfterMouseUp = onSelectedRangesChange.mock.calls.at(-1)?.[0];
+
+    fireEvent.mouseMove(window, { clientX: 10, clientY: -20, buttons: 0 });
+
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+
+    expect(onSelectedRangesChange).toHaveBeenCalledTimes(callCountAfterMouseUp);
+    expect(lastRangeAfterMouseUp?.[0].anchor).toEqual({ rowId: '12', columnId: 'name' });
+  });
+
   it('does not scroll a clicked virtual row to the top when it is already visible', async () => {
     const { container } = render(
       <GenDataGrid

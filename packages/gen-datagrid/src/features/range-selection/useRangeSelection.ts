@@ -46,18 +46,66 @@ function isScrollbarMouseDown(root: HTMLElement, event: React.MouseEvent<HTMLEle
   return isInVerticalScrollbar || isInHorizontalScrollbar;
 }
 
+const autoScrollEdgeSize = 32;
+
+function clampIndex(index: number, length: number) {
+  return Math.max(0, Math.min(length - 1, index));
+}
+
+function getViewportHeight(viewport: HTMLElement, rowHeight: number) {
+  const rect = viewport.getBoundingClientRect();
+  return rect.height || viewport.clientHeight || rowHeight * 8;
+}
+
+function getViewportTop(viewport: HTMLElement) {
+  const rect = viewport.getBoundingClientRect();
+  return rect.top || 0;
+}
+
+function resolveAutoScrollRowIndex({
+  viewport,
+  rowHeight,
+  headerHeight,
+  direction,
+  rowCount,
+}: {
+  viewport: HTMLElement;
+  rowHeight: number;
+  headerHeight: number;
+  direction: -1 | 1;
+  rowCount: number;
+}) {
+  if (rowCount === 0) return -1;
+  const viewportHeight = getViewportHeight(viewport, rowHeight);
+  const targetOffset =
+    direction < 0
+      ? viewport.scrollTop - headerHeight
+      : viewport.scrollTop + viewportHeight - headerHeight - 1;
+  return clampIndex(Math.floor(Math.max(0, targetOffset) / rowHeight), rowCount);
+}
+
 export function useRangeSelection({
   rootRef,
   enabled,
   selectedRanges,
   defaultSelectedRanges,
   onSelectedRangesChange,
+  rowIds = [],
+  columnIds = [],
+  viewportElement,
+  rowHeight = 36,
+  headerHeight = 40,
 }: {
   rootRef: React.RefObject<HTMLElement | null>;
   enabled: boolean;
   selectedRanges?: GenDataGridRangeSelections;
   defaultSelectedRanges?: GenDataGridRangeSelections;
   onSelectedRangesChange?: (next: GenDataGridRangeSelections) => void;
+  rowIds?: readonly string[];
+  columnIds?: readonly string[];
+  viewportElement?: HTMLElement | null;
+  rowHeight?: number;
+  headerHeight?: number;
 }) {
   const [uncontrolledSelections, setUncontrolledSelections] =
     React.useState<GenDataGridRangeSelections>(() => defaultSelectedRanges ?? []);
@@ -65,6 +113,9 @@ export function useRangeSelection({
   const [dragAnchor, setDragAnchor] = React.useState<GenDataGridCellCoord | null>(null);
   const [dragMode, setDragMode] = React.useState<'replace' | 'append' | null>(null);
   const dragPointerRef = React.useRef<{ x: number; y: number } | null>(null);
+  const latestPointerRef = React.useRef<{ x: number; y: number } | null>(null);
+  const latestFocusCoordRef = React.useRef<GenDataGridCellCoord | null>(null);
+  const isDraggingRef = React.useRef(false);
 
   const setSelections = React.useCallback(
     (
@@ -93,12 +144,115 @@ export function useRangeSelection({
     const stopSelection = () => {
       setDragAnchor(null);
       setDragMode(null);
+      isDraggingRef.current = false;
       dragPointerRef.current = null;
+      latestPointerRef.current = null;
+      latestFocusCoordRef.current = null;
     };
 
     window.addEventListener('mouseup', stopSelection);
     return () => window.removeEventListener('mouseup', stopSelection);
   }, [dragAnchor]);
+
+  React.useEffect(() => {
+    if (!enabled || !dragAnchor || !viewportElement || rowIds.length === 0) return;
+
+    let animationFrame = 0;
+
+    const handleMouseMove = (event: MouseEvent) => {
+      if (event.buttons === 0) {
+        isDraggingRef.current = false;
+        latestPointerRef.current = null;
+        return;
+      }
+      latestPointerRef.current = { x: event.clientX, y: event.clientY };
+    };
+
+    const updateAutoScroll = () => {
+      if (!isDraggingRef.current) {
+        return;
+      }
+
+      const pointer = latestPointerRef.current;
+      if (pointer) {
+        const viewportRect = viewportElement.getBoundingClientRect();
+        const viewportTop = viewportRect.top || getViewportTop(viewportElement);
+        const viewportHeight = viewportRect.height || getViewportHeight(viewportElement, rowHeight);
+        const viewportLeft = viewportRect.left || 0;
+        const viewportWidth = viewportRect.width || viewportElement.clientWidth || 0;
+        const viewportRight = viewportLeft + viewportWidth;
+        const viewportBottom = viewportTop + viewportHeight;
+        const topDistance = pointer.y - viewportTop;
+        const bottomDistance = viewportBottom - pointer.y;
+        const isInsideHorizontalBounds =
+          viewportWidth <= 0 || (pointer.x >= viewportLeft && pointer.x <= viewportRight);
+        const direction: -1 | 1 | 0 =
+          isInsideHorizontalBounds && topDistance < autoScrollEdgeSize
+            ? -1
+            : isInsideHorizontalBounds && bottomDistance < autoScrollEdgeSize
+              ? 1
+              : 0;
+
+        if (direction !== 0) {
+          const edgeDistance = direction < 0 ? topDistance : bottomDistance;
+          const intensity = Math.max(
+            0,
+            Math.min(1, (autoScrollEdgeSize - edgeDistance) / autoScrollEdgeSize)
+          );
+          const scrollDelta = Math.ceil(rowHeight * (0.25 + intensity * 1.25));
+          viewportElement.scrollTop = Math.max(
+            0,
+            viewportElement.scrollTop + direction * scrollDelta
+          );
+          viewportElement.dispatchEvent(new Event('scroll'));
+
+          const rowIndex = resolveAutoScrollRowIndex({
+            viewport: viewportElement,
+            rowHeight,
+            headerHeight,
+            direction,
+            rowCount: rowIds.length,
+          });
+          const rowId = rowIds[rowIndex];
+          const columnId = latestFocusCoordRef.current?.columnId ?? dragAnchor.columnId;
+
+          if (rowId && columnId && columnIds.includes(columnId)) {
+            const nextRange = {
+              anchor: dragAnchor,
+              focus: { rowId, columnId },
+            };
+            latestFocusCoordRef.current = nextRange.focus;
+            setSelections((current) => {
+              if (dragMode === 'append') {
+                return current.length > 0 ? [...current.slice(0, -1), nextRange] : [nextRange];
+              }
+              return [nextRange];
+            });
+          }
+        }
+      }
+
+      animationFrame = requestAnimationFrame(updateAutoScroll);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    animationFrame = requestAnimationFrame(updateAutoScroll);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      cancelAnimationFrame(animationFrame);
+    };
+  }, [
+    columnIds,
+    dragAnchor,
+    dragMode,
+    enabled,
+    headerHeight,
+    rowHeight,
+    rowIds,
+    setSelections,
+    viewportElement,
+  ]);
 
   const handleMouseDown = React.useCallback(
     (event: React.MouseEvent<HTMLElement>) => {
@@ -135,7 +289,10 @@ export function useRangeSelection({
         setDragMode('replace');
       }
       setDragAnchor(nextAnchor);
+      isDraggingRef.current = true;
       dragPointerRef.current = { x: event.clientX, y: event.clientY };
+      latestPointerRef.current = { x: event.clientX, y: event.clientY };
+      latestFocusCoordRef.current = coord;
     },
     [enabled, rootRef, selections, setSelections]
   );
@@ -147,6 +304,9 @@ export function useRangeSelection({
 
       const coord = resolveCellCoordFromTarget(rootRef.current, event.target);
       if (!coord) return;
+
+      latestPointerRef.current = { x: event.clientX, y: event.clientY };
+      latestFocusCoordRef.current = coord;
 
       const dragPointer = dragPointerRef.current;
       if (dragPointer) {

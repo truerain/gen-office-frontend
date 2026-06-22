@@ -2,6 +2,37 @@
 Records meaningful GenDataGrid implementation decisions and progress.
 -->
 
+## 2026-06-22
+
+### Gate 7.2 Range Auto-scroll Implementation
+
+- useRangeSelection에 viewport edge 기반 vertical range auto-scroll을 구현했습니다.
+- DataGridRoot에서 rowIds, columnIds, viewportElement, rowHeight, headerHeight를 range selection hook으로 전달하도록 연결했습니다.
+- requestAnimationFrame loop가 drag 중 pointer 위치를 추적하고, viewport 상단/하단 edge에서 scrollTop을 조정한 뒤 rowId/columnId 기반 range focus를 갱신합니다.
+- active cell은 auto-scroll tick마다 이동하지 않고, selection state는 기존 onSelectedRangesChange 경로를 유지합니다.
+- virtualized grid에서 viewport 하단 edge drag가 scroll과 selection 확장을 수행하는 interaction test를 추가했습니다.
+- Gate72RangeAutoScroll Storybook 시나리오를 추가해 pinned column과 virtualized range auto-scroll을 수동 검증할 수 있게 했습니다.
+- gate-7-2-architecture.md와 gate-7-architecture.md를 구현 완료 상태로 갱신했습니다.
+### Gate 7.2 Range Auto-scroll Architecture Plan
+
+- Gate 7.2 범위를 virtualization 중 range selection drag auto-scroll로 정했습니다.
+- Dynamic row measurement와 column virtualization은 Gate 7.2 범위에서 제외하고 별도 후속으로 유지했습니다.
+- docs/architecture/gate-7-2-architecture.md를 추가해 edge detection, requestAnimationFrame scroll loop, row id 기반 selection state, virtualization contract, 구현 순서, 테스트 전략을 정리했습니다.
+- docs/README.md와 gate-7-architecture.md에서 Gate 7.2 문서로 연결했습니다.
+
+### Gate 6.1 Implementation Status Review
+
+- Reviewed the Gate 6.1 data ownership implementation against `docs/plan/gate-6-1-data-ownership-decisions.md`.
+- Confirmed the MVP implementation is complete for `filterMode`, `paginationMode`, `totalRowCount`, `pageSizeOptions`, `deleteRowsBehavior`, and `dataVersion`.
+- Confirmed coverage exists for manual filtering, manual pagination, page-size reset behavior, uncontrolled row removal, and `dataVersion` dirty/deleted marker reset.
+- Decided not to add a separate Gate 6.1 architecture document because the slice is an ownership-policy extension of Gate 6 rather than a separate runtime architecture.
+
+### Gate 6 Architecture Deferred Cleanup
+
+- Updated `docs/architecture/gate-6-architecture.md` so the Deferred list no longer marks completed Gate 6.1 work as pending.
+- Removed completed deferred items for manual/server filtering and pagination totals, page-size selector, delete-row data mutation, and dirty baseline integration with `dataVersion`.
+- Kept the remaining deferred items focused on future work: advanced filter operators, cursor/unknown-total server pagination, server aggregate footer summaries, deeper dirty baseline comparison, and batch mutation/undo ownership.
+
 ## 2026-06-19
 
 ### Gate 6.1 Filter Input Focus Fix
@@ -715,3 +746,10 @@ Records meaningful GenDataGrid implementation decisions and progress.
 - body는 TanStack `row.getLeftVisibleCells()`, `row.getCenterVisibleCells()`, `row.getRightVisibleCells()` 순서로 cell을 렌더링하도록 수정했다.
 - Storybook Gate 5 시나리오의 `columnPinning`을 state로 관리해 pinned column끼리 reorder해도 화면에 반영되도록 했다.
 - pinned column order와 grid template order가 일치하는 SSR 회귀 테스트와 uncontrolled pinned reorder interaction 테스트를 추가했다.
+
+### Gate 7.2 Range Auto-scroll Mouseup Guard
+
+- 그리드 외부에서 mouseup이 발생한 뒤 range auto-scroll RAF가 선택 범위를 다시 갱신하지 않도록 drag 상태 ref를 추가했다.
+- event.buttons === 0 mousemove와 window mouseup에서 auto-scroll pointer/focus 상태를 정리하도록 보강했다.
+- viewport의 가로 범위 밖 pointer는 vertical edge auto-scroll을 트리거하지 않도록 제한했다.
+- 중간 row에서 drag를 시작한 뒤 그리드 외부 mouseup 후에도 anchor row가 유지되는 interaction 회귀 테스트를 추가했다.

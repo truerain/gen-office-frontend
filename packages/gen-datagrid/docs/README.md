@@ -21,6 +21,8 @@ Indexes GenDataGrid planning, architecture, reference, QA, and log documents.
 - [Gate 4 Architecture](architecture/gate-4-architecture.md)
 - [Gate 5 Architecture](architecture/gate-5-architecture.md)
 - [Gate 6 Architecture](architecture/gate-6-architecture.md)
+- [Gate 7 Architecture](architecture/gate-7-architecture.md)
+- [Gate 7.2 Architecture](architecture/gate-7-2-architecture.md)
 - [Gate 4.1 Editing Policy Architecture](architecture/gate-4-1-editing-policy-architecture.md)
 - [Gate 4.2 Clipboard Paste Architecture](architecture/gate-4-2-clipboard-paste-architecture.md)
 

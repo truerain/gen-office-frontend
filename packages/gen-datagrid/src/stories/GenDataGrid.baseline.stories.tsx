@@ -633,6 +633,46 @@ export const Gate7Virtualization: Story = {
   },
 };
 
+export const Gate72RangeAutoScroll: Story = {
+  render: () => {
+    const [selectedRangeLabel, setSelectedRangeLabel] = React.useState('none');
+
+    return (
+      <div style={{ width: 920, padding: 16 }}>
+        <div style={{ display: 'flex', gap: 12, marginBottom: 8, alignItems: 'center' }}>
+          <span>Selected range: {selectedRangeLabel}</span>
+        </div>
+        <GenDataGrid<Person>
+          data={gate7Data}
+          columns={columns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-7-2"
+          defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+          defaultColumnPinning={{ left: ['name'] }}
+          enableVirtualization
+          scrollSeeking={false}
+          onSelectedRangesChange={(next) => {
+            const range = next[next.length - 1];
+            setSelectedRangeLabel(
+              range
+                ? range.anchor.rowId + '/' + range.anchor.columnId + ' -> ' + range.focus.rowId + '/' + range.focus.columnId
+                : 'none'
+            );
+          }}
+          rowHeight={36}
+          headerHeight={40}
+          style={{
+            height: 420,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+      </div>
+    );
+  },
+};
+
 export const Phase91KeyboardSelectionAndScroll: Story = {
   render: () => {
     const gridRef = React.useRef<GenDataGridHandle>(null);

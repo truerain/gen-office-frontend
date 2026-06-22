@@ -21,6 +21,7 @@ Gate 7 adds fixed-height row virtualization on top of the Gate 6 filtering, foot
 - Pinned columns keep using the existing sticky offset model from `features/pinning/pinningStyles.ts`.
 - Scroll-seeking placeholders keep the same row height, `gridTemplateColumns`, absolute row offsets, and pinned sticky offsets so the viewport does not visually collapse during large thumb drags.
 - Range selection keeps using row/column ids as its state contract so selection styling is restored when a row re-enters the virtual range.
+- Gate 7.2 adds vertical range-selection auto-scroll while dragging near the viewport top or bottom edge.
 - Virtual body rows expose `data-row-index` and keep the existing body cell DOM contract:
   - `data-gen-datagrid-cell="true"`
   - `data-cell-kind="body"`
@@ -83,5 +84,4 @@ flowchart TD
 
 - Dynamic row measurement while virtualization is enabled.
 - Column virtualization.
-- Auto-scroll while drag range selection crosses beyond the current viewport.
 - Browser screenshot automation for large-row scenarios.

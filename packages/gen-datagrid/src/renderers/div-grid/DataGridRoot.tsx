@@ -168,6 +168,11 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     selectedRanges,
     defaultSelectedRanges,
     onSelectedRangesChange,
+    rowIds,
+    columnIds,
+    viewportElement,
+    rowHeight,
+    headerHeight,
   });
   const clipboard = useClipboardActions({
     table,

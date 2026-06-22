@@ -167,8 +167,8 @@ The no-table-tags contract remains unchanged.
 
 ## Deferred
 
-- Manual/server filtering and pagination totals.
-- Page size selector.
-- Delete-row data mutation; `deleteRows(rowIds)` currently emits a delete request and marks rows as deleted.
-- Dirty baseline integration with `dataVersion`.
 - Advanced filter operators and typed filter editors.
+- Cursor/unknown-total server pagination policy.
+- Server aggregate footer summary props.
+- Deep or field-level dirty baseline comparison.
+- Batch mutation and undo/redo ownership for large data operations.
