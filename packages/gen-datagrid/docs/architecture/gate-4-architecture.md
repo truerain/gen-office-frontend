@@ -135,4 +135,3 @@ These props are reserved for the navigation-editing policy slice. They remain in
 
 - advanced blur/portal commit policy
 - printable-key edit entry
-- paste application into editable cells

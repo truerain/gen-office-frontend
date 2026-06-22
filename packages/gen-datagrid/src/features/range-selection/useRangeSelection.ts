@@ -182,6 +182,7 @@ export function useRangeSelection({
           focus: coord,
         },
       ]),
+    setSingleRange: (range: GenDataGridRangeSelection) => setSelections([range]),
     extendSelectionTo: (coord: GenDataGridCellCoord, anchor?: GenDataGridCellCoord) =>
       setSelections((current) => {
         const currentSelection = current[current.length - 1] ?? null;

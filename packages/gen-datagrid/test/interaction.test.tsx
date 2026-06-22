@@ -2548,6 +2548,53 @@ describe('GenDataGrid interaction contract', () => {
     });
   });
 
+  it('emits the accepted paste rectangle without reusing the controlled selection anchor', async () => {
+    const onCellValueChange = vi.fn();
+    const onSelectedRangesChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="paste-replace-selection-grid"
+        data={rows}
+        columns={[
+          { accessorKey: 'name', header: 'Name', meta: { editable: true } },
+          { accessorKey: 'age', header: 'Age', meta: { editable: true } },
+        ]}
+        getRowId={(row) => row.id}
+        selectedRanges={[
+          {
+            anchor: { rowId: '1', columnId: 'name' },
+            focus: { rowId: '2', columnId: 'name' },
+          },
+        ]}
+        onSelectedRangesChange={onSelectedRangesChange}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    fireEvent.mouseDown(getCell(container, '1', 'age'), { button: 0 });
+    fireEvent.mouseUp(window);
+
+    await waitFor(() => {
+      expect(getCell(container, '1', 'age').dataset.activeCell).toBe('true');
+    });
+    onSelectedRangesChange.mockClear();
+
+    fireEvent.paste(getCell(container, '1', 'age'), {
+      clipboardData: createClipboardData('42\n43'),
+    });
+
+    await waitFor(() => {
+      expect(onCellValueChange).toHaveBeenCalledTimes(2);
+      expect(getCell(container, '2', 'age').dataset.activeCell).toBe('true');
+      expect(onSelectedRangesChange).toHaveBeenLastCalledWith([
+        {
+          anchor: { rowId: '1', columnId: 'age' },
+          focus: { rowId: '2', columnId: 'age' },
+        },
+      ]);
+    });
+  });
+
   it('reports paste errors while skipping non-editable cells by default', async () => {
     const onCellValueChange = vi.fn();
     const onError = vi.fn();

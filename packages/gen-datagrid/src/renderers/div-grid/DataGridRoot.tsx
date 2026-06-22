@@ -623,8 +623,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
         onActiveCellChange: setActiveCell,
         setTargetRange: enableRangeSelection
           ? (targetRange) => {
-              rangeSelection.setSingleSelection(targetRange.anchor);
-              rangeSelection.extendSelectionTo(targetRange.focus, targetRange.anchor);
+              rangeSelection.setSingleRange(targetRange);
             }
           : undefined,
       });

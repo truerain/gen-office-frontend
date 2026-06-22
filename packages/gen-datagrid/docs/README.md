@@ -22,6 +22,7 @@ Indexes GenDataGrid planning, architecture, reference, QA, and log documents.
 - [Gate 5 Architecture](architecture/gate-5-architecture.md)
 - [Gate 6 Architecture](architecture/gate-6-architecture.md)
 - [Gate 4.1 Editing Policy Architecture](architecture/gate-4-1-editing-policy-architecture.md)
+- [Gate 4.2 Clipboard Paste Architecture](architecture/gate-4-2-clipboard-paste-architecture.md)
 
 ## Reference
 
@@ -31,6 +32,7 @@ Indexes GenDataGrid planning, architecture, reference, QA, and log documents.
 - [Cell Edit API](reference/cell-edit-api.md)
 - [Editor Implementation Contract](reference/editor-implementation-contract.md)
 - [Gate 4.1 Editing Policy Notes](reference/gate-4-1-editing-policy-notes.md)
+- [Codex Windows Sandbox Troubleshooting](reference/codex-windows-sandbox-troubleshooting.md)
 
 ## QA
 
