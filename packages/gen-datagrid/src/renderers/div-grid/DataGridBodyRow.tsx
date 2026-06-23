@@ -60,6 +60,9 @@ type DataGridBodyRowProps<TData> = {
   getEditorSurfaces?: () => Iterable<HTMLElement>;
   registerEditorSurface?: (element: HTMLElement) => void;
   unregisterEditorSurface?: (element: HTMLElement) => void;
+  canExpand?: boolean;
+  isExpanded?: boolean;
+  onExpandedChange?: (expanded: boolean) => void;
   style?: React.CSSProperties;
   virtualized?: boolean;
 };
@@ -95,6 +98,9 @@ export function DataGridBodyRow<TData>({
   getEditorSurfaces,
   registerEditorSurface,
   unregisterEditorSurface,
+  canExpand = false,
+  isExpanded = false,
+  onExpandedChange,
   style,
   virtualized = false,
 }: DataGridBodyRowProps<TData>) {
@@ -176,6 +182,8 @@ export function DataGridBodyRow<TData>({
       data-row-index={rowIndex}
       data-dirty-row={dirtyRowIds?.has(rowId) ? 'true' : undefined}
       data-deleted-row={deletedRowIds?.has(rowId) ? 'true' : undefined}
+      data-expandable-row={canExpand ? 'true' : undefined}
+      data-expanded-row={canExpand && isExpanded ? 'true' : undefined}
       data-virtualized-row={virtualized ? 'true' : undefined}
       className="gen-datagrid__row"
       style={{
@@ -184,7 +192,7 @@ export function DataGridBodyRow<TData>({
         ...style,
       }}
     >
-      {getOrderedVisibleCells(row).map((cell) => {
+      {getOrderedVisibleCells(row).map((cell, cellIndex) => {
         const columnId = cell.column.id;
         const editableContext = createEditableContext({ row, column: cell.column });
         const isEditable = resolveEditableCell({
@@ -287,6 +295,32 @@ export function DataGridBodyRow<TData>({
           : cell.column.columnDef.cell
             ? flexRender(cell.column.columnDef.cell, cell.getContext())
             : formatCellValue(cell.getValue());
+        const renderedContent =
+          cellIndex === 0 && canExpand && !isEditing ? (
+            <>
+              <button
+                type="button"
+                className="gen-datagrid__detail-toggle"
+                data-gen-datagrid-detail-toggle="true"
+                aria-expanded={isExpanded}
+                aria-label={isExpanded ? 'Collapse row ' + rowId + ' detail' : 'Expand row ' + rowId + ' detail'}
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                }}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onExpandedChange?.(!isExpanded);
+                }}
+              >
+                {isExpanded ? '-' : '+'}
+              </button>
+              <span className="gen-datagrid__cell-content">{content}</span>
+            </>
+          ) : (
+            content
+          );
 
         return (
           <DataGridCell
@@ -316,7 +350,7 @@ export function DataGridBodyRow<TData>({
               onEditStart({ rowId, columnId, value: editableContext.value, entryReason });
             }}
           >
-            {content}
+            {renderedContent}
           </DataGridCell>
         );
       })}

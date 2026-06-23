@@ -1,9 +1,31 @@
 ## 2026-06-23
 
+### Gate 8.2 Master-detail Row Implementation
 
+- Gate 8.2 Master-detail Row를 non-virtualized body path 기준으로 구현했습니다.
+- public API로 `enableMasterDetail`, `expandedRows`, `defaultExpandedRows`, `onExpandedRowsChange`, `getRowCanExpand`, `renderDetailPanel`, `detailPanelHeight`를 추가했습니다.
+- `GenDataGridExpandedRowState`, `GenDataGridRowContext`, `GenDataGridDetailPanelContext` 타입을 추가하고 package entrypoint에서 export했습니다.
+- `features/master-detail/masterDetailState.ts`에 expanded row state normalize/update helper를 추가했습니다.
+- `DataGridRoot`에서 controlled/uncontrolled expanded state를 해석하고, virtualization이 꺼진 body path에만 master-detail props를 전달하도록 연결했습니다.
+- `DataGridBodyRow` 첫 번째 visible cell에 명시적인 expand/collapse 버튼을 추가했습니다.
+- `DataGridBody`는 expanded owner row 바로 다음에 `DataGridDetailRow`를 렌더링합니다.
+- `DataGridDetailRow`는 `data-gen-datagrid-detail-row=true`, `data-parent-rowid`, `data-gen-datagrid-detail-panel=true` marker를 제공하고 mouse/key event propagation을 차단합니다.
+- detail row와 toggle button CSS를 추가했습니다.
+- interaction test에 default expanded, uncontrolled toggle, controlled callback, virtualization disabled, detail panel event boundary coverage를 추가했습니다.
+- Storybook에 `Gate82MasterDetailRow` 수동 테스트 story를 추가했습니다.
+- `docs/architecture/gate-8-2-master-detail-architecture.md`, `docs/qa/gate-8-2-visual-test-guide.md`, `docs/README.md`를 Gate 8.2 구현 완료 상태로 갱신했습니다.
+- 검증:
+  - `pnpm -C frontend/packages/gen-datagrid exec tsc -p tsconfig.json --noEmit`
+  - `pnpm -C frontend/packages/gen-datagrid test:interaction`
 
+## 2026-06-23
 
+### Gate 8.2 Master-detail Architecture Plan
 
+- 다음 진행 대상을 Gate 8.2 Master-detail Row로 정정했습니다.
+- 잘못 추가했던 Gate 9.2 Visual Row Merge architecture 문서와 README/plan/log 연결을 제거했습니다.
+- `docs/architecture/gate-8-2-master-detail-architecture.md`를 추가해 fixed-height master-detail row 범위, public API 초안, rendering/interaction contract, 구현 순서, 테스트 계획을 문서화했습니다.
+- Gate 8.2는 non-virtualized fixed-height detail panel만 대상으로 하며, nested GenDataGrid 공식 composition, dynamic row height, virtualization 조합은 Gate 8.3 이후로 분리했습니다.
 
 ### Gate 8.1 Storybook Event Flush
 

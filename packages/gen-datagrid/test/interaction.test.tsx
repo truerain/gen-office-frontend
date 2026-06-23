@@ -530,6 +530,132 @@ describe('GenDataGrid interaction contract', () => {
     });
   });
 
+  it('renders default expanded master-detail rows in the standard body', async () => {
+    const { container, getByText } = render(
+      <GenDataGrid
+        gridId="master-detail-default-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableMasterDetail
+        defaultExpandedRows={{ '1': true }}
+        renderDetailPanel={({ rowId }) => <button type="button">Detail {rowId}</button>}
+      />
+    );
+
+    const detailRow = container.querySelector<HTMLElement>(
+      '[data-gen-datagrid-detail-row="true"][data-parent-rowid="1"]'
+    );
+
+    expect(detailRow).not.toBeNull();
+    expect(getByText('Detail 1')).toBeTruthy();
+    expect(getCell(container, '1', 'name').closest('[role="row"]')?.getAttribute(
+      'data-expanded-row'
+    )).toBe('true');
+  });
+
+  it('toggles uncontrolled master-detail rows with the row button', async () => {
+    const { container, queryByText } = render(
+      <GenDataGrid
+        gridId="master-detail-toggle-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableMasterDetail
+        renderDetailPanel={({ rowId }) => <span>Detail {rowId}</span>}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    const toggle = firstCell.querySelector<HTMLButtonElement>(
+      '[data-gen-datagrid-detail-toggle="true"]'
+    );
+    if (!toggle) throw new Error('Missing detail toggle');
+
+    fireEvent.click(toggle);
+
+    await waitFor(() => {
+      expect(queryByText('Detail 1')).toBeTruthy();
+      expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    });
+
+    fireEvent.click(toggle);
+
+    await waitFor(() => {
+      expect(queryByText('Detail 1')).toBeNull();
+      expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    });
+  });
+
+  it('emits controlled master-detail state without applying it internally', async () => {
+    const onExpandedRowsChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="master-detail-controlled-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableMasterDetail
+        expandedRows={{}}
+        onExpandedRowsChange={onExpandedRowsChange}
+        renderDetailPanel={({ rowId }) => <span>Detail {rowId}</span>}
+      />
+    );
+
+    const toggle = getCell(container, '1', 'name').querySelector<HTMLButtonElement>(
+      '[data-gen-datagrid-detail-toggle="true"]'
+    );
+    if (!toggle) throw new Error('Missing detail toggle');
+
+    fireEvent.click(toggle);
+
+    await waitFor(() => {
+      expect(onExpandedRowsChange).toHaveBeenCalledWith({ '1': true });
+    });
+    expect(container.querySelector('[data-gen-datagrid-detail-row="true"]')).toBeNull();
+  });
+
+  it('does not render master-detail rows on the virtualized body path', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="master-detail-virtual-grid"
+        data={virtualRows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableVirtualization
+        enableMasterDetail
+        defaultExpandedRows={{ '1': true }}
+        renderDetailPanel={({ rowId }) => <span>Detail {rowId}</span>}
+      />
+    );
+
+    expect(container.querySelector('[data-gen-datagrid-detail-row="true"]')).toBeNull();
+    expect(
+      getCell(container, '1', 'name').querySelector('[data-gen-datagrid-detail-toggle="true"]')
+    ).toBeNull();
+  });
+
+  it('does not start parent range selection from detail panel content', async () => {
+    const onSelectedRangesChange = vi.fn();
+    const { getByText } = render(
+      <GenDataGrid
+        gridId="master-detail-event-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableMasterDetail
+        defaultExpandedRows={{ '1': true }}
+        onSelectedRangesChange={onSelectedRangesChange}
+        renderDetailPanel={() => <button type="button">Detail action</button>}
+      />
+    );
+
+    fireEvent.mouseDown(getByText('Detail action'), { button: 0, clientX: 10, clientY: 10 });
+    fireEvent.mouseUp(window);
+
+    expect(onSelectedRangesChange).not.toHaveBeenCalled();
+  });
+
   it('does not consume navigation keys from interactive descendants', async () => {
     const { container } = render(
       <GenDataGrid

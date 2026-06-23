@@ -616,12 +616,18 @@ Editor 구현 계약 요약: [`editor-implementation-contract.md`](../reference/
 
 #### Gate 8.2 Master-detail Row
 
-- expandable row state contract
-- fixed-height detail panel rendering
-- detail panel keyboard and mouse event boundary
-- non-virtualized master-detail baseline
-- virtualization and dynamic height remain deferred
-
+- status
+  - complete (MVP)
+  - non-virtualized fixed-height master-detail row implemented
+  - controlled/uncontrolled `expandedRows` contract implemented
+  - explicit first-cell expand/collapse button implemented
+  - detail row DOM markers and parent row relationship marker implemented
+  - detail panel mouse/key event boundary implemented
+  - virtualization and dynamic height remain deferred
+- verified by
+  - `pnpm -C frontend/packages/gen-datagrid exec tsc -p tsconfig.json --noEmit`
+  - `pnpm -C frontend/packages/gen-datagrid test:interaction`
+  - `Gate82MasterDetailRow` Storybook manual scenario
 #### Gate 8.3 Nested Grid Composition
 
 - nested `GenDataGrid` inside detail panel
@@ -650,6 +656,7 @@ Editor 구현 계약 요약: [`editor-implementation-contract.md`](../reference/
 - grouped header span
 - validation UI
 - incompatible feature warning or disabled-state policy
+
 완료 기준:
 
 - 각 기능이 독립 flag로 동작

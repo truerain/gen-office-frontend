@@ -16,6 +16,7 @@ import type {
   GenDataGridCellValueChange,
   GenDataGridDirtyState,
   GenDataGridEditorContext,
+  GenDataGridExpandedRowState,
   GenDataGridHandle,
   GenDataGridPasteError,
   GenDataGridScrollSeekingOptions,
@@ -1031,6 +1032,97 @@ export const Gate41CEditNavigation: Story = {
           headerHeight={40}
           style={{
             height: 320,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+      </div>
+    );
+  },
+};
+
+export const Gate82MasterDetailRow: Story = {
+  render: () => {
+    const [gridData, setGridData] = React.useState(gate6Data.slice(0, 6));
+    const [expandedRows, setExpandedRows] = React.useState<GenDataGridExpandedRowState>({
+      '1': true,
+    });
+
+    const handleCellValueChange = React.useCallback(
+      ({ rowId, columnId, value }: GenDataGridCellValueChange<Person>) => {
+        setGridData((previous) =>
+          previous.map((row) =>
+            row.id === rowId
+              ? {
+                  ...row,
+                  [columnId]: columnId === 'score' ? Number(value) : value,
+                }
+              : row
+          )
+        );
+      },
+      []
+    );
+
+    return (
+      <div style={{ width: 980, padding: 16, display: 'grid', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <button type="button" onClick={() => setExpandedRows({ '1': true, '3': true })}>
+            Expand rows 1 and 3
+          </button>
+          <button type="button" onClick={() => setExpandedRows({})}>
+            Collapse all
+          </button>
+          <span>Expanded rows: {Object.keys(expandedRows).join(', ') || 'none'}</span>
+        </div>
+        <GenDataGrid<Person>
+          data={gridData}
+          columns={editableColumns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-8-2"
+          defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+          enableMasterDetail
+          expandedRows={expandedRows}
+          onExpandedRowsChange={setExpandedRows}
+          getRowCanExpand={({ rowId }) => rowId !== '4'}
+          renderDetailPanel={({ row, rowId, collapse }) => (
+            <div style={{ display: 'grid', gap: 8 }}>
+              <div style={{ fontWeight: 600 }}>{row.name}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 6, fontSize: 13 }}>
+                <span>Role</span>
+                <span>{row.role}</span>
+                <span>Location</span>
+                <span>{row.location}</span>
+                <span>Note</span>
+                <span>{row.note}</span>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button type="button" onClick={collapse}>
+                  Collapse detail
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setGridData((previous) =>
+                      previous.map((item) =>
+                        item.id === rowId ? { ...item, note: 'Detail action updated note' } : item
+                      )
+                    )
+                  }
+                >
+                  Update note
+                </button>
+              </div>
+            </div>
+          )}
+          detailPanelHeight={150}
+          editCommitOnBlur
+          onCellValueChange={handleCellValueChange}
+          rowHeight={36}
+          headerHeight={40}
+          style={{
+            height: 420,
             border: '1px solid #d0d7de',
             borderRadius: 6,
             background: '#fff',

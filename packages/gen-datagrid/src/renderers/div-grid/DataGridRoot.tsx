@@ -29,6 +29,10 @@ import {
   type ResolvedGenDataGridEditPolicy,
 } from '../../features/editing/editPolicy';
 import { useCellEditing } from '../../features/editing/useCellEditing';
+import {
+  normalizeExpandedRows,
+  setExpandedRow,
+} from '../../features/master-detail/masterDetailState';
 import { parseClipboardGrid } from '../../features/range-selection/clipboard';
 import { applyClipboardPaste } from '../../features/range-selection/paste';
 import { useClipboardActions } from '../../features/range-selection/useClipboardActions';
@@ -112,6 +116,13 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     enablePagination = false,
     enableDirtyState = true,
     enableVirtualization = false,
+    enableMasterDetail = false,
+    expandedRows,
+    defaultExpandedRows,
+    onExpandedRowsChange,
+    getRowCanExpand,
+    renderDetailPanel,
+    detailPanelHeight = 160,
     scrollSeeking,
     clipboardOptions,
     footer,
@@ -191,6 +202,24 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     () => new Map()
   );
   const [deletedRowIdList, setDeletedRowIdList] = React.useState<string[]>(() => []);
+  const [uncontrolledExpandedRows, setUncontrolledExpandedRows] = React.useState(() =>
+    normalizeExpandedRows(defaultExpandedRows)
+  );
+  const resolvedExpandedRows = React.useMemo(
+    () => normalizeExpandedRows(expandedRows ?? uncontrolledExpandedRows),
+    [expandedRows, uncontrolledExpandedRows]
+  );
+  const masterDetailEnabled = enableMasterDetail && !enableVirtualization && Boolean(renderDetailPanel);
+  const setExpandedRowState = React.useCallback(
+    (rowId: string, expanded: boolean) => {
+      const next = setExpandedRow(resolvedExpandedRows, rowId, expanded);
+      if (expandedRows === undefined) {
+        setUncontrolledExpandedRows(next);
+      }
+      onExpandedRowsChange?.(next);
+    },
+    [expandedRows, onExpandedRowsChange, resolvedExpandedRows]
+  );
 
   const createDirtyState = React.useCallback(
     (cells: Map<string, GenDataGridDirtyCell>, deletedRowIds: string[]) => ({
@@ -802,6 +831,12 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             getEditorSurfaces={editing.getEditorSurfaces}
             registerEditorSurface={editing.registerEditorSurface}
             unregisterEditorSurface={editing.unregisterEditorSurface}
+            enableMasterDetail={masterDetailEnabled}
+            expandedRows={resolvedExpandedRows}
+            getRowCanExpand={getRowCanExpand}
+            renderDetailPanel={renderDetailPanel}
+            detailPanelHeight={detailPanelHeight}
+            onExpandedRowToggle={setExpandedRowState}
           />
         )}
         {enableFooterRow ? (

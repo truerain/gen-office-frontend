@@ -118,6 +118,19 @@ export type GenDataGridDirtyState = {
   deletedRowIds: string[];
 };
 
+export type GenDataGridExpandedRowState = Record<string, boolean>;
+
+export type GenDataGridRowContext<TData> = {
+  row: TData;
+  rowId: string;
+  rowIndex: number;
+};
+
+export type GenDataGridDetailPanelContext<TData> = GenDataGridRowContext<TData> & {
+  expanded: boolean;
+  collapse: () => void;
+};
+
 export type GenDataGridPasteErrorReason =
   | 'readOnly'
   | 'nonEditableCell'
@@ -211,6 +224,13 @@ export type GenDataGridProps<TData> = {
   enablePagination?: boolean;
   enableDirtyState?: boolean;
   enableVirtualization?: boolean;
+  enableMasterDetail?: boolean;
+  expandedRows?: GenDataGridExpandedRowState;
+  defaultExpandedRows?: GenDataGridExpandedRowState;
+  onExpandedRowsChange?: (next: GenDataGridExpandedRowState) => void;
+  getRowCanExpand?: (ctx: GenDataGridRowContext<TData>) => boolean;
+  renderDetailPanel?: (ctx: GenDataGridDetailPanelContext<TData>) => React.ReactNode;
+  detailPanelHeight?: number;
   scrollSeeking?: boolean | GenDataGridScrollSeekingOptions;
   clipboardOptions?: {
     includeHeader?: boolean;

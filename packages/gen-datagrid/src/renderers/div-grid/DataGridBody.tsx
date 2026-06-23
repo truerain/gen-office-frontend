@@ -1,20 +1,25 @@
 // packages/gen-datagrid/src/renderers/div-grid/DataGridBody.tsx
 // Renders baseline body rows for the div-based DataGrid renderer.
 
+import { Fragment } from 'react';
 import type { Row } from '@tanstack/react-table';
 
 import type {
   GenDataGridActiveCell,
   GenDataGridCellValueChange,
   GenDataGridEditableContext,
+  GenDataGridDetailPanelContext,
   GenDataGridEditPolicy,
   GenDataGridEditorFactory,
+  GenDataGridExpandedRowState,
+  GenDataGridRowContext,
 } from '../../GenDataGrid.types';
 import { deactivateEditingForCellActivation } from '../../features/editing/editingCellActivation';
 import { resolveCellEditingRuntime } from '../../features/editing/cellRuntime';
 import type { GenDataGridEditingCell } from '../../features/editing/useCellEditing';
 import type { GenDataGridRangeSelections } from '../../features/range-selection/rangeSelection';
 import { DataGridBodyRow } from './DataGridBodyRow';
+import { DataGridDetailRow } from './DataGridDetailRow';
 
 type DataGridBodyProps<TData> = {
   rows: Row<TData>[];
@@ -51,6 +56,12 @@ type DataGridBodyProps<TData> = {
   getEditorSurfaces?: () => Iterable<HTMLElement>;
   registerEditorSurface?: (element: HTMLElement) => void;
   unregisterEditorSurface?: (element: HTMLElement) => void;
+  enableMasterDetail?: boolean;
+  expandedRows?: GenDataGridExpandedRowState;
+  getRowCanExpand?: (ctx: GenDataGridRowContext<TData>) => boolean;
+  renderDetailPanel?: (ctx: GenDataGridDetailPanelContext<TData>) => React.ReactNode;
+  detailPanelHeight?: number;
+  onExpandedRowToggle?: (rowId: string, expanded: boolean) => void;
 };
 
 export function DataGridBody<TData>({
@@ -84,6 +95,12 @@ export function DataGridBody<TData>({
   getEditorSurfaces,
   registerEditorSurface,
   unregisterEditorSurface,
+  enableMasterDetail = false,
+  expandedRows = {},
+  getRowCanExpand,
+  renderDetailPanel,
+  detailPanelHeight = 160,
+  onExpandedRowToggle,
 }: DataGridBodyProps<TData>) {
   const activateCell = (next: Exclude<GenDataGridActiveCell, null>) => {
     if (
@@ -147,40 +164,65 @@ export function DataGridBody<TData>({
         const rowIndex = row.index;
         const resolvedRowHeight =
           getRowHeight?.({ row: row.original, rowId, rowIndex }) ?? rowHeight;
+        const rowContext = { row: row.original, rowId, rowIndex };
+        const canExpand = Boolean(
+          enableMasterDetail &&
+            renderDetailPanel &&
+            (getRowCanExpand?.(rowContext) ?? true)
+        );
+        const isExpanded = Boolean(expandedRows[rowId]);
+
         return (
-          <DataGridBodyRow
-            key={rowId}
-            row={row}
-            rows={rows}
-            gridTemplateColumns={gridTemplateColumns}
-            rowHeight={resolvedRowHeight}
-            rowIds={rowIds}
-            columnIds={columnIds}
-            rangeSelections={rangeSelections}
-            readOnly={readOnly}
-            enablePinning={enablePinning}
-            isCellEditable={isCellEditable}
-            editPolicy={editPolicy}
-            editSelectOnFocus={editSelectOnFocus}
-            editCommitOnBlur={editCommitOnBlur}
-            editorFactory={editorFactory}
-            onCellValueChange={onCellValueChange}
-            dirtyCellIds={dirtyCellIds}
-            dirtyRowIds={dirtyRowIds}
-            deletedRowIds={deletedRowIds}
-            activeCell={activeCell}
-            onActiveCellChange={activateCell}
-            onEditingNavigate={onEditingNavigate}
-            editingCell={editingCell}
-            draftValue={draftValue}
-            setDraftValue={setDraftValue}
-            onEditStart={onEditStart}
-            onEditCancel={onEditCancel}
-            getGridRoot={getGridRoot}
-            getEditorSurfaces={getEditorSurfaces}
-            registerEditorSurface={registerEditorSurface}
-            unregisterEditorSurface={unregisterEditorSurface}
-          />
+          <Fragment key={rowId}>
+            <DataGridBodyRow
+              row={row}
+              rows={rows}
+              gridTemplateColumns={gridTemplateColumns}
+              rowHeight={resolvedRowHeight}
+              rowIds={rowIds}
+              columnIds={columnIds}
+              rangeSelections={rangeSelections}
+              readOnly={readOnly}
+              enablePinning={enablePinning}
+              isCellEditable={isCellEditable}
+              editPolicy={editPolicy}
+              editSelectOnFocus={editSelectOnFocus}
+              editCommitOnBlur={editCommitOnBlur}
+              editorFactory={editorFactory}
+              onCellValueChange={onCellValueChange}
+              dirtyCellIds={dirtyCellIds}
+              dirtyRowIds={dirtyRowIds}
+              deletedRowIds={deletedRowIds}
+              activeCell={activeCell}
+              onActiveCellChange={activateCell}
+              onEditingNavigate={onEditingNavigate}
+              editingCell={editingCell}
+              draftValue={draftValue}
+              setDraftValue={setDraftValue}
+              onEditStart={onEditStart}
+              onEditCancel={onEditCancel}
+              getGridRoot={getGridRoot}
+              getEditorSurfaces={getEditorSurfaces}
+              registerEditorSurface={registerEditorSurface}
+              unregisterEditorSurface={unregisterEditorSurface}
+              canExpand={canExpand}
+              isExpanded={isExpanded}
+              onExpandedChange={(expanded) => onExpandedRowToggle?.(rowId, expanded)}
+            />
+            {canExpand && isExpanded && renderDetailPanel ? (
+              <DataGridDetailRow
+                parentRowId={rowId}
+                gridTemplateColumns={gridTemplateColumns}
+                height={detailPanelHeight}
+              >
+                {renderDetailPanel({
+                  ...rowContext,
+                  expanded: true,
+                  collapse: () => onExpandedRowToggle?.(rowId, false),
+                })}
+              </DataGridDetailRow>
+            ) : null}
+          </Fragment>
         );
       })}
     </div>
