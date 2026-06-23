@@ -1,3 +1,39 @@
+## 2026-06-24
+
+### Gate 8.3 Nested Grid Composition Implementation
+
+- Gate 8.3 Nested Grid Composition을 구현했습니다.
+- 새 public API 추가 없이 Gate 8.2 `renderDetailPanel` 안에 child `GenDataGrid`를 렌더링하는 공식 조합을 Storybook과 interaction tests로 고정했습니다.
+- `Gate83NestedGridComposition` Storybook scenario를 추가했습니다.
+  - parent grid는 master-detail row를 사용합니다.
+  - child grid는 row 1 detail panel 안에 렌더링됩니다.
+  - parent/child active cell, range selection, edit callback을 events 영역에 구분해 표시합니다.
+- detail panel 내부 child grid 조합에 대한 interaction tests를 추가했습니다.
+  - child keyboard ownership
+  - child range selection ownership
+  - child paste ownership
+  - child copy ownership
+  - parent ownership return after parent cell click
+- `docs/qa/gate-8-3-visual-test-guide.md`를 추가했습니다.
+- `docs/architecture/gate-8-3-nested-grid-composition-architecture.md`, `docs/README.md`, `docs/plan/div-datagrid-development-plan.md`를 구현 완료 상태로 갱신했습니다.
+- 검증:
+  - `pnpm -C frontend/packages/gen-datagrid exec tsc -p tsconfig.json --noEmit`
+  - `pnpm -C frontend/packages/gen-datagrid test:interaction`
+
+## 2026-06-24
+
+### Gate 8.3 Nested Grid Composition Architecture Plan
+
+- Gate 8.3 구현 전 범위를 Nested Grid Composition으로 정리했습니다.
+- Gate 8.3은 Gate 8.2 `renderDetailPanel` 안에 child `GenDataGrid`를 넣는 공식 composition을 검증하는 slice로 정의했습니다.
+- 새 public API 추가보다 기존 `renderDetailPanel` 조합을 우선 사용하고, parent/child active cell, selection, keyboard, clipboard, paste, editing ownership 독립성을 contract로 고정했습니다.
+- dynamic detail height measurement, parent virtualization + expanded detail row 통합, parent-child relation data loading API, tree row model, row merge/span은 범위에서 제외했습니다.
+- `docs/architecture/gate-8-3-nested-grid-composition-architecture.md`를 추가했습니다.
+- `docs/README.md`와 `docs/plan/div-datagrid-development-plan.md`에 Gate 8.3 architecture 링크와 구현 전 상태를 반영했습니다.
+
+
+
+
 ## 2026-06-23
 
 ### Gate 8.2 Master-detail Row Implementation

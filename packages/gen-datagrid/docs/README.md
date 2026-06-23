@@ -4,7 +4,7 @@ Indexes GenDataGrid planning, architecture, reference, QA, and log documents.
 
 # GenDataGrid Docs
 
-현재 상태: Gate 8.2 Master-detail Row 구현 완료. Gate 8.2는 non-virtualized fixed-height detail panel까지만 포함하며, nested grid 공식 composition은 Gate 8.3, dynamic row height와 virtualization 통합은 이후 gate로 분리한다.
+현재 상태: Gate 8.3 Nested Grid Composition 구현 완료. Gate 8.3은 Gate 8.2 detail panel 안에 child GenDataGrid를 넣는 공식 composition을 Storybook과 interaction tests로 검증한다. Dynamic row height와 virtualization 통합은 이후 gate로 분리한다.
 
 ## Plan
 
@@ -26,6 +26,7 @@ Indexes GenDataGrid planning, architecture, reference, QA, and log documents.
 - [Gate 7.2 Architecture](architecture/gate-7-2-architecture.md)
 - [Gate 8.1 Architecture](architecture/gate-8-1-architecture.md)
 - [Gate 8.2 Master-detail Architecture](architecture/gate-8-2-master-detail-architecture.md)
+- [Gate 8.3 Nested Grid Composition Architecture](architecture/gate-8-3-nested-grid-composition-architecture.md)
 
 ## Reference
 
@@ -42,6 +43,7 @@ Indexes GenDataGrid planning, architecture, reference, QA, and log documents.
 - [Gate 7 Visual Test Guide](qa/gate-7-visual-test-guide.md)
 - [Gate 8.1 Visual Test Guide](qa/gate-8-1-visual-test-guide.md)
 - [Gate 8.2 Visual Test Guide](qa/gate-8-2-visual-test-guide.md)
+- [Gate 8.3 Visual Test Guide](qa/gate-8-3-visual-test-guide.md)
 
 ## Log
 

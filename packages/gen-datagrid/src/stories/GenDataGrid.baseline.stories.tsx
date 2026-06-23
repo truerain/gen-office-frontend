@@ -1133,6 +1133,172 @@ export const Gate82MasterDetailRow: Story = {
   },
 };
 
+export const Gate83NestedGridComposition: Story = {
+  render: () => {
+    const [parentData, setParentData] = React.useState(gate6Data.slice(0, 4));
+    const [childData, setChildData] = React.useState<Person[]>(
+      gate6Data.slice(0, 3).map((row, index) => ({
+        ...row,
+        id: 'child-' + (index + 1),
+        name: 'Line ' + (index + 1),
+        role: row.role,
+        note: 'Child row for detail panel',
+      }))
+    );
+    const [expandedRows, setExpandedRows] = React.useState<GenDataGridExpandedRowState>({
+      '1': true,
+    });
+    const [events, setEvents] = React.useState<string[]>([]);
+
+    const pushEvent = React.useCallback((event: string) => {
+      setEvents((current) => [event, ...current].slice(0, 8));
+    }, []);
+
+    const handleParentChange = React.useCallback(
+      ({ rowId, columnId, value }: GenDataGridCellValueChange<Person>) => {
+        pushEvent('parent edit ' + rowId + '/' + columnId);
+        setParentData((previous) =>
+          previous.map((row) =>
+            row.id === rowId
+              ? {
+                  ...row,
+                  [columnId]: columnId === 'score' ? Number(value) : value,
+                }
+              : row
+          )
+        );
+      },
+      [pushEvent]
+    );
+
+    const handleChildChange = React.useCallback(
+      ({ rowId, columnId, value }: GenDataGridCellValueChange<Person>) => {
+        pushEvent('child edit ' + rowId + '/' + columnId);
+        setChildData((previous) =>
+          previous.map((row) =>
+            row.id === rowId
+              ? {
+                  ...row,
+                  [columnId]: columnId === 'score' ? Number(value) : value,
+                }
+              : row
+          )
+        );
+      },
+      [pushEvent]
+    );
+
+    return (
+      <div style={{ width: 980, padding: 16, display: 'grid', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <button type="button" onClick={() => setExpandedRows({ '1': true })}>
+            Expand row 1
+          </button>
+          <button type="button" onClick={() => setExpandedRows({})}>
+            Collapse all
+          </button>
+          <span>Events: {events.join(' | ') || 'none'}</span>
+        </div>
+        <GenDataGrid<Person>
+          data={parentData}
+          columns={editableColumns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-8-3-parent"
+          defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+          defaultSelectedRanges={[
+            {
+              anchor: { rowId: '1', columnId: 'name' },
+              focus: { rowId: '1', columnId: 'role' },
+            },
+          ]}
+          enableMasterDetail
+          expandedRows={expandedRows}
+          onExpandedRowsChange={setExpandedRows}
+          getRowCanExpand={({ rowId }) => rowId === '1'}
+          renderDetailPanel={({ row }) => (
+            <div style={{ display: 'grid', gap: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                <strong>Child grid for {row.name}</strong>
+                <span>Parent row: {row.id}</span>
+              </div>
+              <GenDataGrid<Person>
+                data={childData}
+                columns={editableColumns}
+                getRowId={(childRow) => childRow.id}
+                gridId="storybook-gen-datagrid-gate-8-3-child"
+                defaultActiveCell={{ rowId: 'child-1', columnId: 'name' }}
+                defaultSelectedRanges={[
+                  {
+                    anchor: { rowId: 'child-1', columnId: 'name' },
+                    focus: { rowId: 'child-1', columnId: 'role' },
+                  },
+                ]}
+                editCommitOnBlur
+                onActiveCellChange={(next) => {
+                  if (next) pushEvent('child active ' + next.rowId + '/' + next.columnId);
+                }}
+                onSelectedRangesChange={(next) => {
+                  const range = next[next.length - 1];
+                  if (range) {
+                    pushEvent(
+                      'child range ' +
+                        range.anchor.rowId +
+                        '/' +
+                        range.anchor.columnId +
+                        ' -> ' +
+                        range.focus.rowId +
+                        '/' +
+                        range.focus.columnId
+                    );
+                  }
+                }}
+                onCellValueChange={handleChildChange}
+                rowHeight={36}
+                headerHeight={40}
+                style={{
+                  height: 178,
+                  border: '1px solid #d0d7de',
+                  borderRadius: 6,
+                  background: '#fff',
+                }}
+              />
+            </div>
+          )}
+          detailPanelHeight={240}
+          editCommitOnBlur
+          onActiveCellChange={(next) => {
+            if (next) pushEvent('parent active ' + next.rowId + '/' + next.columnId);
+          }}
+          onSelectedRangesChange={(next) => {
+            const range = next[next.length - 1];
+            if (range) {
+              pushEvent(
+                'parent range ' +
+                  range.anchor.rowId +
+                  '/' +
+                  range.anchor.columnId +
+                  ' -> ' +
+                  range.focus.rowId +
+                  '/' +
+                  range.focus.columnId
+              );
+            }
+          }}
+          onCellValueChange={handleParentChange}
+          rowHeight={36}
+          headerHeight={40}
+          style={{
+            height: 520,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+      </div>
+    );
+  },
+};
+
 function PopoverLookupEditor({ ctx }: { ctx: GenDataGridEditorContext<Person> }) {
   const anchorRef = React.useRef<HTMLInputElement | null>(null);
   const surfaceRef = React.useRef<HTMLDivElement | null>(null);

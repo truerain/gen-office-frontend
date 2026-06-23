@@ -630,12 +630,27 @@ Editor 구현 계약 요약: [`editor-implementation-contract.md`](../reference/
   - `Gate82MasterDetailRow` Storybook manual scenario
 #### Gate 8.3 Nested Grid Composition
 
-- nested `GenDataGrid` inside detail panel
-- parent and child active cell independence
-- parent and child selected range independence
-- child grid copy/paste does not affect parent grid
-- Storybook nested grid boundary scenario
-
+- status
+  - complete (MVP)
+  - nested `GenDataGrid` inside `renderDetailPanel` implemented as official composition scenario
+  - parent and child active cell independence verified
+  - parent and child selected range independence verified
+  - child grid keyboard navigation does not move parent grid
+  - child grid copy/paste does not affect parent grid
+  - child grid editing lifecycle stays scoped to child grid
+  - parent ownership returns after clicking a parent data cell
+  - `Gate83NestedGridComposition` Storybook scenario added
+- out of scope
+  - dynamic detail height measurement
+  - parent virtualization + expanded detail row integration
+  - parent-child relation data loading API
+  - tree row model
+  - row merge/span
+- architecture
+  - `../architecture/gate-8-3-nested-grid-composition-architecture.md`
+- verified by
+  - `pnpm -C frontend/packages/gen-datagrid exec tsc -p tsconfig.json --noEmit`
+  - `pnpm -C frontend/packages/gen-datagrid test:interaction`
 #### Gate 8.4 Dynamic Row Height
 
 - dynamic row measurement model

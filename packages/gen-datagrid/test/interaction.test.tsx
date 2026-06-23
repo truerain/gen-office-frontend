@@ -656,6 +656,235 @@ describe('GenDataGrid interaction contract', () => {
     expect(onSelectedRangesChange).not.toHaveBeenCalled();
   });
 
+  it('keeps nested detail grid keyboard ownership inside the child root', async () => {
+    const onParentActiveCellChange = vi.fn();
+    const onChildActiveCellChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="parent-detail-keyboard-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+        onActiveCellChange={onParentActiveCellChange}
+        enableMasterDetail
+        defaultExpandedRows={{ '1': true }}
+        renderDetailPanel={() => (
+          <GenDataGrid
+            gridId="child-detail-keyboard-grid"
+            data={childRows}
+            columns={columns}
+            getRowId={(row) => row.id}
+            defaultActiveCell={{ rowId: 'c1', columnId: 'name' }}
+            onActiveCellChange={onChildActiveCellChange}
+          />
+        )}
+      />
+    );
+
+    const parentGrid = container.querySelector<HTMLElement>('[data-grid-id="parent-detail-keyboard-grid"]');
+    const childGrid = container.querySelector<HTMLElement>('[data-grid-id="child-detail-keyboard-grid"]');
+    if (!parentGrid || !childGrid) throw new Error('Missing nested detail grids');
+
+    const childFirstCell = getCell(childGrid, 'c1', 'name');
+    childFirstCell.focus();
+    fireEvent.keyDown(childFirstCell, { key: 'ArrowRight' });
+
+    await waitFor(() => {
+      expect(getCell(childGrid, 'c1', 'age').dataset.activeCell).toBe('true');
+      expect(getCell(parentGrid, '1', 'name').dataset.activeCell).toBe('true');
+      expect(getCell(parentGrid, '1', 'age').dataset.activeCell).toBeUndefined();
+      expect(onChildActiveCellChange).toHaveBeenCalledWith({ rowId: 'c1', columnId: 'age' });
+      expect(onParentActiveCellChange).not.toHaveBeenCalled();
+    });
+  });
+
+  it('keeps nested detail grid range selection scoped to the child root', async () => {
+    const onParentSelectedRangesChange = vi.fn();
+    const onChildSelectedRangesChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="parent-detail-range-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        onSelectedRangesChange={onParentSelectedRangesChange}
+        enableMasterDetail
+        defaultExpandedRows={{ '1': true }}
+        renderDetailPanel={() => (
+          <GenDataGrid
+            gridId="child-detail-range-grid"
+            data={childRows}
+            columns={columns}
+            getRowId={(row) => row.id}
+            onSelectedRangesChange={onChildSelectedRangesChange}
+          />
+        )}
+      />
+    );
+
+    const childGrid = container.querySelector<HTMLElement>('[data-grid-id="child-detail-range-grid"]');
+    if (!childGrid) throw new Error('Missing nested detail child grid');
+
+    fireEvent.mouseDown(getCell(childGrid, 'c1', 'name'), {
+      button: 0,
+      clientX: 10,
+      clientY: 10,
+    });
+    fireEvent.mouseOver(getCell(childGrid, 'c2', 'age'), { clientX: 30, clientY: 40 });
+    fireEvent.mouseUp(window);
+
+    await waitFor(() => {
+      expect(onChildSelectedRangesChange).toHaveBeenLastCalledWith([
+        {
+          anchor: { rowId: 'c1', columnId: 'name' },
+          focus: { rowId: 'c2', columnId: 'age' },
+        },
+      ]);
+      expect(onParentSelectedRangesChange).not.toHaveBeenCalled();
+    });
+  });
+
+  it('keeps nested detail grid paste ownership inside the child root', async () => {
+    const onParentCellValueChange = vi.fn();
+    const onChildCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="parent-detail-paste-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        onCellValueChange={onParentCellValueChange}
+        enableMasterDetail
+        defaultExpandedRows={{ '1': true }}
+        renderDetailPanel={() => (
+          <GenDataGrid
+            gridId="child-detail-paste-grid"
+            data={childRows}
+            columns={editabilityColumns}
+            getRowId={(row) => row.id}
+            onCellValueChange={onChildCellValueChange}
+          />
+        )}
+      />
+    );
+
+    const childGrid = container.querySelector<HTMLElement>('[data-grid-id="child-detail-paste-grid"]');
+    if (!childGrid) throw new Error('Missing nested detail child grid');
+
+    const childCell = getCell(childGrid, 'c1', 'name');
+    childCell.focus();
+    fireEvent.paste(childCell, {
+      clipboardData: createClipboardData('Detail Paste'),
+    });
+
+    await waitFor(() => {
+      expect(onChildCellValueChange).toHaveBeenCalledWith({
+        row: childRows[0],
+        rowId: 'c1',
+        rowIndex: 0,
+        columnId: 'name',
+        previousValue: 'Child Ada',
+        value: 'Detail Paste',
+      });
+      expect(onParentCellValueChange).not.toHaveBeenCalled();
+    });
+  });
+
+  it('keeps nested detail grid copy ownership inside the child root', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="parent-detail-copy-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        defaultSelectedRanges={[
+          {
+            anchor: { rowId: '1', columnId: 'name' },
+            focus: { rowId: '1', columnId: 'age' },
+          },
+        ]}
+        enableMasterDetail
+        defaultExpandedRows={{ '1': true }}
+        renderDetailPanel={() => (
+          <GenDataGrid
+            gridId="child-detail-copy-grid"
+            data={childRows}
+            columns={columns}
+            getRowId={(row) => row.id}
+            defaultSelectedRanges={[
+              {
+                anchor: { rowId: 'c1', columnId: 'name' },
+                focus: { rowId: 'c2', columnId: 'name' },
+              },
+            ]}
+          />
+        )}
+      />
+    );
+
+    const childGrid = container.querySelector<HTMLElement>('[data-grid-id="child-detail-copy-grid"]');
+    if (!childGrid) throw new Error('Missing nested detail child grid');
+
+    const childCell = getCell(childGrid, 'c1', 'name');
+    childCell.focus();
+    fireEvent.keyDown(childCell, { key: 'c', ctrlKey: true });
+
+    await waitFor(() => {
+      expect(window.navigator.clipboard.writeText).toHaveBeenCalledTimes(1);
+      expect(window.navigator.clipboard.writeText).toHaveBeenCalledWith(
+        'Child Ada\nChild Grace'
+      );
+    });
+  });
+
+  it('returns keyboard ownership to the parent from a nested detail grid', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="parent-detail-return-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+        enableMasterDetail
+        defaultExpandedRows={{ '1': true }}
+        renderDetailPanel={() => (
+          <GenDataGrid
+            gridId="child-detail-return-grid"
+            data={childRows}
+            columns={columns}
+            getRowId={(row) => row.id}
+            defaultActiveCell={{ rowId: 'c1', columnId: 'name' }}
+          />
+        )}
+      />
+    );
+
+    const parentGrid = container.querySelector<HTMLElement>('[data-grid-id="parent-detail-return-grid"]');
+    const childGrid = container.querySelector<HTMLElement>('[data-grid-id="child-detail-return-grid"]');
+    if (!parentGrid || !childGrid) throw new Error('Missing nested detail grids');
+
+    const childFirstCell = getCell(childGrid, 'c1', 'name');
+    childFirstCell.focus();
+    fireEvent.keyDown(childFirstCell, { key: 'ArrowRight' });
+
+    await waitFor(() => {
+      expect(getCell(childGrid, 'c1', 'age').dataset.activeCell).toBe('true');
+    });
+
+    const parentFirstCell = getCell(parentGrid, '1', 'name');
+    fireEvent.mouseDown(parentFirstCell, { button: 0 });
+    expect(document.activeElement).toBe(parentFirstCell);
+
+    fireEvent.keyDown(parentFirstCell, { key: 'ArrowRight' });
+
+    await waitFor(() => {
+      expect(getCell(parentGrid, '1', 'age').dataset.activeCell).toBe('true');
+      expect(getCell(childGrid, 'c1', 'age').dataset.activeCell).toBe('true');
+      expect(getCell(childGrid, 'c2', 'age').dataset.activeCell).toBeUndefined();
+    });
+  });
+
   it('does not consume navigation keys from interactive descendants', async () => {
     const { container } = render(
       <GenDataGrid
