@@ -10,7 +10,7 @@ import type {
   PaginationState,
 } from '@tanstack/react-table';
 import * as React from 'react';
-import { createPortal } from 'react-dom';
+import { createPortal, flushSync } from 'react-dom';
 
 import type {
   GenDataGridCellValueChange,
@@ -284,10 +284,10 @@ export const Gate4Editing: Story = {
       <div style={{ width: 760, padding: 16 }}>
         <GenDataGrid<Person>
           data={editableData}
-          columns={editableColumns}
-          getRowId={(row) => row.id}
+            columns={editableColumns}
+            getRowId={(row) => row.id}
           gridId="storybook-gen-datagrid-editing"
-          defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+            defaultActiveCell={{ rowId: '1', columnId: 'name' }}
           rowHeight={36}
           headerHeight={40}
           editSelectOnFocus
@@ -298,8 +298,8 @@ export const Gate4Editing: Story = {
             border: '1px solid #d0d7de',
             borderRadius: 6,
             background: '#fff',
-          }}
-        />
+            }}
+          />
       </div>
     );
   },
@@ -343,7 +343,7 @@ export const Gate5PinningSizingReorder: Story = {
           getRowId={(row) => row.id}
           gridId="storybook-gen-datagrid-gate-5"
           defaultActiveCell={{ rowId: '1', columnId: 'name' }}
-          defaultSelectedRanges={[
+            defaultSelectedRanges={[
             {
               anchor: { rowId: '1', columnId: 'name' },
               focus: { rowId: '2', columnId: 'score' },
@@ -619,9 +619,9 @@ export const Gate7Virtualization: Story = {
           defaultColumnPinning={{ left: ['name'] }}
           enableVirtualization
           scrollSeeking={scrollSeeking}
-          rowHeight={36}
-          headerHeight={40}
-          style={{
+            rowHeight={36}
+            headerHeight={40}
+            style={{
             height: 420,
             border: '1px solid #d0d7de',
             borderRadius: 6,
@@ -651,7 +651,7 @@ export const Gate72RangeAutoScroll: Story = {
           defaultColumnPinning={{ left: ['name'] }}
           enableVirtualization
           scrollSeeking={false}
-          onSelectedRangesChange={(next) => {
+            onSelectedRangesChange={(next) => {
             const range = next[next.length - 1];
             setSelectedRangeLabel(
               range
@@ -673,6 +673,174 @@ export const Gate72RangeAutoScroll: Story = {
   },
 };
 
+export const Gate81MultiGridBoundary: Story = {
+  render: () => {
+    const [parentData, setParentData] = React.useState(gate6Data.slice(0, 4));
+    const [childData, setChildData] = React.useState<Person[]>(
+      data.slice(0, 2).map((row) => ({
+        ...row,
+        id: 'child-' + row.id,
+        name: 'Nested ' + row.name,
+        note: 'Child grid row',
+      }))
+    );
+    const [events, setEvents] = React.useState<string[]>([]);
+
+    const pushEvent = React.useCallback((event: string) => {
+      //flushSync(() => {
+        console.log('pushEvent: ', event);
+        setEvents((current) => [event, ...current].slice(0, 6));
+      //});
+    }, []);
+
+    const handleParentChange = React.useCallback(
+      ({ rowId, columnId, value }: GenDataGridCellValueChange<Person>) => {
+        console.log('parent edit', rowId, columnId, value);
+        setParentData((previous) =>
+          previous.map((row) =>
+            row.id === rowId
+              ? {
+                  ...row,
+                  [columnId]: columnId === 'score' ? Number(value) : value,
+                }
+              : row
+          )
+        );
+      },
+      [pushEvent]
+    );
+
+    const handleChildChange = React.useCallback(
+      ({ rowId, columnId, value }: GenDataGridCellValueChange<Person>) => {
+        pushEvent('child edit ' + rowId + '/' + columnId);
+        console.log('child edit', rowId, columnId, value);
+        setChildData((previous) =>
+          previous.map((row) =>
+            row.id === rowId
+              ? {
+                  ...row,
+                  [columnId]: columnId === 'score' ? Number(value) : value,
+                }
+              : row
+          )
+        );
+      },
+      [pushEvent]
+    );
+
+    const recordBoundaryEvent = React.useCallback(
+      (owner: 'parent' | 'child', eventName: string, target: EventTarget | null) => {
+        const element =
+          target instanceof HTMLElement
+            ? target
+            : target instanceof Node
+              ? target.parentElement
+              : null;
+        if (!element) return;
+        const root = element.closest<HTMLElement>('[data-gen-datagrid-root="true"]');
+        const expectedGridId =
+          owner === 'parent'
+            ? 'storybook-gen-datagrid-gate-8-1-parent'
+            : 'storybook-gen-datagrid-gate-8-1-child';
+        if (root?.dataset.gridId !== expectedGridId) return;
+        const cell = element.closest<HTMLElement>(
+          '[data-gen-datagrid-cell="true"][data-cell-kind="body"][data-rowid][data-colid]'
+        );
+        const coord = cell ? ' ' + cell.dataset.rowid + '/' + cell.dataset.colid : '';
+        pushEvent(owner + ' ' + eventName + coord);
+      },
+      [pushEvent]
+    );
+
+    return (
+      <div style={{ width: 980, padding: 16, display: 'grid', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', minHeight: 24 }}>
+          <span>Latest boundary events:</span>
+          <span>{events.join(' | ') || 'none'}</span>
+        </div>
+        <div
+          onMouseDownCapture={(event) => recordBoundaryEvent('parent', 'click', event.target)}
+          onFocusCapture={(event) => recordBoundaryEvent('parent', 'focus', event.target)}
+          onKeyDownCapture={(event) =>
+            recordBoundaryEvent('parent', 'key ' + event.key, event.target)
+          }
+        >
+          <GenDataGrid<Person>
+            data={parentData}
+            columns={editableColumns}
+            getRowId={(row) => row.id}
+            gridId="storybook-gen-datagrid-gate-8-1-parent"
+            defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+            defaultSelectedRanges={[
+              {
+                anchor: { rowId: '1', columnId: 'name' },
+                focus: { rowId: '1', columnId: 'role' },
+              },
+            ]}
+            editCommitOnBlur
+            enableFooter
+            onActiveCellChange={(next) => {
+              if (next) {
+                pushEvent('parent active ' + next.rowId + '/' + next.columnId);
+                //console.log('parent active ' + next.rowId + '/' + next.columnId);
+              }
+            }}
+            onSelectedRangesChange={(next) => {
+              const range = next[next.length - 1];
+              if (range) pushEvent('parent range ' + range.anchor.rowId + ' -> ' + range.focus.rowId);
+            }}
+            onCellValueChange={handleParentChange}
+            renderFooter={() => (
+              <div style={{ display: 'grid', gap: 8, padding: '8px 0' }}>
+                <div style={{ fontWeight: 600 }}>Nested child grid</div>
+                <div
+                  onMouseDownCapture={(event) => recordBoundaryEvent('child', 'click', event.target)}
+                  onFocusCapture={(event) => recordBoundaryEvent('child', 'focus', event.target)}
+                  onKeyDownCapture={(event) =>
+                    recordBoundaryEvent('child', 'key ' + event.key, event.target)
+                  }
+                >
+                  <GenDataGrid<Person>
+                    data={childData}
+                    columns={editableColumns}
+                    getRowId={(row) => row.id}
+                    gridId="storybook-gen-datagrid-gate-8-1-child"
+                    defaultActiveCell={{ rowId: 'child-1', columnId: 'name' }}
+                    editCommitOnBlur
+                    onActiveCellChange={(next) => {
+                      if (next) pushEvent('child active ' + next.rowId + '/' + next.columnId);
+                    }}
+                    onSelectedRangesChange={(next) => {
+                      const range = next[next.length - 1];
+                      if (range) pushEvent('child range ' + range.anchor.rowId + ' -> ' + range.focus.rowId);
+                    }}
+                    onCellValueChange={handleChildChange}
+                    rowHeight={36}
+                    headerHeight={40}
+                    style={{
+                      height: 180,
+                      border: '1px solid #d0d7de',
+                      borderRadius: 6,
+                      background: '#fff',
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+            rowHeight={36}
+            headerHeight={40}
+            style={{
+              height: 520,
+              border: '1px solid #d0d7de',
+              borderRadius: 6,
+              background: '#fff',
+            }}
+          />
+        </div>
+      </div>
+    );
+  },
+};
 export const Phase91KeyboardSelectionAndScroll: Story = {
   render: () => {
     const gridRef = React.useRef<GenDataGridHandle>(null);

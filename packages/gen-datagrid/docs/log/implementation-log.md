@@ -1,7 +1,54 @@
-<!-- packages/gen-datagrid/docs/log/implementation-log.md
-Records meaningful GenDataGrid implementation decisions and progress.
--->
+## 2026-06-23
 
+
+
+
+
+
+### Gate 8.1 Storybook Event Flush
+
+- `Gate81MultiGridBoundary` Storybook의 `pushEvent`를 `flushSync`로 감싸 수동 테스트 중 event log가 console 출력과 같은 타이밍으로 화면에 반영되도록 보강했습니다.
+- 이 변경은 Storybook 수동 테스트 로그에만 적용되며 GenDataGrid runtime 동작에는 영향을 주지 않습니다.
+### Gate 8.1 Storybook Key Event Log
+
+- `Gate81MultiGridBoundary` Storybook 시나리오에 parent/child keydown capture 로그를 추가했습니다.
+- parent cell 이동 시 active callback이 늦거나 같은 셀 재클릭 상태여도 `parent key ArrowRight row/column`처럼 실제 keyboard ownership을 바로 확인할 수 있습니다.
+- Gate 8.1 수동 테스트 가이드의 keyboard ownership 기대 결과를 key 로그 기준으로 갱신했습니다.
+### Gate 8.1 Storybook Child Click Log Fix
+
+- `Gate81MultiGridBoundary`의 click/focus 기록에서 quoted data-attribute selector를 복구했습니다.
+- cell 내부 text node가 event target으로 들어와도 parentElement 기준으로 owning grid root와 cell coordinate를 찾도록 보강했습니다.
+- child Note cell 클릭 직후 `child click child-1/note` 또는 `child focus child-1/note` 로그가 남도록 수동 테스트 로그 경로를 안정화했습니다.
+### Gate 8.1 Storybook Boundary Event Log
+
+- `Gate81MultiGridBoundary` Storybook 시나리오에 parent/child wrapper의 capture 단계 click/focus 로그를 추가했습니다.
+- active cell이 바뀌지 않는 parent 재클릭도 `parent click ...` 또는 `parent focus ...`로 표시되어 ownership 복귀를 수동으로 확인할 수 있습니다.
+- Gate 8.1 수동 테스트 가이드에 parent/child click/focus ownership 점검 항목을 추가했습니다.
+### Gate 8.1 Parent Focus Return Fix
+
+- child grid cell에 focus가 있는 상태에서 parent grid의 active cell을 다시 클릭하면 parent cell로 DOM focus가 즉시 돌아오도록 `DataGridCell` mouse down 처리에서 cell focus를 보강했습니다.
+- child focus 후 parent cell 클릭, 이후 Arrow key 입력이 parent grid에 적용되는 interaction 회귀 테스트를 추가했습니다.
+### Gate 8.1 Manual Test Guide
+
+- `Gate81MultiGridBoundary` Storybook 시나리오의 수동 테스트 포인트를 `docs/qa/gate-8-1-visual-test-guide.md`로 정리했습니다.
+- parent/child keyboard, range selection, paste, editing focus, copy ownership, focus return 실패 조건을 표로 문서화했습니다.
+- docs README의 QA 섹션에서 Gate 8.1 visual test guide로 연결했습니다.
+
+### Gate 8.1 Multi-grid Boundary Implementation
+
+- `core/dom/gridBoundary.ts`를 추가해 nearest grid root 기준의 event/focus ownership helper를 만들었습니다.
+- `cellDom.ts`의 cell/viewport lookup이 nested child grid root를 parent root의 DOM으로 잘못 해석하지 않도록 보강했습니다.
+- `DataGridRoot` keydown/paste/focus restore 경로가 child grid 소유 이벤트와 focus를 무시하도록 guard를 추가했습니다.
+- `useRangeSelection`의 cell coordinate resolution도 공용 boundary helper를 사용하도록 정리했습니다.
+- parent footer 안에 nested child grid를 렌더링하는 keyboard, range selection, paste, copy ownership interaction tests를 추가했습니다.
+- `Gate81MultiGridBoundary` Storybook 시나리오를 추가해 nested child grid ownership을 수동 검증할 수 있게 했습니다.
+
+### Gate 8.1 Architecture Plan
+
+- Gate 8.1 범위를 Multi-grid Boundary And Ownership으로 확정했습니다.
+- 기존 Gate 8.1의 tree, master-detail, nested grid 묶음을 Gate 8.2 이후 단계로 분리했습니다.
+- `docs/architecture/gate-8-1-architecture.md`를 추가해 root boundary, focus ownership, keyboard ownership, range selection ownership, clipboard ownership, context menu ownership 규칙을 정리했습니다.
+- Gate 8.1은 public API 추가보다 내부 boundary helper와 interaction regression coverage를 우선하는 것으로 정리했습니다.
 ## 2026-06-22
 
 ### Gate 7.2 Range Auto-scroll Implementation

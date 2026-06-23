@@ -80,6 +80,7 @@ export function DataGridCell({
           return;
         }
         event.preventDefault();
+        event.currentTarget.focus({ preventScroll: true });
         if (allowReclickEdit && isActive && isEditable && !isEditing) {
           onEditStart?.({ rowId, columnId, entryReason: 'reclick' });
           return;

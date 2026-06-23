@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 
-import { gridRootSelector } from '../../core/dom/selectors';
+import { getOwningGridRoot, isEventOwnedByRoot } from '../../core/dom/gridBoundary';
 import type {
   GenDataGridCellCoord,
   GenDataGridRangeSelection,
@@ -16,12 +16,12 @@ const interactiveTargetSelector =
 function resolveCellCoordFromTarget(root: HTMLElement | null, target: EventTarget | null) {
   if (!root || !(target instanceof HTMLElement)) return null;
   if (target.closest(interactiveTargetSelector)) return null;
-  if (target.closest(gridRootSelector) !== root) return null;
+  if (!isEventOwnedByRoot(root, target)) return null;
 
   const cell = target.closest<HTMLElement>(
     '[data-gen-datagrid-cell="true"][data-cell-kind="body"][data-rowid][data-colid]'
   );
-  if (!cell || cell.closest(gridRootSelector) !== root) return null;
+  if (!cell || getOwningGridRoot(cell) !== root) return null;
 
   const rowId = cell.dataset.rowid;
   const columnId = cell.dataset.colid;

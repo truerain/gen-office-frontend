@@ -15,6 +15,7 @@ import {
   focusCellInRoot,
   scrollCellIntoViewInRoot,
 } from '../../core/dom/cellDom';
+import { isEventOwnedByRoot, isFocusOwnedByRoot } from '../../core/dom/gridBoundary';
 import { useDataGridTable } from '../../core/table/useDataGridTable';
 import {
   getFirstActiveCell,
@@ -473,8 +474,9 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
   React.useEffect(() => {
     if (!activeCell) return;
     const activeElement = document.activeElement;
-    if (rootRef.current?.contains(activeElement) && isInteractiveElement(activeElement)) {
-      return;
+    if (activeElement instanceof Element && rootRef.current?.contains(activeElement)) {
+      if (!isFocusOwnedByRoot(rootRef.current, activeElement)) return;
+      if (isInteractiveElement(activeElement)) return;
     }
     if (enableVirtualization) {
       const activeRowIndex = rowIds.indexOf(activeCell.rowId);
@@ -508,6 +510,9 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       const target = event.target as HTMLElement | null;
+      if (!isEventOwnedByRoot(rootRef.current, target)) {
+        return;
+      }
       if (isInteractiveElement(target)) {
         return;
       }
@@ -604,6 +609,9 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
   const handlePaste = React.useCallback(
     (event: React.ClipboardEvent<HTMLDivElement>) => {
       const target = event.target as HTMLElement | null;
+      if (!isEventOwnedByRoot(rootRef.current, target)) {
+        return;
+      }
       if (isInteractiveElement(target)) {
         return;
       }
@@ -665,6 +673,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
 
       const activeElement = document.activeElement as HTMLElement | null;
       if (activeElement && root.contains(activeElement) && activeElement !== document.body) {
+        if (!isFocusOwnedByRoot(root, activeElement)) return;
         return;
       }
 

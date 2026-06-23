@@ -1,6 +1,7 @@
 // packages/gen-datagrid/src/core/dom/cellDom.ts
 // Provides root-scoped cell DOM lookup and focus helpers.
 
+import { getOwningGridRoot } from './gridBoundary';
 import { getCellSelector, gridViewportSelector } from './selectors';
 
 export type GenDataGridCellCoord = {
@@ -10,7 +11,15 @@ export type GenDataGridCellCoord = {
 
 export function findCellInRoot(root: HTMLElement | null, coord: GenDataGridCellCoord) {
   if (!root) return null;
-  return root.querySelector<HTMLElement>(getCellSelector(coord.rowId, coord.columnId));
+  const candidates = root.querySelectorAll<HTMLElement>(
+    getCellSelector(coord.rowId, coord.columnId)
+  );
+  return (
+    Array.from(candidates).find((cell) => {
+      const ownerRoot = getOwningGridRoot(cell);
+      return ownerRoot === root || (!ownerRoot && root.contains(cell));
+    }) ?? null
+  );
 }
 
 export function focusCellInRoot(root: HTMLElement | null, coord: GenDataGridCellCoord) {
@@ -39,7 +48,12 @@ function scrollCellIntoUnpinnedViewport(root: HTMLElement | null, cell: HTMLElem
   if (!root) return;
   if (cell.dataset.pinnedCell) return;
 
-  const viewport = root.querySelector<HTMLElement>(gridViewportSelector);
+  const viewport = Array.from(root.querySelectorAll<HTMLElement>(gridViewportSelector)).find(
+    (item) => {
+      const ownerRoot = getOwningGridRoot(item);
+      return ownerRoot === root || (!ownerRoot && root.contains(item));
+    }
+  );
   if (!viewport) return;
 
   const viewportRect = viewport.getBoundingClientRect();
@@ -67,6 +81,8 @@ function getPinnedViewportBounds(root: HTMLElement, viewportRect: DOMRect) {
       '[data-gen-datagrid-cell="true"][data-cell-kind="header"][data-pinned-cell="left"]'
     )
     .forEach((cell) => {
+      const ownerRoot = getOwningGridRoot(cell);
+      if (ownerRoot && ownerRoot !== root) return;
       const rect = cell.getBoundingClientRect();
       left = Math.max(left, rect.right);
     });
@@ -76,6 +92,8 @@ function getPinnedViewportBounds(root: HTMLElement, viewportRect: DOMRect) {
       '[data-gen-datagrid-cell="true"][data-cell-kind="header"][data-pinned-cell="right"]'
     )
     .forEach((cell) => {
+      const ownerRoot = getOwningGridRoot(cell);
+      if (ownerRoot && ownerRoot !== root) return;
       const rect = cell.getBoundingClientRect();
       right = Math.min(right, rect.left);
     });

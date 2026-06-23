@@ -21,6 +21,11 @@ const rows: Person[] = [
   { id: '2', name: 'Grace', age: 41 },
 ];
 
+const childRows: Person[] = [
+  { id: 'c1', name: 'Child Ada', age: 12 },
+  { id: 'c2', name: 'Child Grace', age: 14 },
+];
+
 const virtualRows: Person[] = Array.from({ length: 200 }, (_, index) => ({
   id: String(index + 1),
   name: `Person ${index + 1}`,
@@ -298,6 +303,230 @@ describe('GenDataGrid interaction contract', () => {
       expect(getCell(gridA, '1', 'age').dataset.activeCell).toBe('true');
       expect(getCell(gridB, '1', 'name').dataset.activeCell).toBe('true');
       expect(getCell(gridB, '1', 'age').dataset.activeCell).toBeUndefined();
+    });
+  });
+
+  it('keeps nested grid keyboard ownership inside the child root', async () => {
+    const onParentActiveCellChange = vi.fn();
+    const onChildActiveCellChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="parent-boundary-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+        onActiveCellChange={onParentActiveCellChange}
+        enableFooter
+        renderFooter={() => (
+          <GenDataGrid
+            gridId="child-boundary-grid"
+            data={childRows}
+            columns={columns}
+            getRowId={(row) => row.id}
+            defaultActiveCell={{ rowId: 'c1', columnId: 'name' }}
+            onActiveCellChange={onChildActiveCellChange}
+          />
+        )}
+      />
+    );
+
+    const parentGrid = container.querySelector<HTMLElement>('[data-grid-id="parent-boundary-grid"]');
+    const childGrid = container.querySelector<HTMLElement>('[data-grid-id="child-boundary-grid"]');
+    if (!parentGrid || !childGrid) throw new Error('Missing nested test grids');
+
+    const childFirstCell = getCell(childGrid, 'c1', 'name');
+    childFirstCell.focus();
+    fireEvent.keyDown(childFirstCell, { key: 'ArrowRight' });
+
+    await waitFor(() => {
+      expect(getCell(childGrid, 'c1', 'age').dataset.activeCell).toBe('true');
+      expect(getCell(parentGrid, '1', 'name').dataset.activeCell).toBe('true');
+      expect(getCell(parentGrid, '1', 'age').dataset.activeCell).toBeUndefined();
+      expect(onChildActiveCellChange).toHaveBeenCalledWith({ rowId: 'c1', columnId: 'age' });
+      expect(onParentActiveCellChange).not.toHaveBeenCalled();
+    });
+  });
+
+  it('returns keyboard ownership to the parent when a parent cell is clicked after child focus', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="parent-focus-return-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+        enableFooter
+        renderFooter={() => (
+          <GenDataGrid
+            gridId="child-focus-return-grid"
+            data={childRows}
+            columns={columns}
+            getRowId={(row) => row.id}
+            defaultActiveCell={{ rowId: 'c1', columnId: 'name' }}
+          />
+        )}
+      />
+    );
+
+    const parentGrid = container.querySelector<HTMLElement>('[data-grid-id="parent-focus-return-grid"]');
+    const childGrid = container.querySelector<HTMLElement>('[data-grid-id="child-focus-return-grid"]');
+    if (!parentGrid || !childGrid) throw new Error('Missing nested test grids');
+
+    const childFirstCell = getCell(childGrid, 'c1', 'name');
+    childFirstCell.focus();
+    fireEvent.keyDown(childFirstCell, { key: 'ArrowRight' });
+
+    await waitFor(() => {
+      expect(getCell(childGrid, 'c1', 'age').dataset.activeCell).toBe('true');
+    });
+
+    const parentFirstCell = getCell(parentGrid, '1', 'name');
+    fireEvent.mouseDown(parentFirstCell, { button: 0 });
+    expect(document.activeElement).toBe(parentFirstCell);
+
+    fireEvent.keyDown(parentFirstCell, { key: 'ArrowRight' });
+
+    await waitFor(() => {
+      expect(getCell(parentGrid, '1', 'age').dataset.activeCell).toBe('true');
+      expect(getCell(childGrid, 'c1', 'age').dataset.activeCell).toBe('true');
+      expect(getCell(childGrid, 'c2', 'age').dataset.activeCell).toBeUndefined();
+    });
+  });
+
+  it('keeps nested grid range selection ownership inside the child root', async () => {
+    const onParentSelectedRangesChange = vi.fn();
+    const onChildSelectedRangesChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="parent-range-boundary-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        onSelectedRangesChange={onParentSelectedRangesChange}
+        enableFooter
+        renderFooter={() => (
+          <GenDataGrid
+            gridId="child-range-boundary-grid"
+            data={childRows}
+            columns={columns}
+            getRowId={(row) => row.id}
+            onSelectedRangesChange={onChildSelectedRangesChange}
+          />
+        )}
+      />
+    );
+
+    const childGrid = container.querySelector<HTMLElement>('[data-grid-id="child-range-boundary-grid"]');
+    if (!childGrid) throw new Error('Missing nested child grid');
+
+    fireEvent.mouseDown(getCell(childGrid, 'c1', 'name'), {
+      button: 0,
+      clientX: 10,
+      clientY: 10,
+    });
+    fireEvent.mouseOver(getCell(childGrid, 'c2', 'age'), { clientX: 30, clientY: 40 });
+    fireEvent.mouseUp(window);
+
+    await waitFor(() => {
+      expect(onChildSelectedRangesChange).toHaveBeenLastCalledWith([
+        {
+          anchor: { rowId: 'c1', columnId: 'name' },
+          focus: { rowId: 'c2', columnId: 'age' },
+        },
+      ]);
+      expect(onParentSelectedRangesChange).not.toHaveBeenCalled();
+    });
+  });
+
+  it('keeps nested grid paste ownership inside the focused child root', async () => {
+    const onParentCellValueChange = vi.fn();
+    const onChildCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="parent-paste-boundary-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        onCellValueChange={onParentCellValueChange}
+        enableFooter
+        renderFooter={() => (
+          <GenDataGrid
+            gridId="child-paste-boundary-grid"
+            data={childRows}
+            columns={editabilityColumns}
+            getRowId={(row) => row.id}
+            onCellValueChange={onChildCellValueChange}
+          />
+        )}
+      />
+    );
+
+    const childGrid = container.querySelector<HTMLElement>('[data-grid-id="child-paste-boundary-grid"]');
+    if (!childGrid) throw new Error('Missing nested child grid');
+
+    const childCell = getCell(childGrid, 'c1', 'name');
+    childCell.focus();
+    fireEvent.paste(childCell, {
+      clipboardData: createClipboardData('Child Paste'),
+    });
+
+    await waitFor(() => {
+      expect(onChildCellValueChange).toHaveBeenCalledWith({
+        row: childRows[0],
+        rowId: 'c1',
+        rowIndex: 0,
+        columnId: 'name',
+        previousValue: 'Child Ada',
+        value: 'Child Paste',
+      });
+      expect(onParentCellValueChange).not.toHaveBeenCalled();
+    });
+  });
+
+  it('keeps nested grid copy ownership inside the focused child root', async () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="parent-copy-boundary-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        defaultSelectedRanges={[
+          {
+            anchor: { rowId: '1', columnId: 'name' },
+            focus: { rowId: '1', columnId: 'age' },
+          },
+        ]}
+        enableFooter
+        renderFooter={() => (
+          <GenDataGrid
+            gridId="child-copy-boundary-grid"
+            data={childRows}
+            columns={columns}
+            getRowId={(row) => row.id}
+            defaultSelectedRanges={[
+              {
+                anchor: { rowId: 'c1', columnId: 'name' },
+                focus: { rowId: 'c2', columnId: 'name' },
+              },
+            ]}
+          />
+        )}
+      />
+    );
+
+    const childGrid = container.querySelector<HTMLElement>('[data-grid-id="child-copy-boundary-grid"]');
+    if (!childGrid) throw new Error('Missing nested child grid');
+
+    const childCell = getCell(childGrid, 'c1', 'name');
+    childCell.focus();
+    fireEvent.keyDown(childCell, { key: 'c', ctrlKey: true });
+
+    await waitFor(() => {
+      expect(window.navigator.clipboard.writeText).toHaveBeenCalledTimes(1);
+      expect(window.navigator.clipboard.writeText).toHaveBeenCalledWith(
+        'Child Ada\nChild Grace'
+      );
     });
   });
 
