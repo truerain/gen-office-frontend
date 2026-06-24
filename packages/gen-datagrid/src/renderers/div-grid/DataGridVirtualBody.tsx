@@ -1,5 +1,5 @@
 // packages/gen-datagrid/src/renderers/div-grid/DataGridVirtualBody.tsx
-// Renders a fixed-height virtualized body for the div-based DataGrid renderer.
+// Renders a measured virtualized body for the div-based DataGrid renderer.
 
 import * as React from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -8,9 +8,12 @@ import type { Cell, Row } from '@tanstack/react-table';
 import type {
   GenDataGridActiveCell,
   GenDataGridCellValueChange,
+  GenDataGridDetailPanelContext,
   GenDataGridEditableContext,
   GenDataGridEditPolicy,
   GenDataGridEditorFactory,
+  GenDataGridExpandedRowState,
+  GenDataGridRowContext,
   GenDataGridScrollSeekingOptions,
 } from '../../GenDataGrid.types';
 import { deactivateEditingForCellActivation } from '../../features/editing/editingCellActivation';
@@ -19,6 +22,7 @@ import type { GenDataGridEditingCell } from '../../features/editing/useCellEditi
 import { getColumnPinningInfo } from '../../features/pinning/pinningStyles';
 import type { GenDataGridRangeSelections } from '../../features/range-selection/rangeSelection';
 import { DataGridBodyRow } from './DataGridBodyRow';
+import { DataGridDetailRow } from './DataGridDetailRow';
 
 export type DataGridVirtualBodyHandle = {
   scrollToRowIndex: (rowIndex: number) => void;
@@ -77,6 +81,17 @@ type DataGridVirtualBodyProps<TData> = {
   dirtyCellIds?: ReadonlySet<string>;
   dirtyRowIds?: ReadonlySet<string>;
   deletedRowIds?: ReadonlySet<string>;
+  getRowHeight?: (args: {
+    row: TData;
+    rowId: string;
+    rowIndex: number;
+  }) => number | undefined;
+  enableMasterDetail?: boolean;
+  expandedRows?: GenDataGridExpandedRowState;
+  getRowCanExpand?: (ctx: GenDataGridRowContext<TData>) => boolean;
+  renderDetailPanel?: (ctx: GenDataGridDetailPanelContext<TData>) => React.ReactNode;
+  detailPanelHeight?: number;
+  onExpandedRowToggle?: (rowId: string, expanded: boolean) => void;
   activeCell: GenDataGridActiveCell;
   onActiveCellChange: (next: Exclude<GenDataGridActiveCell, null>) => void;
   onEditingNavigate?: (next: Exclude<GenDataGridActiveCell, null>) => void;
@@ -117,7 +132,6 @@ type VirtualPlaceholderRowProps<TData> = {
   gridTemplateColumns: string;
   rowHeight: number;
   enablePinning: boolean;
-  style?: React.CSSProperties;
 };
 
 function VirtualPlaceholderRow<TData>({
@@ -125,7 +139,6 @@ function VirtualPlaceholderRow<TData>({
   gridTemplateColumns,
   rowHeight,
   enablePinning,
-  style,
 }: VirtualPlaceholderRowProps<TData>) {
   const orderedCells = getOrderedVisibleCells(row, enablePinning);
 
@@ -141,7 +154,6 @@ function VirtualPlaceholderRow<TData>({
       style={{
         gridTemplateColumns,
         ['--gen-datagrid-current-row-height' as string]: `${rowHeight}px`,
-        ...style,
       }}
     >
       {orderedCells.map((cell, index) => {
@@ -193,6 +205,13 @@ export function DataGridVirtualBody<TData>({
   dirtyCellIds,
   dirtyRowIds,
   deletedRowIds,
+  getRowHeight,
+  enableMasterDetail = false,
+  expandedRows = {},
+  getRowCanExpand,
+  renderDetailPanel,
+  detailPanelHeight = 160,
+  onExpandedRowToggle,
   activeCell,
   onActiveCellChange,
   onEditingNavigate,
@@ -208,6 +227,8 @@ export function DataGridVirtualBody<TData>({
   scrollSeeking,
   virtualBodyRef,
 }: DataGridVirtualBodyProps<TData>) {
+  void headerHeight;
+
   const getCellRuntime = React.useCallback(
     (coord: { rowId: string; columnId: string }) =>
       resolveCellEditingRuntime({
@@ -264,6 +285,7 @@ export function DataGridVirtualBody<TData>({
     },
     [draftValue, editingCell, getCellRuntime, onActiveCellChange, onCellValueChange, onEditCancel, onEditStart, onEditingNavigate]
   );
+
   const [isLargeJumpScrolling, setIsLargeJumpScrolling] = React.useState(false);
   const lastScrollTopRef = React.useRef(0);
   const scrollSeekingOptions = React.useMemo(() => {
@@ -283,6 +305,51 @@ export function DataGridVirtualBody<TData>({
     };
   }, [scrollSeeking]);
 
+  const getBaseRowHeight = React.useCallback(
+    (row: Row<TData>) =>
+      getRowHeight?.({ row: row.original, rowId: row.id, rowIndex: row.index }) ?? rowHeight,
+    [getRowHeight, rowHeight]
+  );
+
+  const getRowContext = React.useCallback(
+    (row: Row<TData>) => ({ row: row.original, rowId: row.id, rowIndex: row.index }),
+    []
+  );
+
+  const getCanExpandRow = React.useCallback(
+    (row: Row<TData>) => {
+      const rowContext = getRowContext(row);
+      return Boolean(
+        enableMasterDetail &&
+          renderDetailPanel &&
+          (getRowCanExpand?.(rowContext) ?? true)
+      );
+    },
+    [enableMasterDetail, getRowCanExpand, getRowContext, renderDetailPanel]
+  );
+
+  const getEstimatedRowSize = React.useCallback(
+    (index: number) => {
+      const row = rows[index];
+      if (!row) return rowHeight;
+      const canExpand = getCanExpandRow(row);
+      const isExpanded = Boolean(expandedRows[row.id]);
+      return getBaseRowHeight(row) + (canExpand && isExpanded ? detailPanelHeight : 0);
+    },
+    [detailPanelHeight, expandedRows, getBaseRowHeight, getCanExpandRow, rowHeight, rows]
+  );
+
+  const getInitialOffset = React.useCallback(() => {
+    if (!activeCell) return 0;
+    const activeRowIndex = rowIds.indexOf(activeCell.rowId);
+    if (activeRowIndex <= 0) return 0;
+    let offset = 0;
+    for (let index = 0; index < activeRowIndex; index += 1) {
+      offset += getEstimatedRowSize(index);
+    }
+    return offset;
+  }, [activeCell, getEstimatedRowSize, rowIds]);
+
   const viewportOverscan = Math.max(
     12,
     Math.ceil((viewportElement?.clientHeight ?? rowHeight * 8) / rowHeight)
@@ -293,13 +360,15 @@ export function DataGridVirtualBody<TData>({
     getScrollElement: () => viewportElement,
     observeElementRect: (_, callback) =>
       observeVirtualViewportRect(viewportElement, rowHeight, callback),
-    estimateSize: () => rowHeight,
-    overscan: viewportOverscan,
-    initialOffset: () => {
-      if (!activeCell) return 0;
-      const activeRowIndex = rowIds.indexOf(activeCell.rowId);
-      return activeRowIndex >= 0 ? activeRowIndex * rowHeight : 0;
+    estimateSize: getEstimatedRowSize,
+    measureElement: (element) => {
+      const measuredHeight = element.getBoundingClientRect().height;
+      if (measuredHeight > 0) return measuredHeight;
+      const index = Number(element.getAttribute('data-index') ?? 0);
+      return getEstimatedRowSize(Number.isFinite(index) ? index : 0);
     },
+    overscan: viewportOverscan,
+    initialOffset: getInitialOffset,
     initialRect: {
       width: 0,
       height: rowHeight * 8,
@@ -309,33 +378,32 @@ export function DataGridVirtualBody<TData>({
 
   const ensureRowVisible = React.useCallback(
     (rowIndex: number) => {
-      if (!viewportElement) {
-        rowVirtualizer.scrollToIndex(rowIndex, { align: 'auto' });
-        return;
+      if (viewportElement) {
+        const virtualItem = rowVirtualizer
+          .getVirtualItems()
+          .find((item) => item.index === rowIndex);
+        if (virtualItem) {
+          const rowStart = virtualItem.start;
+          const rowEnd = virtualItem.end ?? virtualItem.start + virtualItem.size;
+          const visibleTop = viewportElement.scrollTop;
+          const visibleBottom = viewportElement.scrollTop + viewportElement.clientHeight;
+          if (rowStart >= visibleTop && rowEnd <= visibleBottom) {
+            return;
+          }
+        }
       }
 
-      const rowStart = rowIndex * rowHeight;
-      const rowEnd = rowStart + rowHeight;
-      const visibleTop = viewportElement.scrollTop;
-      const visibleBottom = viewportElement.scrollTop + viewportElement.clientHeight;
-
-      if (rowStart >= visibleTop && rowEnd <= visibleBottom) {
-        return;
-      }
-
-      if (rowStart < visibleTop) {
-        rowVirtualizer.scrollToOffset(Math.max(0, rowStart), {
-          align: 'start',
-        });
-        return;
-      }
-
-      rowVirtualizer.scrollToOffset(Math.max(0, rowEnd - viewportElement.clientHeight), {
-        align: 'start',
-      });
+      const offsetInfo = rowVirtualizer.getOffsetForIndex(rowIndex, 'auto');
+      if (!offsetInfo) return;
+      const [offset, align] = offsetInfo;
+      rowVirtualizer.scrollToOffset(offset, { align });
     },
-    [headerHeight, rowHeight, rowVirtualizer, viewportElement]
+    [rowVirtualizer, viewportElement]
   );
+
+  useClientLayoutEffect(() => {
+    rowVirtualizer.measure();
+  }, [detailPanelHeight, expandedRows, getEstimatedRowSize, gridTemplateColumns, rowVirtualizer]);
 
   useClientLayoutEffect(() => {
     if (!scrollSeekingOptions.enabled) {
@@ -423,56 +491,82 @@ export function DataGridVirtualBody<TData>({
           top: `${virtualItem.start}px`,
           left: 0,
         };
-
-        if (isScrollSeeking && !isActiveRow && !isEditingRow) {
-          return (
-            <VirtualPlaceholderRow
-              key={row.id}
-              row={row}
-              gridTemplateColumns={gridTemplateColumns}
-              rowHeight={rowHeight}
-              enablePinning={enablePinning}
-              style={rowStyle}
-            />
-          );
-        }
+        const resolvedRowHeight = getBaseRowHeight(row);
+        const rowContext = getRowContext(row);
+        const canExpand = getCanExpandRow(row);
+        const isExpanded = Boolean(expandedRows[row.id]);
 
         return (
-          <DataGridBodyRow
+          <div
             key={row.id}
-            row={row}
-            rows={rows}
-            gridTemplateColumns={gridTemplateColumns}
-            rowHeight={rowHeight}
-            rowIds={rowIds}
-            columnIds={columnIds}
-            rangeSelections={rangeSelections}
-            readOnly={readOnly}
-            enablePinning={enablePinning}
-            isCellEditable={isCellEditable}
-            editPolicy={editPolicy}
-            editSelectOnFocus={editSelectOnFocus}
-            editCommitOnBlur={editCommitOnBlur}
-            editorFactory={editorFactory}
-            onCellValueChange={onCellValueChange}
-            dirtyCellIds={dirtyCellIds}
-            dirtyRowIds={dirtyRowIds}
-            deletedRowIds={deletedRowIds}
-            activeCell={activeCell}
-            onActiveCellChange={activateCell}
-            onEditingNavigate={onEditingNavigate}
-            editingCell={editingCell}
-            draftValue={draftValue}
-            setDraftValue={setDraftValue}
-            onEditStart={onEditStart}
-            onEditCancel={onEditCancel}
-            getGridRoot={getGridRoot}
-            getEditorSurfaces={getEditorSurfaces}
-            registerEditorSurface={registerEditorSurface}
-            unregisterEditorSurface={unregisterEditorSurface}
-            virtualized
+            ref={(node) => {
+              if (node) rowVirtualizer.measureElement(node);
+            }}
+            data-virtualized-item="true"
+            data-index={virtualItem.index}
+            data-rowid={row.id}
+            className="gen-datagrid__virtual-item"
             style={rowStyle}
-          />
+          >
+            {isScrollSeeking && !isActiveRow && !isEditingRow ? (
+              <VirtualPlaceholderRow
+                row={row}
+                gridTemplateColumns={gridTemplateColumns}
+                rowHeight={resolvedRowHeight}
+                enablePinning={enablePinning}
+              />
+            ) : (
+              <DataGridBodyRow
+                row={row}
+                rows={rows}
+                gridTemplateColumns={gridTemplateColumns}
+                rowHeight={resolvedRowHeight}
+                rowIds={rowIds}
+                columnIds={columnIds}
+                rangeSelections={rangeSelections}
+                readOnly={readOnly}
+                enablePinning={enablePinning}
+                isCellEditable={isCellEditable}
+                editPolicy={editPolicy}
+                editSelectOnFocus={editSelectOnFocus}
+                editCommitOnBlur={editCommitOnBlur}
+                editorFactory={editorFactory}
+                onCellValueChange={onCellValueChange}
+                dirtyCellIds={dirtyCellIds}
+                dirtyRowIds={dirtyRowIds}
+                deletedRowIds={deletedRowIds}
+                activeCell={activeCell}
+                onActiveCellChange={activateCell}
+                onEditingNavigate={onEditingNavigate}
+                editingCell={editingCell}
+                draftValue={draftValue}
+                setDraftValue={setDraftValue}
+                onEditStart={onEditStart}
+                onEditCancel={onEditCancel}
+                getGridRoot={getGridRoot}
+                getEditorSurfaces={getEditorSurfaces}
+                registerEditorSurface={registerEditorSurface}
+                unregisterEditorSurface={unregisterEditorSurface}
+                virtualized
+                canExpand={canExpand}
+                isExpanded={isExpanded}
+                onExpandedChange={(expanded) => onExpandedRowToggle?.(row.id, expanded)}
+              />
+            )}
+            {canExpand && isExpanded && renderDetailPanel ? (
+              <DataGridDetailRow
+                parentRowId={row.id}
+                gridTemplateColumns={gridTemplateColumns}
+                height={detailPanelHeight}
+              >
+                {renderDetailPanel({
+                  ...rowContext,
+                  expanded: true,
+                  collapse: () => onExpandedRowToggle?.(row.id, false),
+                })}
+              </DataGridDetailRow>
+            ) : null}
+          </div>
         );
       })}
     </div>

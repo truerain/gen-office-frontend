@@ -72,6 +72,10 @@
   min-width: max-content;
 }
 
+.gen-datagrid__virtual-item {
+  min-width: max-content;
+}
+
 .gen-datagrid__header-cell,
 .gen-datagrid__cell,
 .gen-datagrid__footer-row-cell {

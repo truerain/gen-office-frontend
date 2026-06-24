@@ -1299,6 +1299,103 @@ export const Gate83NestedGridComposition: Story = {
   },
 };
 
+export const Gate84DynamicRowHeight: Story = {
+  render: () => {
+    const gridRef = React.useRef<GenDataGridHandle>(null);
+    const [expandedRows, setExpandedRows] = React.useState<GenDataGridExpandedRowState>({
+      '3': true,
+    });
+    const initialDynamicRows = React.useMemo(
+      () =>
+        gate7Data.slice(0, 1000).map((row, index) => ({
+          ...row,
+          note:
+            index % 7 === 0
+              ? 'Tall measured row with additional text for dynamic height verification'
+              : row.note,
+        })),
+      []
+    );
+    const [dynamicRows, setDynamicRows] = React.useState(initialDynamicRows);
+    const handleCellValueChange = React.useCallback(
+      ({ rowId, columnId, value }: GenDataGridCellValueChange<Person>) => {
+        setDynamicRows((previous) =>
+          previous.map((row) =>
+            row.id === rowId
+              ? {
+                  ...row,
+                  [columnId]: columnId === 'score' ? Number(value) : value,
+                }
+              : row
+          )
+        );
+      },
+      []
+    );
+
+    return (
+      <div style={{ width: 980, padding: 16, display: 'grid', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <button type="button" onClick={() => setExpandedRows({ '3': true, '25': true })}>
+            Expand rows 3 and 25
+          </button>
+          <button type="button" onClick={() => setExpandedRows({})}>
+            Collapse all
+          </button>
+          <button
+            type="button"
+            onClick={() => gridRef.current?.scrollToCell({ rowId: '250', columnId: 'note' })}
+          >
+            Scroll to row 250 note
+          </button>
+          <span>Expanded rows: {Object.keys(expandedRows).join(', ') || 'none'}</span>
+        </div>
+        <GenDataGrid<Person>
+          ref={gridRef}
+          data={dynamicRows}
+          columns={editableColumns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-8-4"
+          defaultActiveCell={{ rowId: '3', columnId: 'name' }}
+          enableVirtualization
+          enableMasterDetail
+          expandedRows={expandedRows}
+          onExpandedRowsChange={setExpandedRows}
+          getRowHeight={({ rowIndex }) => (rowIndex % 7 === 0 ? 72 : undefined)}
+          renderDetailPanel={({ row, collapse }) => (
+            <div style={{ display: 'grid', gap: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                <strong>{row.name}</strong>
+                <button type="button" onClick={collapse}>
+                  Collapse detail
+                </button>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 6, fontSize: 13 }}>
+                <span>Role</span>
+                <span>{row.role}</span>
+                <span>Location</span>
+                <span>{row.location}</span>
+                <span>Note</span>
+                <span>{row.note}</span>
+              </div>
+            </div>
+          )}
+          detailPanelHeight={150}
+          onCellValueChange={handleCellValueChange}
+          rowHeight={36}
+          headerHeight={40}
+          style={{
+            height: 460,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+      </div>
+    );
+  },
+};
+
 function PopoverLookupEditor({ ctx }: { ctx: GenDataGridEditorContext<Person> }) {
   const anchorRef = React.useRef<HTMLInputElement | null>(null);
   const surfaceRef = React.useRef<HTMLDivElement | null>(null);

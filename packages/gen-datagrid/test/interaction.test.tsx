@@ -615,8 +615,8 @@ describe('GenDataGrid interaction contract', () => {
     expect(container.querySelector('[data-gen-datagrid-detail-row="true"]')).toBeNull();
   });
 
-  it('does not render master-detail rows on the virtualized body path', async () => {
-    const { container } = render(
+  it('renders master-detail rows on the measured virtualized body path', async () => {
+    const { container, getByText } = render(
       <GenDataGrid
         gridId="master-detail-virtual-grid"
         data={virtualRows}
@@ -625,14 +625,27 @@ describe('GenDataGrid interaction contract', () => {
         enableVirtualization
         enableMasterDetail
         defaultExpandedRows={{ '1': true }}
+        detailPanelHeight={96}
+        getRowHeight={({ rowId }) => (rowId === '1' ? 54 : undefined)}
         renderDetailPanel={({ rowId }) => <span>Detail {rowId}</span>}
       />
     );
 
-    expect(container.querySelector('[data-gen-datagrid-detail-row="true"]')).toBeNull();
-    expect(
-      getCell(container, '1', 'name').querySelector('[data-gen-datagrid-detail-toggle="true"]')
-    ).toBeNull();
+    await waitFor(() => {
+      expect(getByText('Detail 1')).toBeTruthy();
+    });
+
+    const detailRow = container.querySelector<HTMLElement>(
+      '[data-gen-datagrid-detail-row="true"][data-parent-rowid="1"]'
+    );
+    expect(detailRow).not.toBeNull();
+    expect(detailRow?.closest('[data-virtualized-item="true"]')?.getAttribute('data-rowid')).toBe('1');
+    expect(getCell(container, '1', 'name').closest('[role="row"]')?.getAttribute(
+      'data-expanded-row'
+    )).toBe('true');
+    expect(getCell(container, '1', 'name').closest('[role="row"]')?.getAttribute('style')).toContain(
+      '--gen-datagrid-current-row-height: 54px'
+    );
   });
 
   it('does not start parent range selection from detail panel content', async () => {

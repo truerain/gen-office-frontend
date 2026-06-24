@@ -209,7 +209,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     () => normalizeExpandedRows(expandedRows ?? uncontrolledExpandedRows),
     [expandedRows, uncontrolledExpandedRows]
   );
-  const masterDetailEnabled = enableMasterDetail && !enableVirtualization && Boolean(renderDetailPanel);
+  const masterDetailEnabled = enableMasterDetail && Boolean(renderDetailPanel);
   const setExpandedRowState = React.useCallback(
     (rowId: string, expanded: boolean) => {
       const next = setExpandedRow(resolvedExpandedRows, rowId, expanded);
@@ -784,6 +784,13 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             dirtyCellIds={dirtyCellIds}
             dirtyRowIds={dirtyRowIds}
             deletedRowIds={deletedRowIds}
+            getRowHeight={getRowHeight}
+            enableMasterDetail={masterDetailEnabled}
+            expandedRows={resolvedExpandedRows}
+            getRowCanExpand={getRowCanExpand}
+            renderDetailPanel={renderDetailPanel}
+            detailPanelHeight={detailPanelHeight}
+            onExpandedRowToggle={setExpandedRowState}
             activeCell={activeCell}
             onActiveCellChange={setActiveCell}
             onEditingNavigate={navigateWhileEditing}

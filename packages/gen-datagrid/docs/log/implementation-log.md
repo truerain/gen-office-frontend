@@ -1,5 +1,44 @@
 ## 2026-06-24
 
+### Gate 8.4 Visible Row Scroll Guard
+
+- viewport 안에 이미 완전히 보이는 virtual row를 클릭했을 때 active-cell focus restore가 해당 row를 viewport 상단으로 다시 스크롤하지 않도록 `DataGridVirtualBody.ensureRowVisible`에 visible-range guard를 추가했습니다.
+- dynamic measurement mode에서 `scrollToIndex`가 내부 retry를 예약해 테스트 teardown 이후 예외를 만들 수 있어, offscreen 이동은 `getOffsetForIndex` + `scrollToOffset` 경로로 변경했습니다.
+- 검증:
+  - `pnpm -C frontend/packages/gen-datagrid test`
+  - `git -C frontend diff --check -- packages/gen-datagrid`
+### Gate 8.4 Dynamic Row Height Implementation
+
+- Gate 8.4 Dynamic Row Height를 구현했습니다.
+- `DataGridVirtualBody`를 measured composite virtual item 구조로 변경했습니다.
+  - data row와 optional detail row가 하나의 virtual item 안에 렌더링됩니다.
+  - detail row는 `rowIds`나 keyboard navigation order에 들어가지 않습니다.
+- virtualized mode에서도 `getRowHeight`를 base row height estimate로 사용하도록 연결했습니다.
+- `enableVirtualization` 상태에서도 master-detail rendering을 허용했습니다.
+- expanded detail panel height를 virtual item estimate와 measurement fallback에 반영했습니다.
+- TanStack virtualizer 측정 element에 `data-index`를 추가하고, jsdom처럼 measurement height가 0인 환경에서는 estimate size로 fallback하도록 처리했습니다.
+- `DataGridRoot`가 virtualized path에도 `getRowHeight`, master-detail props, expanded state를 전달하도록 변경했습니다.
+- `Gate84DynamicRowHeight` Storybook scenario를 추가했습니다.
+- `docs/qa/gate-8-4-visual-test-guide.md`를 추가했습니다.
+- `docs/architecture/gate-8-4-dynamic-row-height-architecture.md`, `docs/README.md`, `docs/plan/div-datagrid-development-plan.md`를 구현 완료 상태로 갱신했습니다.
+- 검증:
+  - `pnpm -C frontend/packages/gen-datagrid exec tsc -p tsconfig.json --noEmit`
+  - `pnpm -C frontend/packages/gen-datagrid test:interaction`
+
+## 2026-06-24
+
+### Gate 8.4 Dynamic Row Height Architecture Plan
+
+- Gate 8.4 구현 전 범위를 Dynamic Row Height와 virtualized master-detail height integration으로 정리했습니다.
+- 권장 모델은 parent data row와 detail panel을 하나의 composite virtual item으로 렌더링하고 측정하는 방식입니다.
+- `getRowHeight`는 virtualized mode에서 estimate/base height로 재사용하고, 실제 DOM measurement가 최종 item height를 결정하는 정책으로 정리했습니다.
+- Gate 8.4에서 master-detail + virtualization 조합을 지원 대상으로 승격하되, detail row는 `rowIds`나 keyboard navigation order에 넣지 않는 contract를 고정했습니다.
+- column virtualization, tree row model, row merge/span, grouped header span, cross-grid selection은 범위에서 제외했습니다.
+- `docs/architecture/gate-8-4-dynamic-row-height-architecture.md`를 추가했습니다.
+- `docs/README.md`와 `docs/plan/div-datagrid-development-plan.md`에 Gate 8.4 architecture 링크와 구현 전 상태를 반영했습니다.
+
+## 2026-06-24
+
 ### Gate 8.3 Nested Grid Composition Implementation
 
 - Gate 8.3 Nested Grid Composition을 구현했습니다.

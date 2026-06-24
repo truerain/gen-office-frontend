@@ -653,11 +653,31 @@ Editor 구현 계약 요약: [`editor-implementation-contract.md`](../reference/
   - `pnpm -C frontend/packages/gen-datagrid test:interaction`
 #### Gate 8.4 Dynamic Row Height
 
-- dynamic row measurement model
-- expanded/detail row height integration
-- virtualization offset recalculation
-- focus restore after measured height changes
-
+- status
+  - complete (MVP)
+  - dynamic row measurement model for virtualized body rows implemented
+  - `getRowHeight` reused as virtualized estimate/base height
+  - master-detail rendering while `enableVirtualization` is true implemented
+  - expanded detail panel height included in virtual item estimate and measurement
+  - virtualization offset recalculation after expand/collapse supported through measured composite items
+  - `scrollToCell` and active-cell focus restore keep using row id/index with measured virtualizer scroll
+  - range selection remains row-id based around expanded/measured rows
+  - `Gate84DynamicRowHeight` Storybook scenario added
+- model
+  - data row and detail panel are rendered inside one composite virtual item
+  - detail row is not inserted into `rowIds` or keyboard navigation order
+- out of scope
+  - column virtualization
+  - tree row model
+  - row merge/span
+  - grouped header span
+  - cross-grid selection
+  - detail panel lazy loading API
+- architecture
+  - `../architecture/gate-8-4-dynamic-row-height-architecture.md`
+- verified by
+  - `pnpm -C frontend/packages/gen-datagrid exec tsc -p tsconfig.json --noEmit`
+  - `pnpm -C frontend/packages/gen-datagrid test:interaction`
 #### Gate 8.5 Tree Row Model
 
 - tree flattening model
