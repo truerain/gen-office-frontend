@@ -10,6 +10,93 @@
 - 긴 한글 본문을 powershell.exe -Command로 전달하지 않고 Node helper script 또는 apply_patch를 사용하도록 명시했습니다.
 - 관련 파일: AGENTS.md
 
+## 2026-06-19
+
+### Showcase decisions.md → apps/showcase/docs/logs/
+
+- Showcase 전용 결정 로그를 `apps/showcase/docs/logs/decisions.md`로 분리했습니다.
+- repo 전역 `docs/logs/decisions.md`는 monorepo 전역 결정만 유지하고, 분리 결정 항목을 추가했습니다.
+- plan·AGENTS·doc-work-log 참조 경로를 갱신했습니다.
+
+변경 영역:
+
+- 문서 관리 체계
+- Showcase 결정 로그
+
+관련 파일:
+
+- `apps/showcase/docs/logs/decisions.md`
+- `docs/logs/decisions.md`
+- `apps/showcase/docs/plan/06-gaps-and-roadmap.md`
+- `apps/showcase/docs/plan/07-mvp-decisions.md`
+- `apps/showcase/docs/plan/README.md`
+- `AGENTS.md`
+- `docs/logs/doc-work-log.md`
+
+### Showcase MVP 의사결정 문서화
+
+- Vercel 공개·단일 도메인·apps/showcase 빌드, URL–MDI 전 화면, Login 제거 결정을 `07-mvp-decisions.md`, `decisions.md`에 반영했습니다.
+
+변경 영역:
+
+- Showcase MVP 의사결정
+
+관련 파일:
+
+- `apps/showcase/docs/plan/07-mvp-decisions.md`
+- `apps/showcase/docs/plan/06-gaps-and-roadmap.md`
+- `apps/showcase/docs/plan/README.md`
+- `apps/showcase/docs/logs/decisions.md`
+- `docs/logs/doc-work-log.md`
+
+### docs/logs/doc-work-log.md 추가
+
+- 문서 전용 작업 이력을 `docs/logs/doc-work-log.md`에 분리·기록했습니다.
+- Showcase plan 문서 신규 작성 및 01-positioning 설득 포인트 보강 내역을 반영했습니다.
+
+변경 영역:
+
+- 문서 관리 체계
+
+관련 파일:
+
+- `docs/logs/doc-work-log.md`
+- `docs/logs/work-log.md`
+
+### Showcase 01-positioning 설득 포인트 보강
+
+- 레거시(Nexacro 등) 익숙함, 생산성, AI 하네스(바이브 코딩), React 대중성, 미래지향성 5축 설득 포인트를 반영했습니다.
+
+변경 영역:
+
+- Showcase 기획 문서
+
+관련 파일:
+
+- `apps/showcase/docs/plan/01-positioning-and-audience.md`
+- `apps/showcase/docs/plan/README.md`
+- `docs/logs/doc-work-log.md`
+
+### apps/showcase 기획 문서 추가
+
+- SI 원청 PM용 GenOffice Showcase(Nexacro 대체 설득 데모) 기획 문서를 `apps/showcase/docs/plan/`에 작성했습니다.
+- 포지셔닝, PM 데모 시나리오 A~D, IA, Nexacro 비교, demo 연동 스펙, Gap·로드맵을 분리해 정리했습니다.
+
+변경 영역:
+
+- Showcase 앱 기획 (앱 스캐폴딩은 미착수)
+
+관련 파일:
+
+- `apps/showcase/docs/plan/README.md`
+- `apps/showcase/docs/plan/01-positioning-and-audience.md`
+- `apps/showcase/docs/plan/02-demo-scenarios.md`
+- `apps/showcase/docs/plan/03-information-architecture.md`
+- `apps/showcase/docs/plan/04-nexacro-comparison.md`
+- `apps/showcase/docs/plan/05-demo-integration.md`
+- `apps/showcase/docs/plan/06-gaps-and-roadmap.md`
+- `docs/logs/doc-work-log.md`
+
 ## 2026-06-15
 
 ### 로그 역순 정렬 규칙 추가

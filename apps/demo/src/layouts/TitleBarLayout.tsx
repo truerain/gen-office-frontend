@@ -28,7 +28,7 @@ import type { MenuTreeItem } from '@/types/menu.types';
 import { LayoutSettingsDialog } from './LayoutSettingsDialog';
 
 import styles from './TitleBarLayout.module.css';
-import lgLogo from '@/shared/assets/HIC_MIS.png';
+import lgLogo from '@/shared/assets/genoffice-logo-2.png';
 
 interface TitleBarLayoutProps {
   menuTree: MenuTreeItem[];

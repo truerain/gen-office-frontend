@@ -59,7 +59,7 @@ Large feature components with heavy third-party engines should usually become se
 
 - Every file-changing task must leave a written log.
 - For repository-level changes, update `docs/logs/work-log.md`.
-- For architecture, package boundary, or technology decisions, update `docs/logs/decisions.md`.
+- For architecture, package boundary, or technology decisions, update `docs/logs/decisions.md`. App-specific decision logs (e.g. Showcase) live under that app’s `docs/logs/decisions.md`.
 - For package-specific source, API, behavior, or documentation changes, update that package's implementation log. Most packages use `docs/implementation-log.md`; packages with a deeper docs structure may use a package-specific path such as `docs/log/implementation-log.md`.
 - Write all work log and decision log entries in Korean.
 - Log entries should be concise but must include the date, summary, changed area, and relevant files.
