@@ -15,6 +15,7 @@ import type {
   GenDataGridExpandedRowState,
   GenDataGridRowContext,
   GenDataGridScrollSeekingOptions,
+  GenDataGridTreeRowContext,
 } from '../../GenDataGrid.types';
 import { deactivateEditingForCellActivation } from '../../features/editing/editingCellActivation';
 import { resolveCellEditingRuntime } from '../../features/editing/cellRuntime';
@@ -92,6 +93,10 @@ type DataGridVirtualBodyProps<TData> = {
   renderDetailPanel?: (ctx: GenDataGridDetailPanelContext<TData>) => React.ReactNode;
   detailPanelHeight?: number;
   onExpandedRowToggle?: (rowId: string, expanded: boolean) => void;
+  enableTreeRows?: boolean;
+  getRowCanExpandTree?: (ctx: GenDataGridTreeRowContext<TData>) => boolean;
+  treeIndentWidth?: number;
+  onTreeExpandedRowToggle?: (row: Row<TData>, expanded: boolean) => void;
   activeCell: GenDataGridActiveCell;
   onActiveCellChange: (next: Exclude<GenDataGridActiveCell, null>) => void;
   onEditingNavigate?: (next: Exclude<GenDataGridActiveCell, null>) => void;
@@ -212,6 +217,10 @@ export function DataGridVirtualBody<TData>({
   renderDetailPanel,
   detailPanelHeight = 160,
   onExpandedRowToggle,
+  enableTreeRows = false,
+  getRowCanExpandTree,
+  treeIndentWidth = 16,
+  onTreeExpandedRowToggle,
   activeCell,
   onActiveCellChange,
   onEditingNavigate,
@@ -228,6 +237,8 @@ export function DataGridVirtualBody<TData>({
   virtualBodyRef,
 }: DataGridVirtualBodyProps<TData>) {
   void headerHeight;
+
+  const previousEnsureVisibleActiveCellRef = React.useRef<typeof activeCell>(null);
 
   const getCellRuntime = React.useCallback(
     (coord: { rowId: string; columnId: string }) =>
@@ -461,7 +472,20 @@ export function DataGridVirtualBody<TData>({
   }, [ensureRowVisible, virtualBodyRef]);
 
   useClientLayoutEffect(() => {
-    if (!activeCell) return;
+    if (!activeCell) {
+      previousEnsureVisibleActiveCellRef.current = activeCell;
+      return;
+    }
+
+    const previousActiveCell = previousEnsureVisibleActiveCellRef.current;
+    const activeCellChanged =
+      !previousActiveCell ||
+      previousActiveCell.rowId !== activeCell.rowId ||
+      previousActiveCell.columnId !== activeCell.columnId;
+    previousEnsureVisibleActiveCellRef.current = activeCell;
+
+    if (!activeCellChanged) return;
+
     const activeRowIndex = rowIds.indexOf(activeCell.rowId);
     if (activeRowIndex < 0) return;
     ensureRowVisible(activeRowIndex);
@@ -493,6 +517,16 @@ export function DataGridVirtualBody<TData>({
         };
         const resolvedRowHeight = getBaseRowHeight(row);
         const rowContext = getRowContext(row);
+        const treeContext = {
+          ...rowContext,
+          depth: row.depth,
+          parentRowId: row.parentId,
+        };
+        const treeCanExpand = Boolean(
+          enableTreeRows &&
+            row.getCanExpand() &&
+            (getRowCanExpandTree?.(treeContext) ?? true)
+        );
         const canExpand = getCanExpandRow(row);
         const isExpanded = Boolean(expandedRows[row.id]);
 
@@ -551,6 +585,12 @@ export function DataGridVirtualBody<TData>({
                 canExpand={canExpand}
                 isExpanded={isExpanded}
                 onExpandedChange={(expanded) => onExpandedRowToggle?.(row.id, expanded)}
+                treeDepth={enableTreeRows ? row.depth : 0}
+                treeParentRowId={enableTreeRows ? row.parentId : undefined}
+                treeCanExpand={treeCanExpand}
+                treeIsExpanded={treeCanExpand && row.getIsExpanded()}
+                treeIndentWidth={treeIndentWidth}
+                onTreeExpandedChange={(expanded) => onTreeExpandedRowToggle?.(row, expanded)}
               />
             )}
             {canExpand && isExpanded && renderDetailPanel ? (

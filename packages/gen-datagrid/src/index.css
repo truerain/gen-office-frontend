@@ -271,6 +271,43 @@
   outline: none;
 }
 
+.gen-datagrid__tree-indent {
+  flex: 0 0 auto;
+  height: 1px;
+}
+
+.gen-datagrid__tree-toggle,
+.gen-datagrid__tree-toggle-spacer {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  margin: 0 6px 0 -2px;
+}
+
+.gen-datagrid__tree-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid #d0d7de;
+  border-radius: 3px;
+  color: #24292f;
+  background: #ffffff;
+  font: inherit;
+  line-height: 1;
+}
+
+.gen-datagrid__tree-toggle:hover,
+.gen-datagrid__tree-toggle:focus-visible {
+  border-color: #0969da;
+  color: #0969da;
+  outline: none;
+}
+
+.gen-datagrid__tree-toggle-spacer {
+  display: inline-block;
+}
+
 .gen-datagrid__cell-content {
   flex: 1 1 auto;
   min-width: 0;

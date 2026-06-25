@@ -12,6 +12,8 @@ export type {
   GenDataGridDirtyState,
   GenDataGridRowContext,
   GenDataGridExpandedRowState,
+  GenDataGridTreeExpandedState,
+  GenDataGridTreeRowContext,
   GenDataGridDetailPanelContext,
   GenDataGridDeleteRowsBehavior,
   GenDataGridEditableContext,

@@ -87,7 +87,10 @@ export function DataGridCell({
         }
         onActivate({ rowId, columnId });
       }}
-      onDoubleClick={() => {
+      onDoubleClick={(event) => {
+        if ((event.target as HTMLElement | null)?.closest(interactiveTargetSelector)) {
+          return;
+        }
         if (!allowDoubleClickEdit || !isEditable) return;
         onEditStart?.({ rowId, columnId, entryReason: 'doubleClick' });
       }}

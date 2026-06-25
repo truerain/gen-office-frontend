@@ -5,12 +5,14 @@ import * as React from 'react';
 import {
   getFilteredRowModel,
   getCoreRowModel,
+  getExpandedRowModel,
   getPaginationRowModel,
   useReactTable,
   type ColumnFiltersState,
   type ColumnOrderState,
   type ColumnPinningState,
   type ColumnSizingState,
+  type ExpandedState,
   type OnChangeFn,
   type PaginationState,
   type Updater,
@@ -56,6 +58,10 @@ export function useDataGridTable<TData>({
   totalRowCount,
   enableColumnSizing = true,
   enablePagination = false,
+  enableTreeRows = false,
+  getSubRows,
+  treeExpandedRows,
+  onTreeExpandedRowsChange,
 }: GenDataGridProps<TData>) {
   const rows = data ?? defaultData ?? [];
   const [uncontrolledColumnOrder, setUncontrolledColumnOrder] =
@@ -81,6 +87,14 @@ export function useDataGridTable<TData>({
   const resolvedGlobalFilter =
     globalFilter !== undefined ? globalFilter : uncontrolledGlobalFilter;
   const resolvedPagination = pagination ?? uncontrolledPagination;
+  const resolvedExpanded = enableTreeRows ? treeExpandedRows ?? {} : {};
+  const resolvedGetSubRows = React.useCallback(
+    (row: TData, index: number) => {
+      const subRows = getSubRows?.(row, index);
+      return subRows ? [...subRows] : undefined;
+    },
+    [getSubRows]
+  );
 
   const handleColumnOrderChange = React.useCallback<OnChangeFn<ColumnOrderState>>(
     (updater) => {
@@ -148,6 +162,22 @@ export function useDataGridTable<TData>({
     [globalFilter, onGlobalFilterChange, resolvedGlobalFilter]
   );
 
+  const handleExpandedChange = React.useCallback<OnChangeFn<ExpandedState>>(
+    (updater) => {
+      const next = resolveUpdater(updater, resolvedExpanded);
+      if (next === true) {
+        onTreeExpandedRowsChange?.({});
+        return;
+      }
+      const normalized: Record<string, boolean> = {};
+      Object.entries(next).forEach(([rowId, expanded]) => {
+        if (expanded) normalized[rowId] = true;
+      });
+      onTreeExpandedRowsChange?.(normalized);
+    },
+    [onTreeExpandedRowsChange, resolvedExpanded]
+  );
+
   const handlePaginationChange = React.useCallback<OnChangeFn<PaginationState>>(
     (updater) => {
       const next = resolveUpdater(updater, resolvedPagination);
@@ -164,7 +194,9 @@ export function useDataGridTable<TData>({
     columns,
     getRowId,
     getCoreRowModel: getCoreRowModel(),
+    getSubRows: enableTreeRows && getSubRows ? resolvedGetSubRows : undefined,
     getFilteredRowModel: filterMode === 'client' ? getFilteredRowModel() : undefined,
+    getExpandedRowModel: enableTreeRows ? getExpandedRowModel() : undefined,
     getPaginationRowModel:
       enablePagination && paginationMode === 'client' ? getPaginationRowModel() : undefined,
     state: {
@@ -175,6 +207,7 @@ export function useDataGridTable<TData>({
       columnFilters: resolvedColumnFilters,
       globalFilter: resolvedGlobalFilter,
       pagination: resolvedPagination,
+      expanded: resolvedExpanded,
     },
     onColumnOrderChange: handleColumnOrderChange,
     onColumnVisibilityChange: handleColumnVisibilityChange,
@@ -183,6 +216,8 @@ export function useDataGridTable<TData>({
     onColumnFiltersChange: handleColumnFiltersChange,
     onGlobalFilterChange: handleGlobalFilterChange,
     onPaginationChange: handlePaginationChange,
+    onExpandedChange: enableTreeRows ? handleExpandedChange : undefined,
+    filterFromLeafRows: enableTreeRows,
     manualFiltering: filterMode === 'manual',
     manualPagination: paginationMode === 'manual',
     rowCount: paginationMode === 'manual' ? totalRowCount ?? rows.length : undefined,

@@ -4,7 +4,7 @@ Indexes GenDataGrid planning, architecture, reference, QA, and log documents.
 
 # GenDataGrid Docs
 
-현재 상태: Gate 8.4 Dynamic Row Height 구현 완료. Virtualized body에서 getRowHeight 기반 dynamic row estimate와 master-detail/detail panel height 통합을 지원한다.
+현재 상태: Gate 8.5 Tree Row Model 구현 완료. Nested data 기반 tree row, expand/collapse, collapse cleanup, virtualized tree row rendering을 지원한다.
 
 ## Plan
 
@@ -28,6 +28,7 @@ Indexes GenDataGrid planning, architecture, reference, QA, and log documents.
 - [Gate 8.2 Master-detail Architecture](architecture/gate-8-2-master-detail-architecture.md)
 - [Gate 8.3 Nested Grid Composition Architecture](architecture/gate-8-3-nested-grid-composition-architecture.md)
 - [Gate 8.4 Dynamic Row Height Architecture](architecture/gate-8-4-dynamic-row-height-architecture.md)
+- [Gate 8.5 Tree Row Model Architecture](architecture/gate-8-5-tree-row-model-architecture.md)
 
 ## Reference
 
@@ -46,6 +47,7 @@ Indexes GenDataGrid planning, architecture, reference, QA, and log documents.
 - [Gate 8.2 Visual Test Guide](qa/gate-8-2-visual-test-guide.md)
 - [Gate 8.3 Visual Test Guide](qa/gate-8-3-visual-test-guide.md)
 - [Gate 8.4 Visual Test Guide](qa/gate-8-4-visual-test-guide.md)
+- [Gate 8.5 Visual Test Guide](qa/gate-8-5-visual-test-guide.md)
 
 ## Log
 

@@ -63,6 +63,12 @@ type DataGridBodyRowProps<TData> = {
   canExpand?: boolean;
   isExpanded?: boolean;
   onExpandedChange?: (expanded: boolean) => void;
+  treeDepth?: number;
+  treeParentRowId?: string;
+  treeCanExpand?: boolean;
+  treeIsExpanded?: boolean;
+  treeIndentWidth?: number;
+  onTreeExpandedChange?: (expanded: boolean) => void;
   style?: React.CSSProperties;
   virtualized?: boolean;
 };
@@ -101,6 +107,12 @@ export function DataGridBodyRow<TData>({
   canExpand = false,
   isExpanded = false,
   onExpandedChange,
+  treeDepth = 0,
+  treeParentRowId,
+  treeCanExpand = false,
+  treeIsExpanded = false,
+  treeIndentWidth = 16,
+  onTreeExpandedChange,
   style,
   virtualized = false,
 }: DataGridBodyRowProps<TData>) {
@@ -184,6 +196,10 @@ export function DataGridBodyRow<TData>({
       data-deleted-row={deletedRowIds?.has(rowId) ? 'true' : undefined}
       data-expandable-row={canExpand ? 'true' : undefined}
       data-expanded-row={canExpand && isExpanded ? 'true' : undefined}
+      data-tree-depth={treeDepth > 0 ? treeDepth : undefined}
+      data-tree-parent-rowid={treeParentRowId}
+      data-tree-expandable-row={treeCanExpand ? 'true' : undefined}
+      data-tree-expanded-row={treeCanExpand && treeIsExpanded ? 'true' : undefined}
       data-virtualized-row={virtualized ? 'true' : undefined}
       className="gen-datagrid__row"
       style={{
@@ -295,32 +311,77 @@ export function DataGridBodyRow<TData>({
           : cell.column.columnDef.cell
             ? flexRender(cell.column.columnDef.cell, cell.getContext())
             : formatCellValue(cell.getValue());
-        const renderedContent =
-          cellIndex === 0 && canExpand && !isEditing ? (
+        const renderedContent = (() => {
+          if (cellIndex !== 0 || isEditing) return content;
+
+          const detailToggle = canExpand ? (
+            <button
+              type="button"
+              className="gen-datagrid__detail-toggle"
+              data-gen-datagrid-detail-toggle="true"
+              aria-expanded={isExpanded}
+              aria-label={isExpanded ? 'Collapse row ' + rowId + ' detail' : 'Expand row ' + rowId + ' detail'}
+              onMouseDown={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+              }}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onExpandedChange?.(!isExpanded);
+              }}
+            >
+              {isExpanded ? '-' : '+'}
+            </button>
+          ) : null;
+
+          if (treeDepth <= 0 && !treeCanExpand) {
+            return detailToggle ? (
+              <>
+                {detailToggle}
+                <span className="gen-datagrid__cell-content">{content}</span>
+              </>
+            ) : content;
+          }
+
+          return (
             <>
-              <button
-                type="button"
-                className="gen-datagrid__detail-toggle"
-                data-gen-datagrid-detail-toggle="true"
-                aria-expanded={isExpanded}
-                aria-label={isExpanded ? 'Collapse row ' + rowId + ' detail' : 'Expand row ' + rowId + ' detail'}
-                onMouseDown={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                }}
-                onClick={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  onExpandedChange?.(!isExpanded);
-                }}
-              >
-                {isExpanded ? '-' : '+'}
-              </button>
+              <span
+                className="gen-datagrid__tree-indent"
+                data-gen-datagrid-tree-indent="true"
+                style={{ width: treeDepth * treeIndentWidth }}
+              />
+              {treeCanExpand ? (
+                <button
+                  type="button"
+                  className="gen-datagrid__tree-toggle"
+                  data-gen-datagrid-tree-toggle="true"
+                  aria-expanded={treeIsExpanded}
+                  aria-label={treeIsExpanded ? 'Collapse row ' + rowId + ' tree' : 'Expand row ' + rowId + ' tree'}
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  }}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    onTreeExpandedChange?.(!treeIsExpanded);
+                  }}
+                  onDoubleClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  }}
+                >
+                  {treeIsExpanded ? '-' : '+'}
+                </button>
+              ) : (
+                <span className="gen-datagrid__tree-toggle-spacer" aria-hidden="true" />
+              )}
+              {detailToggle}
               <span className="gen-datagrid__cell-content">{content}</span>
             </>
-          ) : (
-            content
           );
+        })();
 
         return (
           <DataGridCell

@@ -1,3 +1,35 @@
+## 2026-06-25
+
+### Gate 8.5 Deferred Tree Collapse Descendant Policy
+
+- Gate 8.5 MVP는 parent collapse 시 descendant expansion state를 유지하는 현재 정책을 기본 동작으로 둡니다.
+- parent collapse 시 하위 expanded state까지 함께 제거하는 `treeCollapseBehavior` 같은 옵션은 deferred 항목으로 분리했습니다.
+- `docs/architecture/gate-8-5-tree-row-model-architecture.md`와 `docs/plan/div-datagrid-development-plan.md`에 deferred 범위를 반영했습니다.
+### Gate 8.5 Deferred Tree Toggle Column Option
+
+- Gate 8.5 MVP는 tree expand/collapse toggle을 첫 번째 visible cell에 렌더링하는 정책을 유지합니다.
+- 특정 컬럼에 tree toggle을 고정하는 `treeToggleColumnId` 같은 API는 deferred 항목으로 분리했습니다.
+- `docs/architecture/gate-8-5-tree-row-model-architecture.md`와 `docs/plan/div-datagrid-development-plan.md`에 deferred 범위를 반영했습니다.
+### Gate 8.5 Tree Row Model Implementation
+
+- Gate 8.5 Tree Row Model을 구현했습니다.
+- public API로 `enableTreeRows`, `getSubRows`, `treeExpandedRows`, `defaultTreeExpandedRows`, `onTreeExpandedRowsChange`, `getRowCanExpandTree`, `treeIndentWidth`를 추가했습니다.
+- TanStack `getSubRows`와 `getExpandedRowModel`을 연결하고, tree expansion state를 controlled/uncontrolled 방식으로 처리했습니다.
+- first visible cell에 tree indent, toggle, leaf spacer를 렌더링하도록 `DataGridBodyRow`를 확장했습니다.
+- mouse toggle, `ArrowRight` expand, `ArrowLeft` collapse/parent 이동 정책을 구현했습니다.
+- parent collapse 시 숨겨지는 child active cell, editing cell, range selection을 parent 기준으로 정리하도록 처리했습니다.
+- non-virtualized body와 virtualized body 모두 visible flattened tree rows를 렌더링하도록 연결했습니다.
+- `Gate85TreeRows` Storybook scenario와 interaction tests를 추가했습니다.
+- `docs/qa/gate-8-5-visual-test-guide.md`, architecture, README, plan 문서를 구현 완료 상태로 갱신했습니다.
+### Gate 8.5 Tree Row Model Architecture Plan
+
+- Gate 8.5 구현 전 범위를 Tree Row Model MVP로 정리했습니다.
+- master-detail의 `expandedRows`와 tree expansion을 분리하고, `treeExpandedRows` 계열 API를 권장안으로 문서화했습니다.
+- nested data + `getSubRows` 기반 구현을 권장하고, flat parentId adapter와 async/lazy child loading은 제외 범위로 분리했습니다.
+- tree + master-detail 동시 조합은 Gate 8.5 MVP에서 제외하는 권장안을 기록했습니다.
+- filtering, pagination, collapse cleanup, keyboard policy에 대한 의사결정 표를 추가했습니다.
+- `docs/architecture/gate-8-5-tree-row-model-architecture.md`, `docs/README.md`, `docs/plan/div-datagrid-development-plan.md`를 갱신했습니다.
+
 ## 2026-06-24
 
 ### Gate 8.4 Visible Row Scroll Guard

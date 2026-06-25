@@ -20,6 +20,7 @@ import type {
   GenDataGridHandle,
   GenDataGridPasteError,
   GenDataGridScrollSeekingOptions,
+  GenDataGridTreeExpandedState,
 } from '../GenDataGrid.types';
 import { createEditorBlurHandler } from '../features/editing/blurPolicy';
 import { GenDataGrid } from '../index';
@@ -32,6 +33,82 @@ type Person = {
   location: string;
   note: string;
 };
+
+type TreePerson = Person & { children?: TreePerson[] };
+
+const treeColumns: ColumnDef<TreePerson, unknown>[] = [
+  { accessorKey: 'name', header: 'Name', size: 220, meta: { editable: true } },
+  { accessorKey: 'role', header: 'Role', size: 180 },
+  { accessorKey: 'score', header: 'Score', size: 110, meta: { editable: true, editType: 'number' } },
+  { accessorKey: 'location', header: 'Location', size: 180 },
+  { accessorKey: 'note', header: 'Note', size: 260, meta: { editable: true } },
+];
+
+const treeBranchingByDepth = [18, 3, 2, 2, 2];
+const treeRoleByDepth = ['Division', 'Department', 'Team', 'Squad', 'Member'];
+
+function createTreeRows(): TreePerson[] {
+  const createLevel = (prefix: string, depth: number, siblingCount: number): TreePerson[] =>
+    Array.from({ length: siblingCount }, (_, index) => {
+      const id = prefix ? prefix + '-' + String(index + 1) : String(index + 1);
+      const nextDepth = depth + 1;
+      const childCount = treeBranchingByDepth[nextDepth] ?? 0;
+      return {
+        id,
+        name: treeRoleByDepth[depth] + ' ' + id,
+        role: treeRoleByDepth[depth],
+        score: 65 + ((depth * 9 + index) % 35),
+        location: depth % 2 === 0 ? 'Seoul' : 'Remote',
+        note: 'Tree level ' + String(depth + 1) + ' of 5',
+        children: childCount > 0 ? createLevel(id, nextDepth, childCount) : undefined,
+      };
+    });
+
+  return createLevel('', 0, treeBranchingByDepth[0]);
+}
+
+function collectTreeExpandedRows(
+  rows: readonly TreePerson[],
+  options?: { maxDepth?: number; maxRootCount?: number }
+): GenDataGridTreeExpandedState {
+  const expanded: GenDataGridTreeExpandedState = {};
+  const visit = (items: readonly TreePerson[], depth: number) => {
+    items.forEach((row, index) => {
+      if (depth === 0 && options?.maxRootCount !== undefined && index >= options.maxRootCount) {
+        return;
+      }
+      if (!row.children?.length) return;
+      if (options?.maxDepth !== undefined && depth >= options.maxDepth) return;
+      expanded[row.id] = true;
+      visit(row.children, depth + 1);
+    });
+  };
+  visit(rows, 0);
+  return expanded;
+}
+
+function countTreeRows(rows: readonly TreePerson[]): number {
+  return rows.reduce((count, row) => count + 1 + countTreeRows(row.children ?? []), 0);
+}
+
+function updateTreeRows(
+  rows: TreePerson[],
+  rowId: string,
+  columnId: string,
+  value: unknown
+): TreePerson[] {
+  return rows.map((row) => {
+    const nextChildren = row.children ? updateTreeRows(row.children, rowId, columnId, value) : undefined;
+    if (row.id !== rowId) {
+      return nextChildren === row.children ? row : { ...row, children: nextChildren };
+    }
+    return {
+      ...row,
+      [columnId]: columnId === 'score' ? Number(value) : value,
+      children: nextChildren,
+    };
+  });
+}
 
 const data: Person[] = [
   {
@@ -1289,6 +1366,67 @@ export const Gate83NestedGridComposition: Story = {
           headerHeight={40}
           style={{
             height: 520,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+      </div>
+    );
+  },
+};
+
+export const Gate85TreeRows: Story = {
+  render: () => {
+    const [treeData, setTreeData] = React.useState(() => createTreeRows());
+    const [treeExpandedRows, setTreeExpandedRows] = React.useState<GenDataGridTreeExpandedState>(() =>
+      collectTreeExpandedRows(createTreeRows(), { maxDepth: 2, maxRootCount: 2 })
+    );
+    const totalTreeRowCount = React.useMemo(() => countTreeRows(treeData), [treeData]);
+    const handleCellValueChange = React.useCallback(
+      ({ rowId, columnId, value }: GenDataGridCellValueChange<TreePerson>) => {
+        setTreeData((previous) => updateTreeRows(previous, rowId, columnId, value));
+      },
+      []
+    );
+
+    return (
+      <div style={{ width: 1040, padding: 16, display: 'grid', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => setTreeExpandedRows(collectTreeExpandedRows(treeData, { maxDepth: 2, maxRootCount: 2 }))}
+          >
+            Expand sample branches
+          </button>
+          <button type="button" onClick={() => setTreeExpandedRows(collectTreeExpandedRows(treeData))}>
+            Expand all 5 levels
+          </button>
+          <button type="button" onClick={() => setTreeExpandedRows({})}>
+            Collapse all
+          </button>
+          <span>
+            Rows: {totalTreeRowCount} | Expanded: {Object.keys(treeExpandedRows).length}
+          </span>
+        </div>
+        <GenDataGrid<TreePerson>
+          data={treeData}
+          columns={treeColumns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-8-5"
+          defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+          enableTreeRows
+          getSubRows={(row) => row.children}
+          treeExpandedRows={treeExpandedRows}
+          onTreeExpandedRowsChange={setTreeExpandedRows}
+          treeIndentWidth={16}
+          rowHeight={36}
+          headerHeight={40}
+          enableVirtualization
+          editCommitOnBlur
+          onCellValueChange={handleCellValueChange}
+          style={{
+            height: 460,
             border: '1px solid #d0d7de',
             borderRadius: 6,
             background: '#fff',

@@ -13,6 +13,7 @@ import type {
   GenDataGridEditorFactory,
   GenDataGridExpandedRowState,
   GenDataGridRowContext,
+  GenDataGridTreeRowContext,
 } from '../../GenDataGrid.types';
 import { deactivateEditingForCellActivation } from '../../features/editing/editingCellActivation';
 import { resolveCellEditingRuntime } from '../../features/editing/cellRuntime';
@@ -62,6 +63,10 @@ type DataGridBodyProps<TData> = {
   renderDetailPanel?: (ctx: GenDataGridDetailPanelContext<TData>) => React.ReactNode;
   detailPanelHeight?: number;
   onExpandedRowToggle?: (rowId: string, expanded: boolean) => void;
+  enableTreeRows?: boolean;
+  getRowCanExpandTree?: (ctx: GenDataGridTreeRowContext<TData>) => boolean;
+  treeIndentWidth?: number;
+  onTreeExpandedRowToggle?: (row: Row<TData>, expanded: boolean) => void;
 };
 
 export function DataGridBody<TData>({
@@ -101,6 +106,10 @@ export function DataGridBody<TData>({
   renderDetailPanel,
   detailPanelHeight = 160,
   onExpandedRowToggle,
+  enableTreeRows = false,
+  getRowCanExpandTree,
+  treeIndentWidth = 16,
+  onTreeExpandedRowToggle,
 }: DataGridBodyProps<TData>) {
   const activateCell = (next: Exclude<GenDataGridActiveCell, null>) => {
     if (
@@ -165,6 +174,16 @@ export function DataGridBody<TData>({
         const resolvedRowHeight =
           getRowHeight?.({ row: row.original, rowId, rowIndex }) ?? rowHeight;
         const rowContext = { row: row.original, rowId, rowIndex };
+        const treeContext = {
+          ...rowContext,
+          depth: row.depth,
+          parentRowId: row.parentId,
+        };
+        const treeCanExpand = Boolean(
+          enableTreeRows &&
+            row.getCanExpand() &&
+            (getRowCanExpandTree?.(treeContext) ?? true)
+        );
         const canExpand = Boolean(
           enableMasterDetail &&
             renderDetailPanel &&
@@ -208,6 +227,12 @@ export function DataGridBody<TData>({
               canExpand={canExpand}
               isExpanded={isExpanded}
               onExpandedChange={(expanded) => onExpandedRowToggle?.(rowId, expanded)}
+              treeDepth={enableTreeRows ? row.depth : 0}
+              treeParentRowId={enableTreeRows ? row.parentId : undefined}
+              treeCanExpand={treeCanExpand}
+              treeIsExpanded={treeCanExpand && row.getIsExpanded()}
+              treeIndentWidth={treeIndentWidth}
+              onTreeExpandedChange={(expanded) => onTreeExpandedRowToggle?.(row, expanded)}
             />
             {canExpand && isExpanded && renderDetailPanel ? (
               <DataGridDetailRow

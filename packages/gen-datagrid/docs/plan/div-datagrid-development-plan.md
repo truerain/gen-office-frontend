@@ -680,10 +680,49 @@ Editor 구현 계약 요약: [`editor-implementation-contract.md`](../reference/
   - `pnpm -C frontend/packages/gen-datagrid test:interaction`
 #### Gate 8.5 Tree Row Model
 
-- tree flattening model
-- expand/collapse keyboard and mouse policy
-- active cell cleanup when children collapse
-- filtering and pagination policy for tree rows
+- status
+  - complete (MVP)
+  - tree row model implemented
+- scope
+  - nested data tree row model through `getSubRows`
+  - controlled/uncontrolled tree expansion state
+  - first visible cell tree indent and expand/collapse toggle
+  - mouse expand/collapse policy
+  - ArrowLeft/ArrowRight keyboard expand/collapse policy
+  - active cell, editing cell, selected range cleanup when children collapse
+  - visible flattened row model integration with range selection, clipboard, paste, editing, and virtualization
+  - client filtering and pagination policy for tree rows
+- recommended API
+  - `enableTreeRows`
+  - `getSubRows`
+  - `treeExpandedRows`
+  - `defaultTreeExpandedRows`
+  - `onTreeExpandedRowsChange`
+  - `getRowCanExpandTree`
+  - `treeIndentWidth`
+- decisions
+  - do not reuse master-detail `expandedRows` for tree expansion
+  - use nested data + `getSubRows` for MVP, not flat parentId adapter
+  - keep tree + master-detail combination out of Gate 8.5 MVP
+  - client pagination works on visible expanded rows
+  - collapse cleanup moves active child cell to the collapsing parent row in the same column
+- out of scope
+  - async/lazy child loading API
+  - flat parentId data adapter
+  - tree + master-detail combined rendering
+  - tree drag/drop reorder
+  - `treeToggleColumnId` style API for pinning the tree toggle to a specific column
+  - `treeCollapseBehavior` style API for resetting descendant expansion state on parent collapse
+  - 	reeToggleColumnId style API for pinning the tree toggle to a specific column
+  - 	reeCollapseBehavior style API for resetting descendant expansion state on parent collapse
+  - row merge/span integration
+  - server-side tree filtering semantics
+- architecture
+  - `../architecture/gate-8-5-tree-row-model-architecture.md`
+- planned verification
+  - `pnpm -C frontend/packages/gen-datagrid exec tsc -p tsconfig.json --noEmit`
+  - `pnpm -C frontend/packages/gen-datagrid test:interaction`
+  - `Gate85TreeRows` Storybook manual scenario
 
 #### Gate 8.6 Merge, Span, And Validation UI
 

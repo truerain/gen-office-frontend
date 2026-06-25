@@ -119,6 +119,7 @@ export type GenDataGridDirtyState = {
 };
 
 export type GenDataGridExpandedRowState = Record<string, boolean>;
+export type GenDataGridTreeExpandedState = Record<string, boolean>;
 
 export type GenDataGridRowContext<TData> = {
   row: TData;
@@ -129,6 +130,11 @@ export type GenDataGridRowContext<TData> = {
 export type GenDataGridDetailPanelContext<TData> = GenDataGridRowContext<TData> & {
   expanded: boolean;
   collapse: () => void;
+};
+
+export type GenDataGridTreeRowContext<TData> = GenDataGridRowContext<TData> & {
+  depth: number;
+  parentRowId?: string;
 };
 
 export type GenDataGridPasteErrorReason =
@@ -224,6 +230,13 @@ export type GenDataGridProps<TData> = {
   enablePagination?: boolean;
   enableDirtyState?: boolean;
   enableVirtualization?: boolean;
+  enableTreeRows?: boolean;
+  getSubRows?: (row: TData, index: number) => readonly TData[] | undefined;
+  treeExpandedRows?: GenDataGridTreeExpandedState;
+  defaultTreeExpandedRows?: GenDataGridTreeExpandedState;
+  onTreeExpandedRowsChange?: (next: GenDataGridTreeExpandedState) => void;
+  getRowCanExpandTree?: (ctx: GenDataGridTreeRowContext<TData>) => boolean;
+  treeIndentWidth?: number;
   enableMasterDetail?: boolean;
   expandedRows?: GenDataGridExpandedRowState;
   defaultExpandedRows?: GenDataGridExpandedRowState;

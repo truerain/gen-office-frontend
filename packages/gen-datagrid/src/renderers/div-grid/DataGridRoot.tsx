@@ -2,6 +2,7 @@
 // Composes the baseline div-based DataGrid root, header, and body.
 
 import * as React from 'react';
+import type { Row } from '@tanstack/react-table';
 
 import type {
   GenDataGridCellValueChange,
@@ -33,6 +34,11 @@ import {
   normalizeExpandedRows,
   setExpandedRow,
 } from '../../features/master-detail/masterDetailState';
+import {
+  collectDescendantRowIds,
+  normalizeTreeExpandedRows,
+  setTreeExpandedRow,
+} from '../../features/tree/treeState';
 import { parseClipboardGrid } from '../../features/range-selection/clipboard';
 import { applyClipboardPaste } from '../../features/range-selection/paste';
 import { useClipboardActions } from '../../features/range-selection/useClipboardActions';
@@ -116,6 +122,13 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     enablePagination = false,
     enableDirtyState = true,
     enableVirtualization = false,
+    enableTreeRows = false,
+    getSubRows,
+    treeExpandedRows,
+    defaultTreeExpandedRows,
+    onTreeExpandedRowsChange,
+    getRowCanExpandTree,
+    treeIndentWidth = 16,
     enableMasterDetail = false,
     expandedRows,
     defaultExpandedRows,
@@ -150,9 +163,31 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
   const [uncontrolledRows, setUncontrolledRows] = React.useState<TData[]>(
     () => defaultData ?? []
   );
+  const treeRowsEnabled = enableTreeRows && Boolean(getSubRows);
+  const [uncontrolledTreeExpandedRows, setUncontrolledTreeExpandedRows] = React.useState(() =>
+    normalizeTreeExpandedRows(defaultTreeExpandedRows)
+  );
+  const resolvedTreeExpandedRows = React.useMemo(
+    () => normalizeTreeExpandedRows(treeExpandedRows ?? uncontrolledTreeExpandedRows),
+    [treeExpandedRows, uncontrolledTreeExpandedRows]
+  );
+  const setTreeExpandedRowsState = React.useCallback(
+    (next: Record<string, boolean>) => {
+      const normalized = normalizeTreeExpandedRows(next);
+      if (treeExpandedRows === undefined) {
+        setUncontrolledTreeExpandedRows(normalized);
+      }
+      onTreeExpandedRowsChange?.(normalized);
+    },
+    [onTreeExpandedRowsChange, treeExpandedRows]
+  );
   const table = useDataGridTable({
     ...props,
     defaultData: data === undefined ? uncontrolledRows : defaultData,
+    enableTreeRows: treeRowsEnabled,
+    getSubRows,
+    treeExpandedRows: resolvedTreeExpandedRows,
+    onTreeExpandedRowsChange: setTreeExpandedRowsState,
   });
   const tableRows = table.getRowModel().rows;
   const visibleColumns = (
@@ -197,6 +232,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
   );
   const activeCell =
     controlledActiveCell !== undefined ? controlledActiveCell : uncontrolledActiveCell;
+  const previousFocusRestoreActiveCellRef = React.useRef<typeof activeCell>(null);
   const editing = useCellEditing();
   const [dirtyCells, setDirtyCells] = React.useState<Map<string, GenDataGridDirtyCell>>(
     () => new Map()
@@ -209,7 +245,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     () => normalizeExpandedRows(expandedRows ?? uncontrolledExpandedRows),
     [expandedRows, uncontrolledExpandedRows]
   );
-  const masterDetailEnabled = enableMasterDetail && Boolean(renderDetailPanel);
+  const masterDetailEnabled = enableMasterDetail && Boolean(renderDetailPanel) && !treeRowsEnabled;
   const setExpandedRowState = React.useCallback(
     (rowId: string, expanded: boolean) => {
       const next = setExpandedRow(resolvedExpandedRows, rowId, expanded);
@@ -422,6 +458,51 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     [controlledActiveCell, onActiveCellChange]
   );
 
+  const setTreeExpandedRowState = React.useCallback(
+    (row: Row<TData>, expanded: boolean) => {
+      const next = setTreeExpandedRow(resolvedTreeExpandedRows, row.id, expanded);
+      setTreeExpandedRowsState(next);
+
+      if (expanded) return;
+
+      const descendantRowIds = new Set(collectDescendantRowIds(row));
+      if (descendantRowIds.size === 0) return;
+
+      const fallbackColumnId =
+        activeCell?.columnId && columnIds.includes(activeCell.columnId)
+          ? activeCell.columnId
+          : columnIds[0];
+      const fallbackCell = fallbackColumnId ? { rowId: row.id, columnId: fallbackColumnId } : null;
+
+      if (activeCell && descendantRowIds.has(activeCell.rowId) && fallbackCell) {
+        setActiveCell(fallbackCell);
+      }
+
+      if (editing.editingCell && descendantRowIds.has(editing.editingCell.rowId)) {
+        editing.cancelEditing();
+      }
+
+      if (enableRangeSelection && fallbackCell) {
+        const selectionTouchesDescendant = rangeSelection.selections.some((selection) =>
+          descendantRowIds.has(selection.anchor.rowId) || descendantRowIds.has(selection.focus.rowId)
+        );
+        if (selectionTouchesDescendant) {
+          rangeSelection.setSingleSelection(fallbackCell);
+        }
+      }
+    },
+    [
+      activeCell,
+      columnIds,
+      editing,
+      enableRangeSelection,
+      rangeSelection,
+      resolvedTreeExpandedRows,
+      setActiveCell,
+      setTreeExpandedRowsState,
+    ]
+  );
+
   const navigateWhileEditing = React.useCallback(
     (next: Exclude<typeof activeCell, null>) => {
       setActiveCell(next);
@@ -501,22 +582,43 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
   }, [activeCell, columnIds, controlledActiveCell, rowIds]);
 
   React.useEffect(() => {
-    if (!activeCell) return;
+    if (!activeCell) {
+      previousFocusRestoreActiveCellRef.current = activeCell;
+      return;
+    }
+
+    const previousActiveCell = previousFocusRestoreActiveCellRef.current;
+    const activeCellChanged =
+      !previousActiveCell ||
+      previousActiveCell.rowId !== activeCell.rowId ||
+      previousActiveCell.columnId !== activeCell.columnId;
+    previousFocusRestoreActiveCellRef.current = activeCell;
+
     const activeElement = document.activeElement;
     if (activeElement instanceof Element && rootRef.current?.contains(activeElement)) {
       if (!isFocusOwnedByRoot(rootRef.current, activeElement)) return;
       if (isInteractiveElement(activeElement)) return;
     }
+
+    const isEditingActiveCell =
+      editing.editingCell?.rowId === activeCell.rowId &&
+      editing.editingCell.columnId === activeCell.columnId;
+
+    if (!activeCellChanged && !isEditingActiveCell) {
+      return;
+    }
+
     if (enableVirtualization) {
       const activeRowIndex = rowIds.indexOf(activeCell.rowId);
-      if (activeRowIndex >= 0) {
+      if (activeCellChanged && activeRowIndex >= 0) {
         virtualBodyRef.current?.scrollToRowIndex(activeRowIndex);
       }
+      if (!activeCellChanged && !findCellInRoot(rootRef.current, activeCell)) {
+        return;
+      }
     }
+
     const frame = requestAnimationFrame(() => {
-      const isEditingActiveCell =
-        editing.editingCell?.rowId === activeCell.rowId &&
-        editing.editingCell.columnId === activeCell.columnId;
       if (isEditingActiveCell && focusActiveEditorInRoot(rootRef.current, activeCell)) {
         return;
       }
@@ -583,6 +685,51 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
         }
       }
 
+      if (
+        treeRowsEnabled &&
+        activeCell &&
+        !event.shiftKey &&
+        !event.ctrlKey &&
+        !event.metaKey &&
+        (event.key === 'ArrowLeft' || event.key === 'ArrowRight')
+      ) {
+        const activeRow = tableRows.find((item) => item.id === activeCell.rowId);
+        if (activeRow) {
+          const treeContext = {
+            row: activeRow.original,
+            rowId: activeRow.id,
+            rowIndex: activeRow.index,
+            depth: activeRow.depth,
+            parentRowId: activeRow.parentId,
+          };
+          const canExpandTreeRow = Boolean(
+            activeRow.getCanExpand() && (getRowCanExpandTree?.(treeContext) ?? true)
+          );
+
+          if (event.key === 'ArrowRight' && canExpandTreeRow && !activeRow.getIsExpanded()) {
+            event.preventDefault();
+            setTreeExpandedRowState(activeRow, true);
+            return;
+          }
+
+          if (event.key === 'ArrowLeft' && canExpandTreeRow && activeRow.getIsExpanded()) {
+            event.preventDefault();
+            setTreeExpandedRowState(activeRow, false);
+            return;
+          }
+
+          if (event.key === 'ArrowLeft' && !activeRow.getIsExpanded() && activeRow.parentId) {
+            event.preventDefault();
+            const next = { rowId: activeRow.parentId, columnId: activeCell.columnId };
+            setActiveCell(next);
+            if (enableRangeSelection) {
+              rangeSelection.setSingleSelection(next);
+            }
+            return;
+          }
+        }
+      }
+
       if (event.key === 'Tab') {
         const next = resolveNextLinearCell({
           activeCell,
@@ -631,7 +778,11 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       rowIds,
       setActiveCell,
       getResolvedEditPolicyForCell,
+      getRowCanExpandTree,
+      setTreeExpandedRowState,
       startActiveCellEditing,
+      tableRows,
+      treeRowsEnabled,
     ]
   );
 
@@ -791,6 +942,10 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             renderDetailPanel={renderDetailPanel}
             detailPanelHeight={detailPanelHeight}
             onExpandedRowToggle={setExpandedRowState}
+            enableTreeRows={treeRowsEnabled}
+            getRowCanExpandTree={getRowCanExpandTree}
+            treeIndentWidth={treeIndentWidth}
+            onTreeExpandedRowToggle={setTreeExpandedRowState}
             activeCell={activeCell}
             onActiveCellChange={setActiveCell}
             onEditingNavigate={navigateWhileEditing}
@@ -844,6 +999,10 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             renderDetailPanel={renderDetailPanel}
             detailPanelHeight={detailPanelHeight}
             onExpandedRowToggle={setExpandedRowState}
+            enableTreeRows={treeRowsEnabled}
+            getRowCanExpandTree={getRowCanExpandTree}
+            treeIndentWidth={treeIndentWidth}
+            onTreeExpandedRowToggle={setTreeExpandedRowState}
           />
         )}
         {enableFooterRow ? (

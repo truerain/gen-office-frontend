@@ -3915,4 +3915,250 @@ describe('GenDataGrid interaction contract', () => {
       )).toBeNull();
     });
   });
+
+
+describe('Gate 8.5 tree rows', () => {
+  type TreePerson = Person & { children?: TreePerson[] };
+
+  const treeRows: TreePerson[] = [
+    {
+      id: '1',
+      name: 'Parent Ada',
+      age: 37,
+      children: [
+        { id: '1-1', name: 'Child Ada', age: 12 },
+        { id: '1-2', name: 'Child Byron', age: 10 },
+      ],
+    },
+    { id: '2', name: 'Parent Grace', age: 41 },
+  ];
+
+  it('renders nested rows and toggles expansion with the mouse', async () => {
+    const onTreeExpandedRowsChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid<TreePerson>
+        gridId="tree-mouse-grid"
+        data={treeRows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableTreeRows
+        getSubRows={(row) => row.children}
+        defaultTreeExpandedRows={{ '1': true }}
+        onTreeExpandedRowsChange={onTreeExpandedRowsChange}
+      />
+    );
+
+    expect(getCell(container, '1-1', 'name').closest('[role="row"]')?.getAttribute(
+      'data-tree-depth'
+    )).toBe('1');
+
+    const toggle = getCell(container, '1', 'name').querySelector<HTMLButtonElement>(
+      '[data-gen-datagrid-tree-toggle="true"]'
+    );
+    if (!toggle) throw new Error('Missing tree toggle');
+
+    fireEvent.click(toggle);
+
+    await waitFor(() => {
+      expect(
+        container.querySelector('[data-gen-datagrid-cell="true"][data-rowid="1-1"]')
+      ).toBeNull();
+      expect(onTreeExpandedRowsChange).toHaveBeenLastCalledWith({});
+    });
+  });
+
+  it('does not enter edit mode when the tree toggle is double-clicked repeatedly', async () => {
+    const { container } = render(
+      <GenDataGrid<TreePerson>
+        gridId="tree-toggle-no-edit-grid"
+        data={treeRows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        enableTreeRows
+        getSubRows={(row) => row.children}
+        defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    const toggle = firstCell.querySelector<HTMLButtonElement>(
+      '[data-gen-datagrid-tree-toggle="true"]'
+    );
+    if (!toggle) throw new Error('Missing tree toggle');
+
+    fireEvent.doubleClick(toggle);
+    fireEvent.doubleClick(toggle);
+    fireEvent.doubleClick(toggle);
+    fireEvent.doubleClick(toggle);
+
+    await waitFor(() => {
+      expect(firstCell.dataset.editingCell).toBeUndefined();
+      expect(firstCell.querySelector('input[aria-label="name editor"]')).toBeNull();
+    });
+  });
+
+  it('uses ArrowRight and ArrowLeft for tree expansion without selecting hidden children', async () => {
+    const { container } = render(
+      <GenDataGrid<TreePerson>
+        gridId="tree-keyboard-grid"
+        data={treeRows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableTreeRows
+        getSubRows={(row) => row.children}
+        defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+      />
+    );
+    const root = container.querySelector<HTMLElement>('[data-gen-datagrid-root="true"]');
+    if (!root) throw new Error('Missing root');
+
+    expect(container.querySelector('[data-gen-datagrid-cell="true"][data-rowid="1-1"]')).toBeNull();
+
+    fireEvent.keyDown(root, { key: 'ArrowRight' });
+
+    await waitFor(() => {
+      expect(getCell(container, '1-1', 'name')).toBeTruthy();
+    });
+
+    fireEvent.keyDown(root, { key: 'ArrowLeft' });
+
+    await waitFor(() => {
+      expect(container.querySelector('[data-gen-datagrid-cell="true"][data-rowid="1-1"]')).toBeNull();
+      expect(getCell(container, '1', 'name').dataset.activeCell).toBe('true');
+    });
+  });
+
+  it('does not scroll to an unchanged offscreen active cell when expanding a visible non-virtual tree row', async () => {
+    const largeTreeRows: TreePerson[] = Array.from({ length: 80 }, (_, index) => {
+      const id = String(index + 1);
+      return {
+        id,
+        name: 'Parent ' + id,
+        age: 30 + index,
+        children: [{ id: id + '-1', name: 'Child ' + id, age: 10 + index }],
+      };
+    });
+
+    const { container } = render(
+      <GenDataGrid<TreePerson>
+        gridId="tree-nonvirtual-expand-scroll-grid"
+        data={largeTreeRows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableTreeRows
+        getSubRows={(row) => row.children}
+        activeCell={{ rowId: '40', columnId: 'name' }}
+        style={{ height: 240, width: 320 }}
+      />
+    );
+
+    const viewport = container.querySelector<HTMLElement>('[data-gen-datagrid-viewport="true"]');
+    if (!viewport) throw new Error('Missing viewport');
+
+    Object.defineProperty(viewport, 'scrollTop', {
+      configurable: true,
+      writable: true,
+      value: 360,
+    });
+    fireEvent.scroll(viewport);
+
+    const toggle = getCell(container, '1', 'name').querySelector<HTMLButtonElement>(
+      '[data-gen-datagrid-tree-toggle="true"]'
+    );
+    if (!toggle) throw new Error('Missing tree toggle');
+
+    fireEvent.click(toggle);
+
+    await waitFor(() => {
+      expect(getCell(container, '1-1', 'name')).toBeTruthy();
+      expect(viewport.scrollTop).toBe(360);
+    });
+  });
+
+  it('does not scroll to an unchanged offscreen active cell when expanding a visible virtual tree row', async () => {
+    const largeTreeRows: TreePerson[] = Array.from({ length: 80 }, (_, index) => {
+      const id = String(index + 1);
+      return {
+        id,
+        name: 'Parent ' + id,
+        age: 30 + index,
+        children: [{ id: id + '-1', name: 'Child ' + id, age: 10 + index }],
+      };
+    });
+
+    const { container } = render(
+      <GenDataGrid<TreePerson>
+        gridId="tree-virtual-expand-scroll-grid"
+        data={largeTreeRows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableTreeRows
+        getSubRows={(row) => row.children}
+        enableVirtualization
+        activeCell={{ rowId: '40', columnId: 'name' }}
+        style={{ height: 240, width: 320 }}
+      />
+    );
+
+    const viewport = container.querySelector<HTMLElement>('[data-gen-datagrid-viewport="true"]');
+    if (!viewport) throw new Error('Missing virtual viewport');
+
+    await waitFor(() => {
+      expect(getCell(container, '40', 'name').dataset.activeCell).toBe('true');
+    });
+
+    Object.defineProperty(viewport, 'scrollTop', {
+      configurable: true,
+      writable: true,
+      value: 0,
+    });
+    fireEvent.scroll(viewport);
+
+    await waitFor(() => {
+      expect(getCell(container, '1', 'name')).toBeTruthy();
+    });
+
+    const toggle = getCell(container, '1', 'name').querySelector<HTMLButtonElement>(
+      '[data-gen-datagrid-tree-toggle="true"]'
+    );
+    if (!toggle) throw new Error('Missing tree toggle');
+
+    fireEvent.click(toggle);
+
+    await waitFor(() => {
+      expect(getCell(container, '1-1', 'name')).toBeTruthy();
+      expect(viewport.scrollTop).toBe(0);
+    });
+  });
+
+  it('moves active child cell to the parent when collapsing', async () => {
+    const { container } = render(
+      <GenDataGrid<TreePerson>
+        gridId="tree-collapse-cleanup-grid"
+        data={treeRows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableTreeRows
+        getSubRows={(row) => row.children}
+        defaultTreeExpandedRows={{ '1': true }}
+        defaultActiveCell={{ rowId: '1-1', columnId: 'age' }}
+      />
+    );
+
+    expect(getCell(container, '1-1', 'age').dataset.activeCell).toBe('true');
+
+    const toggle = getCell(container, '1', 'name').querySelector<HTMLButtonElement>(
+      '[data-gen-datagrid-tree-toggle="true"]'
+    );
+    if (!toggle) throw new Error('Missing tree toggle');
+
+    fireEvent.click(toggle);
+
+    await waitFor(() => {
+      expect(container.querySelector('[data-gen-datagrid-cell="true"][data-rowid="1-1"]')).toBeNull();
+      expect(getCell(container, '1', 'age').dataset.activeCell).toBe('true');
+    });
+  });
+});
+
 });
