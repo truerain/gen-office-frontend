@@ -87,6 +87,15 @@ Large feature components with heavy third-party engines should usually become se
 - Do not revert files unless the user explicitly asks for it.
 - Do not delete files unless the user explicitly requests it or the deletion is clearly part of the requested change.
 
+## Response Evaluation Rules
+
+- Do not default to highlighting advantages when the user proposes an idea, asks whether an approach is good, or requests evaluation.
+- Evaluate proposals neutrally by checking the goal, assumptions, constraints, risks, tradeoffs, alternatives, maintenance cost, package boundaries, and verification burden.
+- Distinguish "possible" from "recommended". If something can be implemented but is not a good long-term direction, state that difference clearly.
+- If an idea has benefits, mention them together with meaningful costs or risks instead of presenting only the favorable side.
+- If a proposal is weak, risky, or misaligned with the repository direction, say so directly and explain the reason with a practical alternative.
+- If there is not enough information to judge, state the missing assumptions or checks before agreeing with the proposal.
+
 ## Source Editing Rules
 
 - Treat all text files as UTF-8.
