@@ -26,6 +26,7 @@ import {
   isCellInRangeSelections,
   type GenDataGridRangeSelections,
 } from '../../features/range-selection/rangeSelection';
+import { isGenDataGridSystemColumnId } from '../../features/system-columns/systemColumns';
 import { DataGridCell } from './DataGridCell';
 import { formatCellValue } from './cellValue';
 
@@ -216,6 +217,9 @@ export function DataGridBodyRow<TData>({
   const rowId = row.id;
   const rowIndex = row.index;
   const orderedCells = getOrderedVisibleCells(row);
+  const firstUserCellIndex = orderedCells.findIndex(
+    (cell) => !isGenDataGridSystemColumnId(cell.column.id)
+  );
   let coveredCellCount = 0;
 
   return (
@@ -246,6 +250,7 @@ export function DataGridBodyRow<TData>({
         }
 
         const columnId = cell.column.id;
+        const isSystemColumn = isGenDataGridSystemColumnId(columnId);
         const editableContext = createEditableContext({ row, column: cell.column });
         const isEditable = resolveEditableCell({
           row,
@@ -369,7 +374,7 @@ export function DataGridBodyRow<TData>({
             ? flexRender(cell.column.columnDef.cell, cell.getContext())
             : formatCellValue(cell.getValue());
         const renderedContent = (() => {
-          if (cellIndex !== 0 || isEditing) return content;
+          if (cellIndex !== firstUserCellIndex || isEditing) return content;
 
           const detailToggle = canExpand ? (
             <button
@@ -446,27 +451,34 @@ export function DataGridBodyRow<TData>({
             rowId={rowId}
             columnId={columnId}
             isActive={Boolean(
-              activeCell && activeCell.rowId === rowId && activeCell.columnId === columnId
+              !isSystemColumn &&
+                activeCell &&
+                activeCell.rowId === rowId &&
+                activeCell.columnId === columnId
             )}
-            isSelected={isCellInRangeSelections({
-              rowId,
-              columnId,
-              rowIds,
-              columnIds,
-              selections: rangeSelections,
-            })}
-            isEditable={isEditable}
-            isEditing={isEditing}
+            isSelected={
+              !isSystemColumn &&
+              isCellInRangeSelections({
+                rowId,
+                columnId,
+                rowIds,
+                columnIds,
+                selections: rangeSelections,
+              })
+            }
+            isEditable={!isSystemColumn && isEditable}
+            isEditing={!isSystemColumn && isEditing}
             isDirty={dirtyCellIds?.has(`${rowId}::${columnId}`)}
             editOpenOnStart={resolvedEditPolicy.openOnEditStart}
             allowReclickEdit={resolvedEditPolicy.startTriggers.reclick}
             allowDoubleClickEdit={resolvedEditPolicy.startTriggers.doubleClick}
+            activateOnMouseDown={!isSystemColumn}
             pinning={pinning}
             bodyColSpan={bodyColSpan}
             style={{ gridColumn: String(cellIndex + 1) + ' / span ' + String(bodyColSpan) }}
             onActivate={onActiveCellChange}
             onEditStart={({ entryReason }) => {
-              if (!isEditable) return;
+              if (isSystemColumn || !isEditable) return;
               onEditStart({ rowId, columnId, value: editableContext.value, entryReason });
             }}
           >

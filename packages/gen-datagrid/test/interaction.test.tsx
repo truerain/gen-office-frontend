@@ -4287,4 +4287,160 @@ describe('Gate 8.6-a body col span', () => {
   });
 });
 
+describe('Gate 8.7 system columns', () => {
+  it('renders row status, selection, and number system columns before user columns', () => {
+    const { container, getByLabelText } = render(
+      <GenDataGrid
+        gridId="system-columns-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableRowStatus
+        enableRowSelection
+        enableRowNumber
+        rowStatusResolver={({ rowId }) => (rowId === '1' ? 'created' : 'updated')}
+      />
+    );
+
+    expect(getHeaderCell(container, '__gen_row_status').dataset.systemColumn).toBe('true');
+    expect(getHeaderCell(container, '__gen_row_selection').dataset.systemColumn).toBe('true');
+    expect(getHeaderCell(container, '__gen_row_number').dataset.systemColumn).toBe('true');
+    expect(getHeaderCell(container, '__gen_row_status').querySelector('[data-column-resize-handle="true"]')).toBeNull();
+    expect(getHeaderCell(container, '__gen_row_selection').querySelector('[data-column-reorder-handle="true"]')).toBeNull();
+    expect(getCell(container, '1', '__gen_row_number').textContent).toContain('1');
+    expect(getCell(container, '2', '__gen_row_number').textContent).toContain('2');
+    expect(
+      getCell(container, '1', '__gen_row_status').querySelector(
+        '[data-gen-datagrid-row-status="created"]'
+      )
+    ).toBeTruthy();
+    expect(getByLabelText('Select row 1')).toBeTruthy();
+  });
+
+  it('limits row selection to created rows when rowSelectionMode is createdOnly', async () => {
+    const onRowSelectionChange = vi.fn();
+    const { getByLabelText } = render(
+      <GenDataGrid
+        gridId="created-only-selection-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableRowSelection
+        rowSelectionMode="createdOnly"
+        rowStatusResolver={({ rowId }) => (rowId === '1' ? 'created' : 'clean')}
+        onRowSelectionChange={onRowSelectionChange}
+      />
+    );
+
+    const firstCheckbox = getByLabelText('Select row 1') as HTMLInputElement;
+    const secondCheckbox = getByLabelText('Select row 2') as HTMLInputElement;
+
+    expect(firstCheckbox.disabled).toBe(false);
+    expect(secondCheckbox.disabled).toBe(true);
+
+    fireEvent.click(firstCheckbox);
+
+    await waitFor(() => {
+      expect(onRowSelectionChange).toHaveBeenLastCalledWith({ '1': true });
+    });
+  });
+
+  it('clears row selection through the imperative clearSelection action', async () => {
+    const gridRef = React.createRef<GenDataGridHandle>();
+    const onRowSelectionChange = vi.fn();
+
+    render(
+      <GenDataGrid
+        ref={gridRef}
+        gridId="clear-row-selection-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableRowSelection
+        defaultRowSelection={{ '1': true }}
+        onRowSelectionChange={onRowSelectionChange}
+      />
+    );
+
+    gridRef.current?.clearSelection();
+
+    await waitFor(() => {
+      expect(onRowSelectionChange).toHaveBeenLastCalledWith({});
+    });
+  });
+
+  it('does not move the active cell when a system column body cell is clicked', async () => {
+    const onActiveCellChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="system-column-active-cell-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableRowStatus
+        enableRowSelection
+        enableRowNumber
+        defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+        onActiveCellChange={onActiveCellChange}
+      />
+    );
+
+    const userCell = getCell(container, '1', 'name');
+    const statusCell = getCell(container, '1', '__gen_row_status');
+    const numberCell = getCell(container, '1', '__gen_row_number');
+
+    expect(userCell.dataset.activeCell).toBe('true');
+
+    fireEvent.mouseDown(statusCell, { button: 0 });
+    fireEvent.mouseDown(numberCell, { button: 0 });
+
+    await waitFor(() => {
+      expect(userCell.dataset.activeCell).toBe('true');
+      expect(statusCell.dataset.activeCell).toBeUndefined();
+      expect(numberCell.dataset.activeCell).toBeUndefined();
+      expect(onActiveCellChange).not.toHaveBeenCalled();
+    });
+  });
+
+  it('keeps tree toggles on the first user column when system columns are enabled', () => {
+    type TreePerson = Person & { children?: TreePerson[] };
+    const treeRows: TreePerson[] = [
+      {
+        id: '1',
+        name: 'Parent Ada',
+        age: 37,
+        children: [{ id: '1-1', name: 'Child Ada', age: 12 }],
+      },
+    ];
+
+    const { container } = render(
+      <GenDataGrid<TreePerson>
+        gridId="system-columns-tree-toggle-grid"
+        data={treeRows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableRowStatus
+        enableRowSelection
+        enableRowNumber
+        enableTreeRows
+        getSubRows={(row) => row.children}
+      />
+    );
+
+    expect(
+      getCell(container, '1', '__gen_row_status').querySelector(
+        '[data-gen-datagrid-tree-toggle="true"]'
+      )
+    ).toBeNull();
+    expect(
+      getCell(container, '1', '__gen_row_selection').querySelector(
+        '[data-gen-datagrid-tree-toggle="true"]'
+      )
+    ).toBeNull();
+    expect(
+      getCell(container, '1', 'name').querySelector('[data-gen-datagrid-tree-toggle="true"]')
+    ).toBeTruthy();
+  });
+});
+
 });

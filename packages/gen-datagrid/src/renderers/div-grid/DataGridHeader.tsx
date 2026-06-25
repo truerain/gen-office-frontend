@@ -18,6 +18,7 @@ import {
   reorderColumnOrder,
   reorderColumnPinning,
 } from '../../features/reorder/columnReorder';
+import { isGenDataGridSystemColumnId } from '../../features/system-columns/systemColumns';
 
 type DataGridHeaderProps<TData> = {
   table: Table<TData>;
@@ -112,10 +113,12 @@ export function DataGridHeader<TData>({
         if (!header) return null;
 
         const columnId = column.id;
+        const isSystemColumn = isGenDataGridSystemColumnId(columnId);
         const pinning = enablePinning ? getColumnPinningInfo(column, { zIndex: 4 }) : undefined;
-        const canResize = enableColumnSizing && column.getCanResize();
-        const canReorder = enableColumnReorder && !header.isPlaceholder;
-        const canFilter = enableColumnFilters && !header.isPlaceholder && column.getCanFilter();
+        const canResize = enableColumnSizing && !isSystemColumn && column.getCanResize();
+        const canReorder = enableColumnReorder && !isSystemColumn && !header.isPlaceholder;
+        const canFilter =
+          enableColumnFilters && !isSystemColumn && !header.isPlaceholder && column.getCanFilter();
 
         return (
           <div
@@ -124,6 +127,7 @@ export function DataGridHeader<TData>({
             data-gen-datagrid-cell="true"
             data-cell-kind="header"
             data-colid={columnId}
+            data-system-column={isSystemColumn ? 'true' : undefined}
             data-pinned-cell={pinning?.pinned || undefined}
             data-pinned-edge={
               pinning?.isLastLeftPinned

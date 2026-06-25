@@ -393,7 +393,11 @@ Status: complete for Gate 8 entry. Row virtualization, active-cell scroll restor
 
 ## 11. Gate 8. MVP Acceptance
 
-Current status: partial. The core grid, scoped DOM contract, active cell, keyboard navigation, range selection, clipboard, editing, column sizing, pinning, column reorder, filtering, footer, pagination, dirty state, imperative handle, row virtualization, master-detail, nested grid composition, dynamic row height, tree rows, body column span, and grouped header rendering have implementation coverage. Row number, row selection, row status, validation UI marker, and visual row merge are still open. Of those, row number/selection/status are MVP acceptance gaps; validation marker and visual row merge are Gate 8.6 extension slices.
+Current status: partial. The core grid, scoped DOM contract, active cell, keyboard navigation, range selection, clipboard, editing, column sizing, pinning, column reorder, filtering, footer, pagination, dirty state, imperative handle, row number, row selection, row status, row virtualization, master-detail, nested grid composition, dynamic row height, tree rows, body column span, and grouped header rendering have implementation coverage. Validation UI marker and visual row merge are still open Gate 8.6 extension slices.
+
+Latest completed implementation slice: Gate 8.7 System Columns. Architecture: `../architecture/gate-8-7-system-columns-architecture.md`.
+
+Recommended next slice: Gate 8.7-a Current Row Highlight. This is separate from checkbox row selection and uses the active cell row as the first source of truth for external Master/Detail layouts.
 
 ### 목표
 
@@ -420,6 +424,29 @@ Current status: partial. The core grid, scoped DOM contract, active cell, keyboa
 - row selection
 - row status
 - row virtualization
+
+### Gate 8.7 system column 통과 기준
+
+- `enableRowNumber`가 visible row order 기준 row number system column을 표시한다.
+- `enableRowSelection`이 row-id 기반 controlled/uncontrolled row selection state로 동작한다.
+- `rowSelectionMode="createdOnly"`가 created row만 선택 가능하게 제한한다.
+- `enableRowStatus`가 `rowStatusResolver` 또는 dirty/deleted fallback 기준 status marker를 표시한다.
+- system column은 header/body/footer grid template과 정렬된다.
+- system column은 기본적으로 왼쪽에 고정되고 reorder 대상에서 제외된다.
+- `clearSelection()`이 range selection과 row selection을 함께 초기화한다.
+- system column은 body col span, editing, tree/master-detail toggle 위치와 충돌하지 않는다.
+
+### Gate 8.7-a current row 통과 기준
+
+- `currentRow`는 checkbox `rowSelection`과 별도 개념으로 동작한다.
+- MVP public API는 `enableCurrentRowHighlight`와 `onCurrentRowChange(rowId)`로 시작한다.
+- MVP source of truth는 `activeCell?.rowId`이며, current row와 active cell row는 항상 동일하게 유지한다.
+- data cell 클릭과 keyboard navigation은 current row를 갱신한다.
+- system column 클릭은 active cell을 바꾸지 않으므로 current row도 바꾸지 않는다.
+- current row body row에는 `data-current-row="true"` marker가 붙는다.
+- `enableCurrentRowHighlight`가 켜진 경우 current row 전체가 시각적으로 구분된다.
+- Storybook은 상하 2-grid Master/Detail 예제로 current master row가 detail grid data를 바꾸는 시나리오를 포함한다.
+- Interaction test는 click, keyboard movement, system column click no-op, callback 호출을 검증한다.
 
 ### 통과 기준
 

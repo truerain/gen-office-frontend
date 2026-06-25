@@ -4,7 +4,7 @@ Indexes GenDataGrid planning, architecture, reference, QA, and log documents.
 
 # GenDataGrid Docs
 
-현재 상태: Gate 8.6-b Column Group Header 구현 완료. Gate 8.6은 body column span, column group header, validation UI, visual row merge를 분리해서 진행한다.
+현재 상태: Gate 8.7 System Columns 구현 완료. 다음 구현 후보는 Gate 8.6-c Validation State/UI Marker 또는 Gate 8.6-d Visual Row Merge이다.
 
 ## Plan
 
@@ -30,6 +30,7 @@ Indexes GenDataGrid planning, architecture, reference, QA, and log documents.
 - [Gate 8.4 Dynamic Row Height Architecture](architecture/gate-8-4-dynamic-row-height-architecture.md)
 - [Gate 8.5 Tree Row Model Architecture](architecture/gate-8-5-tree-row-model-architecture.md)
 - [Gate 8.6 Merge, Span, And Validation Architecture](architecture/gate-8-6-merge-span-validation-architecture.md)
+- [Gate 8.7 System Columns Architecture](architecture/gate-8-7-system-columns-architecture.md)
 
 ## Reference
 

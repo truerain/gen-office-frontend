@@ -8,6 +8,7 @@ import type {
   ColumnOrderState,
   ColumnPinningState,
   PaginationState,
+  RowSelectionState,
 } from '@tanstack/react-table';
 import * as React from 'react';
 import { createPortal, flushSync } from 'react-dom';
@@ -1456,6 +1457,58 @@ export const Gate86ColumnGroupHeader: Story = {
   },
 };
 
+export const Gate87SystemColumns: Story = {
+  render: () => {
+    const gridRef = React.useRef<GenDataGridHandle>(null);
+    const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
+    const createdRowIds = React.useMemo(() => new Set(['1', '3']), []);
+    const updatedRowIds = React.useMemo(() => new Set(['2']), []);
+    const deletedRowIds = React.useMemo(() => new Set(['4']), []);
+
+    return (
+      <div style={{ width: 980, padding: 16, display: 'grid', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <button type="button" onClick={() => gridRef.current?.clearSelection()}>
+            Clear selection
+          </button>
+          <span style={{ color: '#57606a', fontSize: 13 }}>
+            Selected rows: {Object.keys(rowSelection).join(', ') || 'none'}
+          </span>
+        </div>
+        <GenDataGrid<Person>
+          ref={gridRef}
+          data={gate6Data.slice(0, 8)}
+          columns={editableColumns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-8-7-system-columns"
+          enableRowStatus
+          enableRowNumber
+          enableRowSelection
+          rowSelectionMode="createdOnly"
+          rowSelection={rowSelection}
+          onRowSelectionChange={setRowSelection}
+          rowStatusResolver={({ rowId }) => {
+            if (createdRowIds.has(rowId)) return 'created';
+            if (deletedRowIds.has(rowId)) return 'deleted';
+            if (updatedRowIds.has(rowId)) return 'updated';
+            return 'clean';
+          }}
+          defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+          rowHeight={36}
+          headerHeight={40}
+          editCommitOnBlur
+          style={{
+            height: 360,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+      </div>
+    );
+  },
+};
+
 
 export const Gate85TreeRows: Story = {
   render: () => {
@@ -1537,6 +1590,9 @@ export const Gate85TreeRows: Story = {
           treeIndentWidth={16}
           rowHeight={36}
           headerHeight={40}
+          enableRowStatus
+          enableRowNumber
+          enableRowSelection
           enableVirtualization
           editCommitOnBlur
           onCellValueChange={handleCellValueChange}
@@ -1610,6 +1666,9 @@ export const Gate84DynamicRowHeight: Story = {
           getRowId={(row) => row.id}
           gridId="storybook-gen-datagrid-gate-8-4"
           defaultActiveCell={{ rowId: '3', columnId: 'name' }}
+          enableRowStatus
+          enableRowNumber
+          enableRowSelection
           enableVirtualization
           enableMasterDetail
           expandedRows={expandedRows}

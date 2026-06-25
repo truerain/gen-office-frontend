@@ -752,6 +752,68 @@ Editor 구현 계약 요약: [`editor-implementation-contract.md`](../reference/
 - planned slices must define independent API boundaries before implementation
 - 조합 불가능한 기능은 명시적으로 경고 또는 비활성화
 
+#### Gate 8.7 System Columns
+
+Architecture: [`gate-8-7-system-columns-architecture.md`](../architecture/gate-8-7-system-columns-architecture.md)
+
+- status
+  - complete (MVP)
+  - closes MVP acceptance gap for row number, row selection, and row status
+- public API
+  - `enableRowNumber`
+  - `enableRowSelection`
+  - `rowSelection`, `defaultRowSelection`, `onRowSelectionChange`
+  - `rowSelectionMode?: 'all' | 'createdOnly'`
+  - `enableRowStatus`
+  - `rowStatusResolver`
+- implementation summary
+  - added public types and props
+  - added controlled/uncontrolled TanStack `RowSelectionState` to `useDataGridTable`
+  - added `features/system-columns/systemColumns.tsx`
+  - generated status, selection, number columns before user columns
+  - kept system columns left-pinned and non-reorderable in MVP
+  - added DOM markers and interaction tests
+  - added `Gate87SystemColumns` Storybook scenario
+
+완료 기준:
+
+- row number, row selection, row status가 각각 flag로 동작
+- controlled/uncontrolled row selection 동작
+- row status resolver와 dirty/deleted fallback 동작
+- system column이 pinning, reorder, body col span, tree/master-detail, virtualization과 충돌하지 않음
+
+#### Gate 8.7-a Current Row Highlight
+
+- status
+  - planned
+  - supports external Master/Detail layouts where a selected master row drives a separate detail grid
+- naming
+  - prefer `currentRow` over `activeRow`
+  - `activeCell` remains the keyboard/focus/edit target
+  - `rowSelection` remains checkbox/system selection state
+  - `currentRow` represents the business row context used by Master/Detail and similar layouts
+- MVP public API
+  - `enableCurrentRowHighlight?: boolean`
+  - `onCurrentRowChange?: (rowId: string | null) => void`
+- MVP state policy
+  - source of truth is `activeCell?.rowId`
+  - current row and active cell row should stay identical in the first slice
+  - clicking or keyboard-moving to a data cell updates the current row through active cell movement
+  - system column clicks do not change current row because they do not change active cell
+  - checkbox row selection remains unrelated
+- implementation plan
+  - derive `currentRowId` from `activeCell?.rowId`
+  - emit `onCurrentRowChange` when the derived current row changes
+  - add `data-current-row="true"` to the matching body row
+  - add CSS row highlight guarded by `enableCurrentRowHighlight`
+  - add a Storybook scenario with two vertically stacked grids: master grid current row drives detail grid data
+  - add interaction tests for click, keyboard movement, system column click no-op, and callback behavior
+- deferred API
+  - `currentRowId`
+  - `defaultCurrentRowId`
+  - controlled current row independent from active cell
+  - conflict policy when controlled `activeCell` and controlled `currentRowId` disagree
+
 ## 12. 테스트 전략
 
 ### 단위 테스트 대상

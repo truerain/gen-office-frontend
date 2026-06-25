@@ -31,7 +31,11 @@ export type {
   GenDataGridPasteOptions,
   GenDataGridProps,
   GenDataGridRenderContext,
+  GenDataGridRowSelectionMode,
+  GenDataGridRowStatus,
+  GenDataGridRowStatusContext,
   GenDataGridScrollSeekingOptions,
+  GenDataGridSystemColumnKind,
 } from './GenDataGrid.types';
 export type {
   GenDataGridCellCoord,

@@ -43,6 +43,13 @@ import { parseClipboardGrid } from '../../features/range-selection/clipboard';
 import { applyClipboardPaste } from '../../features/range-selection/paste';
 import { useClipboardActions } from '../../features/range-selection/useClipboardActions';
 import { useRangeSelection } from '../../features/range-selection/useRangeSelection';
+import {
+  buildSystemColumns,
+  getEnabledSystemColumnIds,
+  isGenDataGridSystemColumnId,
+  normalizeColumnOrderForSystemColumns,
+  normalizeColumnPinningForSystemColumns,
+} from '../../features/system-columns/systemColumns';
 import { DataGridBody } from './DataGridBody';
 import { DataGridFooterBar } from './DataGridFooterBar';
 import { DataGridFooterRow } from './DataGridFooterRow';
@@ -122,6 +129,11 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     enableFooter = false,
     enablePagination = false,
     enableDirtyState = true,
+    enableRowNumber = false,
+    enableRowSelection = false,
+    rowSelectionMode = 'all',
+    enableRowStatus = false,
+    rowStatusResolver,
     enableVirtualization = false,
     enableTreeRows = false,
     getSubRows,
@@ -173,6 +185,79 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     () => normalizeTreeExpandedRows(treeExpandedRows ?? uncontrolledTreeExpandedRows),
     [treeExpandedRows, uncontrolledTreeExpandedRows]
   );
+  const [dirtyCells, setDirtyCells] = React.useState<Map<string, GenDataGridDirtyCell>>(
+    () => new Map()
+  );
+  const [deletedRowIdList, setDeletedRowIdList] = React.useState<string[]>(() => []);
+  const createDirtyState = React.useCallback(
+    (cells: Map<string, GenDataGridDirtyCell>, deletedRowIds: string[]) => ({
+      cells: Array.from(cells.values()),
+      rowIds: Array.from(
+        new Set([...Array.from(cells.values()).map((cell) => cell.rowId), ...deletedRowIds])
+      ),
+      deletedRowIds,
+    }),
+    []
+  );
+  const dirtyState = React.useMemo(
+    () => createDirtyState(dirtyCells, deletedRowIdList),
+    [createDirtyState, deletedRowIdList, dirtyCells]
+  );
+  const dirtyCellIds = React.useMemo(() => new Set(dirtyCells.keys()), [dirtyCells]);
+  const dirtyRowIds = React.useMemo(() => new Set(dirtyState.rowIds), [dirtyState.rowIds]);
+  const deletedRowIds = React.useMemo(
+    () => new Set(deletedRowIdList),
+    [deletedRowIdList]
+  );
+  const lastDataVersion = React.useRef(dataVersion);
+  const resolveRowStatus = React.useCallback(
+    (ctx: {
+      row: TData;
+      rowId: string;
+      rowIndex: number;
+    }) => {
+      const statusContext = {
+        ...ctx,
+        dirty: dirtyRowIds.has(ctx.rowId),
+        deleted: deletedRowIds.has(ctx.rowId),
+      };
+      return rowStatusResolver?.(statusContext) ??
+        (statusContext.deleted ? 'deleted' : statusContext.dirty ? 'updated' : 'clean');
+    },
+    [deletedRowIds, dirtyRowIds, rowStatusResolver]
+  );
+  const systemColumnIds = React.useMemo(
+    () => getEnabledSystemColumnIds({ enableRowStatus, enableRowSelection, enableRowNumber }),
+    [enableRowNumber, enableRowSelection, enableRowStatus]
+  );
+  const tableColumns = React.useMemo(
+    () => [
+      ...buildSystemColumns({
+        enableRowStatus,
+        enableRowSelection,
+        enableRowNumber,
+        resolveRowStatus,
+      }),
+      ...columns,
+    ],
+    [columns, enableRowNumber, enableRowSelection, enableRowStatus, resolveRowStatus]
+  );
+  const normalizedColumnOrder = React.useMemo(
+    () => normalizeColumnOrderForSystemColumns(props.columnOrder, systemColumnIds),
+    [props.columnOrder, systemColumnIds]
+  );
+  const normalizedDefaultColumnOrder = React.useMemo(
+    () => normalizeColumnOrderForSystemColumns(props.defaultColumnOrder, systemColumnIds),
+    [props.defaultColumnOrder, systemColumnIds]
+  );
+  const normalizedColumnPinning = React.useMemo(
+    () => normalizeColumnPinningForSystemColumns(props.columnPinning, systemColumnIds),
+    [props.columnPinning, systemColumnIds]
+  );
+  const normalizedDefaultColumnPinning = React.useMemo(
+    () => normalizeColumnPinningForSystemColumns(props.defaultColumnPinning, systemColumnIds),
+    [props.defaultColumnPinning, systemColumnIds]
+  );
   const setTreeExpandedRowsState = React.useCallback(
     (next: Record<string, boolean>) => {
       const normalized = normalizeTreeExpandedRows(next);
@@ -185,8 +270,22 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
   );
   const table = useDataGridTable({
     ...props,
+    columns: tableColumns,
     defaultData: data === undefined ? uncontrolledRows : defaultData,
+    columnOrder: normalizedColumnOrder,
+    defaultColumnOrder: normalizedDefaultColumnOrder,
+    columnPinning: normalizedColumnPinning,
+    defaultColumnPinning: normalizedDefaultColumnPinning,
     enableTreeRows: treeRowsEnabled,
+    enableRowSelection,
+    getRowCanSelect: (row) =>
+      rowSelectionMode === 'createdOnly'
+        ? resolveRowStatus({
+            row: row.original,
+            rowId: row.id,
+            rowIndex: row.index,
+          }) === 'created'
+        : true,
     getSubRows,
     treeExpandedRows: resolvedTreeExpandedRows,
     onTreeExpandedRowsChange: setTreeExpandedRowsState,
@@ -206,7 +305,14 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
   const filteredRows = table.getFilteredRowModel().rows;
   const rowIds = React.useMemo(() => tableRows.map((row) => row.id), [tableRows]);
   const columnIds = React.useMemo(
-    () => visibleColumns.map((column) => column.id),
+    () =>
+      visibleColumns
+        .map((column) => column.id)
+        .filter((columnId) => !isGenDataGridSystemColumnId(columnId)),
+    [visibleColumns]
+  );
+  const dataColumns = React.useMemo(
+    () => visibleColumns.filter((column) => !isGenDataGridSystemColumnId(column.id)),
     [visibleColumns]
   );
   const gridTemplateColumns = buildGridTemplateColumnsFromModel(visibleColumns, columnFitMode, viewportWidth);
@@ -259,10 +365,6 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     controlledActiveCell !== undefined ? controlledActiveCell : uncontrolledActiveCell;
   const previousFocusRestoreActiveCellRef = React.useRef<typeof activeCell>(null);
   const editing = useCellEditing();
-  const [dirtyCells, setDirtyCells] = React.useState<Map<string, GenDataGridDirtyCell>>(
-    () => new Map()
-  );
-  const [deletedRowIdList, setDeletedRowIdList] = React.useState<string[]>(() => []);
   const [uncontrolledExpandedRows, setUncontrolledExpandedRows] = React.useState(() =>
     normalizeExpandedRows(defaultExpandedRows)
   );
@@ -281,29 +383,6 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     },
     [expandedRows, onExpandedRowsChange, resolvedExpandedRows]
   );
-
-  const createDirtyState = React.useCallback(
-    (cells: Map<string, GenDataGridDirtyCell>, deletedRowIds: string[]) => ({
-      cells: Array.from(cells.values()),
-      rowIds: Array.from(
-        new Set([...Array.from(cells.values()).map((cell) => cell.rowId), ...deletedRowIds])
-      ),
-      deletedRowIds,
-    }),
-    []
-  );
-
-  const dirtyState = React.useMemo(
-    () => createDirtyState(dirtyCells, deletedRowIdList),
-    [createDirtyState, deletedRowIdList, dirtyCells]
-  );
-  const dirtyCellIds = React.useMemo(() => new Set(dirtyCells.keys()), [dirtyCells]);
-  const dirtyRowIds = React.useMemo(() => new Set(dirtyState.rowIds), [dirtyState.rowIds]);
-  const deletedRowIds = React.useMemo(
-    () => new Set(deletedRowIdList),
-    [deletedRowIdList]
-  );
-  const lastDataVersion = React.useRef(dataVersion);
 
   const updateDirtyCells = React.useCallback(
     (
@@ -441,13 +520,18 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     [enableVirtualization, rowIds]
   );
 
+  const clearSelection = React.useCallback(() => {
+    rangeSelection.clearSelection();
+    table.setRowSelection({});
+  }, [rangeSelection.clearSelection, table]);
+
   React.useImperativeHandle(
     forwardedRootRef,
     () => ({
       get rootElement() {
         return rootRef.current;
       },
-      clearSelection: rangeSelection.clearSelection,
+      clearSelection,
       copySelection: clipboard.copySelection,
       scrollToCell,
       clearColumnFilters,
@@ -462,12 +546,12 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       clearColumnFilters,
       clearFilters,
       clearGlobalFilter,
+      clearSelection,
       clipboard.copySelection,
       commitDirtyState,
       dirtyState,
       deleteRows,
       forwardedRootRef,
-      rangeSelection.clearSelection,
       resetDirtyState,
       scrollToCell,
     ]
@@ -683,9 +767,12 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
         return;
       }
 
-      if (event.key === 'Escape' && rangeSelection.selections.length > 0) {
+      if (
+        event.key === 'Escape' &&
+        (rangeSelection.selections.length > 0 || table.getSelectedRowModel().rows.length > 0)
+      ) {
         event.preventDefault();
-        rangeSelection.clearSelection();
+        clearSelection();
         return;
       }
 
@@ -795,6 +882,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     },
     [
       activeCell,
+      clearSelection,
       clipboard,
       editing.editingCell,
       enableRangeSelection,
@@ -806,6 +894,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       getRowCanExpandTree,
       setTreeExpandedRowState,
       startActiveCellEditing,
+      table,
       tableRows,
       treeRowsEnabled,
     ]
@@ -832,7 +921,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       const result = applyClipboardPaste({
         matrix: parseClipboardGrid(text),
         rows: tableRows,
-        columns: visibleColumns,
+        columns: dataColumns,
         activeCell,
         readOnly: resolvedReadOnly,
         isCellEditable,
@@ -860,8 +949,8 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       rangeSelection,
       resolvedReadOnly,
       setActiveCell,
+      dataColumns,
       tableRows,
-      visibleColumns,
     ]
   );
 

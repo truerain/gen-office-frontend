@@ -104,6 +104,17 @@
   z-index: 9;
 }
 
+.gen-datagrid__header-cell[data-system-column='true'] {
+  justify-content: center;
+  padding: 0;
+  color: #57606a;
+}
+
+.gen-datagrid__header-cell[data-system-column='true'] .gen-datagrid__header-content {
+  flex: 0 1 auto;
+  text-align: center;
+}
+
 .gen-datagrid__header-cell--group {
   justify-content: center;
   text-align: center;
@@ -255,6 +266,45 @@
   display: flex;
   align-items: center;
   user-select: none;
+}
+
+.gen-datagrid__cell:has(.gen-datagrid__row-status),
+.gen-datagrid__cell:has(.gen-datagrid__row-selection-checkbox),
+.gen-datagrid__cell:has(.gen-datagrid__row-number) {
+  justify-content: center;
+  padding: 0;
+  color: #57606a;
+  background: #f6f8fa;
+}
+
+.gen-datagrid__row-status {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.gen-datagrid__row-status[data-gen-datagrid-row-status='created'] {
+  background: #1a7f37;
+}
+
+.gen-datagrid__row-status[data-gen-datagrid-row-status='updated'] {
+  background: #bf8700;
+}
+
+.gen-datagrid__row-status[data-gen-datagrid-row-status='deleted'] {
+  background: #cf222e;
+}
+
+.gen-datagrid__row-selection-checkbox {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+}
+
+.gen-datagrid__row-number {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
 }
 
 .gen-datagrid__detail-toggle {

@@ -12,6 +12,7 @@ import type {
   GenDataGridEditPolicy,
   GenDataGridEditOption,
   GenDataGridEditType,
+  GenDataGridSystemColumnKind,
 } from '../../GenDataGrid.types';
 
 declare module '@tanstack/react-table' {
@@ -29,5 +30,6 @@ declare module '@tanstack/react-table' {
     editPolicy?: GenDataGridEditPolicy;
     renderEditor?: (ctx: GenDataGridEditorContext<TData>) => React.ReactNode;
     bodyColSpan?: number | ((ctx: GenDataGridBodyColSpanContext<TData>) => number);
+    systemColumn?: GenDataGridSystemColumnKind;
   }
 }

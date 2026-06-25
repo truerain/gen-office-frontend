@@ -19,6 +19,7 @@ type DataGridCellProps = {
   editOpenOnStart?: boolean;
   allowReclickEdit?: boolean;
   allowDoubleClickEdit?: boolean;
+  activateOnMouseDown?: boolean;
   pinning?: {
     pinned: 'left' | 'right' | false;
     isLastLeftPinned: boolean;
@@ -47,6 +48,7 @@ export function DataGridCell({
   editOpenOnStart,
   allowReclickEdit = true,
   allowDoubleClickEdit = true,
+  activateOnMouseDown = true,
   pinning,
   bodyColSpan,
   style,
@@ -82,6 +84,9 @@ export function DataGridCell({
       onMouseDown={(event) => {
         if (event.button !== 0) return;
         if ((event.target as HTMLElement | null)?.closest(interactiveTargetSelector)) {
+          return;
+        }
+        if (!activateOnMouseDown) {
           return;
         }
         event.preventDefault();

@@ -279,10 +279,11 @@ Implementation status: `enableRangeSelection`, `selectedRanges`, `defaultSelecte
 | `rowSelectionMode` | `'all' \| 'createdOnly'` | MVP | row selection policy |
 | `enableRowNumber` | `boolean` | MVP | row number column |
 | `enableRowStatus` | `boolean` | MVP | row status column |
-| `rowStatusResolver` | `(rowId) => RowStatus` | MVP | row status resolver |
-| `enableActiveRowHighlight` | `boolean` | MVP | active row highlight |
+| `rowStatusResolver` | `(ctx: GenDataGridRowStatusContext<TData>) => GenDataGridRowStatus` | MVP | row status resolver |
+| `enableCurrentRowHighlight` | `boolean` | MVP | current row highlight |
+| `onCurrentRowChange` | `(rowId: string \| null) => void` | MVP | current row callback derived from active cell row |
 
-Implementation status: row number, row selection, row status, and active-row highlight props are planned MVP surface only. They are not yet present in `GenDataGrid.types.ts` and should not be documented as implemented runtime behavior until the system-column slice is added.
+Implementation status: row number, row selection, and row status props are implemented in Gate 8.7. `enableCurrentRowHighlight` and `onCurrentRowChange` are planned for Gate 8.7-a. Controlled `currentRowId` and `defaultCurrentRowId` are deferred until a later slice.
 
 ### 5.7 Footer Feature
 

@@ -1,5 +1,43 @@
 ## 2026-06-25
 
+### Gate 8.7-a Current Row Highlight 계획 추가
+
+- Master/Detail 상하 2-grid 시나리오를 위한 current row highlight 후속 gate를 계획에 추가했다.
+- checkbox `rowSelection`과 분리된 업무 기준 행 개념으로 `currentRow` 명명을 채택했다.
+- MVP는 `activeCell?.rowId`를 source of truth로 두고 `enableCurrentRowHighlight`, `onCurrentRowChange`부터 시작하도록 정리했다.
+- controlled `currentRowId`, `defaultCurrentRowId`, activeCell/currentRow 불일치 정책은 후속 slice로 미뤘다.
+- 관련 파일: `docs/plan/div-datagrid-development-plan.md`, `docs/plan/mvp-test-gates.md`, `docs/reference/api-structure.md`, `docs/reference/api-comparison-with-gen-grid.md`, `docs/log/implementation-log.md`
+
+### Gate 8.7 System Column Active Cell Click Fix
+
+- system column body cell 클릭 시 active cell이 system column으로 잠깐 이동했다가 보정되는 현상을 수정했다.
+- `DataGridCell`에 mouse down activation 제어를 추가하고, `DataGridBodyRow`에서 system column은 active/range/edit 대상에서 제외했다.
+- system column 클릭이 `onActiveCellChange`를 호출하지 않는 interaction test를 추가했다.
+- 관련 파일: `src/renderers/div-grid/DataGridCell.tsx`, `src/renderers/div-grid/DataGridBodyRow.tsx`, `test/interaction.test.tsx`, `docs/log/implementation-log.md`
+
+### Gate 8.7 System Column Header Align 조정
+
+- system column header의 기본 정렬이 중앙으로 고정되도록 `.gen-datagrid__header-content` 정렬을 보강했다.
+- 관련 파일: `src/index.css`, `docs/log/implementation-log.md`
+
+### Gate 8.7 System Columns 구현
+
+- row number, row selection, row status system column을 구현했다.
+- `GenDataGrid.types.ts`에 `enableRowNumber`, `enableRowSelection`, `rowSelection`, `defaultRowSelection`, `onRowSelectionChange`, `rowSelectionMode`, `enableRowStatus`, `rowStatusResolver`와 관련 public type을 추가했다.
+- `useDataGridTable`에 TanStack `RowSelectionState` controlled/uncontrolled state를 연결했다.
+- `features/system-columns/systemColumns.tsx`에서 status, selection, number column을 생성하고, system column을 왼쪽 고정/비재정렬/비리사이즈 대상으로 정규화했다.
+- active cell, range selection, clipboard paste 대상에서 system column을 제외하고, tree/master-detail toggle은 첫 user column에 유지되도록 조정했다.
+- `Gate87SystemColumns` Storybook scenario와 interaction test를 추가했다.
+- 관련 파일: `src/GenDataGrid.types.ts`, `src/core/table/useDataGridTable.ts`, `src/features/system-columns/systemColumns.tsx`, `src/renderers/div-grid/DataGridRoot.tsx`, `src/renderers/div-grid/DataGridHeader.tsx`, `src/renderers/div-grid/DataGridBodyRow.tsx`, `src/index.css`, `src/stories/GenDataGrid.baseline.stories.tsx`, `test/interaction.test.tsx`, `docs/architecture/gate-8-7-system-columns-architecture.md`, `docs/plan/mvp-test-gates.md`, `docs/reference/api-structure.md`, `docs/reference/api-comparison-with-gen-grid.md`
+
+### Gate 8.7 System Columns Architecture 작성
+
+- row number, row selection, row status를 MVP acceptance gap으로 보고 Gate 8.7 System Columns architecture 문서를 추가했다.
+- system column을 별도 DOM lane이 아니라 TanStack `ColumnDef`로 합성하는 방향으로 정리했다.
+- public API, row selection state, row status fallback, system column ordering/pinning/reorder 제한, 구현 순서와 acceptance criteria를 문서화했다.
+- 문서 README와 개발 계획, MVP gate 문서에 Gate 8.7을 다음 구현 대상으로 연결했다.
+- 관련 파일: `docs/architecture/gate-8-7-system-columns-architecture.md`, `docs/README.md`, `docs/plan/div-datagrid-development-plan.md`, `docs/plan/mvp-test-gates.md`, `docs/log/implementation-log.md`
+
 ### GenDataGrid 문서 구현 상태 정합화
 
 - 실제 `GenDataGrid.types.ts`, renderer, interaction test를 기준으로 API 문서의 구현 상태를 정리했다.

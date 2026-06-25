@@ -74,7 +74,7 @@ type GenDataGridDataProps<TData> =
 | `checkboxSelectionMode` | `rowSelectionMode` | 변경 | MVP | `'all' \| 'createdOnly'`. checkbox뿐 아니라 row selection 정책 의미로 확장. |
 | `enableRowNumber` | `enableRowNumber` | 유지 | MVP | row number system column. |
 | `enableRowStatus` | `enableRowStatus` | 유지 | MVP | created/updated/deleted 표시 column. |
-| `enableActiveRowHighlight` | `enableActiveRowHighlight` | 유지 | MVP | active row highlight. |
+| `enableActiveRowHighlight` | `enableCurrentRowHighlight` | 변경 | MVP | Master/Detail 기준 current row highlight. |
 | `enableRangeSelection` | `enableRangeSelection` | 유지 | MVP | drag range selection. |
 | `enableGrouping` | `enableGrouping` | MVP 제외 | Extension | TanStack grouping은 tree/detail과 조합 정책 정리 후 공개. |
 | `rowSpanning` | `rowMerge` | 변경 | Extension | div에서는 native rowSpan이 없으므로 `rowMerge` 또는 `visualRowMerge` 명칭 권장. |
@@ -84,7 +84,7 @@ type GenDataGridDataProps<TData> =
 | `enableFooter` | `enableFooter` | 유지 | MVP | grid 외부 footer 영역. |
 | `enablePagination` | `enablePagination` | 유지 | MVP | pagination UI/state. |
 
-Implementation status: `enableRangeSelection`, `selectedRanges`, `defaultSelectedRanges`, and `onSelectedRangesChange` are implemented for range selection. `enableClipboard`, `clipboardOptions.includeHeader`, and Gate 4.2 plain-text `pasteOptions` are implemented. `columnFitMode` is implemented for width grow behavior. Row number, row selection, row status, and active-row highlight props are not yet implemented in `GenDataGrid.types.ts`. Paste-to-selection remains deferred.
+Implementation status: `enableRangeSelection`, `selectedRanges`, `defaultSelectedRanges`, and `onSelectedRangesChange` are implemented for range selection. `enableClipboard`, `clipboardOptions.includeHeader`, and Gate 4.2 plain-text `pasteOptions` are implemented. `columnFitMode` is implemented for width grow behavior. Row number, row selection, and row status props are implemented in Gate 8.7. Current-row highlight and paste-to-selection remain deferred.
 
 ## 5. Controlled State API
 
@@ -202,13 +202,13 @@ type GenDataGridRenderContext<TData> = {
 | GenGrid API | GenDataGrid API | 상태 | 우선순위 | 설명 |
 | --- | --- | --- | --- | --- |
 | `enableRowStatus` | `enableRowStatus` | 유지 | MVP | status column 활성화. |
-| `rowStatusResolver` | `rowStatusResolver` | 유지 | MVP | row id 기준 status 반환. |
+| `rowStatusResolver` | `rowStatusResolver` | 유지 | MVP | row/status context 기준 status 반환. |
 | `checkboxSelection` | `enableRowSelection` | 변경 | MVP | checkbox selection보다 row selection 의미가 넓다. |
 | `checkboxSelectionMode` | `rowSelectionMode` | 변경 | MVP | `'all' \| 'createdOnly'`. |
 | `rowSelection` | `rowSelection` | 유지 | MVP | controlled state. |
 | `onRowSelectionChange` | `onRowSelectionChange` | 유지 | MVP | controlled callback. |
 
-Implementation status: row status, row selection, and row number APIs in this section are planned MVP compatibility targets only. They are not current runtime props and should be implemented as a separate system-column slice.
+Implementation status: row status, row selection, and row number APIs in this section are implemented in Gate 8.7 as generated system columns.
 
 ## 11. Context Menu API
 
@@ -405,7 +405,8 @@ type GenDataGridProps<TData> =
     rowSelectionMode?: 'all' | 'createdOnly';
     enableRowNumber?: boolean;
     enableRowStatus?: boolean;
-    enableActiveRowHighlight?: boolean;
+    enableCurrentRowHighlight?: boolean;
+    onCurrentRowChange?: (rowId: string | null) => void;
     enableRangeSelection?: boolean;
     enableFooterRow?: boolean;
     enableStickyFooterRow?: boolean;
@@ -458,7 +459,7 @@ type GenDataGridProps<TData> =
       value: unknown;
     }) => void;
 
-    rowStatusResolver?: (rowId: string) => 'clean' | 'created' | 'updated' | 'deleted';
+    rowStatusResolver?: (ctx: GenDataGridRowStatusContext<TData>) => GenDataGridRowStatus;
     onDirtyChange?: (dirty: boolean) => void;
     onDirtyRowsChange?: (rowIds: string[]) => void;
     dirtyKeys?: string[];
@@ -567,4 +568,4 @@ Still deferred:
 - Validation UI/state marker.
 - Visual row merge / rowSpan replacement.
 - Arbitrary header span and group header interaction APIs.
-- Row number, row selection, and row status system columns.
+- Current-row highlight.

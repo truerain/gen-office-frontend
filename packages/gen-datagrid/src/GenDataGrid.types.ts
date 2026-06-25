@@ -9,6 +9,7 @@ import type {
   ColumnPinningState,
   ColumnSizingState,
   PaginationState,
+  RowSelectionState,
   Table,
   VisibilityState,
 } from '@tanstack/react-table';
@@ -199,6 +200,14 @@ export type GenDataGridFilterMode = 'client' | 'manual';
 export type GenDataGridPaginationMode = 'client' | 'manual';
 export type GenDataGridDeleteRowsBehavior = 'mark' | 'removeUncontrolled';
 export type GenDataGridColumnFitMode = 'none' | 'grow';
+export type GenDataGridSystemColumnKind = 'rowStatus' | 'rowSelection' | 'rowNumber';
+export type GenDataGridRowSelectionMode = 'all' | 'createdOnly';
+export type GenDataGridRowStatus = 'clean' | 'created' | 'updated' | 'deleted';
+
+export type GenDataGridRowStatusContext<TData> = GenDataGridRowContext<TData> & {
+  dirty: boolean;
+  deleted: boolean;
+};
 
 export type GenDataGridRenderContext<TData> = {
   table: Table<TData>;
@@ -239,6 +248,14 @@ export type GenDataGridProps<TData> = {
   enableFooter?: boolean;
   enablePagination?: boolean;
   enableDirtyState?: boolean;
+  enableRowNumber?: boolean;
+  enableRowSelection?: boolean;
+  rowSelectionMode?: GenDataGridRowSelectionMode;
+  rowSelection?: RowSelectionState;
+  defaultRowSelection?: RowSelectionState;
+  onRowSelectionChange?: (next: RowSelectionState) => void;
+  enableRowStatus?: boolean;
+  rowStatusResolver?: (ctx: GenDataGridRowStatusContext<TData>) => GenDataGridRowStatus;
   enableVirtualization?: boolean;
   enableTreeRows?: boolean;
   getSubRows?: (row: TData, index: number) => readonly TData[] | undefined;
