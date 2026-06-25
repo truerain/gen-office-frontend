@@ -23,7 +23,11 @@ import type {
   GenDataGridTreeExpandedState,
 } from '../GenDataGrid.types';
 import { createEditorBlurHandler } from '../features/editing/blurPolicy';
-import { GenDataGrid } from '../index';
+import {
+  GenDataGrid,
+  collectTreeExpandedRows,
+  collapseTreeExpandedRowsFromDepth,
+} from '../index';
 
 type Person = {
   id: string;
@@ -67,25 +71,10 @@ function createTreeRows(): TreePerson[] {
   return createLevel('', 0, treeBranchingByDepth[0]);
 }
 
-function collectTreeExpandedRows(
-  rows: readonly TreePerson[],
-  options?: { maxDepth?: number; maxRootCount?: number }
-): GenDataGridTreeExpandedState {
-  const expanded: GenDataGridTreeExpandedState = {};
-  const visit = (items: readonly TreePerson[], depth: number) => {
-    items.forEach((row, index) => {
-      if (depth === 0 && options?.maxRootCount !== undefined && index >= options.maxRootCount) {
-        return;
-      }
-      if (!row.children?.length) return;
-      if (options?.maxDepth !== undefined && depth >= options.maxDepth) return;
-      expanded[row.id] = true;
-      visit(row.children, depth + 1);
-    });
-  };
-  visit(rows, 0);
-  return expanded;
-}
+const treeExpansionAccessors = {
+  getRowId: (row: TreePerson) => row.id,
+  getSubRows: (row: TreePerson) => row.children,
+};
 
 function countTreeRows(rows: readonly TreePerson[]): number {
   return rows.reduce((count, row) => count + 1 + countTreeRows(row.children ?? []), 0);
@@ -1380,7 +1369,12 @@ export const Gate85TreeRows: Story = {
   render: () => {
     const [treeData, setTreeData] = React.useState(() => createTreeRows());
     const [treeExpandedRows, setTreeExpandedRows] = React.useState<GenDataGridTreeExpandedState>(() =>
-      collectTreeExpandedRows(createTreeRows(), { maxDepth: 2, maxRootCount: 2 })
+      collectTreeExpandedRows({
+        rows: treeData,
+        ...treeExpansionAccessors,
+        maxVisibleDepth: 3,
+        maxRootCount: 2,
+      })
     );
     const totalTreeRowCount = React.useMemo(() => countTreeRows(treeData), [treeData]);
     const handleCellValueChange = React.useCallback(
@@ -1395,12 +1389,41 @@ export const Gate85TreeRows: Story = {
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <button
             type="button"
-            onClick={() => setTreeExpandedRows(collectTreeExpandedRows(treeData, { maxDepth: 2, maxRootCount: 2 }))}
+            onClick={() =>
+              setTreeExpandedRows(
+                collectTreeExpandedRows({
+                  rows: treeData,
+                  ...treeExpansionAccessors,
+                  maxVisibleDepth: 3,
+                  maxRootCount: 2,
+                })
+              )
+            }
           >
             Expand sample branches
           </button>
-          <button type="button" onClick={() => setTreeExpandedRows(collectTreeExpandedRows(treeData))}>
+          <button
+            type="button"
+            onClick={() =>
+              setTreeExpandedRows(collectTreeExpandedRows({ rows: treeData, ...treeExpansionAccessors }))
+            }
+          >
             Expand all 5 levels
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              setTreeExpandedRows((current) =>
+                collapseTreeExpandedRowsFromDepth({
+                  expandedRows: current,
+                  rows: treeData,
+                  ...treeExpansionAccessors,
+                  collapseFromDepth: 3,
+                })
+              )
+            }
+          >
+            Collapse level 3+
           </button>
           <button type="button" onClick={() => setTreeExpandedRows({})}>
             Collapse all

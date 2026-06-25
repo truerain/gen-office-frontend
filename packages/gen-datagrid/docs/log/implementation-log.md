@@ -1,5 +1,12 @@
 ## 2026-06-25
 
+### Gate 8.5 Tree Expansion Helper Implementation
+
+- `treeExpandedRows` controlled state를 직접 계산할 수 있도록 public pure helper를 추가했습니다.
+- `collectTreeExpandedRows`는 전체 expand, 일부 root branch expand, visible depth 기준 expand에 사용할 수 있습니다.
+- `collapseTreeExpandedRowsFromDepth`는 현재 expanded state에서 특정 visible depth 이상을 접는 용도로 사용할 수 있습니다.
+- `Gate85TreeRows` Storybook은 local helper 대신 exported helper를 사용하도록 변경했습니다.
+- `test/treeState.test.ts`로 helper contract를 고정했습니다.
 ### Gate 8.5 Deferred Tree Collapse Descendant Policy
 
 - Gate 8.5 MVP는 parent collapse 시 descendant expansion state를 유지하는 현재 정책을 기본 동작으로 둡니다.

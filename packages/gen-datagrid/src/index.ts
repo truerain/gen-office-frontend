@@ -36,3 +36,12 @@ export type {
   GenDataGridRangeSelection,
   GenDataGridRangeSelections,
 } from './features/range-selection/rangeSelection';
+export {
+  collectTreeExpandedRows,
+  collapseTreeExpandedRowsFromDepth,
+} from './features/tree/treeState';
+export type {
+  CollectTreeExpandedRowsArgs,
+  CollapseTreeExpandedRowsFromDepthArgs,
+  GenDataGridTreePath,
+} from './features/tree/treeState';

@@ -186,6 +186,7 @@ Gate 8.5 MVP에서는 `enableTreeRows`와 `enableMasterDetail` 동시 사용을 
 - DataGridRoot가 mouse toggle, ArrowLeft/ArrowRight keyboard policy, collapse cleanup을 처리한다.
 - DataGridBody와 DataGridVirtualBody 모두 visible flattened tree rows를 렌더링한다.
 - Gate85TreeRows Storybook scenario와 interaction tests로 주요 contract를 고정했다.
+- collectTreeExpandedRows, collapseTreeExpandedRowsFromDepth helper로 전체/레벨별 tree expansion state 계산 예제를 제공한다.
 
 ## 구현 계획
 
