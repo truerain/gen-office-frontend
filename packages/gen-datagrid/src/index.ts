@@ -7,7 +7,9 @@ import './core/table/tanstack-table';
 export { GenDataGrid } from './GenDataGrid';
 export type {
   GenDataGridActiveCell,
+  GenDataGridBodyColSpanContext,
   GenDataGridCellValueChange,
+  GenDataGridColumnFitMode,
   GenDataGridDirtyCell,
   GenDataGridDirtyState,
   GenDataGridRowContext,

@@ -115,6 +115,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     enableColumnSizing = true,
     enableColumnReorder = true,
     enableColumnFilters = false,
+    columnFitMode = 'none',
     enableGlobalFilter = false,
     enableFooterRow = false,
     enableStickyFooterRow = false,
@@ -154,6 +155,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
   } = props;
   const rootRef = React.useRef<HTMLDivElement | null>(null);
   const [viewportElement, setViewportElement] = React.useState<HTMLDivElement | null>(null);
+  const [viewportWidth, setViewportWidth] = React.useState<number | undefined>(undefined);
   const virtualBodyRef = React.useRef<DataGridVirtualBodyHandle | null>(null);
   const reactId = React.useId();
   const resolvedGridId = React.useMemo(
@@ -207,8 +209,31 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     () => visibleColumns.map((column) => column.id),
     [visibleColumns]
   );
-  const gridTemplateColumns = buildGridTemplateColumnsFromModel(visibleColumns);
+  const gridTemplateColumns = buildGridTemplateColumnsFromModel(visibleColumns, columnFitMode, viewportWidth);
   const resolvedReadOnly = readOnly ?? readonly ?? false;
+
+  React.useEffect(() => {
+    if (columnFitMode !== 'grow' || !viewportElement) {
+      setViewportWidth(undefined);
+      return;
+    }
+
+    const reportViewportWidth = () => {
+      setViewportWidth(viewportElement.clientWidth || undefined);
+    };
+
+    reportViewportWidth();
+
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', reportViewportWidth);
+      return () => window.removeEventListener('resize', reportViewportWidth);
+    }
+
+    const resizeObserver = new ResizeObserver(reportViewportWidth);
+    resizeObserver.observe(viewportElement);
+
+    return () => resizeObserver.disconnect();
+  }, [columnFitMode, viewportElement]);
   const rangeSelection = useRangeSelection({
     rootRef,
     enabled: enableRangeSelection,

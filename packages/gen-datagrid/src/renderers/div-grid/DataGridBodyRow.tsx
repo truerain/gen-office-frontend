@@ -1,7 +1,7 @@
 // packages/gen-datagrid/src/renderers/div-grid/DataGridBodyRow.tsx
 // Renders a single body row shared by standard and virtual body renderers.
 
-import { flexRender, type Row } from '@tanstack/react-table';
+import { flexRender, type Cell, type Row } from '@tanstack/react-table';
 
 import type {
   GenDataGridActiveCell,
@@ -28,6 +28,35 @@ import {
 } from '../../features/range-selection/rangeSelection';
 import { DataGridCell } from './DataGridCell';
 import { formatCellValue } from './cellValue';
+
+function getPinningZone<TData>(cell: Cell<TData, unknown>, enablePinning: boolean) {
+  if (!enablePinning) return 'center';
+  return cell.column.getIsPinned() || 'center';
+}
+
+function clampBodyColSpan<TData>({
+  cells,
+  cellIndex,
+  requestedSpan,
+  enablePinning,
+}: {
+  cells: Cell<TData, unknown>[];
+  cellIndex: number;
+  requestedSpan: number;
+  enablePinning: boolean;
+}) {
+  const span = Math.max(1, Math.floor(requestedSpan));
+  if (span <= 1) return 1;
+
+  const currentCell = cells[cellIndex];
+  if (!currentCell) return 1;
+
+  const zone = getPinningZone(currentCell, enablePinning);
+  const availableInZone = cells.slice(cellIndex).findIndex((cell) => getPinningZone(cell, enablePinning) !== zone);
+  const maxSpan = availableInZone < 0 ? cells.length - cellIndex : availableInZone;
+
+  return span <= maxSpan ? span : 1;
+}
 
 type DataGridBodyRowProps<TData> = {
   row: Row<TData>;
@@ -186,6 +215,8 @@ export function DataGridBodyRow<TData>({
 
   const rowId = row.id;
   const rowIndex = row.index;
+  const orderedCells = getOrderedVisibleCells(row);
+  let coveredCellCount = 0;
 
   return (
     <div
@@ -208,7 +239,12 @@ export function DataGridBodyRow<TData>({
         ...style,
       }}
     >
-      {getOrderedVisibleCells(row).map((cell, cellIndex) => {
+      {orderedCells.map((cell, cellIndex) => {
+        if (coveredCellCount > 0) {
+          coveredCellCount -= 1;
+          return null;
+        }
+
         const columnId = cell.column.id;
         const editableContext = createEditableContext({ row, column: cell.column });
         const isEditable = resolveEditableCell({
@@ -233,6 +269,27 @@ export function DataGridBodyRow<TData>({
           onEditCancel();
         };
         const meta = cell.column.columnDef.meta;
+        const requestedBodyColSpan =
+          typeof meta?.bodyColSpan === 'function'
+            ? meta.bodyColSpan({
+                row: row.original,
+                rowId,
+                rowIndex,
+                columnId,
+                value: editableContext.value,
+              })
+            : meta?.bodyColSpan;
+        const bodyColSpan = requestedBodyColSpan
+          ? clampBodyColSpan({
+              cells: orderedCells,
+              cellIndex,
+              requestedSpan: requestedBodyColSpan,
+              enablePinning,
+            })
+          : 1;
+        if (bodyColSpan > 1) {
+          coveredCellCount = bodyColSpan - 1;
+        }
         const resolvedEditPolicy = resolveEditPolicy(editPolicy, meta?.editPolicy);
         const editOptions = meta?.getEditOptions?.(editableContext) ?? meta?.editOptions;
         const selectOnFocus =
@@ -405,6 +462,8 @@ export function DataGridBodyRow<TData>({
             allowReclickEdit={resolvedEditPolicy.startTriggers.reclick}
             allowDoubleClickEdit={resolvedEditPolicy.startTriggers.doubleClick}
             pinning={pinning}
+            bodyColSpan={bodyColSpan}
+            style={{ gridColumn: String(cellIndex + 1) + ' / span ' + String(bodyColSpan) }}
             onActivate={onActiveCellChange}
             onEditStart={({ entryReason }) => {
               if (!isEditable) return;

@@ -104,6 +104,16 @@
   z-index: 9;
 }
 
+.gen-datagrid__header-cell--group {
+  justify-content: center;
+  text-align: center;
+  background: #eef2f6;
+}
+
+.gen-datagrid__header-cell--group .gen-datagrid__header-content {
+  flex: 0 1 auto;
+}
+
 .gen-datagrid__footer-rowgroup {
   background: #f6f8fa;
 }

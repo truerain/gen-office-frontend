@@ -70,6 +70,14 @@ export type GenDataGridEditableContext<TData> = {
   value: unknown;
 };
 
+export type GenDataGridBodyColSpanContext<TData> = {
+  row: TData;
+  rowId: string;
+  rowIndex: number;
+  columnId: string;
+  value: unknown;
+};
+
 export type GenDataGridEditorContext<TData> = GenDataGridEditableContext<TData> & {
   draftValue: unknown;
   setDraftValue: (nextValue: unknown) => void;
@@ -190,6 +198,7 @@ export type GenDataGridEditPolicy = {
 export type GenDataGridFilterMode = 'client' | 'manual';
 export type GenDataGridPaginationMode = 'client' | 'manual';
 export type GenDataGridDeleteRowsBehavior = 'mark' | 'removeUncontrolled';
+export type GenDataGridColumnFitMode = 'none' | 'grow';
 
 export type GenDataGridRenderContext<TData> = {
   table: Table<TData>;
@@ -223,6 +232,7 @@ export type GenDataGridProps<TData> = {
   enableColumnSizing?: boolean;
   enableColumnReorder?: boolean;
   enableColumnFilters?: boolean;
+  columnFitMode?: GenDataGridColumnFitMode;
   enableGlobalFilter?: boolean;
   enableFooterRow?: boolean;
   enableStickyFooterRow?: boolean;

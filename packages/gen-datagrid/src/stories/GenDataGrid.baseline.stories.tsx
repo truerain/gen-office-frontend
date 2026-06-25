@@ -1365,6 +1365,98 @@ export const Gate83NestedGridComposition: Story = {
   },
 };
 
+export const Gate86BodyColSpan: Story = {
+  render: () => {
+    const spanColumns: ColumnDef<Person, unknown>[] = [
+      {
+        accessorKey: 'name',
+        header: 'Name',
+        size: 180,
+        meta: {
+          editable: true,
+          bodyColSpan: ({ rowId }) => (rowId === '1' || rowId === '3' ? 2 : 1),
+        },
+      },
+      { accessorKey: 'role', header: 'Role', size: 180 },
+      { accessorKey: 'score', header: 'Score', size: 110, meta: { editable: true, editType: 'number' } },
+      { accessorKey: 'location', header: 'Location', size: 180 },
+      { accessorKey: 'note', header: 'Note', size: 260, meta: { editable: true } },
+    ];
+
+    return (
+      <div style={{ width: 980, padding: 16, display: 'grid', gap: 10 }}>
+        <GenDataGrid<Person>
+          data={gate6Data.slice(0, 12)}
+          columns={spanColumns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-8-6-body-colspan"
+          columnFitMode="grow"
+          defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+          rowHeight={36}
+          headerHeight={40}
+          editCommitOnBlur
+          style={{
+            height: 360,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+      </div>
+    );
+  },
+};
+
+export const Gate86ColumnGroupHeader: Story = {
+  render: () => {
+    const groupedColumns: ColumnDef<Person, unknown>[] = [
+      {
+        header: 'Identity',
+        columns: [
+          { accessorKey: 'name', header: 'Name', size: 180, meta: { editable: true } },
+          { accessorKey: 'role', header: 'Role', size: 180 },
+        ],
+      },
+      {
+        header: 'Metrics',
+        columns: [
+          { accessorKey: 'score', header: 'Score', size: 110, meta: { editable: true, editType: 'number' } },
+        ],
+      },
+      {
+        header: 'Context',
+        columns: [
+          { accessorKey: 'location', header: 'Location', size: 180 },
+          { accessorKey: 'note', header: 'Note', size: 260, meta: { editable: true } },
+        ],
+      },
+    ];
+
+    return (
+      <div style={{ width: 980, padding: 16, display: 'grid', gap: 10 }}>
+        <GenDataGrid<Person>
+          data={gate6Data.slice(0, 12)}
+          columns={groupedColumns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-8-6-column-group-header"
+          columnFitMode="grow"
+          defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+          rowHeight={36}
+          headerHeight={40}
+          editCommitOnBlur
+          style={{
+            height: 380,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+      </div>
+    );
+  },
+};
+
+
 export const Gate85TreeRows: Story = {
   render: () => {
     const [treeData, setTreeData] = React.useState(() => createTreeRows());

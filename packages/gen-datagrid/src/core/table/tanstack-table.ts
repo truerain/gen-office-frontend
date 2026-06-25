@@ -5,6 +5,7 @@ import '@tanstack/react-table';
 import type * as React from 'react';
 
 import type {
+  GenDataGridBodyColSpanContext,
   GenDataGridEditBlurOwnership,
   GenDataGridEditableContext,
   GenDataGridEditorContext,
@@ -27,5 +28,6 @@ declare module '@tanstack/react-table' {
     editBlurOwnership?: GenDataGridEditBlurOwnership;
     editPolicy?: GenDataGridEditPolicy;
     renderEditor?: (ctx: GenDataGridEditorContext<TData>) => React.ReactNode;
+    bodyColSpan?: number | ((ctx: GenDataGridBodyColSpanContext<TData>) => number);
   }
 }

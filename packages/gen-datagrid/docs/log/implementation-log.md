@@ -1,5 +1,41 @@
 ## 2026-06-25
 
+### Gate 8.6 Column Fit Grow Pixel Template Fix
+
+- `columnFitMode="grow"`에서 row마다 독립 CSS grid가 `fr` track을 계산하면서 Body ColSpan row의 column width가 row별로 달라질 수 있어 구현을 수정했다.
+- `grow`는 더 이상 `fr` template을 row에 직접 전달하지 않고, viewport width 측정값을 기준으로 px column widths를 계산한다.
+- 계산된 px grid template을 header, body, footer가 공유하므로 span이 있는 row와 없는 row의 column line이 동일하게 유지된다.
+### Gate 8.6-a Body ColSpan Grid Placement Fix
+
+- `Gate86BodyColSpan`에서 row별 column 시작 위치가 어긋나 보일 수 있어 body cell grid placement를 명시적으로 고정했다.
+- body cell은 visible ordered cell index 기준으로 `grid-column: start / span n`을 사용한다.
+- covered cell을 렌더링하지 않는 row에서도 이후 cell이 동일한 column line에서 시작하도록 보강했다.
+### Gate 8.6-b Column Fit Grow Follow-up
+
+- 실제 사용자가 column 폭 합계를 viewport에 맞추기 어렵기 때문에 `columnFitMode` prop을 추가했다.
+- 기본값 `none`은 기존 px grid template을 유지한다.
+- `grow`는 viewport 폭을 측정한 뒤 visible column 비율대로 px width를 계산하고, 모든 row가 같은 grid template을 공유한다.
+- column 합이 viewport보다 크면 base size 아래로 줄이지 않고 horizontal scroll을 유지한다.
+- Gate 8.6 Storybook 샘플은 `columnFitMode="grow"`를 사용하도록 갱신했다.
+### Gate 8.6-b Column Group Header Implementation
+
+- Gate 8.6-b Column Group Header를 구현했다.
+- `DataGridHeader`가 TanStack non-leaf header group row를 group header cell로 렌더링하고, `header.colSpan`을 CSS grid span으로 적용한다.
+- leaf header row는 기존 column 기반 렌더링 경로를 유지해서 resize, reorder, filter affordance가 기존처럼 동작한다.
+- group header cell에는 `data-header-group-cell`, `data-header-depth`, `data-header-colspan` marker를 추가했다.
+- `Gate86ColumnGroupHeader` Storybook scenario와 interaction test를 추가했다.
+- 8.6 architecture, README, QA 문서를 UTF-8 한국어로 정리했다.
+
+### Gate 8.6-a Body Column Span Implementation
+
+- Gate 8.6-a Body Column Span을 구현했다.
+- public type으로 `GenDataGridBodyColSpanContext`를 추가하고, TanStack column meta에 `bodyColSpan`을 추가했다.
+- `DataGridBodyRow`에서 visible ordered cells 기준으로 span을 계산하고, span에 덮이는 후속 body cell은 렌더링하지 않도록 처리했다.
+- pinned zone을 넘는 span은 span 1로 fallback하도록 제한했다.
+- `DataGridCell`에 `data-body-colspan` marker와 span style 전달을 추가했다.
+- `Gate86BodyColSpan` Storybook scenario와 interaction test를 추가했다.
+- `docs/qa/gate-8-6-body-colspan-visual-test-guide.md`를 추가했다.
+
 ### Gate 8.5 Tree Expansion Helper Implementation
 
 - `treeExpandedRows` controlled state를 직접 계산할 수 있도록 public pure helper를 추가했습니다.

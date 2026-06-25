@@ -90,6 +90,19 @@ test('uses one grid template source for rendered rows', () => {
   assert.equal(rowTemplateMatches.length, 3);
 });
 
+
+test('uses base column widths for grow column fit mode during server render', () => {
+  const markup = renderToStaticMarkup(
+    React.createElement(GenDataGrid, {
+      ...requiredProps,
+      columnFitMode: 'grow',
+    })
+  );
+
+  const rowTemplateMatches = markup.match(/grid-template-columns:120px 80px/g) ?? [];
+  assert.equal(rowTemplateMatches.length, 3);
+});
+
 test('uses TanStack column order, visibility, and sizing state', () => {
   const markup = renderToStaticMarkup(
     React.createElement(GenDataGrid, {

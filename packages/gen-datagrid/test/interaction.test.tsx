@@ -2,6 +2,7 @@
 // Verifies GenDataGrid DOM interaction behavior with Vitest and jsdom.
 
 import * as React from 'react';
+import type { ColumnDef } from '@tanstack/react-table';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
 
@@ -4158,6 +4159,131 @@ describe('Gate 8.5 tree rows', () => {
       expect(container.querySelector('[data-gen-datagrid-cell="true"][data-rowid="1-1"]')).toBeNull();
       expect(getCell(container, '1', 'age').dataset.activeCell).toBe('true');
     });
+  });
+});
+
+
+
+
+
+describe('columnFitMode grow', () => {
+  it('uses one pixel grid template for every rendered row after measuring the viewport', async () => {
+    const descriptor = Object.getOwnPropertyDescriptor(window.HTMLElement.prototype, 'clientWidth');
+    Object.defineProperty(window.HTMLElement.prototype, 'clientWidth', {
+      configurable: true,
+      get() {
+        return this.getAttribute?.('data-gen-datagrid-viewport') === 'true' ? 400 : 0;
+      },
+    });
+
+    try {
+      const { container } = render(
+        <GenDataGrid
+          gridId="fit-grow-grid"
+          data={rows}
+          columns={columns}
+          getRowId={(row) => row.id}
+          columnFitMode="grow"
+        />
+      );
+
+      await waitFor(() => {
+        const renderedRows = Array.from(
+          container.querySelectorAll<HTMLElement>('.gen-datagrid__row')
+        );
+        expect(renderedRows.length).toBeGreaterThanOrEqual(3);
+        for (const row of renderedRows) {
+          expect(row.style.gridTemplateColumns).toBe('240px 160px');
+        }
+      });
+    } finally {
+      if (descriptor) {
+        Object.defineProperty(window.HTMLElement.prototype, 'clientWidth', descriptor);
+      } else {
+        delete (window.HTMLElement.prototype as { clientWidth?: number }).clientWidth;
+      }
+    }
+  });
+});
+
+describe('Gate 8.6-b column group header', () => {
+  it('renders grouped header cells above leaf headers', () => {
+    const groupedColumns: ColumnDef<Person, unknown>[] = [
+      {
+        header: 'Identity',
+        columns: [
+          { accessorKey: 'name', header: 'Name', size: 120 },
+          { accessorKey: 'age', header: 'Age', size: 80 },
+        ],
+      },
+    ];
+
+    const { container } = render(
+      <GenDataGrid
+        gridId="column-group-header-grid"
+        data={rows}
+        columns={groupedColumns}
+        getRowId={(row) => row.id}
+      />
+    );
+
+    const header = container.querySelector<HTMLElement>('[data-gen-datagrid-header="true"]');
+    const groupCell = container.querySelector<HTMLElement>('[data-header-group-cell="true"]');
+
+    expect(header?.dataset.headerRowCount).toBe('2');
+    expect(groupCell?.textContent).toContain('Identity');
+    expect(groupCell?.dataset.headerColspan).toBe('2');
+    expect(groupCell?.style.gridColumn).toBe('span 2');
+    expect(groupCell?.querySelector('[data-column-reorder-handle="true"]')).toBeNull();
+    expect(getHeaderCell(container, 'name').querySelector('[data-column-reorder-handle="true"]')).toBeTruthy();
+    expect(getHeaderCell(container, 'age').querySelector('[data-column-resize-handle="true"]')).toBeTruthy();
+  });
+});
+
+describe('Gate 8.6-a body col span', () => {
+  it('renders a body cell with CSS grid span and skips covered cells', () => {
+    const spanColumns = [
+      { accessorKey: 'name', header: 'Name', size: 120, meta: { bodyColSpan: 2 } },
+      { accessorKey: 'age', header: 'Age', size: 80 },
+    ];
+    const { container } = render(
+      <GenDataGrid
+        gridId="body-colspan-grid"
+        data={rows}
+        columns={spanColumns}
+        getRowId={(row) => row.id}
+      />
+    );
+
+    const nameCell = getCell(container, '1', 'name');
+    expect(nameCell.dataset.bodyColspan).toBe('2');
+    expect(nameCell.style.gridColumn).toBe('1 / span 2');
+    expect(
+      container.querySelector(
+        '[data-gen-datagrid-cell="true"][data-cell-kind="body"][data-rowid="1"][data-colid="age"]'
+      )
+    ).toBeNull();
+  });
+
+  it('falls back to span 1 when a body col span would cross pinned zones', () => {
+    const spanColumns = [
+      { accessorKey: 'name', header: 'Name', size: 120, meta: { bodyColSpan: 2 } },
+      { accessorKey: 'age', header: 'Age', size: 80 },
+    ];
+    const { container } = render(
+      <GenDataGrid
+        gridId="body-colspan-pinned-grid"
+        data={rows}
+        columns={spanColumns}
+        getRowId={(row) => row.id}
+        columnPinning={{ left: ['name'] }}
+      />
+    );
+
+    const nameCell = getCell(container, '1', 'name');
+    expect(nameCell.dataset.bodyColspan).toBeUndefined();
+    expect(nameCell.style.gridColumn).toBe('1 / span 1');
+    expect(getCell(container, '1', 'age')).toBeTruthy();
   });
 });
 

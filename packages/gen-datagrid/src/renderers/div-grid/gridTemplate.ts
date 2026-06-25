@@ -3,6 +3,8 @@
 
 import type { Column, ColumnDef } from '@tanstack/react-table';
 
+import type { GenDataGridColumnFitMode } from '../../GenDataGrid.types';
+
 export const DEFAULT_COLUMN_WIDTH = 160;
 
 export function getColumnId<TData>(column: ColumnDef<TData, unknown>, index: number) {
@@ -27,8 +29,29 @@ export function buildGridTemplateColumns<TData>(columns: ColumnDef<TData, unknow
   return columns.map((column) => `${getColumnWidth(column)}px`).join(' ');
 }
 
+function formatGridWidth(width: number) {
+  return Number.isInteger(width) ? String(width) : width.toFixed(3).replace(/\.?0+$/, '');
+}
+
 export function buildGridTemplateColumnsFromModel<TData>(
-  columns: Column<TData, unknown>[]
+  columns: Column<TData, unknown>[],
+  columnFitMode: GenDataGridColumnFitMode = 'none',
+  availableWidth?: number
 ) {
-  return columns.map((column) => `${column.getSize()}px`).join(' ');
+  const columnWidths = columns.map((column) => column.getSize());
+  const totalWidth = columnWidths.reduce((sum, width) => sum + width, 0);
+  const shouldGrow =
+    columnFitMode === 'grow' &&
+    typeof availableWidth === 'number' &&
+    Number.isFinite(availableWidth) &&
+    availableWidth > totalWidth &&
+    totalWidth > 0;
+
+  return columnWidths
+    .map((width) => {
+      if (!shouldGrow) return String(width) + 'px';
+      const grownWidth = width + (availableWidth - totalWidth) * (width / totalWidth);
+      return formatGridWidth(grownWidth) + 'px';
+    })
+    .join(' ');
 }
