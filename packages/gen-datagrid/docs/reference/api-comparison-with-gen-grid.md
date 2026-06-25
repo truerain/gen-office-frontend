@@ -52,8 +52,8 @@ type GenDataGridDataProps<TData> =
 | `maxHeight` | `maxHeight` | 유지 | MVP | root max height. |
 | `headerHeight` | `headerHeight` | 유지 | MVP | header row height. virtual body에서도 반드시 동일 source 사용. |
 | `rowHeight` | `rowHeight` | 유지 | MVP | default row height. |
-| 없음 | `getRowHeight` | 신규 | MVP | per-row height resolver. MVP에서는 `enableVirtualization !== true`일 때 지원하고, virtualized dynamic measurement는 Extension으로 분리한다. |
-| `fitColumns` | `fitColumns` | 유지 | MVP | `'none' \| 'fill'`. CSS grid template 계산에 반영한다. |
+| 없음 | `getRowHeight` | 신규 | MVP | per-row height resolver. Non-virtualized rendering에서는 row별 height로, virtualized rendering에서는 Gate 8.4 dynamic measurement의 estimate/base height로 사용한다. |
+| `fitColumns` | `columnFitMode` | 변경 | MVP | 현재 구현은 `'none' \| 'grow'`. CSS grid template 계산에 반영한다. |
 | 없음 | `className` | 신규 | MVP | root className. 기존 GenGrid에는 명시적 root className이 없다. |
 | 없음 | `style` | 신규 | MVP | root inline style. |
 | `enableStickyHeader` | `enableStickyHeader` | 유지 | MVP | div header sticky 처리. 기본값은 true 권장. |
@@ -84,7 +84,7 @@ type GenDataGridDataProps<TData> =
 | `enableFooter` | `enableFooter` | 유지 | MVP | grid 외부 footer 영역. |
 | `enablePagination` | `enablePagination` | 유지 | MVP | pagination UI/state. |
 
-Implementation status: `enableRangeSelection`, `selectedRanges`, `defaultSelectedRanges`, and `onSelectedRangesChange` are implemented for range selection. `enableClipboard`, `clipboardOptions.includeHeader`, and Gate 4.2 plain-text `pasteOptions` are implemented. Paste-to-selection remains deferred.
+Implementation status: `enableRangeSelection`, `selectedRanges`, `defaultSelectedRanges`, and `onSelectedRangesChange` are implemented for range selection. `enableClipboard`, `clipboardOptions.includeHeader`, and Gate 4.2 plain-text `pasteOptions` are implemented. `columnFitMode` is implemented for width grow behavior. Row number, row selection, row status, and active-row highlight props are not yet implemented in `GenDataGrid.types.ts`. Paste-to-selection remains deferred.
 
 ## 5. Controlled State API
 
@@ -208,6 +208,8 @@ type GenDataGridRenderContext<TData> = {
 | `rowSelection` | `rowSelection` | 유지 | MVP | controlled state. |
 | `onRowSelectionChange` | `onRowSelectionChange` | 유지 | MVP | controlled callback. |
 
+Implementation status: row status, row selection, and row number APIs in this section are planned MVP compatibility targets only. They are not current runtime props and should be implemented as a separate system-column slice.
+
 ## 11. Context Menu API
 
 | GenGrid API | GenDataGrid API | 상태 | 우선순위 | 설명 |
@@ -299,7 +301,7 @@ type GenDataGridContextMenuActionContext<TData> = {
 | 없음 | `clearGlobalFilter()` | 신규 | MVP | global filter clear. |
 | 없음 | `clearFilters()` | 신규 | MVP | column and global filters clear. |
 
-Implementation status: `rootElement`, `clearSelection()`, `copySelection(options?)`, `clearColumnFilters()`, `clearGlobalFilter()`, and `clearFilters()` are implemented. `scrollToCell(coord)` remains planned.
+Implementation status: `rootElement`, `clearSelection()`, `copySelection(options?)`, `scrollToCell(coord)`, `clearColumnFilters()`, `clearGlobalFilter()`, and `clearFilters()` are implemented. Dirty-state handle methods `resetDirtyState(rowIds?)`, `commitDirtyState(rowIds?)`, `deleteRows(rowIds)`, and `getDirtyState()` are also implemented.
 
 권장 handle:
 
@@ -389,7 +391,7 @@ type GenDataGridProps<TData> =
       rowId: string;
       rowIndex: number;
     }) => number | undefined;
-    fitColumns?: 'none' | 'fill';
+    columnFitMode?: 'none' | 'grow';
 
     enableStickyHeader?: boolean;
     enableVirtualization?: boolean;
@@ -551,3 +553,18 @@ Deferred from the GenGrid comparison surface:
 - Cursor/unknown-total server pagination.
 - Controlled row deletion mutation. `deleteRows(rowIds)` still never mutates controlled `data`.
 - Dirty comparison customization.
+
+## Gate 8.6 Implementation Notes
+
+Implemented from the comparison surface:
+
+- `bodyColSpan` is implemented as TanStack column meta and rendered with CSS grid `grid-column` placement.
+- TanStack nested `ColumnDef.columns` are rendered as grouped header rows. This is not the same as an arbitrary `headerSpan` API.
+- `columnFitMode: 'grow'` is implemented to fill remaining viewport width without shrinking below base column sizes.
+
+Still deferred:
+
+- Validation UI/state marker.
+- Visual row merge / rowSpan replacement.
+- Arbitrary header span and group header interaction APIs.
+- Row number, row selection, and row status system columns.

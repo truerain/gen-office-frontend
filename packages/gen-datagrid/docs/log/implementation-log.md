@@ -1,5 +1,13 @@
 ## 2026-06-25
 
+### GenDataGrid 문서 구현 상태 정합화
+
+- 실제 `GenDataGrid.types.ts`, renderer, interaction test를 기준으로 API 문서의 구현 상태를 정리했다.
+- `scrollToCell(coord)`은 구현 완료 상태로 수정하고, row number/row selection/row status는 아직 public props가 없는 MVP gap으로 명시했다.
+- `fitColumns` 초안 명칭을 현재 구현된 `columnFitMode: 'none' | 'grow'` 기준으로 정리했다.
+- Gate 8.6-a Body Column Span, Gate 8.6-b Column Group Header, `columnFitMode="grow"`는 구현 완료로 표시하고 validation marker와 visual row merge는 예정 항목으로 분리했다.
+- 관련 파일: `docs/reference/api-structure.md`, `docs/reference/api-comparison-with-gen-grid.md`, `docs/plan/mvp-test-gates.md`, `docs/plan/div-datagrid-development-plan.md`
+
 ### Gate 8.6 Column Fit Grow Pixel Template Fix
 
 - `columnFitMode="grow"`에서 row마다 독립 CSS grid가 `fr` track을 계산하면서 Body ColSpan row의 column width가 row별로 달라질 수 있어 구현을 수정했다.

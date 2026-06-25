@@ -726,14 +726,30 @@ Editor 구현 계약 요약: [`editor-implementation-contract.md`](../reference/
 
 #### Gate 8.6 Merge, Span, And Validation UI
 
-- visual row merge
-- grouped header span
-- validation UI
-- incompatible feature warning or disabled-state policy
+- status
+  - 8.6-a Body Column Span: complete
+  - 8.6-b Column Group Header: complete
+  - 8.6-b Column Fit Mode `grow`: complete
+  - 8.6-c Validation State/UI Marker: planned
+  - 8.6-d Visual Row Merge: planned
+- implemented scope
+  - TanStack column meta `bodyColSpan`
+  - body cell `data-body-colspan` marker and CSS grid placement
+  - pinned-zone body span fallback to span 1
+  - TanStack nested `ColumnDef.columns` rendered as grouped header rows
+  - group header markers `data-header-group-cell`, `data-header-depth`, `data-header-colspan`
+  - `columnFitMode="grow"` shared px grid template for header/body/footer
+- deferred scope
+  - validation UI marker
+  - visual row merge
+  - arbitrary header span API separate from TanStack column groups
+  - pinned group header split/sticky policy
+  - incompatible feature warning or disabled-state policy
 
 완료 기준:
 
-- 각 기능이 독립 flag로 동작
+- implemented slices have Storybook and interaction coverage
+- planned slices must define independent API boundaries before implementation
 - 조합 불가능한 기능은 명시적으로 경고 또는 비활성화
 
 ## 12. 테스트 전략

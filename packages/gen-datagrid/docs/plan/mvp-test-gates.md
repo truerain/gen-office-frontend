@@ -349,6 +349,8 @@ MVP 사용에 필요한 데이터 조작 기능을 붙인다.
 
 ## 10. Gate 7. Virtualization
 
+Status: complete for Gate 8 entry. Row virtualization, active-cell scroll restoration, pinned-column virtualization combination, range-selection stability, scroll-seeking placeholder rendering, range auto-scroll, and virtualized dynamic row measurement are implemented. Column virtualization remains deferred.
+
 ### 목표
 
 대량 row에서 row virtualization을 안정화한다.
@@ -390,6 +392,8 @@ MVP 사용에 필요한 데이터 조작 기능을 붙인다.
 - pinned column z-index가 virtual row와 충돌한다.
 
 ## 11. Gate 8. MVP Acceptance
+
+Current status: partial. The core grid, scoped DOM contract, active cell, keyboard navigation, range selection, clipboard, editing, column sizing, pinning, column reorder, filtering, footer, pagination, dirty state, imperative handle, row virtualization, master-detail, nested grid composition, dynamic row height, tree rows, body column span, and grouped header rendering have implementation coverage. Row number, row selection, row status, validation UI marker, and visual row merge are still open. Of those, row number/selection/status are MVP acceptance gaps; validation marker and visual row merge are Gate 8.6 extension slices.
 
 ### 목표
 
@@ -469,6 +473,8 @@ MVP 이후 확장 기능은 별도 gate로 관리한다.
 
 ### Extension B. Grouped Header Span
 
+Status: partially implemented. TanStack nested `ColumnDef.columns` are rendered as grouped header rows in Gate 8.6-b. Arbitrary header span API, group header reorder/resize/filter affordances, pinned group header splitting, and group visibility controls remain deferred.
+
 통과 기준:
 
 - CSS grid `grid-column: span n`으로 구현한다.
@@ -529,4 +535,3 @@ MVP 이후 확장 기능은 별도 gate로 관리한다.
 `gen-datagrid`는 최종 구현이 완료되어야 실사용 가치가 있다. 따라서 gate는 release milestone이 아니라 구조 검증 장치다.
 
 가장 중요한 gate는 Gate 1과 Gate 2다. DOM contract와 scoped focus가 흔들리면 selection, editing, virtualization, grid in grid는 모두 다시 작성해야 한다. 초기 구현 속도보다 이 두 gate의 엄격한 통과 기준을 우선한다.
-
