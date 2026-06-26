@@ -16,6 +16,7 @@ export type {
   GenDataGridExpandedRowState,
   GenDataGridTreeExpandedState,
   GenDataGridTreeRowContext,
+  GenDataGridCellValidation,
   GenDataGridDetailPanelContext,
   GenDataGridDeleteRowsBehavior,
   GenDataGridEditableContext,
@@ -36,6 +37,8 @@ export type {
   GenDataGridRowStatusContext,
   GenDataGridScrollSeekingOptions,
   GenDataGridSystemColumnKind,
+  GenDataGridValidationContext,
+  GenDataGridValidationSeverity,
 } from './GenDataGrid.types';
 export type {
   GenDataGridCellCoord,

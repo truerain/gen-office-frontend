@@ -285,6 +285,15 @@ Implementation status: `enableRangeSelection`, `selectedRanges`, `defaultSelecte
 
 Implementation status: row number, row selection, and row status props are implemented in Gate 8.7. `enableCurrentRowHighlight` and `onCurrentRowChange` are implemented in Gate 8.7-a. Controlled `currentRowId` and `defaultCurrentRowId` are deferred until a later slice.
 
+
+### 5.6-a Validation Feature
+
+| API | Type | Priority | Description |
+| --- | --- | --- | --- |
+| `getCellValidation` | `(ctx: GenDataGridValidationContext<TData>) => GenDataGridCellValidation \| null \| undefined` | MVP extension | display-only validation marker resolver |
+
+Implementation status: `getCellValidation`, `GenDataGridCellValidation`, `GenDataGridValidationContext`, and `GenDataGridValidationSeverity` are implemented in Gate 8.6-c. The resolver marks body cells only; system columns are excluded. Validation state is display-only and does not block edit commits or paste operations.
+
 ### 5.7 Footer Feature
 
 | API | Type | 우선순위 | 설명 |

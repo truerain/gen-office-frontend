@@ -10,7 +10,7 @@ Gate 8.6은 span, merge, validation이 묶여 있는 구간이다. 각 기능은
 | --- | --- | --- | --- |
 | 8.6-a | Body Column Span | 구현 완료 | 1 |
 | 8.6-b | Column Group Header | 구현 완료 | 2 |
-| 8.6-c | Validation State/UI Marker | 예정 | 3 |
+| 8.6-c | Validation State/UI Marker | implemented | 3 |
 | 8.6-d | Visual Row Merge | 예정 | 4 |
 
 ## 용어 정리
@@ -49,6 +49,7 @@ Gate 8.6은 span, merge, validation이 묶여 있는 구간이다. 각 기능은
 - group header cell에는 `data-header-group-cell`, `data-header-depth`, `data-header-colspan` marker를 부여한다.
 - 마지막 leaf header row는 기존 leaf column 기반 렌더링 경로를 유지한다.
 - leaf header의 column reorder, resize, filter affordance는 기존처럼 leaf header cell에만 붙는다.
+- validation marker? consumer-provided state is rendered as body cell DOM markers and is not applied to system columns.
 - group header cell 자체에는 reorder/resize/filter affordance를 붙이지 않는다.
 - `Gate86ColumnGroupHeader` Storybook과 interaction test를 추가했다.
 
@@ -70,6 +71,17 @@ Gate 8.6은 span, merge, validation이 묶여 있는 구간이다. 각 기능은
 - pinned zone을 가로지르는 group header sticky 분할
 - column visibility/reorder 후 group header 정책 확장 테스트
 
+## 8.6-c Validation State/UI Marker Implementation
+
+- `GenDataGridProps.getCellValidation(ctx)` was added as a display-only validation state resolver.
+- The grid does not validate values, block editing commits, or reject paste operations in this slice.
+- The resolver receives `{ row, rowId, rowIndex, columnId, value }` for user data columns only.
+- System columns are excluded from validation resolution and do not receive validation markers.
+- Body cells with validation receive `data-validation-state="error"` or `data-validation-state="warning"`.
+- Error cells also receive `aria-invalid="true"`.
+- `validation.message` is exposed as the cell `title` attribute for the MVP tooltip contract.
+- `Gate86ValidationState` Storybook and interaction tests cover error, warning, and system-column exclusion behavior.
+
 ## 8.6-b 보강: Column Fit Mode
 
 - `columnFitMode` public prop을 추가했다.
@@ -86,7 +98,6 @@ Gate 8.6은 span, merge, validation이 묶여 있는 구간이다. 각 기능은
 | grow-and-shrink column fit | column 합이 viewport보다 큰 경우까지 축소하려면 minSize와 pinned offset 정책이 필요하다. |
 | pinned group header 분할 | left/center/right sticky zone을 넘는 group header는 offset 계산이 복잡하다. |
 | group header reorder UX | group 전체 이동, leaf 이동, 혼합 이동 정책을 먼저 정해야 한다. |
-| validation state/UI marker | 외부 validation state 모델과 접근성 marker 설계가 필요하다. |
 | visual row merge | virtualization, selection, editing과의 조합을 별도로 검증해야 한다. |
 
 ## Acceptance Criteria

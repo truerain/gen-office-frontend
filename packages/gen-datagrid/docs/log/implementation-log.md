@@ -1,3 +1,15 @@
+## 2026-06-26
+
+### Gate 8.6-c Validation State/UI Marker 구현
+
+- 외부 consumer가 전달한 cell validation 상태를 표시하는 `getCellValidation(ctx)` API를 추가했다.
+- `GenDataGridCellValidation`, `GenDataGridValidationContext`, `GenDataGridValidationSeverity` public type을 추가했다.
+- body cell에 `data-validation-state="error|warning"` marker를 렌더링하고, error 상태에는 `aria-invalid="true"`를 적용했다.
+- validation message는 MVP tooltip 계약으로 cell `title` 속성에 연결했다.
+- system column은 validation resolver 호출과 marker 적용 대상에서 제외했다.
+- `Gate86ValidationState` Storybook과 interaction test를 추가했다.
+- 관련 파일: `src/GenDataGrid.types.ts`, `src/index.ts`, `src/renderers/div-grid/DataGridRoot.tsx`, `src/renderers/div-grid/DataGridBody.tsx`, `src/renderers/div-grid/DataGridVirtualBody.tsx`, `src/renderers/div-grid/DataGridBodyRow.tsx`, `src/renderers/div-grid/DataGridCell.tsx`, `src/index.css`, `src/stories/GenDataGrid.baseline.stories.tsx`, `test/interaction.test.tsx`, `docs/architecture/gate-8-6-merge-span-validation-architecture.md`, `docs/qa/gate-8-6-validation-state-visual-test-guide.md`, `docs/README.md`, `docs/plan/div-datagrid-development-plan.md`, `docs/plan/mvp-test-gates.md`, `docs/reference/api-structure.md`, `docs/reference/api-comparison-with-gen-grid.md`
+
 ## 2026-06-25
 
 ### Gate 8.7-a Current Row Highlight 구현

@@ -6,6 +6,7 @@ import type { Row } from '@tanstack/react-table';
 
 import type {
   GenDataGridActiveCell,
+  GenDataGridCellValidation,
   GenDataGridCellValueChange,
   GenDataGridEditableContext,
   GenDataGridDetailPanelContext,
@@ -14,6 +15,7 @@ import type {
   GenDataGridExpandedRowState,
   GenDataGridRowContext,
   GenDataGridTreeRowContext,
+  GenDataGridValidationContext,
 } from '../../GenDataGrid.types';
 import { deactivateEditingForCellActivation } from '../../features/editing/editingCellActivation';
 import { resolveCellEditingRuntime } from '../../features/editing/cellRuntime';
@@ -41,6 +43,9 @@ type DataGridBodyProps<TData> = {
   dirtyRowIds?: ReadonlySet<string>;
   deletedRowIds?: ReadonlySet<string>;
   currentRowId?: string | null;
+  getCellValidation?: (
+    ctx: GenDataGridValidationContext<TData>
+  ) => GenDataGridCellValidation | null | undefined;
   getRowHeight?: (args: {
     row: TData;
     rowId: string;
@@ -89,6 +94,7 @@ export function DataGridBody<TData>({
   dirtyRowIds,
   deletedRowIds,
   currentRowId,
+  getCellValidation,
   getRowHeight,
   activeCell,
   onActiveCellChange,
@@ -215,6 +221,7 @@ export function DataGridBody<TData>({
               dirtyRowIds={dirtyRowIds}
               deletedRowIds={deletedRowIds}
               currentRowId={currentRowId}
+              getCellValidation={getCellValidation}
               activeCell={activeCell}
               onActiveCellChange={activateCell}
               onEditingNavigate={onEditingNavigate}

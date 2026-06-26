@@ -6,9 +6,11 @@ import { flexRender, type Cell, type Row } from '@tanstack/react-table';
 import type {
   GenDataGridActiveCell,
   GenDataGridCellValueChange,
+  GenDataGridCellValidation,
   GenDataGridEditableContext,
   GenDataGridEditPolicy,
   GenDataGridEditorFactory,
+  GenDataGridValidationContext,
 } from '../../GenDataGrid.types';
 import {
   resolveNextActiveCell,
@@ -79,6 +81,9 @@ type DataGridBodyRowProps<TData> = {
   dirtyRowIds?: ReadonlySet<string>;
   deletedRowIds?: ReadonlySet<string>;
   currentRowId?: string | null;
+  getCellValidation?: (
+    ctx: GenDataGridValidationContext<TData>
+  ) => GenDataGridCellValidation | null | undefined;
   activeCell: GenDataGridActiveCell;
   onActiveCellChange: (next: Exclude<GenDataGridActiveCell, null>) => void;
   onEditingNavigate?: (next: Exclude<GenDataGridActiveCell, null>) => void;
@@ -124,6 +129,7 @@ export function DataGridBodyRow<TData>({
   dirtyRowIds,
   deletedRowIds,
   currentRowId,
+  getCellValidation,
   activeCell,
   onActiveCellChange,
   onEditingNavigate,
@@ -262,6 +268,15 @@ export function DataGridBodyRow<TData>({
           isCellEditable,
         });
         const isEditing = editingCell?.rowId === rowId && editingCell.columnId === columnId;
+        const validation = isSystemColumn
+          ? null
+          : getCellValidation?.({
+              row: row.original,
+              rowId,
+              rowIndex,
+              columnId,
+              value: editableContext.value,
+            });
         const pinning = enablePinning
           ? getColumnPinningInfo(cell.column, { zIndex: isEditing ? 5 : 2 })
           : undefined;
@@ -472,6 +487,7 @@ export function DataGridBodyRow<TData>({
             isEditable={!isSystemColumn && isEditable}
             isEditing={!isSystemColumn && isEditing}
             isDirty={dirtyCellIds?.has(`${rowId}::${columnId}`)}
+            validation={validation}
             editOpenOnStart={resolvedEditPolicy.openOnEditStart}
             allowReclickEdit={resolvedEditPolicy.startTriggers.reclick}
             allowDoubleClickEdit={resolvedEditPolicy.startTriggers.doubleClick}

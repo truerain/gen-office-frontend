@@ -407,6 +407,9 @@ type GenDataGridProps<TData> =
     enableRowStatus?: boolean;
     enableCurrentRowHighlight?: boolean;
     onCurrentRowChange?: (rowId: string | null) => void;
+    getCellValidation?: (
+      ctx: GenDataGridValidationContext<TData>
+    ) => GenDataGridCellValidation | null | undefined;
     enableRangeSelection?: boolean;
     enableFooterRow?: boolean;
     enableStickyFooterRow?: boolean;

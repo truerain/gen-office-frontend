@@ -3,7 +3,10 @@
 
 import * as React from 'react';
 
-import type { GenDataGridEditEntryReason } from '../../GenDataGrid.types';
+import type {
+  GenDataGridCellValidation,
+  GenDataGridEditEntryReason,
+} from '../../GenDataGrid.types';
 
 const interactiveTargetSelector =
   'input,select,textarea,button,[contenteditable="true"]';
@@ -16,6 +19,7 @@ type DataGridCellProps = {
   isEditable: boolean;
   isEditing: boolean;
   isDirty?: boolean;
+  validation?: GenDataGridCellValidation | null;
   editOpenOnStart?: boolean;
   allowReclickEdit?: boolean;
   allowDoubleClickEdit?: boolean;
@@ -45,6 +49,7 @@ export function DataGridCell({
   isEditable,
   isEditing,
   isDirty,
+  validation,
   editOpenOnStart,
   allowReclickEdit = true,
   allowDoubleClickEdit = true,
@@ -68,6 +73,7 @@ export function DataGridCell({
       data-editable-cell={isEditable ? 'true' : undefined}
       data-editing-cell={isEditing ? 'true' : undefined}
       data-dirty-cell={isDirty ? 'true' : undefined}
+      data-validation-state={validation?.severity}
       data-edit-open-on-start={editOpenOnStart ? 'true' : undefined}
       data-body-colspan={bodyColSpan && bodyColSpan > 1 ? String(bodyColSpan) : undefined}
       data-pinned-cell={pinning?.pinned || undefined}
@@ -78,6 +84,8 @@ export function DataGridCell({
             ? 'right-start'
             : undefined
       }
+      aria-invalid={validation?.severity === 'error' ? 'true' : undefined}
+      title={validation?.message}
       className="gen-datagrid__cell"
       style={{ ...pinning?.style, ...style }}
       tabIndex={isActive ? 0 : -1}

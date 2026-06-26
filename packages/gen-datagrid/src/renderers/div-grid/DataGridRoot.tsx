@@ -136,6 +136,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     rowStatusResolver,
     enableCurrentRowHighlight = false,
     onCurrentRowChange,
+    getCellValidation,
     enableVirtualization = false,
     enableTreeRows = false,
     getSubRows,
@@ -1061,6 +1062,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             dirtyRowIds={dirtyRowIds}
             deletedRowIds={deletedRowIds}
             currentRowId={renderedCurrentRowId}
+            getCellValidation={getCellValidation}
             getRowHeight={getRowHeight}
             enableMasterDetail={masterDetailEnabled}
             expandedRows={resolvedExpandedRows}
@@ -1107,6 +1109,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             dirtyRowIds={dirtyRowIds}
             deletedRowIds={deletedRowIds}
             currentRowId={renderedCurrentRowId}
+            getCellValidation={getCellValidation}
             getRowHeight={getRowHeight}
             activeCell={activeCell}
             onActiveCellChange={setActiveCell}

@@ -393,7 +393,7 @@ Status: complete for Gate 8 entry. Row virtualization, active-cell scroll restor
 
 ## 11. Gate 8. MVP Acceptance
 
-Current status: partial. The core grid, scoped DOM contract, active cell, keyboard navigation, range selection, clipboard, editing, column sizing, pinning, column reorder, filtering, footer, pagination, dirty state, imperative handle, row number, row selection, row status, row virtualization, master-detail, nested grid composition, dynamic row height, tree rows, body column span, and grouped header rendering have implementation coverage. Validation UI marker and visual row merge are still open Gate 8.6 extension slices.
+Current status: partial. The core grid, scoped DOM contract, active cell, keyboard navigation, range selection, clipboard, editing, column sizing, pinning, column reorder, filtering, footer, pagination, dirty state, imperative handle, row number, row selection, row status, row virtualization, master-detail, nested grid composition, dynamic row height, tree rows, body column span, grouped header rendering, and validation UI marker have implementation coverage. Visual row merge is still an open Gate 8.6 extension slice.
 
 Latest completed implementation slice: Gate 8.7-a Current Row Highlight. Architecture: `../architecture/gate-8-7-a-current-row-highlight-architecture.md`.
 

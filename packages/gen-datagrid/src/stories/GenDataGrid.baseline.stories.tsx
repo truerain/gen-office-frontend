@@ -1495,6 +1495,45 @@ export const Gate86ColumnGroupHeader: Story = {
   },
 };
 
+export const Gate86ValidationState: Story = {
+  render: () => (
+    <div style={{ width: 980, padding: 16, display: 'grid', gap: 10 }}>
+      <GenDataGrid<Person>
+        data={gate6Data.slice(0, 10)}
+        columns={editableColumns}
+        getRowId={(row) => row.id}
+        gridId="storybook-gen-datagrid-gate-8-6-validation-state"
+        columnFitMode="grow"
+        enableRowNumber
+        enableRowStatus
+        defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+        getCellValidation={({ columnId, value }) => {
+          if (columnId === 'score' && Number(value) < 90) {
+            return { severity: 'error', message: 'Score must be 90 or higher.' };
+          }
+          if (columnId === 'location' && value === 'Hampton') {
+            return { severity: 'warning', message: 'Confirm Hampton assignment.' };
+          }
+          if (columnId === 'note' && String(value ?? '').includes('Horizontal')) {
+            return { severity: 'warning', message: 'Review layout-related note.' };
+          }
+          return null;
+        }}
+        rowStatusResolver={({ rowId }) => (rowId === '7' ? 'updated' : 'clean')}
+        rowHeight={36}
+        headerHeight={40}
+        editCommitOnBlur
+        style={{
+          height: 360,
+          border: '1px solid #d0d7de',
+          borderRadius: 6,
+          background: '#fff',
+        }}
+      />
+    </div>
+  ),
+};
+
 export const Gate87SystemColumns: Story = {
   render: () => {
     const gridRef = React.useRef<GenDataGridHandle>(null);

@@ -4,7 +4,7 @@ Indexes GenDataGrid planning, architecture, reference, QA, and log documents.
 
 # GenDataGrid Docs
 
-현재 상태: Gate 8.7 System Columns 구현 완료. 다음 구현 후보는 Gate 8.6-c Validation State/UI Marker 또는 Gate 8.6-d Visual Row Merge이다.
+Current status: Gate 8.6-c Validation State/UI Marker is implemented after Gate 8.7 System Columns and Gate 8.7-a Current Row Highlight. The next open Gate 8.6 slice is Visual Row Merge.
 
 ## Plan
 
@@ -53,6 +53,7 @@ Indexes GenDataGrid planning, architecture, reference, QA, and log documents.
 - [Gate 8.5 Visual Test Guide](qa/gate-8-5-visual-test-guide.md)
 - [Gate 8.6-a Body Column Span Visual Test Guide](qa/gate-8-6-body-colspan-visual-test-guide.md)
 - [Gate 8.6-b Column Group Header Visual Test Guide](qa/gate-8-6-column-group-header-visual-test-guide.md)
+- [Gate 8.6-c Validation State Visual Test Guide](qa/gate-8-6-validation-state-visual-test-guide.md)
 
 ## Log
 

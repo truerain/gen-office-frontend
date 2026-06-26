@@ -79,6 +79,21 @@ export type GenDataGridBodyColSpanContext<TData> = {
   value: unknown;
 };
 
+export type GenDataGridValidationSeverity = 'error' | 'warning';
+
+export type GenDataGridCellValidation = {
+  severity: GenDataGridValidationSeverity;
+  message?: string;
+};
+
+export type GenDataGridValidationContext<TData> = {
+  row: TData;
+  rowId: string;
+  rowIndex: number;
+  columnId: string;
+  value: unknown;
+};
+
 export type GenDataGridEditorContext<TData> = GenDataGridEditableContext<TData> & {
   draftValue: unknown;
   setDraftValue: (nextValue: unknown) => void;
@@ -258,6 +273,9 @@ export type GenDataGridProps<TData> = {
   rowStatusResolver?: (ctx: GenDataGridRowStatusContext<TData>) => GenDataGridRowStatus;
   enableCurrentRowHighlight?: boolean;
   onCurrentRowChange?: (rowId: string | null) => void;
+  getCellValidation?: (
+    ctx: GenDataGridValidationContext<TData>
+  ) => GenDataGridCellValidation | null | undefined;
   enableVirtualization?: boolean;
   enableTreeRows?: boolean;
   getSubRows?: (row: TData, index: number) => readonly TData[] | undefined;

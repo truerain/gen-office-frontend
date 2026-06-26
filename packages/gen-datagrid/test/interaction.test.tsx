@@ -4331,6 +4331,58 @@ describe('Gate 8.6-a body col span', () => {
   });
 });
 
+describe('Gate 8.6-c validation state marker', () => {
+  it('renders error and warning validation states on body cells', () => {
+    const { container } = render(
+      <GenDataGrid
+        gridId="validation-state-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        getCellValidation={({ columnId, value }) => {
+          if (columnId === 'name' && value === 'Ada') {
+            return { severity: 'error', message: 'Name is reserved' };
+          }
+          if (columnId === 'age' && Number(value) > 40) {
+            return { severity: 'warning', message: 'Confirm age' };
+          }
+          return null;
+        }}
+      />
+    );
+
+    const errorCell = getCell(container, '1', 'name');
+    const warningCell = getCell(container, '2', 'age');
+
+    expect(errorCell.dataset.validationState).toBe('error');
+    expect(errorCell.getAttribute('aria-invalid')).toBe('true');
+    expect(errorCell.getAttribute('title')).toBe('Name is reserved');
+    expect(warningCell.dataset.validationState).toBe('warning');
+    expect(warningCell.getAttribute('aria-invalid')).toBeNull();
+    expect(warningCell.getAttribute('title')).toBe('Confirm age');
+  });
+
+  it('does not apply validation markers to system columns', () => {
+    const getCellValidation = vi.fn(() => ({ severity: 'error' as const }));
+    const { container } = render(
+      <GenDataGrid
+        gridId="validation-system-column-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableRowNumber
+        getCellValidation={getCellValidation}
+      />
+    );
+
+    expect(getCell(container, '1', '__gen_row_number').dataset.validationState).toBeUndefined();
+    expect(getCell(container, '1', 'name').dataset.validationState).toBe('error');
+    expect(
+      getCellValidation.mock.calls.every(([ctx]) => ctx.columnId !== '__gen_row_number')
+    ).toBe(true);
+  });
+});
+
 describe('Gate 8.7 system columns', () => {
   it('renders row status, selection, and number system columns before user columns', () => {
     const { container, getByLabelText } = render(

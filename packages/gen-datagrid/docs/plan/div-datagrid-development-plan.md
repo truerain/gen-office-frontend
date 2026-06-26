@@ -730,7 +730,7 @@ Editor 구현 계약 요약: [`editor-implementation-contract.md`](../reference/
   - 8.6-a Body Column Span: complete
   - 8.6-b Column Group Header: complete
   - 8.6-b Column Fit Mode `grow`: complete
-  - 8.6-c Validation State/UI Marker: planned
+  - 8.6-c Validation State/UI Marker: implemented
   - 8.6-d Visual Row Merge: planned
 - implemented scope
   - TanStack column meta `bodyColSpan`
@@ -740,7 +740,6 @@ Editor 구현 계약 요약: [`editor-implementation-contract.md`](../reference/
   - group header markers `data-header-group-cell`, `data-header-depth`, `data-header-colspan`
   - `columnFitMode="grow"` shared px grid template for header/body/footer
 - deferred scope
-  - validation UI marker
   - visual row merge
   - arbitrary header span API separate from TanStack column groups
   - pinned group header split/sticky policy
@@ -751,6 +750,15 @@ Editor 구현 계약 요약: [`editor-implementation-contract.md`](../reference/
 - implemented slices have Storybook and interaction coverage
 - planned slices must define independent API boundaries before implementation
 - 조합 불가능한 기능은 명시적으로 경고 또는 비활성화
+
+Gate 8.6-c Validation State/UI Marker implementation summary:
+
+- added `getCellValidation(ctx)` as a display-only validation resolver
+- added `GenDataGridCellValidation`, `GenDataGridValidationContext`, and `GenDataGridValidationSeverity`
+- renders `data-validation-state="error|warning"` on body cells
+- renders `aria-invalid="true"` for error cells and `title` for validation messages
+- excludes system columns from validation marker resolution
+- added `Gate86ValidationState` Storybook and interaction tests
 
 #### Gate 8.7 System Columns
 
