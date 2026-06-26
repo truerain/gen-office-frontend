@@ -784,8 +784,10 @@ Architecture: [`gate-8-7-system-columns-architecture.md`](../architecture/gate-8
 
 #### Gate 8.7-a Current Row Highlight
 
+Architecture: [`gate-8-7-a-current-row-highlight-architecture.md`](../architecture/gate-8-7-a-current-row-highlight-architecture.md)
+
 - status
-  - planned
+  - complete (MVP)
   - supports external Master/Detail layouts where a selected master row drives a separate detail grid
 - naming
   - prefer `currentRow` over `activeRow`
@@ -801,13 +803,13 @@ Architecture: [`gate-8-7-system-columns-architecture.md`](../architecture/gate-8
   - clicking or keyboard-moving to a data cell updates the current row through active cell movement
   - system column clicks do not change current row because they do not change active cell
   - checkbox row selection remains unrelated
-- implementation plan
-  - derive `currentRowId` from `activeCell?.rowId`
-  - emit `onCurrentRowChange` when the derived current row changes
-  - add `data-current-row="true"` to the matching body row
-  - add CSS row highlight guarded by `enableCurrentRowHighlight`
-  - add a Storybook scenario with two vertically stacked grids: master grid current row drives detail grid data
-  - add interaction tests for click, keyboard movement, system column click no-op, and callback behavior
+- implementation summary
+  - derived `currentRowId` from `activeCell?.rowId`
+  - emitted `onCurrentRowChange` when the derived current row changes
+  - added `data-current-row="true"` to the matching body row
+  - added CSS row highlight guarded by `enableCurrentRowHighlight`
+  - updated `Gate82MasterDetailRow` Storybook with a second external detail grid driven by the master current row
+  - added interaction tests for click, keyboard movement, system column click no-op, and callback behavior
 - deferred API
   - `currentRowId`
   - `defaultCurrentRowId`

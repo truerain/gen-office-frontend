@@ -1,5 +1,15 @@
 ## 2026-06-25
 
+### Gate 8.7-a Current Row Highlight 구현
+
+- Master/Detail 상하 2-grid 시나리오를 위한 current row highlight를 구현했다.
+- `GenDataGridProps`에 `enableCurrentRowHighlight`, `onCurrentRowChange`를 추가했다.
+- current row는 MVP에서 `activeCell?.rowId`를 source of truth로 사용한다.
+- standard/virtual body row에 `data-current-row="true"` marker를 전달하고, highlight CSS를 추가했다.
+- `Gate82MasterDetailRow` Storybook에 master current row가 아래 external detail grid data를 바꾸는 시나리오를 추가했다.
+- current row click, keyboard movement, system column click no-op 동작을 interaction test로 고정했다.
+- 관련 파일: `src/GenDataGrid.types.ts`, `src/renderers/div-grid/DataGridRoot.tsx`, `src/renderers/div-grid/DataGridBody.tsx`, `src/renderers/div-grid/DataGridVirtualBody.tsx`, `src/renderers/div-grid/DataGridBodyRow.tsx`, `src/index.css`, `src/stories/GenDataGrid.baseline.stories.tsx`, `test/interaction.test.tsx`, `docs/architecture/gate-8-7-a-current-row-highlight-architecture.md`, `docs/README.md`, `docs/plan/div-datagrid-development-plan.md`, `docs/plan/mvp-test-gates.md`, `docs/reference/api-structure.md`, `docs/reference/api-comparison-with-gen-grid.md`
+
 ### Gate 8.7-a Current Row Highlight 계획 추가
 
 - Master/Detail 상하 2-grid 시나리오를 위한 current row highlight 후속 gate를 계획에 추가했다.

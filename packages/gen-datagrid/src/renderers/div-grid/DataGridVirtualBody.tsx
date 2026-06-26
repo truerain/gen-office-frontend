@@ -82,6 +82,7 @@ type DataGridVirtualBodyProps<TData> = {
   dirtyCellIds?: ReadonlySet<string>;
   dirtyRowIds?: ReadonlySet<string>;
   deletedRowIds?: ReadonlySet<string>;
+  currentRowId?: string | null;
   getRowHeight?: (args: {
     row: TData;
     rowId: string;
@@ -210,6 +211,7 @@ export function DataGridVirtualBody<TData>({
   dirtyCellIds,
   dirtyRowIds,
   deletedRowIds,
+  currentRowId,
   getRowHeight,
   enableMasterDetail = false,
   expandedRows = {},
@@ -569,6 +571,7 @@ export function DataGridVirtualBody<TData>({
                 dirtyCellIds={dirtyCellIds}
                 dirtyRowIds={dirtyRowIds}
                 deletedRowIds={deletedRowIds}
+                currentRowId={currentRowId}
                 activeCell={activeCell}
                 onActiveCellChange={activateCell}
                 onEditingNavigate={onEditingNavigate}

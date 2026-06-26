@@ -134,6 +134,8 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     rowSelectionMode = 'all',
     enableRowStatus = false,
     rowStatusResolver,
+    enableCurrentRowHighlight = false,
+    onCurrentRowChange,
     enableVirtualization = false,
     enableTreeRows = false,
     getSubRows,
@@ -363,6 +365,8 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
   );
   const activeCell =
     controlledActiveCell !== undefined ? controlledActiveCell : uncontrolledActiveCell;
+  const currentRowId = activeCell?.rowId ?? null;
+  const renderedCurrentRowId = enableCurrentRowHighlight ? currentRowId : null;
   const previousFocusRestoreActiveCellRef = React.useRef<typeof activeCell>(null);
   const editing = useCellEditing();
   const [uncontrolledExpandedRows, setUncontrolledExpandedRows] = React.useState(() =>
@@ -566,6 +570,13 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     },
     [controlledActiveCell, onActiveCellChange]
   );
+
+  const previousCurrentRowIdRef = React.useRef<string | null | undefined>(undefined);
+  React.useEffect(() => {
+    if (previousCurrentRowIdRef.current === currentRowId) return;
+    previousCurrentRowIdRef.current = currentRowId;
+    onCurrentRowChange?.(currentRowId);
+  }, [currentRowId, onCurrentRowChange]);
 
   const setTreeExpandedRowState = React.useCallback(
     (row: Row<TData>, expanded: boolean) => {
@@ -1049,6 +1060,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             dirtyCellIds={dirtyCellIds}
             dirtyRowIds={dirtyRowIds}
             deletedRowIds={deletedRowIds}
+            currentRowId={renderedCurrentRowId}
             getRowHeight={getRowHeight}
             enableMasterDetail={masterDetailEnabled}
             expandedRows={resolvedExpandedRows}
@@ -1094,6 +1106,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             dirtyCellIds={dirtyCellIds}
             dirtyRowIds={dirtyRowIds}
             deletedRowIds={deletedRowIds}
+            currentRowId={renderedCurrentRowId}
             getRowHeight={getRowHeight}
             activeCell={activeCell}
             onActiveCellChange={setActiveCell}

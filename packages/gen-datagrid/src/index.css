@@ -407,6 +407,10 @@
   outline-offset: -2px;
 }
 
+.gen-datagrid__row[data-current-row='true'] .gen-datagrid__cell {
+  background-color: color-mix(in srgb, #0969da 7%, #ffffff);
+}
+
 .gen-datagrid__cell[data-selected-cell='true'] {
   background: color-mix(in srgb, #0969da 12%, transparent);
 }

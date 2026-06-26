@@ -1115,6 +1115,23 @@ export const Gate82MasterDetailRow: Story = {
     const [expandedRows, setExpandedRows] = React.useState<GenDataGridExpandedRowState>({
       '1': true,
     });
+    const [currentMasterRowId, setCurrentMasterRowId] = React.useState<string | null>('1');
+    const currentMasterRow = React.useMemo(
+      () => gridData.find((row) => row.id === currentMasterRowId) ?? gridData[0],
+      [currentMasterRowId, gridData]
+    );
+    const externalDetailRows = React.useMemo(
+      () =>
+        gate6Data.slice(0, 3).map((row, index) => ({
+          ...row,
+          id: `${currentMasterRow?.id ?? 'none'}-detail-${index + 1}`,
+          name: `${currentMasterRow?.name ?? 'No master'} detail ${index + 1}`,
+          role: row.role,
+          location: currentMasterRow?.location ?? row.location,
+          note: `Current master: ${currentMasterRow?.name ?? 'none'}`,
+        })),
+      [currentMasterRow]
+    );
 
     const handleCellValueChange = React.useCallback(
       ({ rowId, columnId, value }: GenDataGridCellValueChange<Person>) => {
@@ -1142,6 +1159,7 @@ export const Gate82MasterDetailRow: Story = {
             Collapse all
           </button>
           <span>Expanded rows: {Object.keys(expandedRows).join(', ') || 'none'}</span>
+          <span>Current master: {currentMasterRow?.name ?? 'none'}</span>
         </div>
         <GenDataGrid<Person>
           data={gridData}
@@ -1149,6 +1167,8 @@ export const Gate82MasterDetailRow: Story = {
           getRowId={(row) => row.id}
           gridId="storybook-gen-datagrid-gate-8-2"
           defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+          //enableCurrentRowHighlight
+          onCurrentRowChange={setCurrentMasterRowId}
           enableMasterDetail
           expandedRows={expandedRows}
           onExpandedRowsChange={setExpandedRows}
@@ -1190,6 +1210,24 @@ export const Gate82MasterDetailRow: Story = {
           headerHeight={40}
           style={{
             height: 420,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+        <GenDataGrid<Person>
+          data={externalDetailRows}
+          columns={columns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-8-2-external-detail"
+          defaultActiveCell={{
+            rowId: externalDetailRows[0]?.id ?? '',
+            columnId: 'name',
+          }}
+          rowHeight={34}
+          headerHeight={38}
+          style={{
+            height: 190,
             border: '1px solid #d0d7de',
             borderRadius: 6,
             background: '#fff',
@@ -1481,6 +1519,7 @@ export const Gate87SystemColumns: Story = {
           columns={editableColumns}
           getRowId={(row) => row.id}
           gridId="storybook-gen-datagrid-gate-8-7-system-columns"
+          enableCurrentRowHighlight
           enableRowStatus
           enableRowNumber
           enableRowSelection

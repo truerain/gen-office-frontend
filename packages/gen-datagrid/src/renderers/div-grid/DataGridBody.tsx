@@ -40,6 +40,7 @@ type DataGridBodyProps<TData> = {
   dirtyCellIds?: ReadonlySet<string>;
   dirtyRowIds?: ReadonlySet<string>;
   deletedRowIds?: ReadonlySet<string>;
+  currentRowId?: string | null;
   getRowHeight?: (args: {
     row: TData;
     rowId: string;
@@ -87,6 +88,7 @@ export function DataGridBody<TData>({
   dirtyCellIds,
   dirtyRowIds,
   deletedRowIds,
+  currentRowId,
   getRowHeight,
   activeCell,
   onActiveCellChange,
@@ -212,6 +214,7 @@ export function DataGridBody<TData>({
               dirtyCellIds={dirtyCellIds}
               dirtyRowIds={dirtyRowIds}
               deletedRowIds={deletedRowIds}
+              currentRowId={currentRowId}
               activeCell={activeCell}
               onActiveCellChange={activateCell}
               onEditingNavigate={onEditingNavigate}

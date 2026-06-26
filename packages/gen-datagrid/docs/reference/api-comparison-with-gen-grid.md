@@ -84,7 +84,7 @@ type GenDataGridDataProps<TData> =
 | `enableFooter` | `enableFooter` | 유지 | MVP | grid 외부 footer 영역. |
 | `enablePagination` | `enablePagination` | 유지 | MVP | pagination UI/state. |
 
-Implementation status: `enableRangeSelection`, `selectedRanges`, `defaultSelectedRanges`, and `onSelectedRangesChange` are implemented for range selection. `enableClipboard`, `clipboardOptions.includeHeader`, and Gate 4.2 plain-text `pasteOptions` are implemented. `columnFitMode` is implemented for width grow behavior. Row number, row selection, and row status props are implemented in Gate 8.7. Current-row highlight and paste-to-selection remain deferred.
+Implementation status: `enableRangeSelection`, `selectedRanges`, `defaultSelectedRanges`, and `onSelectedRangesChange` are implemented for range selection. `enableClipboard`, `clipboardOptions.includeHeader`, and Gate 4.2 plain-text `pasteOptions` are implemented. `columnFitMode` is implemented for width grow behavior. Row number, row selection, and row status props are implemented in Gate 8.7. Current-row highlight is implemented in Gate 8.7-a. Paste-to-selection remains deferred.
 
 ## 5. Controlled State API
 
@@ -568,4 +568,3 @@ Still deferred:
 - Validation UI/state marker.
 - Visual row merge / rowSpan replacement.
 - Arbitrary header span and group header interaction APIs.
-- Current-row highlight.

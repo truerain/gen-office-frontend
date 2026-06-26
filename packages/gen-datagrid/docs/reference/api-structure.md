@@ -283,7 +283,7 @@ Implementation status: `enableRangeSelection`, `selectedRanges`, `defaultSelecte
 | `enableCurrentRowHighlight` | `boolean` | MVP | current row highlight |
 | `onCurrentRowChange` | `(rowId: string \| null) => void` | MVP | current row callback derived from active cell row |
 
-Implementation status: row number, row selection, and row status props are implemented in Gate 8.7. `enableCurrentRowHighlight` and `onCurrentRowChange` are planned for Gate 8.7-a. Controlled `currentRowId` and `defaultCurrentRowId` are deferred until a later slice.
+Implementation status: row number, row selection, and row status props are implemented in Gate 8.7. `enableCurrentRowHighlight` and `onCurrentRowChange` are implemented in Gate 8.7-a. Controlled `currentRowId` and `defaultCurrentRowId` are deferred until a later slice.
 
 ### 5.7 Footer Feature
 

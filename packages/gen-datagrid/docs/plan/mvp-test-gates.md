@@ -395,9 +395,7 @@ Status: complete for Gate 8 entry. Row virtualization, active-cell scroll restor
 
 Current status: partial. The core grid, scoped DOM contract, active cell, keyboard navigation, range selection, clipboard, editing, column sizing, pinning, column reorder, filtering, footer, pagination, dirty state, imperative handle, row number, row selection, row status, row virtualization, master-detail, nested grid composition, dynamic row height, tree rows, body column span, and grouped header rendering have implementation coverage. Validation UI marker and visual row merge are still open Gate 8.6 extension slices.
 
-Latest completed implementation slice: Gate 8.7 System Columns. Architecture: `../architecture/gate-8-7-system-columns-architecture.md`.
-
-Recommended next slice: Gate 8.7-a Current Row Highlight. This is separate from checkbox row selection and uses the active cell row as the first source of truth for external Master/Detail layouts.
+Latest completed implementation slice: Gate 8.7-a Current Row Highlight. Architecture: `../architecture/gate-8-7-a-current-row-highlight-architecture.md`.
 
 ### 목표
 

@@ -256,6 +256,8 @@ export type GenDataGridProps<TData> = {
   onRowSelectionChange?: (next: RowSelectionState) => void;
   enableRowStatus?: boolean;
   rowStatusResolver?: (ctx: GenDataGridRowStatusContext<TData>) => GenDataGridRowStatus;
+  enableCurrentRowHighlight?: boolean;
+  onCurrentRowChange?: (rowId: string | null) => void;
   enableVirtualization?: boolean;
   enableTreeRows?: boolean;
   getSubRows?: (row: TData, index: number) => readonly TData[] | undefined;

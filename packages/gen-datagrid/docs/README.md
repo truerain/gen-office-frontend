@@ -31,6 +31,7 @@ Indexes GenDataGrid planning, architecture, reference, QA, and log documents.
 - [Gate 8.5 Tree Row Model Architecture](architecture/gate-8-5-tree-row-model-architecture.md)
 - [Gate 8.6 Merge, Span, And Validation Architecture](architecture/gate-8-6-merge-span-validation-architecture.md)
 - [Gate 8.7 System Columns Architecture](architecture/gate-8-7-system-columns-architecture.md)
+- [Gate 8.7-a Current Row Highlight Architecture](architecture/gate-8-7-a-current-row-highlight-architecture.md)
 
 ## Reference
 

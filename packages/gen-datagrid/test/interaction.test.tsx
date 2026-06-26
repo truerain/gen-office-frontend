@@ -274,6 +274,50 @@ describe('GenDataGrid interaction contract', () => {
     });
   });
 
+  it('derives current row from the active cell row', async () => {
+    const onCurrentRowChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        gridId="current-row-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        enableCurrentRowHighlight
+        defaultActiveCell={{ rowId: '1', columnId: 'name' }}
+        onCurrentRowChange={onCurrentRowChange}
+      />
+    );
+
+    const firstRowNameCell = getCell(container, '1', 'name');
+    const secondRowAgeCell = getCell(container, '2', 'age');
+
+    await waitFor(() => {
+      expect(firstRowNameCell.closest('[role="row"]')?.getAttribute('data-current-row')).toBe(
+        'true'
+      );
+      expect(onCurrentRowChange).toHaveBeenLastCalledWith('1');
+    });
+
+    fireEvent.mouseDown(secondRowAgeCell, { button: 0 });
+
+    await waitFor(() => {
+      expect(firstRowNameCell.closest('[role="row"]')?.getAttribute('data-current-row')).toBeNull();
+      expect(secondRowAgeCell.closest('[role="row"]')?.getAttribute('data-current-row')).toBe(
+        'true'
+      );
+      expect(onCurrentRowChange).toHaveBeenLastCalledWith('2');
+    });
+
+    fireEvent.keyDown(secondRowAgeCell, { key: 'ArrowUp' });
+
+    await waitFor(() => {
+      expect(firstRowNameCell.closest('[role="row"]')?.getAttribute('data-current-row')).toBe(
+        'true'
+      );
+      expect(onCurrentRowChange).toHaveBeenLastCalledWith('1');
+    });
+  });
+
   it('keeps keyboard navigation scoped to the focused grid', async () => {
     const { container } = render(
       <>
@@ -4380,6 +4424,7 @@ describe('Gate 8.7 system columns', () => {
         enableRowStatus
         enableRowSelection
         enableRowNumber
+        enableCurrentRowHighlight
         defaultActiveCell={{ rowId: '1', columnId: 'name' }}
         onActiveCellChange={onActiveCellChange}
       />
@@ -4396,8 +4441,10 @@ describe('Gate 8.7 system columns', () => {
 
     await waitFor(() => {
       expect(userCell.dataset.activeCell).toBe('true');
+      expect(userCell.closest('[role="row"]')?.getAttribute('data-current-row')).toBe('true');
       expect(statusCell.dataset.activeCell).toBeUndefined();
       expect(numberCell.dataset.activeCell).toBeUndefined();
+      expect(statusCell.closest('[role="row"]')?.getAttribute('data-current-row')).toBe('true');
       expect(onActiveCellChange).not.toHaveBeenCalled();
     });
   });

@@ -78,6 +78,7 @@ type DataGridBodyRowProps<TData> = {
   dirtyCellIds?: ReadonlySet<string>;
   dirtyRowIds?: ReadonlySet<string>;
   deletedRowIds?: ReadonlySet<string>;
+  currentRowId?: string | null;
   activeCell: GenDataGridActiveCell;
   onActiveCellChange: (next: Exclude<GenDataGridActiveCell, null>) => void;
   onEditingNavigate?: (next: Exclude<GenDataGridActiveCell, null>) => void;
@@ -122,6 +123,7 @@ export function DataGridBodyRow<TData>({
   dirtyCellIds,
   dirtyRowIds,
   deletedRowIds,
+  currentRowId,
   activeCell,
   onActiveCellChange,
   onEditingNavigate,
@@ -229,6 +231,7 @@ export function DataGridBodyRow<TData>({
       data-row-index={rowIndex}
       data-dirty-row={dirtyRowIds?.has(rowId) ? 'true' : undefined}
       data-deleted-row={deletedRowIds?.has(rowId) ? 'true' : undefined}
+      data-current-row={currentRowId === rowId ? 'true' : undefined}
       data-expandable-row={canExpand ? 'true' : undefined}
       data-expanded-row={canExpand && isExpanded ? 'true' : undefined}
       data-tree-depth={treeDepth > 0 ? treeDepth : undefined}
