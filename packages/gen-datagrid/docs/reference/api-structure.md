@@ -531,8 +531,7 @@ Nested grid는 별도 prop보다 Core DOM contract와 `gridId`로 처리한다.
 docs/
   README.md
   plan/
-    div-datagrid-development-plan.md
-    mvp-test-gates.md
+    remaining-work-plan.md
   architecture/
     gate-1-2-architecture.md
     gate-3-architecture.md
@@ -552,6 +551,7 @@ docs/
       extension-api.md
   log/
     implementation-log.md
+    planning-history.md
 ```
 
 초기에는 `reference/api-structure.md` 하나로 시작하고, 구현이 진행되면 `reference/api/` 아래의 세부 문서로 분리한다.
@@ -607,7 +607,7 @@ Current limitations:
 
 ## Gate 8.6 Implementation Notes
 
-Gate 8.6 has three implemented slices, one documented implementation plan, and remaining deferred extensions.
+Gate 8.6 has implemented the core span, grouped header, validation, and visual row merge slices. Remaining work is limited to follow-up extensions and compatibility policy.
 
 Implemented:
 
@@ -617,12 +617,12 @@ Implemented:
 - `columnFitMode?: 'none' | 'grow'` and shared px grid template calculation for header/body/footer rows.
 - TanStack nested column group header rendering with `data-header-group-cell`, `data-header-depth`, and `data-header-colspan` markers.
 - Validation state UI marker with `getCellValidation`.
-
-Planned:
-
-- Visual row merge with virtualization and sticky merge label support.
+- Visual row merge with DOM-preserving body cell markers, virtual continuation display, and center-column sticky merge labels.
 
 Deferred:
 
 - Arbitrary header span API separate from TanStack column group headers.
 - Pinned group header split/sticky policy.
+- Pinned-column sticky merge labels for visual row merge.
+- Non-virtual continuation value rendering for visual row merge.
+- `visualRowMerge.getValue` and `visualRowMerge.compare`.

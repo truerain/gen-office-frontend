@@ -1,3 +1,20 @@
+## 2026-06-27
+
+### GenDataGrid 문서 정합성 1차 정리
+
+- `api-structure.md`와 `api-comparison-with-gen-grid.md`에서 visual row merge를 아직 planned/deferred로 설명하던 상태 문구를 구현 완료 기준으로 정정했다.
+- `planning-history.md`의 깨진 Korean 본문을 완료된 gate 이력과 결정 요약 중심으로 다시 작성했다.
+- 최신 plan 구조에 맞춰 앞으로 할 일은 `remaining-work-plan.md`에서만 관리하도록 문서 기준을 맞췄다.
+- 관련 파일: `docs/reference/api-structure.md`, `docs/reference/api-comparison-with-gen-grid.md`, `docs/log/planning-history.md`, `docs/log/implementation-log.md`
+
+### GenDataGrid plan 문서 정합성 정리
+
+- `docs/plan`을 앞으로 남은 작업만 추적하는 영역으로 축소했다.
+- 기존 `div-datagrid-development-plan.md`, `mvp-test-gates.md`, Gate 4.2/6.1 decision 문서를 활성 plan에서 제거했다.
+- 완료된 gate 및 decision 이력은 `docs/log/planning-history.md`에 로그형 요약으로 보존했다.
+- `docs/README.md`와 `docs/reference/api-structure.md`의 plan/log 문서 구조를 새 구조에 맞게 갱신했다.
+- 관련 파일: `docs/plan/remaining-work-plan.md`, `docs/log/planning-history.md`, `docs/README.md`, `docs/reference/api-structure.md`, `docs/log/implementation-log.md`
+
 ## 2026-06-26
 
 ### Gate 8.6-d Visual Row Merge ?? ??

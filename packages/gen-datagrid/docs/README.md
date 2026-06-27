@@ -4,14 +4,11 @@ Indexes GenDataGrid planning, architecture, reference, QA, and log documents.
 
 # GenDataGrid Docs
 
-Current status: Gate 8.6-d Visual Row Merge architecture/contract is documented. Implementation is split into merge metadata, visual rendering, virtual continuation, and sticky merge label slices.
+Current status: the main GenDataGrid MVP surface has implementation coverage. Active planning is tracked only in the remaining work plan; completed gate history is kept in logs and architecture documents.
 
 ## Plan
 
-- [Development Plan](plan/div-datagrid-development-plan.md)
-- [MVP Test Gates](plan/mvp-test-gates.md)
-- [Gate 4.2 Paste Decisions](plan/gate-4-2-paste-decisions.md)
-- [Gate 6.1 Data Ownership Decisions](plan/gate-6-1-data-ownership-decisions.md)
+- [Remaining Work Plan](plan/remaining-work-plan.md)
 
 ## Architecture
 
@@ -60,3 +57,4 @@ Current status: Gate 8.6-d Visual Row Merge architecture/contract is documented.
 ## Log
 
 - [Implementation Log](log/implementation-log.md)
+- [Planning History](log/planning-history.md)
