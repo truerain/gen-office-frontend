@@ -21,6 +21,10 @@ import { deactivateEditingForCellActivation } from '../../features/editing/editi
 import { resolveCellEditingRuntime } from '../../features/editing/cellRuntime';
 import type { GenDataGridEditingCell } from '../../features/editing/useCellEditing';
 import type { GenDataGridRangeSelections } from '../../features/range-selection/rangeSelection';
+import type {
+  GenDataGridVisualRowMergeDisplayModel,
+  GenDataGridVisualRowMergeModel,
+} from '../../features/visual-row-merge/visualRowMerge';
 import { DataGridBodyRow } from './DataGridBodyRow';
 import { DataGridDetailRow } from './DataGridDetailRow';
 
@@ -46,6 +50,8 @@ type DataGridBodyProps<TData> = {
   getCellValidation?: (
     ctx: GenDataGridValidationContext<TData>
   ) => GenDataGridCellValidation | null | undefined;
+  visualRowMergeModel?: GenDataGridVisualRowMergeModel;
+  visualRowMergeDisplayModel?: GenDataGridVisualRowMergeDisplayModel;
   getRowHeight?: (args: {
     row: TData;
     rowId: string;
@@ -95,6 +101,8 @@ export function DataGridBody<TData>({
   deletedRowIds,
   currentRowId,
   getCellValidation,
+  visualRowMergeModel,
+  visualRowMergeDisplayModel,
   getRowHeight,
   activeCell,
   onActiveCellChange,
@@ -222,6 +230,8 @@ export function DataGridBody<TData>({
               deletedRowIds={deletedRowIds}
               currentRowId={currentRowId}
               getCellValidation={getCellValidation}
+              visualRowMergeModel={visualRowMergeModel}
+              visualRowMergeDisplayModel={visualRowMergeDisplayModel}
               activeCell={activeCell}
               onActiveCellChange={activateCell}
               onEditingNavigate={onEditingNavigate}

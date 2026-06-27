@@ -79,6 +79,32 @@ export type GenDataGridBodyColSpanContext<TData> = {
   value: unknown;
 };
 
+export type GenDataGridVisualRowMergeState =
+  | 'single'
+  | 'start'
+  | 'middle'
+  | 'end';
+
+export type GenDataGridVisualRowMergeDisplayState =
+  | GenDataGridVisualRowMergeState
+  | 'visible-start';
+
+export type GenDataGridVisualRowMergeContext<TData> = {
+  row: TData;
+  rowId: string;
+  rowIndex: number;
+  columnId: string;
+  value: unknown;
+};
+
+export type GenDataGridVisualRowMergeOption =
+  | boolean
+  | {
+      enabled?: boolean;
+      showContinuationValue?: boolean;
+      stickyLabel?: boolean;
+    };
+
 export type GenDataGridValidationSeverity = 'error' | 'warning';
 
 export type GenDataGridCellValidation = {

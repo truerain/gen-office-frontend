@@ -1534,6 +1534,237 @@ export const Gate86ValidationState: Story = {
   ),
 };
 
+export const Gate86VisualRowMerge: Story = {
+  render: () => {
+    const mergeRows: Person[] = [
+      { id: '1', name: 'Ada Lovelace', role: 'Engineering', score: 95, location: 'London', note: 'Compiler work' },
+      { id: '2', name: 'Grace Hopper', role: 'Engineering', score: 91, location: 'London', note: 'COBOL leadership' },
+      { id: '3', name: 'Margaret Hamilton', role: 'Engineering', score: 94, location: 'Cambridge', note: 'Apollo software' },
+      { id: '4', name: 'Katherine Johnson', role: 'Research', score: 98, location: 'Hampton', note: 'Orbital mechanics' },
+      { id: '5', name: 'Dorothy Vaughan', role: 'Research', score: 90, location: 'Hampton', note: 'Computing group' },
+      { id: '6', name: 'Mary Jackson', role: 'Research', score: 88, location: 'Hampton', note: 'Engineering analysis' },
+      { id: '7', name: 'Radia Perlman', role: 'Networking', score: 93, location: 'Redmond', note: 'Spanning tree' },
+      { id: '8', name: 'Barbara Liskov', role: 'Programming Languages', score: 96, location: 'Boston', note: 'Data abstraction' },
+    ];
+    const mergeColumns: ColumnDef<Person, unknown>[] = [
+      { accessorKey: 'role', header: 'Role', size: 180, meta: { visualRowMerge: true } },
+      { accessorKey: 'location', header: 'Location', size: 160, meta: { visualRowMerge: true } },
+      { accessorKey: 'name', header: 'Name', size: 180 },
+      { accessorKey: 'score', header: 'Score', size: 100 },
+      { accessorKey: 'note', header: 'Note', size: 300 },
+    ];
+
+    return (
+      <div style={{ width: 980, padding: 16, display: 'grid', gap: 10 }}>
+        <GenDataGrid<Person>
+          data={mergeRows}
+          columns={mergeColumns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-8-6-visual-row-merge"
+          columnFitMode="grow"
+          enableRowNumber
+          defaultActiveCell={{ rowId: '1', columnId: 'role' }}
+          rowHeight={36}
+          headerHeight={40}
+          style={{
+            height: 360,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+      </div>
+    );
+  },
+};
+
+export const Gate86VisualRowMergeVirtualized: Story = {
+  render: () => {
+    const roles = ['Engineering', 'Research', 'Operations', 'Support'];
+    const mergeRows: Person[] = Array.from({ length: 240 }, (_, index) => {
+      const groupIndex = Math.floor(index / 30);
+      const role = roles[groupIndex % roles.length];
+      return {
+        id: String(index + 1),
+        name: `Person ${index + 1}`,
+        role,
+        score: 70 + (index % 31),
+        location: groupIndex % 2 === 0 ? 'Seoul' : 'Remote',
+        note: `Virtual merge row ${index + 1}`,
+      };
+    });
+    const mergeColumns: ColumnDef<Person, unknown>[] = [
+      { accessorKey: 'role', header: 'Role', size: 180, meta: { visualRowMerge: true } },
+      { accessorKey: 'location', header: 'Location', size: 160, meta: { visualRowMerge: true } },
+      { accessorKey: 'name', header: 'Name', size: 180 },
+      { accessorKey: 'score', header: 'Score', size: 100 },
+      { accessorKey: 'note', header: 'Note', size: 300 },
+    ];
+
+    return (
+      <div style={{ width: 980, padding: 16, display: 'grid', gap: 10 }}>
+        <GenDataGrid<Person>
+          data={mergeRows}
+          columns={mergeColumns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-8-6-visual-row-merge-virtualized"
+          columnFitMode="grow"
+          enableVirtualization
+          defaultActiveCell={{ rowId: '45', columnId: 'role' }}
+          rowHeight={36}
+          headerHeight={40}
+          style={{
+            height: 360,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+      </div>
+    );
+  },
+};
+
+export const Gate86VisualRowMergeFeatureSplit: Story = {
+  render: () => {
+    const roles = ['Engineering', 'Research', 'Operations', 'Support'];
+    const mergeRows: Person[] = Array.from({ length: 240 }, (_, index) => {
+      const groupIndex = Math.floor(index / 30);
+      const role = roles[groupIndex % roles.length];
+      return {
+        id: String(index + 1),
+        name: `Person ${index + 1}`,
+        role,
+        score: 70 + (index % 31),
+        location: groupIndex % 2 === 0 ? 'Seoul' : 'Remote',
+        note: `Feature split row ${index + 1}`,
+      };
+    });
+    const mergeColumns: ColumnDef<Person, unknown>[] = [
+      {
+        accessorKey: 'role',
+        header: 'Role',
+        size: 180,
+        meta: {
+          visualRowMerge: {
+            showContinuationValue: true,
+            stickyLabel: false,
+          },
+        },
+      },
+      {
+        accessorKey: 'location',
+        header: 'Location',
+        size: 160,
+        meta: {
+          visualRowMerge: {
+            showContinuationValue: false,
+            stickyLabel: true,
+          },
+        },
+      },
+      { accessorKey: 'name', header: 'Name', size: 180 },
+      { accessorKey: 'score', header: 'Score', size: 100 },
+      { accessorKey: 'note', header: 'Note', size: 300 },
+    ];
+
+    return (
+      <div style={{ width: 980, padding: 16, display: 'grid', gap: 10 }}>
+        <GenDataGrid<Person>
+          data={mergeRows}
+          columns={mergeColumns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-8-6-visual-row-merge-feature-split"
+          columnFitMode="grow"
+          enableVirtualization
+          defaultActiveCell={{ rowId: '45', columnId: 'role' }}
+          rowHeight={36}
+          headerHeight={40}
+          style={{
+            height: 360,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+      </div>
+    );
+  },
+};
+
+export const Gate86VisualRowMergeManual: Story = {
+  render: () => {
+    const standardRows: Person[] = [
+      { id: '1', name: 'Ada Lovelace', role: 'Engineering', score: 95, location: 'London', note: 'Compiler work' },
+      { id: '2', name: 'Grace Hopper', role: 'Engineering', score: 91, location: 'London', note: 'COBOL leadership' },
+      { id: '3', name: 'Margaret Hamilton', role: 'Engineering', score: 94, location: 'Cambridge', note: 'Apollo software' },
+      { id: '4', name: 'Katherine Johnson', role: 'Research', score: 98, location: 'Hampton', note: 'Orbital mechanics' },
+      { id: '5', name: 'Dorothy Vaughan', role: 'Research', score: 90, location: 'Hampton', note: 'Computing group' },
+      { id: '6', name: 'Mary Jackson', role: 'Research', score: 88, location: 'Hampton', note: 'Engineering analysis' },
+      { id: '7', name: 'Radia Perlman', role: 'Networking', score: 93, location: 'Redmond', note: 'Spanning tree' },
+      { id: '8', name: 'Barbara Liskov', role: 'Programming Languages', score: 96, location: 'Boston', note: 'Data abstraction' },
+    ];
+    const roles = ['Engineering', 'Research', 'Operations', 'Support'];
+    const virtualRows: Person[] = Array.from({ length: 240 }, (_, index) => {
+      const groupIndex = Math.floor(index / 30);
+      return {
+        id: String(index + 1),
+        name: `Person ${index + 1}`,
+        role: roles[groupIndex % roles.length],
+        score: 70 + (index % 31),
+        location: groupIndex % 2 === 0 ? 'Seoul' : 'Remote',
+        note: `Virtual merge row ${index + 1}`,
+      };
+    });
+    const mergeColumns: ColumnDef<Person, unknown>[] = [
+      { accessorKey: 'role', header: 'Role', size: 180, meta: { visualRowMerge: true } },
+      { accessorKey: 'location', header: 'Location', size: 160, meta: { visualRowMerge: true } },
+      { accessorKey: 'name', header: 'Name', size: 180 },
+      { accessorKey: 'score', header: 'Score', size: 100 },
+      { accessorKey: 'note', header: 'Note', size: 300 },
+    ];
+
+    return (
+      <div style={{ width: 980, padding: 16, display: 'grid', gap: 16 }}>
+        <GenDataGrid<Person>
+          data={standardRows}
+          columns={mergeColumns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-8-6-visual-row-merge-manual-standard"
+          columnFitMode="grow"
+          enableRowNumber
+          defaultActiveCell={{ rowId: '1', columnId: 'role' }}
+          rowHeight={36}
+          headerHeight={40}
+          style={{
+            height: 260,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+        <GenDataGrid<Person>
+          data={virtualRows}
+          columns={mergeColumns}
+          getRowId={(row) => row.id}
+          gridId="storybook-gen-datagrid-gate-8-6-visual-row-merge-manual-virtualized"
+          columnFitMode="grow"
+          enableVirtualization
+          defaultActiveCell={{ rowId: '45', columnId: 'role' }}
+          rowHeight={36}
+          headerHeight={40}
+          style={{
+            height: 320,
+            border: '1px solid #d0d7de',
+            borderRadius: 6,
+            background: '#fff',
+          }}
+        />
+      </div>
+    );
+  },
+};
+
 export const Gate87SystemColumns: Story = {
   render: () => {
     const gridRef = React.useRef<GenDataGridHandle>(null);

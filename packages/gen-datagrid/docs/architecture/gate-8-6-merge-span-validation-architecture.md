@@ -11,7 +11,7 @@ Gate 8.6은 span, merge, validation이 묶여 있는 구간이다. 각 기능은
 | 8.6-a | Body Column Span | 구현 완료 | 1 |
 | 8.6-b | Column Group Header | 구현 완료 | 2 |
 | 8.6-c | Validation State/UI Marker | implemented | 3 |
-| 8.6-d | Visual Row Merge | 예정 | 4 |
+| 8.6-d | Visual Row Merge | architecture/contract complete | 4 |
 
 ## 용어 정리
 
@@ -98,7 +98,7 @@ Gate 8.6은 span, merge, validation이 묶여 있는 구간이다. 각 기능은
 | grow-and-shrink column fit | column 합이 viewport보다 큰 경우까지 축소하려면 minSize와 pinned offset 정책이 필요하다. |
 | pinned group header 분할 | left/center/right sticky zone을 넘는 group header는 offset 계산이 복잡하다. |
 | group header reorder UX | group 전체 이동, leaf 이동, 혼합 이동 정책을 먼저 정해야 한다. |
-| visual row merge | virtualization, selection, editing과의 조합을 별도로 검증해야 한다. |
+| visual row merge implementation | See `gate-8-6-d-visual-row-merge-architecture.md`; implementation is split into metadata, rendering, virtual continuation, sticky label, and QA slices. |
 
 ## Acceptance Criteria
 

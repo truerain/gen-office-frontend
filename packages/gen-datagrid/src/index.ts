@@ -39,6 +39,10 @@ export type {
   GenDataGridSystemColumnKind,
   GenDataGridValidationContext,
   GenDataGridValidationSeverity,
+  GenDataGridVisualRowMergeContext,
+  GenDataGridVisualRowMergeDisplayState,
+  GenDataGridVisualRowMergeOption,
+  GenDataGridVisualRowMergeState,
 } from './GenDataGrid.types';
 export type {
   GenDataGridCellCoord,

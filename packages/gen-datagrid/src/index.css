@@ -76,6 +76,32 @@
   min-width: max-content;
 }
 
+.gen-datagrid__sticky-merge-layer {
+  position: sticky;
+  top: var(--gen-datagrid-header-height, 40px);
+  z-index: 2;
+  min-width: max-content;
+  height: 0;
+  pointer-events: none;
+}
+
+.gen-datagrid__sticky-merge-label {
+  position: absolute;
+  top: 0;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: 0 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  border-right: 1px solid #d0d7de;
+  border-bottom: 1px solid #d0d7de;
+  color: #24292f;
+  background: color-mix(in srgb, #ffffff 92%, #0969da);
+  box-shadow: inset 3px 0 0 #0969da, 0 1px 2px rgb(31 35 40 / 12%);
+}
+
 .gen-datagrid__header-cell,
 .gen-datagrid__cell,
 .gen-datagrid__footer-row-cell {
@@ -268,6 +294,15 @@
   user-select: none;
 }
 
+.gen-datagrid__cell-merge-content {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .gen-datagrid__cell:has(.gen-datagrid__row-status),
 .gen-datagrid__cell:has(.gen-datagrid__row-selection-checkbox),
 .gen-datagrid__cell:has(.gen-datagrid__row-number) {
@@ -420,6 +455,24 @@
   z-index: 4;
   overflow: visible;
   padding: 0 4px;
+}
+
+.gen-datagrid__cell[data-visual-row-merge='start'],
+.gen-datagrid__cell[data-visual-row-merge='middle'] {
+  border-bottom-color: transparent;
+}
+
+.gen-datagrid__cell[data-visual-row-merge='middle'] .gen-datagrid__cell-merge-content,
+.gen-datagrid__cell[data-visual-row-merge='end'] .gen-datagrid__cell-merge-content {
+  visibility: hidden;
+}
+
+.gen-datagrid__cell[data-visual-row-merge-display='visible-start'] .gen-datagrid__cell-merge-content,
+.gen-datagrid__cell[data-visual-row-merge='middle'][data-active-cell='true'] .gen-datagrid__cell-merge-content,
+.gen-datagrid__cell[data-visual-row-merge='end'][data-active-cell='true'] .gen-datagrid__cell-merge-content,
+.gen-datagrid__cell[data-visual-row-merge='middle'][data-editing-cell='true'] .gen-datagrid__cell-merge-content,
+.gen-datagrid__cell[data-visual-row-merge='end'][data-editing-cell='true'] .gen-datagrid__cell-merge-content {
+  visibility: visible;
 }
 
 .gen-datagrid__cell[data-validation-state='error'] {

@@ -430,11 +430,13 @@ Implementation status: `editable`, `editType`, `editOptions`, `getEditOptions`, 
 | `bodyColSpan` | body CSS grid column span | Extension |
 | `headerSpan` | header CSS grid column span | Extension |
 | `groupVisibilityToggle` | grouped header visibility toggle | Extension |
-| `rowMerge` | visual row merge enable/predicate | Extension |
-| `rowMergeValueGetter` | row merge compare value | Extension |
-| `rowMergeComparator` | row merge comparator | Extension |
+| `visualRowMerge` | boolean or option object for visual row merge | Extension |
+| `visualRowMerge.showContinuationValue` | virtual first-visible continuation cell value display | Extension |
+| `visualRowMerge.stickyLabel` | virtual sticky merge label overlay | Extension |
+| `visualRowMerge.getValue` | row merge compare value resolver | Deferred extension |
+| `visualRowMerge.compare` | row merge comparator | Deferred extension |
 
-Implementation status: column meta `bodyColSpan` is implemented for body cells with CSS grid placement and pinned-zone fallback. TanStack nested `ColumnDef.columns` group headers are implemented through header groups and `data-header-group-cell` markers. Arbitrary `headerSpan`, `groupVisibilityToggle`, `rowMerge`, `rowMergeValueGetter`, and `rowMergeComparator` are still deferred.
+Implementation status: column meta `bodyColSpan` is implemented for body cells with CSS grid placement and pinned-zone fallback. TanStack nested `ColumnDef.columns` group headers are implemented through header groups and `data-header-group-cell` markers. `visualRowMerge` is implemented as a visual DOM-preserving merge with virtual continuation and center-column sticky labels. `visualRowMerge: true` enables the full behavior, while object options can split `showContinuationValue` and `stickyLabel`. Arbitrary `headerSpan`, `groupVisibilityToggle`, `visualRowMerge.getValue`, and `visualRowMerge.compare` are still deferred.
 
 ## 8. Instance API
 
@@ -605,7 +607,7 @@ Current limitations:
 
 ## Gate 8.6 Implementation Notes
 
-Gate 8.6 currently has two implemented slices and two deferred slices.
+Gate 8.6 has three implemented slices, one documented implementation plan, and remaining deferred extensions.
 
 Implemented:
 
@@ -614,10 +616,13 @@ Implemented:
 - Pinned-zone body span fallback to span 1.
 - `columnFitMode?: 'none' | 'grow'` and shared px grid template calculation for header/body/footer rows.
 - TanStack nested column group header rendering with `data-header-group-cell`, `data-header-depth`, and `data-header-colspan` markers.
+- Validation state UI marker with `getCellValidation`.
+
+Planned:
+
+- Visual row merge with virtualization and sticky merge label support.
 
 Deferred:
 
-- Validation state/UI marker.
-- Visual row merge.
 - Arbitrary header span API separate from TanStack column group headers.
 - Pinned group header split/sticky policy.

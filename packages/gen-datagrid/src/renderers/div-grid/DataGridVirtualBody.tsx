@@ -24,8 +24,15 @@ import { resolveCellEditingRuntime } from '../../features/editing/cellRuntime';
 import type { GenDataGridEditingCell } from '../../features/editing/useCellEditing';
 import { getColumnPinningInfo } from '../../features/pinning/pinningStyles';
 import type { GenDataGridRangeSelections } from '../../features/range-selection/rangeSelection';
+import {
+  buildVisibleStartVisualRowMergeDisplayModel,
+  createVisualRowMergeKey,
+  type GenDataGridVisualRowMergeDisplayModel,
+  type GenDataGridVisualRowMergeModel,
+} from '../../features/visual-row-merge/visualRowMerge';
 import { DataGridBodyRow } from './DataGridBodyRow';
 import { DataGridDetailRow } from './DataGridDetailRow';
+import { formatCellValue } from './cellValue';
 
 export type DataGridVirtualBodyHandle = {
   scrollToRowIndex: (rowIndex: number) => void;
@@ -88,6 +95,9 @@ type DataGridVirtualBodyProps<TData> = {
   getCellValidation?: (
     ctx: GenDataGridValidationContext<TData>
   ) => GenDataGridCellValidation | null | undefined;
+  visualRowMergeModel?: GenDataGridVisualRowMergeModel;
+  visualRowMergeContinuationColumnIds?: readonly string[];
+  visualRowMergeStickyLabelColumnIds?: readonly string[];
   getRowHeight?: (args: {
     row: TData;
     rowId: string;
@@ -136,6 +146,17 @@ function resolvePlaceholderWidth(cell: Cell<unknown, unknown>, index: number) {
   const basis = Math.max(48, Math.floor(cell.column.getSize() * 0.72));
   const variance = (index % 3) * 18;
   return `${Math.max(36, basis - variance)}px`;
+}
+
+function parseGridTemplatePixelTracks(gridTemplateColumns: string) {
+  return gridTemplateColumns
+    .trim()
+    .split(/\s+/)
+    .map((track) => {
+      if (!track.endsWith('px')) return undefined;
+      const value = Number(track.slice(0, -2));
+      return Number.isFinite(value) ? value : undefined;
+    });
 }
 
 type VirtualPlaceholderRowProps<TData> = {
@@ -218,6 +239,9 @@ export function DataGridVirtualBody<TData>({
   deletedRowIds,
   currentRowId,
   getCellValidation,
+  visualRowMergeModel,
+  visualRowMergeContinuationColumnIds,
+  visualRowMergeStickyLabelColumnIds,
   getRowHeight,
   enableMasterDetail = false,
   expandedRows = {},
@@ -503,6 +527,55 @@ export function DataGridVirtualBody<TData>({
   const virtualItems = rowVirtualizer.getVirtualItems();
   const isScrollSeeking =
     scrollSeekingOptions.enabled && rowVirtualizer.isScrolling && isLargeJumpScrolling;
+  const firstVisibleVirtualItem = (() => {
+    if (!viewportElement) return undefined;
+    const visibleTop = viewportElement.scrollTop;
+    const visibleBottom = visibleTop + viewportElement.clientHeight;
+    return virtualItems.find((item) => {
+      const itemEnd = item.end ?? item.start + item.size;
+      return itemEnd > visibleTop && item.start < visibleBottom;
+    });
+  })();
+  const visualRowMergeDisplayModel: GenDataGridVisualRowMergeDisplayModel | undefined =
+    firstVisibleVirtualItem && visualRowMergeContinuationColumnIds?.length
+      ? buildVisibleStartVisualRowMergeDisplayModel({
+          rows,
+          columnIds: visualRowMergeContinuationColumnIds,
+          mergeModel: visualRowMergeModel,
+          visibleRowStartIndex: firstVisibleVirtualItem.index,
+        })
+      : undefined;
+  const stickyMergeLabels = (() => {
+    if (!firstVisibleVirtualItem || !visualRowMergeModel) return [];
+    if (!visualRowMergeStickyLabelColumnIds?.length) return [];
+
+    const row = rows[firstVisibleVirtualItem.index];
+    if (!row) return [];
+
+    const stickyLabelColumnIds = new Set(visualRowMergeStickyLabelColumnIds);
+    const trackWidths = parseGridTemplatePixelTracks(gridTemplateColumns);
+    let left = 0;
+    return getOrderedVisibleCells(row, enablePinning).flatMap((cell, cellIndex) => {
+      const columnId = cell.column.id;
+      const width = trackWidths[cellIndex] ?? cell.column.getSize();
+      const currentLeft = left;
+      left += width;
+
+      if (!stickyLabelColumnIds.has(columnId)) return [];
+      const state = visualRowMergeModel[createVisualRowMergeKey(row.id, columnId)];
+      if (state !== 'middle' && state !== 'end') return [];
+      if (enablePinning && cell.column.getIsPinned()) return [];
+
+      return [
+        {
+          columnId,
+          value: formatCellValue(cell.getValue()),
+          left: currentLeft,
+          width,
+        },
+      ];
+    });
+  })();
 
   return (
     <div
@@ -512,6 +585,29 @@ export function DataGridVirtualBody<TData>({
       className="gen-datagrid__body gen-datagrid__body--virtual"
       style={{ height: `${totalSize}px` }}
     >
+      {stickyMergeLabels.length > 0 ? (
+        <div
+          aria-hidden="true"
+          className="gen-datagrid__sticky-merge-layer"
+          data-visual-row-merge-sticky-layer="true"
+        >
+          {stickyMergeLabels.map((label) => (
+            <div
+              key={label.columnId}
+              className="gen-datagrid__sticky-merge-label"
+              data-visual-row-merge-sticky-label="true"
+              data-colid={label.columnId}
+              style={{
+                left: `${label.left}px`,
+                width: `${label.width}px`,
+                height: `${rowHeight}px`,
+              }}
+            >
+              {label.value}
+            </div>
+          ))}
+        </div>
+      ) : null}
       {virtualItems.map((virtualItem) => {
         const row = rows[virtualItem.index];
         if (!row) return null;
@@ -579,6 +675,8 @@ export function DataGridVirtualBody<TData>({
                 deletedRowIds={deletedRowIds}
                 currentRowId={currentRowId}
                 getCellValidation={getCellValidation}
+                visualRowMergeModel={visualRowMergeModel}
+                visualRowMergeDisplayModel={visualRowMergeDisplayModel}
                 activeCell={activeCell}
                 onActiveCellChange={activateCell}
                 onEditingNavigate={onEditingNavigate}

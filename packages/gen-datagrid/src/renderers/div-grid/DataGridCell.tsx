@@ -6,6 +6,8 @@ import * as React from 'react';
 import type {
   GenDataGridCellValidation,
   GenDataGridEditEntryReason,
+  GenDataGridVisualRowMergeDisplayState,
+  GenDataGridVisualRowMergeState,
 } from '../../GenDataGrid.types';
 
 const interactiveTargetSelector =
@@ -20,6 +22,8 @@ type DataGridCellProps = {
   isEditing: boolean;
   isDirty?: boolean;
   validation?: GenDataGridCellValidation | null;
+  visualRowMergeState?: GenDataGridVisualRowMergeState;
+  visualRowMergeDisplayState?: GenDataGridVisualRowMergeDisplayState;
   editOpenOnStart?: boolean;
   allowReclickEdit?: boolean;
   allowDoubleClickEdit?: boolean;
@@ -50,6 +54,8 @@ export function DataGridCell({
   isEditing,
   isDirty,
   validation,
+  visualRowMergeState,
+  visualRowMergeDisplayState,
   editOpenOnStart,
   allowReclickEdit = true,
   allowDoubleClickEdit = true,
@@ -74,6 +80,8 @@ export function DataGridCell({
       data-editing-cell={isEditing ? 'true' : undefined}
       data-dirty-cell={isDirty ? 'true' : undefined}
       data-validation-state={validation?.severity}
+      data-visual-row-merge={visualRowMergeState}
+      data-visual-row-merge-display={visualRowMergeDisplayState}
       data-edit-open-on-start={editOpenOnStart ? 'true' : undefined}
       data-body-colspan={bodyColSpan && bodyColSpan > 1 ? String(bodyColSpan) : undefined}
       data-pinned-cell={pinning?.pinned || undefined}
@@ -113,7 +121,7 @@ export function DataGridCell({
         onEditStart?.({ rowId, columnId, entryReason: 'doubleClick' });
       }}
     >
-      {children}
+      <span className="gen-datagrid__cell-merge-content">{children}</span>
     </div>
   );
 }

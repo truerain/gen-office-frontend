@@ -731,7 +731,7 @@ Editor 구현 계약 요약: [`editor-implementation-contract.md`](../reference/
   - 8.6-b Column Group Header: complete
   - 8.6-b Column Fit Mode `grow`: complete
   - 8.6-c Validation State/UI Marker: implemented
-  - 8.6-d Visual Row Merge: planned
+  - 8.6-d Visual Row Merge: architecture/contract complete; implementation planned
 - implemented scope
   - TanStack column meta `bodyColSpan`
   - body cell `data-body-colspan` marker and CSS grid placement
@@ -759,6 +759,17 @@ Gate 8.6-c Validation State/UI Marker implementation summary:
 - renders `aria-invalid="true"` for error cells and `title` for validation messages
 - excludes system columns from validation marker resolution
 - added `Gate86ValidationState` Storybook and interaction tests
+
+Gate 8.6-d Visual Row Merge implementation plan:
+
+- architecture: `../architecture/gate-8-6-d-visual-row-merge-architecture.md`
+- phase 1: architecture/API/interaction contract complete
+- phase 2: merge metadata calculation from the current TanStack row model complete
+- phase 3: non-sticky visual row merge rendering complete
+- phase 4: virtualized visible continuation with `visible-start` complete
+- phase 5: sticky merge label overlay complete for center user columns; pinned-column sticky labels deferred
+- phase 6: Storybook, interaction tests, and QA guide complete
+- phase 7: `showContinuationValue` and `stickyLabel` option split complete; non-virtual continuation value rendering deferred
 
 #### Gate 8.7 System Columns
 

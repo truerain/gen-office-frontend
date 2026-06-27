@@ -4,7 +4,7 @@ Indexes GenDataGrid planning, architecture, reference, QA, and log documents.
 
 # GenDataGrid Docs
 
-Current status: Gate 8.6-c Validation State/UI Marker is implemented after Gate 8.7 System Columns and Gate 8.7-a Current Row Highlight. The next open Gate 8.6 slice is Visual Row Merge.
+Current status: Gate 8.6-d Visual Row Merge architecture/contract is documented. Implementation is split into merge metadata, visual rendering, virtual continuation, and sticky merge label slices.
 
 ## Plan
 
@@ -30,6 +30,7 @@ Current status: Gate 8.6-c Validation State/UI Marker is implemented after Gate 
 - [Gate 8.4 Dynamic Row Height Architecture](architecture/gate-8-4-dynamic-row-height-architecture.md)
 - [Gate 8.5 Tree Row Model Architecture](architecture/gate-8-5-tree-row-model-architecture.md)
 - [Gate 8.6 Merge, Span, And Validation Architecture](architecture/gate-8-6-merge-span-validation-architecture.md)
+- [Gate 8.6-d Visual Row Merge Architecture](architecture/gate-8-6-d-visual-row-merge-architecture.md)
 - [Gate 8.7 System Columns Architecture](architecture/gate-8-7-system-columns-architecture.md)
 - [Gate 8.7-a Current Row Highlight Architecture](architecture/gate-8-7-a-current-row-highlight-architecture.md)
 
@@ -54,6 +55,7 @@ Current status: Gate 8.6-c Validation State/UI Marker is implemented after Gate 
 - [Gate 8.6-a Body Column Span Visual Test Guide](qa/gate-8-6-body-colspan-visual-test-guide.md)
 - [Gate 8.6-b Column Group Header Visual Test Guide](qa/gate-8-6-column-group-header-visual-test-guide.md)
 - [Gate 8.6-c Validation State Visual Test Guide](qa/gate-8-6-validation-state-visual-test-guide.md)
+- [Gate 8.6-d Visual Row Merge Visual Test Guide](qa/gate-8-6-d-visual-row-merge-visual-test-guide.md)
 
 ## Log
 

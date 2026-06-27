@@ -13,6 +13,7 @@ import type {
   GenDataGridEditOption,
   GenDataGridEditType,
   GenDataGridSystemColumnKind,
+  GenDataGridVisualRowMergeOption,
 } from '../../GenDataGrid.types';
 
 declare module '@tanstack/react-table' {
@@ -30,6 +31,7 @@ declare module '@tanstack/react-table' {
     editPolicy?: GenDataGridEditPolicy;
     renderEditor?: (ctx: GenDataGridEditorContext<TData>) => React.ReactNode;
     bodyColSpan?: number | ((ctx: GenDataGridBodyColSpanContext<TData>) => number);
+    visualRowMerge?: GenDataGridVisualRowMergeOption;
     systemColumn?: GenDataGridSystemColumnKind;
   }
 }

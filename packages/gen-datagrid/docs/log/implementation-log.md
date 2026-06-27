@@ -1,5 +1,66 @@
 ## 2026-06-26
 
+### Gate 8.6-d Visual Row Merge ?? ??
+
+- `visualRowMerge` column meta? boolean ?? option object? ??? ? ??? ????.
+- ?? `visualRowMerge: true`? merge marker, virtual continuation value, sticky label? ?? ?? ???? ????.
+- `showContinuationValue`? `stickyLabel`? ??? virtualized continuation cell ??? sticky merge label overlay? ????? ??? ? ?? ??.
+- `Gate86VisualRowMergeFeatureSplit` Storybook? interaction/unit test? ????.
+- non-virtual continuation value rendering? ?? visible-row ?? ??? ????? deferred limitation?? ?????.
+- ?? ??: `src/GenDataGrid.types.ts`, `src/features/visual-row-merge/visualRowMerge.ts`, `src/renderers/div-grid/DataGridRoot.tsx`, `src/renderers/div-grid/DataGridVirtualBody.tsx`, `src/stories/GenDataGrid.baseline.stories.tsx`, `test/visualRowMerge.test.ts`, `test/interaction.test.tsx`, `docs/architecture/gate-8-6-d-visual-row-merge-architecture.md`, `docs/qa/gate-8-6-d-visual-row-merge-visual-test-guide.md`, `docs/plan/div-datagrid-development-plan.md`, `docs/plan/mvp-test-gates.md`, `docs/reference/api-structure.md`, `docs/reference/api-comparison-with-gen-grid.md`, `docs/log/implementation-log.md`
+
+### Gate 8.6-d Visual Row Merge QA/Storybook 정리
+
+- 수동 테스트 진입점으로 `Gate86VisualRowMergeManual` Storybook을 추가했다.
+- non-virtual, virtualized, sticky merge label 확인 항목을 포함한 QA 가이드를 추가했다.
+- Gate 8.6-d architecture, development plan, MVP gate 문서의 6단계 상태를 완료로 갱신했다.
+- pinned-column sticky merge label과 `compare`/`getValue` 확장은 known limitation/deferred 항목으로 정리했다.
+- 관련 파일: `src/stories/GenDataGrid.baseline.stories.tsx`, `docs/qa/gate-8-6-d-visual-row-merge-visual-test-guide.md`, `docs/README.md`, `docs/architecture/gate-8-6-d-visual-row-merge-architecture.md`, `docs/plan/div-datagrid-development-plan.md`, `docs/plan/mvp-test-gates.md`, `docs/log/implementation-log.md`
+
+### Gate 8.6-d Visual Row Merge sticky merge label 구현
+
+- virtualized body에 non-interactive sticky merge label overlay를 추가했다.
+- viewport 첫 visible row가 merge continuation일 때 center user column의 현재 group value를 sticky label로 표시한다.
+- sticky label은 `gridTemplateColumns`의 px track을 기준으로 left/width를 계산해 `columnFitMode="grow"`에서도 렌더 폭을 따른다.
+- sticky label은 pointer event와 focus 대상에서 제외하고, 실제 cell DOM과 active/edit/selection 계약은 유지했다.
+- pinned column sticky merge label은 offset 정책이 달라 후속 범위로 남겼다.
+- 관련 파일: `src/renderers/div-grid/DataGridVirtualBody.tsx`, `src/index.css`, `test/interaction.test.tsx`, `docs/architecture/gate-8-6-d-visual-row-merge-architecture.md`, `docs/plan/div-datagrid-development-plan.md`, `docs/plan/mvp-test-gates.md`, `docs/log/implementation-log.md`
+
+### Gate 8.6-d Visual Row Merge virtual visible continuation 구현
+
+- virtualized body에서 실제 viewport와 교차하는 첫 row를 계산해 merge group continuation 여부를 판단하도록 했다.
+- 첫 visible row가 실제 merge group의 `middle` 또는 `end`이면 `data-visual-row-merge-display="visible-start"` marker를 부여하도록 display model을 추가했다.
+- `visible-start` 셀은 실제 merge state를 유지하면서 content를 다시 보여주도록 CSS를 추가했다.
+- overscan row가 아니라 viewport와 교차하는 row를 기준으로 `visible-start`를 계산하도록 구현했다.
+- `Gate86VisualRowMergeVirtualized` Storybook을 추가했다.
+- 관련 파일: `src/features/visual-row-merge/visualRowMerge.ts`, `src/renderers/div-grid/DataGridVirtualBody.tsx`, `src/renderers/div-grid/DataGridBody.tsx`, `src/renderers/div-grid/DataGridBodyRow.tsx`, `src/renderers/div-grid/DataGridCell.tsx`, `src/index.css`, `src/stories/GenDataGrid.baseline.stories.tsx`, `test/visualRowMerge.test.ts`, `docs/architecture/gate-8-6-d-visual-row-merge-architecture.md`, `docs/plan/div-datagrid-development-plan.md`, `docs/plan/mvp-test-gates.md`, `docs/log/implementation-log.md`
+
+### Gate 8.6-d Visual Row Merge non-sticky rendering 구현
+
+- `buildVisualRowMergeModel` 결과를 `DataGridRoot`에서 standard/virtual body row로 전달하도록 연결했다.
+- body cell에 `data-visual-row-merge="single|start|middle|end"` marker를 렌더링하도록 추가했다.
+- `middle`, `end` 셀은 DOM과 focus 대상은 유지하면서 content wrapper만 숨기는 non-sticky visual merge 스타일을 추가했다.
+- active/editing cell에서는 covered content를 다시 보이게 하여 현재 cell 위치와 편집 맥락을 잃지 않도록 했다.
+- `Gate86VisualRowMerge` Storybook과 interaction test를 추가했다.
+- 관련 파일: `src/renderers/div-grid/DataGridRoot.tsx`, `src/renderers/div-grid/DataGridBody.tsx`, `src/renderers/div-grid/DataGridVirtualBody.tsx`, `src/renderers/div-grid/DataGridBodyRow.tsx`, `src/renderers/div-grid/DataGridCell.tsx`, `src/index.css`, `src/stories/GenDataGrid.baseline.stories.tsx`, `test/interaction.test.tsx`, `docs/architecture/gate-8-6-d-visual-row-merge-architecture.md`, `docs/plan/div-datagrid-development-plan.md`, `docs/plan/mvp-test-gates.md`, `docs/log/implementation-log.md`
+
+### Gate 8.6-d Visual Row Merge metadata 계산 구현
+
+- `visualRowMerge` column meta 타입과 관련 public type을 추가했다.
+- 현재 TanStack row model order 기준으로 `single`, `start`, `middle`, `end` merge state를 계산하는 `buildVisualRowMergeModel` 유틸리티를 추가했다.
+- system column은 merge metadata 계산 대상에서 제외했다.
+- `Object.is` 비교 기준과 disabled column 제외 동작을 단위 테스트로 고정했다.
+- 관련 파일: `src/GenDataGrid.types.ts`, `src/core/table/tanstack-table.ts`, `src/index.ts`, `src/features/visual-row-merge/visualRowMerge.ts`, `test/visualRowMerge.test.ts`, `docs/architecture/gate-8-6-d-visual-row-merge-architecture.md`, `docs/plan/div-datagrid-development-plan.md`, `docs/plan/mvp-test-gates.md`, `docs/log/implementation-log.md`
+
+### Gate 8.6-d Visual Row Merge architecture/contract 작성
+
+- Visual Row Merge를 virtualization 우선 기능으로 설계하고, 실제 DOM 병합이 아닌 cell DOM 유지 기반 visual merge로 계약을 정리했다.
+- `visualRowMerge: true` column meta를 MVP API로 계획하고, `compare`, `getValue`는 후속 확장으로 분리했다.
+- merge state(`single`, `start`, `middle`, `end`)와 virtual display state(`visible-start`)를 문서화했다.
+- sticky merge label은 이번 Gate 8.6-d 범위에 포함하되 metadata, visual rendering, virtual continuation 이후 별도 slice로 구현하도록 분할했다.
+- active cell, editing, range selection, clipboard, dirty/validation state는 실제 cell 단위 계약을 유지하도록 명시했다.
+- 관련 파일: `docs/architecture/gate-8-6-d-visual-row-merge-architecture.md`, `docs/README.md`, `docs/architecture/gate-8-6-merge-span-validation-architecture.md`, `docs/plan/div-datagrid-development-plan.md`, `docs/plan/mvp-test-gates.md`, `docs/reference/api-structure.md`, `docs/reference/api-comparison-with-gen-grid.md`, `docs/log/implementation-log.md`
+
 ### Gate 8.6-c Validation State/UI Marker 구현
 
 - 외부 consumer가 전달한 cell validation 상태를 표시하는 `getCellValidation(ctx)` API를 추가했다.

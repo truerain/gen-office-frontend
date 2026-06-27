@@ -50,6 +50,10 @@ import {
   normalizeColumnOrderForSystemColumns,
   normalizeColumnPinningForSystemColumns,
 } from '../../features/system-columns/systemColumns';
+import {
+  buildVisualRowMergeModel,
+  resolveVisualRowMergeOption,
+} from '../../features/visual-row-merge/visualRowMerge';
 import { DataGridBody } from './DataGridBody';
 import { DataGridFooterBar } from './DataGridFooterBar';
 import { DataGridFooterRow } from './DataGridFooterRow';
@@ -318,6 +322,40 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     () => visibleColumns.filter((column) => !isGenDataGridSystemColumnId(column.id)),
     [visibleColumns]
   );
+  const visualRowMergeOptions = React.useMemo(() => {
+    const mergeEnabledColumnIds = new Set<string>();
+    const continuationColumnIds: string[] = [];
+    const stickyLabelColumnIds: string[] = [];
+
+    for (const column of visibleColumns) {
+      const resolved = resolveVisualRowMergeOption(column.columnDef.meta?.visualRowMerge);
+      if (!resolved.enabled) continue;
+
+      mergeEnabledColumnIds.add(column.id);
+      if (resolved.showContinuationValue) {
+        continuationColumnIds.push(column.id);
+      }
+      if (resolved.stickyLabel) {
+        stickyLabelColumnIds.push(column.id);
+      }
+    }
+
+    return {
+      mergeEnabledColumnIds,
+      continuationColumnIds,
+      stickyLabelColumnIds,
+    };
+  }, [visibleColumns]);
+  const visualRowMergeModel = React.useMemo(() => {
+    if (visualRowMergeOptions.mergeEnabledColumnIds.size === 0) return undefined;
+
+    return buildVisualRowMergeModel({
+      rows: tableRows,
+      columnIds: visibleColumns.map((column) => column.id),
+      isColumnMergeEnabled: (columnId) =>
+        visualRowMergeOptions.mergeEnabledColumnIds.has(columnId),
+    });
+  }, [tableRows, visibleColumns, visualRowMergeOptions]);
   const gridTemplateColumns = buildGridTemplateColumnsFromModel(visibleColumns, columnFitMode, viewportWidth);
   const resolvedReadOnly = readOnly ?? readonly ?? false;
 
@@ -1063,6 +1101,11 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             deletedRowIds={deletedRowIds}
             currentRowId={renderedCurrentRowId}
             getCellValidation={getCellValidation}
+            visualRowMergeModel={visualRowMergeModel}
+            visualRowMergeContinuationColumnIds={
+              visualRowMergeOptions.continuationColumnIds
+            }
+            visualRowMergeStickyLabelColumnIds={visualRowMergeOptions.stickyLabelColumnIds}
             getRowHeight={getRowHeight}
             enableMasterDetail={masterDetailEnabled}
             expandedRows={resolvedExpandedRows}
@@ -1110,6 +1153,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             deletedRowIds={deletedRowIds}
             currentRowId={renderedCurrentRowId}
             getCellValidation={getCellValidation}
+            visualRowMergeModel={visualRowMergeModel}
             getRowHeight={getRowHeight}
             activeCell={activeCell}
             onActiveCellChange={setActiveCell}

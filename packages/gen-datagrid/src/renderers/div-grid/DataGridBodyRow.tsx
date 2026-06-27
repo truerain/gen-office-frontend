@@ -29,6 +29,11 @@ import {
   type GenDataGridRangeSelections,
 } from '../../features/range-selection/rangeSelection';
 import { isGenDataGridSystemColumnId } from '../../features/system-columns/systemColumns';
+import {
+  createVisualRowMergeKey,
+  type GenDataGridVisualRowMergeDisplayModel,
+  type GenDataGridVisualRowMergeModel,
+} from '../../features/visual-row-merge/visualRowMerge';
 import { DataGridCell } from './DataGridCell';
 import { formatCellValue } from './cellValue';
 
@@ -84,6 +89,8 @@ type DataGridBodyRowProps<TData> = {
   getCellValidation?: (
     ctx: GenDataGridValidationContext<TData>
   ) => GenDataGridCellValidation | null | undefined;
+  visualRowMergeModel?: GenDataGridVisualRowMergeModel;
+  visualRowMergeDisplayModel?: GenDataGridVisualRowMergeDisplayModel;
   activeCell: GenDataGridActiveCell;
   onActiveCellChange: (next: Exclude<GenDataGridActiveCell, null>) => void;
   onEditingNavigate?: (next: Exclude<GenDataGridActiveCell, null>) => void;
@@ -130,6 +137,8 @@ export function DataGridBodyRow<TData>({
   deletedRowIds,
   currentRowId,
   getCellValidation,
+  visualRowMergeModel,
+  visualRowMergeDisplayModel,
   activeCell,
   onActiveCellChange,
   onEditingNavigate,
@@ -277,6 +286,12 @@ export function DataGridBodyRow<TData>({
               columnId,
               value: editableContext.value,
             });
+        const visualRowMergeState = isSystemColumn
+          ? undefined
+          : visualRowMergeModel?.[createVisualRowMergeKey(rowId, columnId)];
+        const visualRowMergeDisplayState = isSystemColumn
+          ? undefined
+          : visualRowMergeDisplayModel?.[createVisualRowMergeKey(rowId, columnId)];
         const pinning = enablePinning
           ? getColumnPinningInfo(cell.column, { zIndex: isEditing ? 5 : 2 })
           : undefined;
@@ -488,6 +503,8 @@ export function DataGridBodyRow<TData>({
             isEditing={!isSystemColumn && isEditing}
             isDirty={dirtyCellIds?.has(`${rowId}::${columnId}`)}
             validation={validation}
+            visualRowMergeState={visualRowMergeState}
+            visualRowMergeDisplayState={visualRowMergeDisplayState}
             editOpenOnStart={resolvedEditPolicy.openOnEditStart}
             allowReclickEdit={resolvedEditPolicy.startTriggers.reclick}
             allowDoubleClickEdit={resolvedEditPolicy.startTriggers.doubleClick}

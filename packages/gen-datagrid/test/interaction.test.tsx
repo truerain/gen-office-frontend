@@ -4383,6 +4383,238 @@ describe('Gate 8.6-c validation state marker', () => {
   });
 });
 
+describe('Gate 8.6-d visual row merge rendering', () => {
+  type MergePerson = Person & {
+    department: string;
+  };
+
+  const mergeRows: MergePerson[] = [
+    { id: '1', name: 'Ada', age: 37, department: 'Engineering' },
+    { id: '2', name: 'Grace', age: 41, department: 'Engineering' },
+    { id: '3', name: 'Margaret', age: 39, department: 'Engineering' },
+    { id: '4', name: 'Katherine', age: 42, department: 'Research' },
+  ];
+
+  const mergeColumns: ColumnDef<MergePerson, unknown>[] = [
+    { accessorKey: 'department', header: 'Department', size: 140, meta: { visualRowMerge: true } },
+    { accessorKey: 'name', header: 'Name', size: 120 },
+    { accessorKey: 'age', header: 'Age', size: 80 },
+  ];
+
+  it('renders visual row merge markers while keeping covered cell DOM nodes', async () => {
+    const { container } = render(
+      <GenDataGrid<MergePerson>
+        gridId="visual-row-merge-grid"
+        data={mergeRows}
+        columns={mergeColumns}
+        getRowId={(row) => row.id}
+        defaultActiveCell={{ rowId: '1', columnId: 'department' }}
+      />
+    );
+
+    expect(getCell(container, '1', 'department').dataset.visualRowMerge).toBe('start');
+    expect(getCell(container, '2', 'department').dataset.visualRowMerge).toBe('middle');
+    expect(getCell(container, '3', 'department').dataset.visualRowMerge).toBe('end');
+    expect(getCell(container, '4', 'department').dataset.visualRowMerge).toBe('single');
+    expect(getCell(container, '2', 'department')).toBeTruthy();
+
+    fireEvent.mouseDown(getCell(container, '2', 'department'), { button: 0 });
+
+    await waitFor(() => {
+      expect(getCell(container, '2', 'department').dataset.activeCell).toBe('true');
+    });
+  });
+
+  it('does not apply visual row merge markers to system columns', () => {
+    const { container } = render(
+      <GenDataGrid<MergePerson>
+        gridId="visual-row-merge-system-grid"
+        data={mergeRows}
+        columns={mergeColumns}
+        getRowId={(row) => row.id}
+        enableRowNumber
+      />
+    );
+
+    expect(getCell(container, '1', '__gen_row_number').dataset.visualRowMerge).toBeUndefined();
+    expect(getCell(container, '1', 'department').dataset.visualRowMerge).toBe('start');
+  });
+
+  it('renders a sticky merge label for a virtualized continuation group', async () => {
+    const virtualMergeRows: MergePerson[] = Array.from({ length: 120 }, (_, index) => ({
+      id: String(index + 1),
+      name: `Person ${index + 1}`,
+      age: 20 + index,
+      department: index < 40 ? 'Engineering' : 'Research',
+    }));
+    const { container } = render(
+      <GenDataGrid<MergePerson>
+        gridId="visual-row-merge-sticky-grid"
+        data={virtualMergeRows}
+        columns={mergeColumns}
+        getRowId={(row) => row.id}
+        enableVirtualization
+        style={{ height: 240, width: 420 }}
+      />
+    );
+
+    const viewport = container.querySelector<HTMLElement>('[data-gen-datagrid-viewport="true"]');
+    if (!viewport) throw new Error('Missing virtual viewport');
+
+    Object.defineProperty(viewport, 'clientHeight', {
+      configurable: true,
+      value: 240,
+    });
+
+    await waitFor(() => {
+      expect(getCell(container, '1', 'department').dataset.visualRowMerge).toBe('start');
+    });
+
+    Object.defineProperty(viewport, 'scrollTop', {
+      configurable: true,
+      writable: true,
+      value: 360,
+    });
+    fireEvent.scroll(viewport);
+
+    await waitFor(() => {
+      const label = container.querySelector<HTMLElement>(
+        '[data-visual-row-merge-sticky-label="true"][data-colid="department"]'
+      );
+      expect(label?.textContent).toBe('Engineering');
+      expect(label?.style.left).toBe('0px');
+      expect(label?.style.width).toBe('140px');
+    });
+  });
+
+  it('can render sticky merge labels without showing continuation cell values', async () => {
+    const virtualMergeRows: MergePerson[] = Array.from({ length: 120 }, (_, index) => ({
+      id: String(index + 1),
+      name: `Person ${index + 1}`,
+      age: 20 + index,
+      department: index < 40 ? 'Engineering' : 'Research',
+    }));
+    const splitColumns: ColumnDef<MergePerson, unknown>[] = [
+      {
+        accessorKey: 'department',
+        header: 'Department',
+        size: 140,
+        meta: {
+          visualRowMerge: {
+            showContinuationValue: false,
+            stickyLabel: true,
+          },
+        },
+      },
+      { accessorKey: 'name', header: 'Name', size: 120 },
+      { accessorKey: 'age', header: 'Age', size: 80 },
+    ];
+
+    const { container } = render(
+      <GenDataGrid<MergePerson>
+        gridId="visual-row-merge-split-sticky-grid"
+        data={virtualMergeRows}
+        columns={splitColumns}
+        getRowId={(row) => row.id}
+        enableVirtualization
+        style={{ height: 240, width: 420 }}
+      />
+    );
+
+    const viewport = container.querySelector<HTMLElement>('[data-gen-datagrid-viewport="true"]');
+    if (!viewport) throw new Error('Missing virtual viewport');
+
+    Object.defineProperty(viewport, 'clientHeight', {
+      configurable: true,
+      value: 240,
+    });
+
+    await waitFor(() => {
+      expect(getCell(container, '1', 'department').dataset.visualRowMerge).toBe('start');
+    });
+
+    Object.defineProperty(viewport, 'scrollTop', {
+      configurable: true,
+      writable: true,
+      value: 360,
+    });
+    fireEvent.scroll(viewport);
+
+    await waitFor(() => {
+      const label = container.querySelector<HTMLElement>(
+        '[data-visual-row-merge-sticky-label="true"][data-colid="department"]'
+      );
+      expect(label?.textContent).toBe('Engineering');
+    });
+    expect(getCell(container, '11', 'department').dataset.visualRowMergeDisplay).toBeUndefined();
+  });
+
+  it('can show continuation cell values without rendering sticky merge labels', async () => {
+    const virtualMergeRows: MergePerson[] = Array.from({ length: 120 }, (_, index) => ({
+      id: String(index + 1),
+      name: `Person ${index + 1}`,
+      age: 20 + index,
+      department: index < 40 ? 'Engineering' : 'Research',
+    }));
+    const splitColumns: ColumnDef<MergePerson, unknown>[] = [
+      {
+        accessorKey: 'department',
+        header: 'Department',
+        size: 140,
+        meta: {
+          visualRowMerge: {
+            showContinuationValue: true,
+            stickyLabel: false,
+          },
+        },
+      },
+      { accessorKey: 'name', header: 'Name', size: 120 },
+      { accessorKey: 'age', header: 'Age', size: 80 },
+    ];
+
+    const { container } = render(
+      <GenDataGrid<MergePerson>
+        gridId="visual-row-merge-split-continuation-grid"
+        data={virtualMergeRows}
+        columns={splitColumns}
+        getRowId={(row) => row.id}
+        enableVirtualization
+        style={{ height: 240, width: 420 }}
+      />
+    );
+
+    const viewport = container.querySelector<HTMLElement>('[data-gen-datagrid-viewport="true"]');
+    if (!viewport) throw new Error('Missing virtual viewport');
+
+    Object.defineProperty(viewport, 'clientHeight', {
+      configurable: true,
+      value: 240,
+    });
+
+    await waitFor(() => {
+      expect(getCell(container, '1', 'department').dataset.visualRowMerge).toBe('start');
+    });
+
+    Object.defineProperty(viewport, 'scrollTop', {
+      configurable: true,
+      writable: true,
+      value: 360,
+    });
+    fireEvent.scroll(viewport);
+
+    await waitFor(() => {
+      expect(getCell(container, '11', 'department').dataset.visualRowMergeDisplay).toBe(
+        'visible-start'
+      );
+    });
+    expect(
+      container.querySelector(
+        '[data-visual-row-merge-sticky-label="true"][data-colid="department"]'
+      )
+    ).toBeNull();
+  });
+});
+
 describe('Gate 8.7 system columns', () => {
   it('renders row status, selection, and number system columns before user columns', () => {
     const { container, getByLabelText } = render(

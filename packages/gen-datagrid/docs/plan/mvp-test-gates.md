@@ -393,9 +393,9 @@ Status: complete for Gate 8 entry. Row virtualization, active-cell scroll restor
 
 ## 11. Gate 8. MVP Acceptance
 
-Current status: partial. The core grid, scoped DOM contract, active cell, keyboard navigation, range selection, clipboard, editing, column sizing, pinning, column reorder, filtering, footer, pagination, dirty state, imperative handle, row number, row selection, row status, row virtualization, master-detail, nested grid composition, dynamic row height, tree rows, body column span, grouped header rendering, and validation UI marker have implementation coverage. Visual row merge is still an open Gate 8.6 extension slice.
+Current status: partial. The core grid, scoped DOM contract, active cell, keyboard navigation, range selection, clipboard, editing, column sizing, pinning, column reorder, filtering, footer, pagination, dirty state, imperative handle, row number, row selection, row status, row virtualization, master-detail, nested grid composition, dynamic row height, tree rows, body column span, grouped header rendering, validation UI marker, and visual row merge have implementation coverage.
 
-Latest completed implementation slice: Gate 8.7-a Current Row Highlight. Architecture: `../architecture/gate-8-7-a-current-row-highlight-architecture.md`.
+Latest completed implementation slice: Gate 8.6-d Visual Row Merge feature split. Architecture: `../architecture/gate-8-6-d-visual-row-merge-architecture.md`.
 
 ### 목표
 
@@ -488,13 +488,17 @@ MVP 이후 확장 기능은 별도 gate로 관리한다.
 
 ### Extension A. Visual Row Merge
 
+Architecture: [`gate-8-6-d-visual-row-merge-architecture.md`](../architecture/gate-8-6-d-visual-row-merge-architecture.md)
+
+Status: complete for the MVP visual row merge path. `showContinuationValue` and `stickyLabel` can be controlled independently. Pinned-column sticky merge labels and non-virtual continuation value rendering are deferred.
+
 통과 기준:
 
 - 모든 cell DOM은 유지한다.
 - covered cell content와 border가 병합처럼 보인다.
 - keyboard navigation은 실제 cell 단위로 유지된다.
 - filtering/sorting/pagination 변경 시 merge model이 재계산된다.
-- virtualization 조합은 별도 테스트를 통과하기 전까지 disabled다.
+- virtualization 조합에서 continuation cell value와 sticky merge label을 독립적으로 제어할 수 있다.
 
 ### Extension B. Grouped Header Span
 
