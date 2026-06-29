@@ -9,6 +9,7 @@ export type {
   GenDataGridActiveCell,
   GenDataGridBodyColSpanContext,
   GenDataGridCellValueChange,
+  GenDataGridChangeSet,
   GenDataGridColumnFitMode,
   GenDataGridDirtyCell,
   GenDataGridDirtyState,

@@ -24,7 +24,7 @@ export type GenDataGridActiveCell = {
   columnId: string;
 } | null;
 
-export type GenDataGridHandle = {
+export type GenDataGridHandle<TData = unknown> = {
   rootElement: HTMLDivElement | null;
   clearSelection: () => void;
   copySelection: (options?: { includeHeader?: boolean }) => Promise<boolean>;
@@ -32,8 +32,14 @@ export type GenDataGridHandle = {
   clearColumnFilters: () => void;
   clearGlobalFilter: () => void;
   clearFilters: () => void;
+  flushEditing: () => Promise<void>;
+  cancelEditing: () => void;
+  getData: () => TData[];
+  getRow: (rowId: string) => TData | undefined;
+  getChangeSet: () => GenDataGridChangeSet<TData>;
   resetDirtyState: (rowIds?: readonly string[]) => void;
   commitDirtyState: (rowIds?: readonly string[]) => void;
+  acceptChanges: (rowIds?: readonly string[]) => void;
   deleteRows: (rowIds: readonly string[]) => void;
   getDirtyState: () => GenDataGridDirtyState;
 };
@@ -166,6 +172,21 @@ export type GenDataGridDirtyState = {
   cells: GenDataGridDirtyCell[];
   rowIds: string[];
   deletedRowIds: string[];
+};
+
+export type GenDataGridChangeSet<TData> = {
+  created: TData[];
+  updated: {
+    rowId: string;
+    row: TData;
+    patch: Record<string, unknown>;
+    cells: GenDataGridDirtyCell[];
+  }[];
+  deleted: {
+    rowId: string;
+    row?: TData;
+  }[];
+  dirtyState: GenDataGridDirtyState;
 };
 
 export type GenDataGridExpandedRowState = Record<string, boolean>;

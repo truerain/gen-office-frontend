@@ -93,7 +93,7 @@ function isInteractiveElement(element: Element | null) {
 }
 
 type DataGridRootProps<TData> = GenDataGridProps<TData> & {
-  rootRef: React.ForwardedRef<GenDataGridHandle>;
+  rootRef: React.ForwardedRef<GenDataGridHandle<TData>>;
 };
 
 export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
@@ -184,6 +184,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
   const [uncontrolledRows, setUncontrolledRows] = React.useState<TData[]>(
     () => defaultData ?? []
   );
+  const sourceRows = data ?? uncontrolledRows;
   const treeRowsEnabled = enableTreeRows && Boolean(getSubRows);
   const [uncontrolledTreeExpandedRows, setUncontrolledTreeExpandedRows] = React.useState(() =>
     normalizeTreeExpandedRows(defaultTreeExpandedRows)
@@ -488,6 +489,13 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     [resetDirtyState]
   );
 
+  const acceptChanges = React.useCallback(
+    (rowIds?: readonly string[]) => {
+      commitDirtyState(rowIds);
+    },
+    [commitDirtyState]
+  );
+
   React.useEffect(() => {
     if (Object.is(lastDataVersion.current, dataVersion)) return;
     lastDataVersion.current = dataVersion;
@@ -537,6 +545,72 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     table.setGlobalFilter(undefined);
   }, [table]);
 
+  const flushEditing = React.useCallback(async () => {
+    const editingCell = editing.editingCell;
+    if (!editingCell) return;
+
+    const row = tableRows.find((item) => item.id === editingCell.rowId);
+    const column = visibleColumns.find((item) => item.id === editingCell.columnId);
+    if (!row || !column) {
+      editing.cancelEditing();
+      return;
+    }
+
+    handleCellValueChange({
+      row: row.original,
+      rowId: row.id,
+      rowIndex: row.index,
+      columnId: column.id,
+      previousValue: row.getValue(column.id),
+      value: editing.getDraftValue(),
+    });
+    editing.cancelEditing();
+  }, [editing, handleCellValueChange, tableRows, visibleColumns]);
+
+  const cancelEditing = React.useCallback(() => {
+    editing.cancelEditing();
+  }, [editing]);
+
+  const getDataSnapshot = React.useCallback(() => [...sourceRows], [sourceRows]);
+
+  const getRowSnapshot = React.useCallback(
+    (rowId: string) => sourceRows.find((row, index) => getRowId(row, index) === rowId),
+    [getRowId, sourceRows]
+  );
+
+  const getChangeSet = React.useCallback(() => {
+    const rowById = new Map(sourceRows.map((row, index) => [getRowId(row, index), row]));
+    const cellsByRowId = new Map<string, GenDataGridDirtyCell[]>();
+
+    for (const cell of dirtyState.cells) {
+      const cells = cellsByRowId.get(cell.rowId) ?? [];
+      cells.push(cell);
+      cellsByRowId.set(cell.rowId, cells);
+    }
+
+    return {
+      created: [],
+      updated: Array.from(cellsByRowId.entries()).flatMap(([rowId, cells]) => {
+        const row = rowById.get(rowId);
+        if (!row) return [];
+
+        return [
+          {
+            rowId,
+            row,
+            patch: Object.fromEntries(cells.map((cell) => [cell.columnId, cell.value])),
+            cells,
+          },
+        ];
+      }),
+      deleted: dirtyState.deletedRowIds.map((rowId) => ({
+        rowId,
+        row: rowById.get(rowId),
+      })),
+      dirtyState,
+    };
+  }, [dirtyState, getRowId, sourceRows]);
+
   const scrollToCell = React.useCallback(
     (coord: { rowId: string; columnId: string }) => {
       const rowIndex = rowIds.indexOf(coord.rowId);
@@ -580,12 +654,20 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       clearColumnFilters,
       clearGlobalFilter,
       clearFilters,
+      flushEditing,
+      cancelEditing,
+      getData: getDataSnapshot,
+      getRow: getRowSnapshot,
+      getChangeSet,
       resetDirtyState,
       commitDirtyState,
+      acceptChanges,
       deleteRows,
       getDirtyState: () => dirtyState,
     }),
     [
+      acceptChanges,
+      cancelEditing,
       clearColumnFilters,
       clearFilters,
       clearGlobalFilter,
@@ -595,6 +677,10 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
       dirtyState,
       deleteRows,
       forwardedRootRef,
+      flushEditing,
+      getChangeSet,
+      getDataSnapshot,
+      getRowSnapshot,
       resetDirtyState,
       scrollToCell,
     ]

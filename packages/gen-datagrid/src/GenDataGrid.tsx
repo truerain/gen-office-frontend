@@ -18,7 +18,7 @@ function warnReservedEditingProp(propName: string) {
 
 export const GenDataGrid = React.forwardRef(function GenDataGridInner<TData>(
   props: GenDataGridProps<TData>,
-  ref: React.ForwardedRef<GenDataGridHandle>
+  ref: React.ForwardedRef<GenDataGridHandle<TData>>
 ) {
   React.useEffect(() => {
     if (props.editOnActiveCell) warnReservedEditingProp('editOnActiveCell');
@@ -27,5 +27,7 @@ export const GenDataGrid = React.forwardRef(function GenDataGridInner<TData>(
 
   return <DataGridRoot {...props} rootRef={ref} />;
 }) as <TData>(
-  props: GenDataGridProps<TData> & { ref?: React.Ref<GenDataGridHandle> }
+  props: GenDataGridProps<TData> & {
+    ref?: React.Ref<GenDataGridHandle<TData>> | React.Ref<GenDataGridHandle>;
+  }
 ) => React.ReactElement;

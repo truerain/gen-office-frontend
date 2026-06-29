@@ -198,7 +198,7 @@ importers:
         version: 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-essentials':
         specifier: 8.6.15
-        version: 8.6.15(@types/react@18.3.1)(storybook@8.6.15(prettier@3.7.4))
+        version: 8.6.15(@types/react@18.3.27)(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-interactions':
         specifier: 8.6.15
         version: 8.6.15(storybook@8.6.15(prettier@3.7.4))
@@ -366,6 +366,55 @@ importers:
       storybook:
         specifier: 8.6.15
         version: 8.6.15(prettier@3.7.4)
+      vite:
+        specifier: ^6.2.0
+        version: 6.4.1(@types/node@24.10.4)(yaml@2.9.0)
+      vite-plugin-dts:
+        specifier: ^4.5.0
+        version: 4.5.4(@types/node@24.10.4)(rollup@4.54.0)(typescript@5.7.2)(vite@6.4.1(@types/node@24.10.4)(yaml@2.9.0))
+      vitest:
+        specifier: ^4.1.8
+        version: 4.1.8(@types/node@24.10.4)(jsdom@29.1.1)(msw@2.12.7(@types/node@24.10.4)(typescript@5.7.2))(vite@6.4.1(@types/node@24.10.4)(yaml@2.9.0))
+
+  packages/gen-datagrid-crud:
+    dependencies:
+      '@gen-office/gen-datagrid':
+        specifier: workspace:*
+        version: link:../gen-datagrid
+      '@gen-office/ui':
+        specifier: workspace:*
+        version: link:../ui
+      '@tanstack/react-table':
+        specifier: ^8.20.5
+        version: 8.21.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      lucide-react:
+        specifier: ^0.562.0
+        version: 0.562.0(react@18.3.1)
+    devDependencies:
+      '@storybook/react':
+        specifier: 8.6.15
+        version: 8.6.15(@storybook/test@8.6.15(storybook@8.6.15(prettier@3.7.4)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.6.15(prettier@3.7.4))(typescript@5.7.2)
+      '@testing-library/react':
+        specifier: ^16.3.2
+        version: 16.3.2(@testing-library/dom@10.4.0)(@types/react-dom@18.3.1)(@types/react@18.3.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/react':
+        specifier: 18.3.1
+        version: 18.3.1
+      '@types/react-dom':
+        specifier: 18.3.1
+        version: 18.3.1
+      '@vitejs/plugin-react':
+        specifier: ^5.1.1
+        version: 5.1.2(vite@6.4.1(@types/node@24.10.4)(yaml@2.9.0))
+      jsdom:
+        specifier: ^29.1.1
+        version: 29.1.1
+      react:
+        specifier: 18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: 18.3.1
+        version: 18.3.1(react@18.3.1)
       vite:
         specifier: ^6.2.0
         version: 6.4.1(@types/node@24.10.4)(yaml@2.9.0)
@@ -4365,11 +4414,6 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  semver@7.7.3:
-    resolution: {integrity: sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q==}
-    engines: {node: '>=10'}
-    hasBin: true
-
   semver@7.7.4:
     resolution: {integrity: sha512-vFKC2IEtQnVhpT78h1Yp8wzwrf8CM+MzKMHGJZfBtzhZNycRFnXsHk6E5TxIkkMsgNS7mdX3AGB7x2QM2di4lA==}
     engines: {node: '>=10'}
@@ -5363,6 +5407,12 @@ snapshots:
     dependencies:
       '@types/mdx': 2.0.13
       '@types/react': 18.3.1
+      react: 18.3.1
+
+  '@mdx-js/react@3.1.1(@types/react@18.3.27)(react@18.3.1)':
+    dependencies:
+      '@types/mdx': 2.0.13
+      '@types/react': 18.3.27
       react: 18.3.1
 
   '@microsoft/api-extractor-model@7.32.2(@types/node@24.10.4)':
@@ -6452,12 +6502,41 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
+  '@storybook/addon-docs@8.6.15(@types/react@18.3.27)(storybook@8.6.15(prettier@3.7.4))':
+    dependencies:
+      '@mdx-js/react': 3.1.1(@types/react@18.3.27)(react@18.3.1)
+      '@storybook/blocks': 8.6.15(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.6.15(prettier@3.7.4))
+      '@storybook/csf-plugin': 8.6.15(storybook@8.6.15(prettier@3.7.4))
+      '@storybook/react-dom-shim': 8.6.15(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.6.15(prettier@3.7.4))
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      storybook: 8.6.15(prettier@3.7.4)
+      ts-dedent: 2.2.0
+    transitivePeerDependencies:
+      - '@types/react'
+
   '@storybook/addon-essentials@8.6.15(@types/react@18.3.1)(storybook@8.6.15(prettier@3.7.4))':
     dependencies:
       '@storybook/addon-actions': 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-backgrounds': 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-controls': 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-docs': 8.6.15(@types/react@18.3.1)(storybook@8.6.15(prettier@3.7.4))
+      '@storybook/addon-highlight': 8.6.15(storybook@8.6.15(prettier@3.7.4))
+      '@storybook/addon-measure': 8.6.15(storybook@8.6.15(prettier@3.7.4))
+      '@storybook/addon-outline': 8.6.15(storybook@8.6.15(prettier@3.7.4))
+      '@storybook/addon-toolbars': 8.6.15(storybook@8.6.15(prettier@3.7.4))
+      '@storybook/addon-viewport': 8.6.15(storybook@8.6.15(prettier@3.7.4))
+      storybook: 8.6.15(prettier@3.7.4)
+      ts-dedent: 2.2.0
+    transitivePeerDependencies:
+      - '@types/react'
+
+  '@storybook/addon-essentials@8.6.15(@types/react@18.3.27)(storybook@8.6.15(prettier@3.7.4))':
+    dependencies:
+      '@storybook/addon-actions': 8.6.15(storybook@8.6.15(prettier@3.7.4))
+      '@storybook/addon-backgrounds': 8.6.15(storybook@8.6.15(prettier@3.7.4))
+      '@storybook/addon-controls': 8.6.15(storybook@8.6.15(prettier@3.7.4))
+      '@storybook/addon-docs': 8.6.15(@types/react@18.3.27)(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-highlight': 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-measure': 8.6.15(storybook@8.6.15(prettier@3.7.4))
       '@storybook/addon-outline': 8.6.15(storybook@8.6.15(prettier@3.7.4))
@@ -7087,7 +7166,7 @@ snapshots:
       '@typescript-eslint/visitor-keys': 8.51.0
       debug: 4.4.3
       minimatch: 9.0.5
-      semver: 7.7.3
+      semver: 7.7.4
       tinyglobby: 0.2.15
       ts-api-utils: 2.3.0(typescript@5.7.2)
       typescript: 5.7.2
@@ -9187,8 +9266,6 @@ snapshots:
   semver@7.5.4:
     dependencies:
       lru-cache: 6.0.0
-
-  semver@7.7.3: {}
 
   semver@7.7.4: {}
 

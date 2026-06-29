@@ -1,0 +1,65 @@
+/* packages/gen-datagrid-crud/src/index.css
+ * Defines baseline styles for the GenDataGridCrud thin shell.
+ */
+
+.gen-datagrid-crud {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+}
+
+.gen-datagrid-crud__action-bar {
+  flex: 0 0 auto;
+}
+
+.gen-datagrid-crud__grid {
+  min-width: 0;
+  min-height: 0;
+}
+
+.gen-datagrid-crud-actionbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 8px;
+  border: 1px solid var(--color-border-default, #d7dde5);
+  border-bottom: 0;
+  background: var(--color-surface, #fff);
+}
+
+.gen-datagrid-crud-actionbar__left,
+.gen-datagrid-crud-actionbar__right,
+.gen-datagrid-crud-actionbar__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.gen-datagrid-crud-actionbar__left {
+  min-width: 0;
+}
+
+.gen-datagrid-crud-actionbar__right {
+  margin-left: auto;
+}
+
+.gen-datagrid-crud-actionbar__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-fg-default, #1f2937);
+}
+
+.gen-datagrid-crud-actionbar__total {
+  padding-left: 8px;
+  border-left: 1px solid var(--color-border-default, #d7dde5);
+  font-size: 12px;
+  color: var(--color-fg-secondary, #64748b);
+}

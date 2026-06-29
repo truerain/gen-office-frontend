@@ -9,6 +9,7 @@ Current status: the main GenDataGrid MVP surface has implementation coverage. Ac
 ## Plan
 
 - [Remaining Work Plan](plan/remaining-work-plan.md)
+- [Gate 9 Handle / Data Ownership Readiness Plan](plan/handle-extension-plan.md)
 
 ## Architecture
 
@@ -30,12 +31,14 @@ Current status: the main GenDataGrid MVP surface has implementation coverage. Ac
 - [Gate 8.6-d Visual Row Merge Architecture](architecture/gate-8-6-d-visual-row-merge-architecture.md)
 - [Gate 8.7 System Columns Architecture](architecture/gate-8-7-system-columns-architecture.md)
 - [Gate 8.7-a Current Row Highlight Architecture](architecture/gate-8-7-a-current-row-highlight-architecture.md)
+- [GenDataGridHandle Data Ownership Architecture](architecture/handle-data-ownership-architecture.md)
 
 ## Reference
 
 - [Terminology](reference/terminology.md)
 - [API Structure](reference/api-structure.md)
 - [API Comparison With GenGrid](reference/api-comparison-with-gen-grid.md)
+- [Controlled vs Uncontrolled App Guide](reference/controlled-uncontrolled-app-guide.md)
 - [Cell Edit API](reference/cell-edit-api.md)
 - [Editor Implementation Contract](reference/editor-implementation-contract.md)
 - [Gate 4.1 Editing Policy Notes](reference/gate-4-1-editing-policy-notes.md)

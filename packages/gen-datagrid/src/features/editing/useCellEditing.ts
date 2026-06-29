@@ -19,6 +19,7 @@ export type StartCellEditingArgs = GenDataGridEditingCell & {
 export function useCellEditing() {
   const [editingCell, setEditingCell] = React.useState<GenDataGridEditingCell | null>(null);
   const [draftValue, setDraftValue] = React.useState<unknown>(undefined);
+  const draftValueRef = React.useRef<unknown>(undefined);
   const editorSurfacesRef = React.useRef<Set<HTMLElement>>(new Set());
 
   const clearEditorSurfaces = React.useCallback(() => {
@@ -35,20 +36,27 @@ export function useCellEditing() {
     editorSurfacesRef.current.delete(element);
   }, []);
 
+  const updateDraftValue = React.useCallback((nextValue: unknown) => {
+    draftValueRef.current = nextValue;
+    setDraftValue(nextValue);
+  }, []);
+
+  const getDraftValue = React.useCallback(() => draftValueRef.current, []);
+
   const startEditing = React.useCallback(
     ({ rowId, columnId, value, suppressSelectOnFocus, entryReason }: StartCellEditingArgs) => {
       clearEditorSurfaces();
       setEditingCell({ rowId, columnId, suppressSelectOnFocus, entryReason });
-      setDraftValue(value);
+      updateDraftValue(value);
     },
-    [clearEditorSurfaces]
+    [clearEditorSurfaces, updateDraftValue]
   );
 
   const cancelEditing = React.useCallback(() => {
     clearEditorSurfaces();
     setEditingCell(null);
-    setDraftValue(undefined);
-  }, [clearEditorSurfaces]);
+    updateDraftValue(undefined);
+  }, [clearEditorSurfaces, updateDraftValue]);
 
   const isEditingCell = React.useCallback(
     ({ rowId, columnId }: GenDataGridEditingCell) =>
@@ -59,7 +67,8 @@ export function useCellEditing() {
   return {
     editingCell,
     draftValue,
-    setDraftValue,
+    setDraftValue: updateDraftValue,
+    getDraftValue,
     startEditing,
     cancelEditing,
     isEditingCell,

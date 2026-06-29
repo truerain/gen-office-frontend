@@ -284,43 +284,66 @@ type GenDataGridContextMenuActionContext<TData> = {
 
 ## 15. Imperative Handle API
 
-| GenGrid Handle | GenDataGrid Handle | 상태 | 우선순위 | 설명 |
+| GenGrid Handle | GenDataGrid Handle | Status | Priority | Description |
 | --- | --- | --- | --- | --- |
-| `getData()` | `getData()` | 유지 | MVP | 현재 data 반환. |
-| `revertAll()` | `revertAll()` | 유지 | MVP | baseline으로 되돌림. |
-| `acceptChanges()` | `acceptChanges()` | 유지 | MVP | 현재 data를 baseline으로 확정. |
-| `load(nextData)` | `load(nextData)` | 유지 | MVP | data/baseline 교체. |
-| `hardReset()` | `hardReset()` | 유지 | MVP | mount defaultData로 reset. |
-| `isDirty()` | `isDirty()` | 유지 | MVP | dirty 여부. |
-| `getDirtyRowIds()` | `getDirtyRowIds()` | 유지 | MVP | dirty row id list. |
-| 없음 | `focusCell(coord)` | 신규 | MVP | scoped focus utility 기반. |
-| 없음 | `scrollToCell(coord)` | 신규 | MVP | virtualization 포함 scroll 보정. |
-| 없음 | `clearSelection()` | 신규 | MVP | range/row selection clear. |
-| 없음 | `copySelection(options?)` | 신규 | MVP | clipboard action imperative. |
-| 없음 | `clearColumnFilters()` | 신규 | MVP | all column filters clear. |
-| 없음 | `clearGlobalFilter()` | 신규 | MVP | global filter clear. |
-| 없음 | `clearFilters()` | 신규 | MVP | column and global filters clear. |
+| 없음 | `rootElement` | implemented | MVP | root div element reference. |
+| 없음 | `clearSelection()` | implemented | MVP | range/row selection clear. |
+| 없음 | `copySelection(options?)` | implemented | MVP | clipboard action imperative. |
+| 없음 | `scrollToCell(coord)` | implemented | MVP | virtualization 포함 scroll 보정. |
+| 없음 | `clearColumnFilters()` | implemented | MVP | all column filters clear. |
+| 없음 | `clearGlobalFilter()` | implemented | MVP | global filter clear. |
+| 없음 | `clearFilters()` | implemented | MVP | column and global filters clear. |
+| 없음 | `resetDirtyState(rowIds?)` | implemented | MVP | dirty/deleted marker reset. |
+| 없음 | `commitDirtyState(rowIds?)` | implemented | MVP | 현재는 marker reset과 동일한 동작. |
+| 없음 | `deleteRows(rowIds)` | implemented | MVP | row delete marker 또는 uncontrolled row remove. |
+| 없음 | `getDirtyState()` | implemented | MVP | dirty/deleted marker state 조회. |
+| `getData()` | `getData()` | implemented | CRUD readiness | current source rows snapshot 조회. |
+| 없음 | `getRow(rowId)` | implemented | CRUD readiness | row id 기반 current source row 조회. |
+| 없음 | `getChangeSet()` | implemented | CRUD readiness | commit workflow용 created/updated/deleted 조회. |
+| 없음 | `flushEditing()` | implemented | CRUD readiness | save 전 active editor commit. |
+| 없음 | `cancelEditing()` | implemented | CRUD readiness | active editor cancel. |
+| `acceptChanges()` | `acceptChanges(rowIds?)` | implemented | CRUD readiness | save-success baseline acceptance naming. |
+| `revertAll()` | `revertChanges(rowIds?)` | deferred | Data ownership | controlled/uncontrolled 정책 결정 후 구현. |
+| `load(nextData)` | `load(nextData, options?)` | deferred | Data ownership | controlled/uncontrolled 정책 결정 후 구현. |
+| `hardReset()` | `hardReset()` | deferred | Data ownership | mount defaultData reset 정책 결정 후 구현. |
 
-Implementation status: `rootElement`, `clearSelection()`, `copySelection(options?)`, `scrollToCell(coord)`, `clearColumnFilters()`, `clearGlobalFilter()`, and `clearFilters()` are implemented. Dirty-state handle methods `resetDirtyState(rowIds?)`, `commitDirtyState(rowIds?)`, `deleteRows(rowIds)`, and `getDirtyState()` are also implemented.
+Implementation status: `rootElement`, selection/clipboard/scroll/filter clear methods,
+dirty-state methods, `deleteRows(rowIds)`, and `getDirtyState()` are implemented.
+Gate 9.1 aligned the public handle and forwarded ref as
+`GenDataGridHandle<TData = unknown>`, while preserving existing non-generic usage.
+Gate 9.2 added `getData()` and `getRow(rowId)` as source-row snapshot APIs for
+controlled and uncontrolled data.
+Gate 9.3 added `GenDataGridChangeSet<TData>` and `getChangeSet()`, grouping dirty
+cells by row and mapping deleted row ids against the current source snapshot.
+Gate 9.4 added `acceptChanges(rowIds?)` as the explicit save-success marker
+acceptance API. It does not mutate controlled data.
+Gate 9.5 added `flushEditing()` and `cancelEditing()` for save/cancel flows that
+must finish the active editor before reading a change set.
+The CRUD-readiness handle extension is tracked in
+`../plan/handle-extension-plan.md` and
+`../architecture/handle-data-ownership-architecture.md`.
 
-권장 handle:
+Recommended near-term handle:
 
 ```ts
-type GenDataGridHandle<TData> = {
-  getData: () => TData[];
-  revertAll: () => void;
-  acceptChanges: () => void;
-  load: (nextData: TData[]) => void;
-  hardReset: () => void;
-  isDirty: () => boolean;
-  getDirtyRowIds: () => string[];
-  focusCell: (coord: { rowId: string; columnId: string }) => void;
-  scrollToCell: (coord: { rowId: string; columnId: string }) => void;
+type GenDataGridHandle<TData = unknown> = {
+  rootElement: HTMLDivElement | null;
   clearSelection: () => void;
-  copySelection: (options?: { includeHeader?: boolean }) => Promise<void>;
+  copySelection: (options?: { includeHeader?: boolean }) => Promise<boolean>;
+  scrollToCell: (coord: { rowId: string; columnId: string }) => void;
   clearColumnFilters: () => void;
   clearGlobalFilter: () => void;
   clearFilters: () => void;
+  flushEditing: () => Promise<void>;
+  cancelEditing: () => void;
+  getData: () => TData[];
+  getRow: (rowId: string) => TData | undefined;
+  getDirtyState: () => GenDataGridDirtyState;
+  getChangeSet: () => GenDataGridChangeSet<TData>;
+  resetDirtyState: (rowIds?: readonly string[]) => void;
+  commitDirtyState: (rowIds?: readonly string[]) => void;
+  acceptChanges: (rowIds?: readonly string[]) => void;
+  deleteRows: (rowIds: readonly string[]) => void;
 };
 ```
 

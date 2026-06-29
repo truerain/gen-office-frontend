@@ -440,31 +440,62 @@ Implementation status: column meta `bodyColSpan` is implemented for body cells w
 
 ## 8. Instance API
 
-Instance API는 `ref` handle로 제공한다.
+Instance API는 `GenDataGridHandle<TData = unknown>` ref handle로 제공한다. 현재 구현된 handle은 selection, clipboard,
+scroll, filter clear, dirty marker, delete marker를 다룬다. `GenDataGridCrud`가 얇은
+workflow/controller로 동작하려면 data snapshot, change set, editing flush, baseline
+transition API가 추가로 필요하다.
 
-| API | 설명 | 우선순위 |
+### 8.1 Implemented Handle
+
+Implementation status: Gate 9.1 aligned the public handle type and forwarded ref as
+`GenDataGridHandle<TData = unknown>`. Existing non-generic `GenDataGridHandle`
+usage remains valid through the default type argument.
+
+| API | Description | Status |
 | --- | --- | --- |
-| `getData()` | 현재 data 반환 | MVP |
-| `revertAll()` | baseline으로 되돌림 | MVP |
-| `acceptChanges()` | 현재 data를 baseline으로 확정 | MVP |
-| `load(nextData)` | data/baseline 교체 | MVP |
-| `hardReset()` | mount defaultData로 reset | MVP |
-| `isDirty()` | dirty 여부 | MVP |
-| `getDirtyRowIds()` | dirty row id 목록 | MVP |
-| `focusCell(coord)` | scoped focus | MVP |
-| `scrollToCell(coord)` | scoped scroll | MVP |
-| `clearSelection()` | selection clear | MVP |
-| `copySelection(options)` | selection copy | MVP |
-| `clearColumnFilters()` | column filter clear | MVP |
-| `clearGlobalFilter()` | global filter clear | MVP |
-| `clearFilters()` | column/global filter clear | MVP |
+| `rootElement` | root div element reference | implemented |
+| `clearSelection()` | clear range and row selection | implemented |
+| `copySelection(options)` | copy selected cell range | implemented |
+| `scrollToCell(coord)` | scroll/focus target cell into view | implemented |
+| `clearColumnFilters()` | clear column filters | implemented |
+| `clearGlobalFilter()` | clear global filter | implemented |
+| `clearFilters()` | clear column and global filters | implemented |
+| `flushEditing()` | commit the active editor through the grid editing lifecycle before save | implemented |
+| `cancelEditing()` | cancel the active editor without emitting value change | implemented |
+| `getDirtyState()` | return current dirty/deleted marker state | implemented |
+| `getData()` | return a shallow array snapshot of current source rows | implemented |
+| `getRow(rowId)` | return a row by id from current source rows | implemented |
+| `getChangeSet()` | return created/updated/deleted change set for commit workflows | implemented |
+| `resetDirtyState(rowIds?)` | clear dirty/deleted markers | implemented |
+| `commitDirtyState(rowIds?)` | currently clears dirty/deleted markers like `resetDirtyState` | implemented |
+| `acceptChanges(rowIds?)` | explicit save-success marker acceptance alias over `commitDirtyState` | implemented |
+| `deleteRows(rowIds)` | mark rows as deleted or remove uncontrolled rows depending on `deleteRowsBehavior` | implemented |
 
-Implementation status: `rootElement`, `clearSelection()`, `copySelection(options)`, `scrollToCell(coord)`, `clearColumnFilters()`, `clearGlobalFilter()`, and `clearFilters()` are implemented.
+### 8.2 Near-term Handle Extension
 
-설계 원칙:
+The next implementation slice is tracked in
+`../plan/handle-extension-plan.md` and
+`../architecture/handle-data-ownership-architecture.md`.
 
-- instance API는 현재 grid root에만 작동한다.
-- nested grid parent handle이 child grid를 조작하지 않는다.
+| API | Description | Status |
+| --- | --- | --- |
+
+### 8.3 Deferred Data Mutation Handle
+
+| API | Description | Status |
+| --- | --- | --- |
+| `revertChanges(rowIds?)` | discard local changes; controlled/uncontrolled policy is unresolved | deferred |
+| `insertRows(rows, options?)` | insert created rows; requires data ownership policy | deferred |
+| `load(nextData, options?)` | replace data/baseline; requires controlled/uncontrolled policy | deferred |
+| `hardReset()` | reset to mount-time default data | deferred |
+
+Design rules:
+
+- Handle methods must operate inside the current grid root.
+- Parent grids must not use a handle to manipulate nested child grids.
+- Controlled `data` remains consumer-owned; handle methods must not silently mutate controlled data.
+- CRUD-specific API gaps should be solved in `GenDataGrid` first when solving them in
+  `GenDataGridCrud` would duplicate grid state.
 
 ## 9. Extension API
 

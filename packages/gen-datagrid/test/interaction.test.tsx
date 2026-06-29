@@ -1262,7 +1262,7 @@ describe('GenDataGrid interaction contract', () => {
   });
 
   it('exposes imperative clearSelection and copySelection actions', async () => {
-    const gridRef = React.createRef<GenDataGridHandle>();
+    const gridRef = React.createRef<GenDataGridHandle<Person>>();
     const { container } = render(
       <GenDataGrid
         ref={gridRef}
@@ -1289,6 +1289,49 @@ describe('GenDataGrid interaction contract', () => {
     await waitFor(() => {
       expect(getCell(container, '1', 'name').dataset.selectedCell).toBeUndefined();
       expect(getCell(container, '1', 'age').dataset.selectedCell).toBeUndefined();
+    });
+  });
+
+  it('exposes controlled data snapshots through the imperative handle', () => {
+    const gridRef = React.createRef<GenDataGridHandle<Person>>();
+    render(
+      <GenDataGrid
+        ref={gridRef}
+        gridId="controlled-snapshot-grid"
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+      />
+    );
+
+    expect(gridRef.current?.getData()).toEqual(rows);
+    expect(gridRef.current?.getData()).not.toBe(rows);
+    expect(gridRef.current?.getRow('2')).toEqual(rows[1]);
+    expect(gridRef.current?.getRow('missing')).toBeUndefined();
+  });
+
+  it('exposes uncontrolled data snapshots through the imperative handle', async () => {
+    const gridRef = React.createRef<GenDataGridHandle<Person>>();
+    const { container } = render(
+      <GenDataGrid
+        ref={gridRef}
+        gridId="uncontrolled-snapshot-grid"
+        defaultData={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        deleteRowsBehavior="removeUncontrolled"
+      />
+    );
+
+    expect(gridRef.current?.getData()).toEqual(rows);
+    expect(gridRef.current?.getRow('1')).toEqual(rows[0]);
+
+    gridRef.current?.deleteRows(['2']);
+
+    await waitFor(() => {
+      expect(container.querySelector('[data-rowid="2"]')).toBeNull();
+      expect(gridRef.current?.getData()).toEqual([rows[0]]);
+      expect(gridRef.current?.getRow('2')).toBeUndefined();
     });
   });
 
@@ -3835,6 +3878,243 @@ describe('GenDataGrid interaction contract', () => {
         deletedRowIds: [],
       });
     });
+  });
+
+  it('groups dirty cells and deleted rows in the imperative change set', async () => {
+    const gridRef = React.createRef<GenDataGridHandle<Person>>();
+    const { container } = render(
+      <GenDataGrid
+        ref={gridRef}
+        gridId="change-set-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.change(editor, { target: { value: 'Ada Dirty' } });
+    fireEvent.keyDown(editor, { key: 'Enter' });
+    gridRef.current?.deleteRows(['2']);
+
+    await waitFor(() => {
+      expect(gridRef.current?.getChangeSet()).toEqual({
+        created: [],
+        updated: [
+          {
+            rowId: '1',
+            row: rows[0],
+            patch: { name: 'Ada Dirty' },
+            cells: [
+              {
+                rowId: '1',
+                columnId: 'name',
+                previousValue: 'Ada',
+                value: 'Ada Dirty',
+              },
+            ],
+          },
+        ],
+        deleted: [{ rowId: '2', row: rows[1] }],
+        dirtyState: {
+          cells: [
+            {
+              rowId: '1',
+              columnId: 'name',
+              previousValue: 'Ada',
+              value: 'Ada Dirty',
+            },
+          ],
+          rowIds: ['1', '2'],
+          deletedRowIds: ['2'],
+        },
+      });
+    });
+  });
+
+  it('accepts dirty and deleted markers through the imperative acceptChanges action', async () => {
+    const gridRef = React.createRef<GenDataGridHandle<Person>>();
+    const onDirtyStateChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        ref={gridRef}
+        gridId="accept-changes-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        onDirtyStateChange={onDirtyStateChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.change(editor, { target: { value: 'Ada Dirty' } });
+    fireEvent.keyDown(editor, { key: 'Enter' });
+    gridRef.current?.deleteRows(['2']);
+
+    await waitFor(() => {
+      expect(gridRef.current?.getDirtyState().rowIds).toEqual(['1', '2']);
+    });
+
+    gridRef.current?.acceptChanges();
+
+    await waitFor(() => {
+      expect(gridRef.current?.getDirtyState()).toEqual({
+        cells: [],
+        rowIds: [],
+        deletedRowIds: [],
+      });
+      expect(firstCell.dataset.dirtyCell).toBeUndefined();
+      expect(getCell(container, '2', 'name').closest('[role="row"]')?.getAttribute(
+        'data-deleted-row'
+      )).toBeNull();
+      expect(onDirtyStateChange).toHaveBeenLastCalledWith({
+        cells: [],
+        rowIds: [],
+        deletedRowIds: [],
+      });
+    });
+  });
+
+  it('accepts dirty and deleted markers for selected rows only', async () => {
+    const gridRef = React.createRef<GenDataGridHandle<Person>>();
+    const { container } = render(
+      <GenDataGrid
+        ref={gridRef}
+        gridId="accept-selected-changes-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.change(editor, { target: { value: 'Ada Dirty' } });
+    fireEvent.keyDown(editor, { key: 'Enter' });
+    gridRef.current?.deleteRows(['2']);
+
+    await waitFor(() => {
+      expect(gridRef.current?.getDirtyState().rowIds).toEqual(['1', '2']);
+    });
+
+    gridRef.current?.acceptChanges(['1']);
+
+    await waitFor(() => {
+      expect(gridRef.current?.getDirtyState()).toEqual({
+        cells: [],
+        rowIds: ['2'],
+        deletedRowIds: ['2'],
+      });
+      expect(firstCell.dataset.dirtyCell).toBeUndefined();
+      expect(getCell(container, '2', 'name').closest('[role="row"]')?.getAttribute(
+        'data-deleted-row'
+      )).toBe('true');
+    });
+  });
+
+  it('flushes the active editor through the imperative handle', async () => {
+    const gridRef = React.createRef<GenDataGridHandle<Person>>();
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        ref={gridRef}
+        gridId="flush-editing-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.change(editor, { target: { value: 'Ada Flushed' } });
+    await gridRef.current?.flushEditing();
+
+    await waitFor(() => {
+      expect(firstCell.querySelector('input[aria-label="name editor"]')).toBeNull();
+      expect(onCellValueChange).toHaveBeenLastCalledWith({
+        row: rows[0],
+        rowId: '1',
+        rowIndex: 0,
+        columnId: 'name',
+        previousValue: 'Ada',
+        value: 'Ada Flushed',
+      });
+      expect(gridRef.current?.getDirtyState().cells).toEqual([
+        {
+          rowId: '1',
+          columnId: 'name',
+          previousValue: 'Ada',
+          value: 'Ada Flushed',
+        },
+      ]);
+    });
+  });
+
+  it('cancels the active editor through the imperative handle without emitting changes', async () => {
+    const gridRef = React.createRef<GenDataGridHandle<Person>>();
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGrid
+        ref={gridRef}
+        gridId="cancel-editing-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.change(editor, { target: { value: 'Ada Cancelled' } });
+    gridRef.current?.cancelEditing();
+
+    await waitFor(() => {
+      expect(firstCell.querySelector('input[aria-label="name editor"]')).toBeNull();
+      expect(onCellValueChange).not.toHaveBeenCalled();
+      expect(gridRef.current?.getDirtyState()).toEqual({
+        cells: [],
+        rowIds: [],
+        deletedRowIds: [],
+      });
+    });
+  });
+
+  it('resolves flushEditing safely when no editor is active', async () => {
+    const gridRef = React.createRef<GenDataGridHandle<Person>>();
+    const onCellValueChange = vi.fn();
+    render(
+      <GenDataGrid
+        ref={gridRef}
+        gridId="flush-noop-grid"
+        data={rows}
+        columns={editabilityColumns}
+        getRowId={(row) => row.id}
+        onCellValueChange={onCellValueChange}
+      />
+    );
+
+    await expect(gridRef.current?.flushEditing()).resolves.toBeUndefined();
+    expect(onCellValueChange).not.toHaveBeenCalled();
   });
 
   it('marks deleted rows through the imperative deleteRows action', async () => {

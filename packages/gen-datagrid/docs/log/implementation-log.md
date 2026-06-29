@@ -1,3 +1,73 @@
+## 2026-06-29
+
+### Gate 9.5 Editing Flush API 구현
+
+- `GenDataGridHandle<TData>`에 `flushEditing()`과 `cancelEditing()`을 추가했다.
+- `flushEditing()`은 active editor가 있을 때 현재 draft value를 `onCellValueChange`/dirty state 흐름으로 commit하고 editing state를 종료한다.
+- active editor가 없으면 `flushEditing()`은 안전한 no-op으로 resolve한다.
+- `cancelEditing()`은 value change callback 없이 editing state만 종료한다.
+- save/cancel workflow에서 editor 종료를 보장하는 interaction test를 추가했다.
+- Gate 9 handle/data ownership readiness 범위의 9.1-9.5 구현을 완료했다.
+- 관련 파일: `src/GenDataGrid.types.ts`, `src/renderers/div-grid/DataGridRoot.tsx`, `test/interaction.test.tsx`, `docs/plan/handle-extension-plan.md`, `docs/reference/api-structure.md`, `docs/reference/api-comparison-with-gen-grid.md`, `docs/log/implementation-log.md`
+
+### Gate 9.4 Accept Changes API 구현
+
+- `GenDataGridHandle<TData>`에 `acceptChanges(rowIds?)`를 추가했다.
+- 초기 구현은 저장 성공 후 marker acceptance 의미를 명확히 하기 위해 `commitDirtyState(rowIds?)`와 같은 dirty/deleted marker 정리 동작을 수행한다.
+- controlled `data` 배열은 변경하지 않고, `rowIds`를 넘기면 해당 row의 dirty/deleted marker만 정리하도록 했다.
+- 전체 accept와 row 단위 부분 accept interaction test를 추가했다.
+- 관련 파일: `src/GenDataGrid.types.ts`, `src/renderers/div-grid/DataGridRoot.tsx`, `test/interaction.test.tsx`, `docs/plan/handle-extension-plan.md`, `docs/reference/api-structure.md`, `docs/reference/api-comparison-with-gen-grid.md`, `docs/log/implementation-log.md`
+
+### Gate 9.3 ChangeSet API 구현
+
+- `GenDataGridChangeSet<TData>` public type을 추가하고 package entrypoint에서 export했다.
+- `GenDataGridHandle<TData>`에 `getChangeSet()`을 추가해 dirty cell을 row 단위로 group하고 `patch`를 `columnId -> value` 형태로 반환하도록 구현했다.
+- 삭제 row id는 현재 source rows snapshot에 매핑해 row가 있으면 `deleted[].row`에 포함하도록 했다.
+- row creation API는 아직 없으므로 `created`는 빈 배열로 반환한다.
+- dirty update와 deleted row가 함께 있는 interaction test를 추가했다.
+- 관련 파일: `src/GenDataGrid.types.ts`, `src/index.ts`, `src/renderers/div-grid/DataGridRoot.tsx`, `test/interaction.test.tsx`, `docs/plan/handle-extension-plan.md`, `docs/reference/api-structure.md`, `docs/reference/api-comparison-with-gen-grid.md`, `docs/log/implementation-log.md`
+
+### Gate 9.2 Data Snapshot API 구현
+
+- `GenDataGridHandle<TData>`에 `getData()`와 `getRow(rowId)`를 추가했다.
+- controlled mode에서는 현재 `data`, uncontrolled mode에서는 내부 `defaultData` 기반 rows를 source rows snapshot으로 조회하도록 구현했다.
+- `getData()`는 외부에서 배열 자체를 직접 변형하지 않도록 shallow array snapshot을 반환한다.
+- uncontrolled `deleteRowsBehavior="removeUncontrolled"` 이후 snapshot이 갱신되는 interaction test를 추가했다.
+- 관련 파일: `src/GenDataGrid.types.ts`, `src/GenDataGrid.tsx`, `src/renderers/div-grid/DataGridRoot.tsx`, `test/interaction.test.tsx`, `docs/plan/handle-extension-plan.md`, `docs/reference/api-structure.md`, `docs/reference/api-comparison-with-gen-grid.md`, `docs/log/implementation-log.md`
+
+### Gate 9.1 Handle Generic 정렬 구현
+
+- `GenDataGridHandle<TData = unknown>` 형태로 public handle 타입을 제네릭화했다.
+- `GenDataGrid`의 forwarded ref와 `DataGridRoot`의 `rootRef` 타입을 `GenDataGridProps<TData>`와 같은 row 타입으로 연결했다.
+- 기존 무제네릭 `GenDataGridHandle` 사용은 기본 타입 인자로 유지하고, interaction test에서 `GenDataGridHandle<Person>` 사용을 추가해 타입 smoke 지점을 만들었다.
+- 관련 파일: `src/GenDataGrid.types.ts`, `src/GenDataGrid.tsx`, `src/renderers/div-grid/DataGridRoot.tsx`, `test/interaction.test.tsx`, `docs/plan/handle-extension-plan.md`, `docs/reference/api-structure.md`, `docs/reference/api-comparison-with-gen-grid.md`, `docs/log/implementation-log.md`
+
+### Gate 9-12 실행 계획 구조 정리
+
+- `remaining-work-plan.md`를 Priority 목록 중심에서 Gate 9-12 실행 계획 중심으로 재정리했다.
+- Gate 9를 `Handle / Data Ownership Readiness`로 정의하고, 기존 handle extension 계획을 Gate 9 계획 문서로 정리했다.
+- Gate 10 `GenDataGridCrud Thin Shell`, Gate 11 `CRUD Mutation Completion`, Gate 12 `App Integration / Migration` 범위를 정의했다.
+- 기존 후속 기능 항목은 Gate 12 이후 backlog로 유지했다.
+- 관련 파일: `docs/plan/remaining-work-plan.md`, `docs/plan/handle-extension-plan.md`, `docs/README.md`, `docs/log/implementation-log.md`
+## 2026-06-29
+
+### Controlled/Uncontrolled App 사용 가이드 추가
+
+- app 화면에서 `GenDataGrid`를 controlled mode와 uncontrolled mode 중 무엇으로 사용할지 판단하는 기준을 문서화했다.
+- 업무 조회/CRUD 화면은 controlled mode를 기본으로 두고, Storybook/prototype/local-only tool은 uncontrolled mode를 사용할 수 있도록 가이드를 정리했다.
+- `GenDataGridCrud`는 controlled mode를 기본 대상으로 설계한다는 기준을 명시했다.
+- 관련 파일: `docs/reference/controlled-uncontrolled-app-guide.md`, `docs/README.md`, `docs/plan/handle-extension-plan.md`, `docs/log/implementation-log.md`
+
+## 2026-06-29
+
+### GenDataGridHandle CRUD 선행 계획 문서화
+
+- `GenDataGridCrud` 구현에 앞서 필요한 `GenDataGridHandle` 확장 계획을 문서화했다.
+- `flushEditing`, `cancelEditing`, `getData`, `getRow`, `getChangeSet`, `acceptChanges`를 우선 구현 후보로 정리했다.
+- `revertChanges`, `insertRows`, `load`는 controlled/uncontrolled data ownership 결정 후 처리할 deferred handle로 분리했다.
+- handle 확장이 `DataGridRoot`의 dirty/delete/editing/data ownership과 연결되는 architecture 문서를 추가했다.
+- 관련 파일: `docs/plan/handle-extension-plan.md`, `docs/architecture/handle-data-ownership-architecture.md`, `docs/README.md`, `docs/plan/remaining-work-plan.md`, `docs/reference/api-structure.md`, `docs/reference/api-comparison-with-gen-grid.md`, `docs/log/implementation-log.md`
+
 ## 2026-06-27
 
 ### GenDataGrid 문서 정합성 1차 정리
@@ -1118,3 +1188,11 @@
 - event.buttons === 0 mousemove와 window mouseup에서 auto-scroll pointer/focus 상태를 정리하도록 보강했다.
 - viewport의 가로 범위 밖 pointer는 vertical edge auto-scroll을 트리거하지 않도록 제한했다.
 - 중간 row에서 drag를 시작한 뒤 그리드 외부 mouseup 후에도 anchor row가 유지되는 interaction 회귀 테스트를 추가했다.
+## 2026-06-30
+
+### Gate 10 CRUD save 연동을 위한 editing draft ref 보강
+
+- `GenDataGridHandle.flushEditing()`이 ActionBar Save 같은 외부 이벤트 턴에서도 최신 editor draft 값을 읽을 수 있도록 editing draft를 state와 ref에 함께 보관했다.
+- `flushEditing()`은 React render closure의 `draftValue` 대신 최신 draft ref 값을 사용해 `onCellValueChange`/dirty state 흐름으로 commit한다.
+- `gen-datagrid-crud`의 active editor save workflow 검증에서 해당 handle 보장이 필요함을 확인했다.
+- 관련 파일: `src/features/editing/useCellEditing.ts`, `src/renderers/div-grid/DataGridRoot.tsx`, `docs/log/implementation-log.md`
