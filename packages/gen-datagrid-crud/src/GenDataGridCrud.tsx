@@ -39,6 +39,7 @@ export function GenDataGridCrud<TData>(props: GenDataGridCrudProps<TData>) {
     onCommitSuccess,
     onCommitError,
     onValidationError,
+    onExport,
     actionBar,
     onStateChange,
     gridProps,
@@ -57,6 +58,7 @@ export function GenDataGridCrud<TData>(props: GenDataGridCrudProps<TData>) {
     onCommitSuccess,
     onCommitError,
     onValidationError,
+    onExport,
     onStateChange,
   });
   const actionBarEnabled = actionBar?.enabled ?? true;

@@ -65,6 +65,7 @@ export type DataGridCrudValidationResult =
 export type DataGridCrudUiState<TData> = {
   readonly: boolean;
   canCreateRow: boolean;
+  canExport: boolean;
   data: readonly TData[];
   sourceData: readonly TData[];
   createdRows: readonly TData[];
@@ -87,6 +88,14 @@ export type DataGridCrudCommitArgs<TData> = {
   data: readonly TData[];
 };
 
+export type DataGridCrudExportArgs<TData> = {
+  data: readonly TData[];
+  sourceData: readonly TData[];
+  createdRows: readonly TData[];
+  lastChangeSet?: GenDataGridChangeSet<TData>;
+  state: DataGridCrudUiState<TData>;
+};
+
 export type DataGridCrudActionApi = {
   addRow: () => void;
   deleteSelectedRows: () => void;
@@ -95,7 +104,7 @@ export type DataGridCrudActionApi = {
   clearFilters: () => void;
   toggleFilters: () => void;
   toggleColumnReorder: () => void;
-  exportExcel: () => void;
+  exportExcel: () => void | Promise<void>;
 };
 
 export type DataGridCrudActionContext<TData> = {
@@ -166,6 +175,7 @@ export type GenDataGridCrudProps<TData> = {
     error?: unknown;
     fieldErrors: DataGridCrudFieldErrors;
   }) => void;
+  onExport?: (args: DataGridCrudExportArgs<TData>) => void | Promise<void>;
   actionBar?: DataGridCrudActionBarOptions<TData>;
   onStateChange?: (state: DataGridCrudUiState<TData>) => void;
   gridProps?: Omit<GenDataGridProps<TData>, GridPropsOwnedByCrud>;
@@ -186,6 +196,7 @@ export type DataGridCrudControllerArgs<TData> = Pick<
   | 'onCommitSuccess'
   | 'onCommitError'
   | 'onValidationError'
+  | 'onExport'
   | 'onStateChange'
 >;
 

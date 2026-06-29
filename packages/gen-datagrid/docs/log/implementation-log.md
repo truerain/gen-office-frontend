@@ -1190,6 +1190,13 @@
 - 중간 row에서 drag를 시작한 뒤 그리드 외부 mouseup 후에도 anchor row가 유지되는 interaction 회귀 테스트를 추가했다.
 ## 2026-06-30
 
+### Gate 12 App integration 완료 상태 반영
+
+- `gen-datagrid-crud` Gate 12에서 demo `ActualsPage` 전환, migration guide, app QA guide를 작성한 상태를 상위 remaining work plan에 반영했다.
+- 관련 파일: `docs/plan/remaining-work-plan.md`, `../gen-datagrid-crud/.docs/gate-12-app-integration-plan.md`, `../gen-datagrid-crud/.docs/gen-grid-crud-migration-guide.md`, `../gen-datagrid-crud/.docs/app-integration-qa-guide.md`
+
+## 2026-06-30
+
 ### Gate 10 CRUD save 연동을 위한 editing draft ref 보강
 
 - `GenDataGridHandle.flushEditing()`이 ActionBar Save 같은 외부 이벤트 턴에서도 최신 editor draft 값을 읽을 수 있도록 editing draft를 state와 ref에 함께 보관했다.

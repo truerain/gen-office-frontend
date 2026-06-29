@@ -15,6 +15,7 @@ export type {
   DataGridCrudCommitArgs,
   DataGridCrudCommitResult,
   DataGridCrudController,
+  DataGridCrudExportArgs,
   DataGridCrudFieldErrors,
   DataGridCrudUiState,
   DataGridCrudValidationResult,

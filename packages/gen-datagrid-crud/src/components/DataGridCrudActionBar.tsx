@@ -122,7 +122,7 @@ export function DataGridCrudActionBar<TData>(props: {
         icon: <Download aria-hidden size={16} />,
         side: 'right',
         order: 30,
-        disabled: (item) => item.state.isCommitting,
+        disabled: (item) => item.state.isCommitting || !item.state.canExport,
         onClick: (item) => item.actionApi.exportExcel(),
       },
     };

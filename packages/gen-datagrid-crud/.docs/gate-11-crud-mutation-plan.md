@@ -76,21 +76,40 @@ Status: complete.
 
 ## Slice 11.4 Commit Result Advanced Handling
 
-Status: pending.
+Status: complete.
 
-예정:
+구현 내용:
 
 - `{ ok: false, fieldErrors }` 결과를 field error state에 반영한다.
-- `{ nextData }` 결과를 app-controlled data contract와 어떻게 연결할지 문서화한다.
-- created row clear timing을 성공/실패/validation 실패별로 고정한다.
+- `{ ok: false, error }` 결과를 `validationError`에 보관한다.
+- commit 실패 시 `onCommitError`를 호출한다.
+- commit 실패 시 `acceptChanges()`를 호출하지 않는다.
+- commit 실패 시 created rows와 dirty marker를 유지한다.
+- commit 성공 시에만 `acceptChanges()`, created row clear, field error clear를 수행한다.
+
+cleanup timing:
+
+- validation 실패: `onCommit`을 호출하지 않고 created rows와 dirty marker를 유지한다.
+- commit 실패: 서버 field errors를 marker로 표시하고 created rows와 dirty marker를 유지한다.
+- commit 성공: marker와 local created rows를 정리한다.
+
+`nextData`는 app-controlled data contract에 맡긴다. `onCommitSuccess({ nextData })`로 전달하지만, wrapper가 `data`를 직접 교체하지는 않는다.
 
 ## Slice 11.5 Export Source Shell
 
-Status: pending.
+Status: complete.
 
-예정:
+구현 내용:
 
-- export action이 사용할 source를 `state.data`, `sourceData`, `createdRows`, `lastChangeSet` 중 무엇으로 볼지 결정한다.
+- `GenDataGridCrudProps.onExport`를 추가했다.
+- `DataGridCrudExportArgs<TData>` public type을 추가했다.
+- Excel action은 `onExport`가 있을 때만 활성화한다.
+- export action은 다음 source를 전달한다.
+  - `data`: 현재 grid view data. created rows가 포함된다.
+  - `sourceData`: app이 넘긴 원본 controlled data.
+  - `createdRows`: 아직 저장되지 않은 local created rows.
+  - `lastChangeSet`: 마지막 save 시점 change set.
+  - `state`: 현재 CRUD UI state.
 - 실제 file 생성은 Gate 12 또는 별도 Excel package로 넘긴다.
 
 ## Verification

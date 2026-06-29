@@ -147,6 +147,32 @@ Field error key는 `${rowId}.${columnId}` 형식을 사용한다. wrapper는 이
 - field error가 없으면 app이 `gridProps.getCellValidation`으로 제공한 기존 validation 결과를 반환한다.
 - Save 성공 또는 Reset 시 validation state를 정리한다.
 
+## Commit result design
+
+`onCommit`이 `{ ok: false }`를 반환하면 저장 실패로 처리한다.
+
+- `fieldErrors`는 `DataGridCrudUiState.fieldErrors`에 반영하고 cell marker로 표시한다.
+- `error`는 `validationError`에 보관한다.
+- `onCommitError`를 호출한다.
+- `acceptChanges()`는 호출하지 않는다.
+- created rows와 dirty marker는 유지한다.
+
+`onCommit`이 성공하면 그때만 `acceptChanges()`, local created rows clear, field error clear를 수행한다. `{ nextData }`는 `onCommitSuccess`로 app에 전달하지만, wrapper가 controlled `data`를 직접 교체하지 않는다.
+
+## Export source design
+
+`onExport`는 Gate 11의 export shell이다. 실제 file 생성은 하지 않고 app 또는 후속 Excel workflow가 사용할 source만 고정한다.
+
+`DataGridCrudExportArgs<TData>`:
+
+- `data`: 현재 grid view data. created rows가 포함된다.
+- `sourceData`: app이 넘긴 원본 controlled data.
+- `createdRows`: 아직 저장되지 않은 local created rows.
+- `lastChangeSet`: 마지막 save 시점 change set.
+- `state`: 현재 CRUD UI state.
+
+Excel action은 `onExport`가 있을 때만 활성화한다.
+
 ## ActionBar design
 
 Built-in action:
@@ -185,7 +211,8 @@ Gate 11:
 - insert workflow: complete
 - validation orchestration: complete
 - field error marker: complete
-- commit result 고도화
+- commit result 고도화: complete
+- export source shell: complete
 
 Gate 12:
 

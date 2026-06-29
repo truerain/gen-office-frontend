@@ -1,11 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Calculator, RefreshCcw, Search, Settings } from 'lucide-react';
 
-import { GenGridCrud } from '@gen-office/gen-grid-crud';
-import {
-  RangeChartDialog,
-  useRangeChartContextMenu,
-} from '@gen-office/gen-grid-chart';
+import { GenDataGridCrud } from '@gen-office/gen-datagrid-crud';
 import {
   Button,
   FilterBar,
@@ -91,17 +87,6 @@ export default function CoActualsPage(_props: PageComponentProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ActualsViewMode>('summary');
   const [searchResetSeq, setSearchResetSeq] = useState(0);
-
-  const rangeChart = useRangeChartContextMenu<CoActual>({
-    dialogTitle: 'Actuals Chart',
-    valueCategoryColumnIds: ['prevActAmt', 'currActAmt', 'planAmt', 'm01', 'm02', 'm03', 'm04', 'm05', 'm06', 'm07', 'm08', 'm09', 'm10', 'm11', 'm12'],
-    getSeriesLabel: ({ rowData }) => `${rowData.acctName} (${rowData.acctCd})`,
-    chartKinds: ['column', 'bar', 'line', 'area', 'pie', 'donut'],
-    messageWhenCategoryMissing: 'Required chart category columns were not found.',
-    messageWhenInvalid:
-      'Select at least one numeric column. For multi-selection charts, all selected ranges must share the same column range.',
-    barModes: ['grouped', 'stacked', 'stacked100'],
-  });
 
   const queryParams = useMemo<CoActualsListParams>(
     () => ({
@@ -257,22 +242,17 @@ export default function CoActualsPage(_props: PageComponentProps) {
                 </button>
               </div>
             )}
-            <GenGridCrud<CoActual>
+            <GenDataGridCrud<CoActual>
               key={`actuals-grid-${searchResetSeq}`}
               title="Actuals List"
               readonly
               data={gridRows}
               columns={columns}
               getRowId={(row, index) => makeRowId(row, index)}
+              dataVersion={dataUpdatedAt}
               onCommit={async () => ({ ok: true })}
-              excelExport={{
-                mode: 'frontend',
-                frontend: { onlySelected: false },
-              }}
+              onExport={() => undefined}
               actionBar={{
-                position: 'top',
-                widthMode: 'grid',
-                defaultStyle: 'icon',
                 showTotalRows: false,
                 includeBuiltIns: ['filter', 'excel'],
                 customActions: [
@@ -281,7 +261,6 @@ export default function CoActualsPage(_props: PageComponentProps) {
                     label: 'Settings',
                     icon: <Settings aria-hidden size={16} />,
                     side: 'right',
-                    style: 'icon',
                     order: 10,
                     onClick: () => {
                       setSettingsOpen(true);
@@ -292,7 +271,6 @@ export default function CoActualsPage(_props: PageComponentProps) {
                     label: 'Refresh',
                     icon: <RefreshCcw aria-hidden size={16} />,
                     side: 'right',
-                    style: 'icon',
                     order: 20,
                     onClick: () => {
                       void refetch();
@@ -304,30 +282,18 @@ export default function CoActualsPage(_props: PageComponentProps) {
                 setGridDirty(dirty);
               }}
               gridProps={{
-                dataVersion: dataUpdatedAt,
                 rowHeight: 34,
-                rowSpanning: true,
-                overscan: 8,
                 enablePinning: true,
                 enableColumnSizing: true,
                 enableVirtualization: true,
                 enablePagination: false,
-                enableRowStatus: true,
                 enableRowNumber: false,
-                checkboxSelection: true,
                 editOnActiveCell: false,
                 keepEditingOnNavigate: true,
                 enableFooterRow: false,
                 enableStickyFooterRow: true,
-                enableActiveRowHighlight: true,
-                getCellStyle: ({ row, columnId }) => {
-                  if (columnId !== 'acctName') return undefined;
-                  return {
-                    textAlign: row.acctCd === 'ACCT060-0001' ? 'right' : 'left',
-                  };
-                },
-                contextMenu: {
-                  customActions: [rangeChart.contextMenuAction],
+                defaultColumnPinning: {
+                  left: ['acctCd', 'acctName'],
                 },
               }}
             />
@@ -383,10 +349,6 @@ export default function CoActualsPage(_props: PageComponentProps) {
           </div>
         </div>
       </SimpleDialog>
-
-      <RangeChartDialog
-        {...rangeChart.dialogProps}
-      />
     </div>
   );
 }

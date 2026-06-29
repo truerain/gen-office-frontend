@@ -50,6 +50,12 @@ importers:
       '@gen-office/gen-chart':
         specifier: workspace:*
         version: link:../../packages/gen-chart
+      '@gen-office/gen-datagrid':
+        specifier: workspace:*
+        version: link:../../packages/gen-datagrid
+      '@gen-office/gen-datagrid-crud':
+        specifier: workspace:*
+        version: link:../../packages/gen-datagrid-crud
       '@gen-office/gen-grid':
         specifier: workspace:*
         version: link:../../packages/gen-grid

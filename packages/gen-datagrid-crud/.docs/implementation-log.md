@@ -6,6 +6,57 @@ Records GenDataGridCrud package planning and implementation changes.
 
 ## 2026-06-30
 
+### GenDataGrid 기본 CSS 포함 보정
+
+- `GenDataGridCrud` CSS entry가 내부 `GenDataGrid` 기본 스타일을 함께 포함하도록 보정했다.
+- demo app이 `@gen-office/gen-datagrid-crud/index.css`만 import해도 grid/root/viewport/cell 레이아웃 스타일이 적용되도록 했다.
+- ActualsPage에서 DOM은 렌더링되지만 cell이 grid가 아니라 세로로 나열되던 문제의 원인을 CSS 누락으로 정리했다.
+- 관련 파일: `src/index.css`, `.docs/implementation-log.md`
+
+## 2026-06-30
+
+### ActualsPage 표시를 위한 wrapper 높이 체인 보강
+
+- `GenDataGridCrud` wrapper가 flex layout 안에서 남은 높이를 채우도록 기본 CSS를 보강했다.
+- `.gen-datagrid-crud`, `.gen-datagrid-crud__grid`, 내부 `.gen-datagrid`까지 flex height chain이 이어지도록 처리했다.
+- ActualsPage처럼 `workarea`가 flex column인 화면에서 `GenDataGrid` viewport가 0 높이에 가깝게 잡히는 문제를 방지했다.
+- 관련 파일: `src/index.css`, `.docs/implementation-log.md`
+
+## 2026-06-30
+
+### Gate 12 ActualsPage 전환 및 migration 문서화
+
+- demo app의 `ActualsPage`를 `GenGridCrud`에서 `GenDataGridCrud`로 전환했다.
+- readonly 조회 화면 기준으로 data, columns, getRowId, dataVersion, ActionBar custom action, filter/export shell, virtualization, pinning, column sizing, current row highlight를 연결했다.
+- `apps/demo`에 `@gen-office/gen-datagrid-crud` dependency와 CSS import를 추가했다.
+- 기존 `GenGridCrud` 전용 chart context menu, row spanning, getCellStyle, real Excel export, ActionBar style 옵션은 migration gap으로 문서화했다.
+- Gate 12 계획, migration guide, app QA guide를 추가했다.
+- 관련 파일: `apps/demo/package.json`, `apps/demo/src/main.tsx`, `apps/demo/src/pages/co/actuals/ActualsPage.tsx`, `.docs/gate-12-app-integration-plan.md`, `.docs/gen-grid-crud-migration-guide.md`, `.docs/app-integration-qa-guide.md`, `.docs/README.md`, `.docs/implementation-log.md`
+
+## 2026-06-30
+
+### Gate 11.5 Export source shell 구현
+
+- `GenDataGridCrudProps.onExport`와 `DataGridCrudExportArgs<TData>` public type을 추가했다.
+- Excel action은 `onExport`가 있을 때만 활성화하도록 변경했다.
+- export action이 현재 view data, 원본 source data, local created rows, last change set, CRUD UI state를 전달하도록 했다.
+- 실제 파일 생성은 Gate 12 또는 별도 Excel workflow 범위로 남겼다.
+- export source contract와 Excel disabled 상태를 테스트로 고정했다.
+- 관련 파일: `src/GenDataGridCrud.tsx`, `src/GenDataGridCrud.types.ts`, `src/crud/useDataGridCrudController.tsx`, `src/components/DataGridCrudActionBar.tsx`, `src/index.ts`, `test/thinShell.test.tsx`, `.docs/gate-11-crud-mutation-plan.md`, `.docs/gen-datagrid-crud-package-design.md`, `.docs/implementation-log.md`
+
+## 2026-06-30
+
+### Gate 11.4 Commit result advanced handling 구현
+
+- `onCommit`이 `{ ok: false, fieldErrors }`를 반환하면 field errors를 `DataGridCrudUiState.fieldErrors`에 반영하도록 했다.
+- commit 실패 시 `error`를 `validationError`에 보관하고 `onCommitError`를 호출한다.
+- commit 실패 시 `acceptChanges()`를 호출하지 않고 created rows와 dirty marker를 유지하도록 cleanup timing을 고정했다.
+- commit 성공 시에만 `acceptChanges()`, created row clear, field error clear를 수행한다.
+- 서버 field error가 cell marker로 표시되고 pending created row가 유지되는 테스트를 추가했다.
+- 관련 파일: `src/crud/useDataGridCrudController.tsx`, `test/thinShell.test.tsx`, `.docs/gate-11-crud-mutation-plan.md`, `.docs/gen-datagrid-crud-package-design.md`, `.docs/implementation-log.md`
+
+## 2026-06-30
+
 ### Gate 11.3 Field error marker 연결
 
 - `DataGridCrudUiState.fieldErrors`를 `GenDataGrid`의 `getCellValidation`과 compose하도록 wrapper를 보강했다.

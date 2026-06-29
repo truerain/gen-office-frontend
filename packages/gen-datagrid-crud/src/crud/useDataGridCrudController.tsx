@@ -138,6 +138,7 @@ export function useDataGridCrudController<TData>(
     onCommitSuccess,
     onCommitError,
     onValidationError,
+    onExport,
     onStateChange,
   } = args;
   const gridRef = React.useRef<GenDataGridHandle<TData>>(null);
@@ -176,6 +177,7 @@ export function useDataGridCrudController<TData>(
     () => ({
       readonly,
       canCreateRow: Boolean(createRow),
+      canExport: Boolean(onExport),
       data: gridData,
       sourceData: data,
       createdRows,
@@ -207,6 +209,7 @@ export function useDataGridCrudController<TData>(
       filterEnabled,
       isCommitting,
       lastChangeSet,
+      onExport,
       readonly,
       selectedRowIds,
       validationError,
@@ -268,6 +271,9 @@ export function useDataGridCrudController<TData>(
 
       const result = await onCommit(commitArgs);
       if (result && result.ok === false) {
+        const resultFieldErrors = result.fieldErrors ?? EMPTY_FIELD_ERRORS;
+        setFieldErrors(resultFieldErrors);
+        setValidationError(result.error);
         onCommitError?.({ error: result.error, fieldErrors: result.fieldErrors });
         return;
       }
@@ -343,8 +349,15 @@ export function useDataGridCrudController<TData>(
   }, [createRow, gridData, readonly]);
 
   const exportExcel = React.useCallback(() => {
-    // Real Excel export is intentionally deferred to Gate 11/12.
-  }, []);
+    if (!onExport) return undefined;
+    return onExport({
+      data: state.data,
+      sourceData: state.sourceData,
+      createdRows: state.createdRows,
+      lastChangeSet: state.lastChangeSet,
+      state,
+    });
+  }, [onExport, state]);
 
   const actionApi = React.useMemo<DataGridCrudActionApi>(
     () => ({

@@ -125,6 +125,14 @@ Exit criteria:
 
 ### Gate 12. App Integration / Migration
 
+Status: complete.
+
+Completed references:
+
+- `../../../gen-datagrid-crud/.docs/gate-12-app-integration-plan.md`
+- `../../../gen-datagrid-crud/.docs/gen-grid-crud-migration-guide.md`
+- `../../../gen-datagrid-crud/.docs/app-integration-qa-guide.md`
+
 목표: demo app에서 실제 화면 전환 기준을 검증하고 `GenGridCrud`와의 차이를 문서화한다.
 
 Scope:

@@ -13,6 +13,9 @@ Indexes planning documents for the GenDataGrid CRUD package.
 - [GenDataGridCrud Package Design](gen-datagrid-crud-package-design.md)
 - [Gate 10 Thin Shell Plan](gate-10-thin-shell-plan.md)
 - [Gate 11 CRUD Mutation Completion Plan](gate-11-crud-mutation-plan.md)
+- [Gate 12 App Integration / Migration Plan](gate-12-app-integration-plan.md)
+- [GenGridCrud To GenDataGridCrud Migration Guide](gen-grid-crud-migration-guide.md)
+- [App Integration QA Guide](app-integration-qa-guide.md)
 - [Implementation Log](implementation-log.md)
 
 ## 선행 GenDataGrid 문서

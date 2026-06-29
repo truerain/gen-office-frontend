@@ -250,10 +250,84 @@ describe('GenDataGridCrud thin shell', () => {
     });
   });
 
+  it('keeps pending changes and maps commit field errors when commit returns not ok', async () => {
+    const onCommit = vi.fn(async () => ({
+      ok: false,
+      error: new Error('Server rejected'),
+      fieldErrors: { 'new-1.name': 'Server name error' },
+    }));
+    const onCommitError = vi.fn();
+    const { container, getByRole } = render(
+      <GenDataGridCrud
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        createRow={() => ({ id: 'new-1', name: 'New Person', age: 0 })}
+        onCommit={onCommit}
+        onCommitError={onCommitError}
+      />
+    );
+
+    fireEvent.click(getByRole('button', { name: 'Add' }));
+    const createdCell = await waitFor(() => getCell(container, 'new-1', 'name'));
+
+    fireEvent.click(getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(onCommit).toHaveBeenCalledTimes(1);
+      expect(onCommitError).toHaveBeenCalledTimes(1);
+      expect(createdCell.closest('[role="row"]')?.querySelector('[data-row-status="created"]')).toBeTruthy();
+      expect(createdCell.dataset.validationState).toBe('error');
+      expect(createdCell.getAttribute('title')).toBe('Server name error');
+    });
+  });
+
+  it('passes the current export source through the Excel action shell', async () => {
+    const onExport = vi.fn();
+    const { getByRole } = render(
+      <GenDataGridCrud
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        createRow={({ data }) => ({ id: `new-${data.length}`, name: 'New Person', age: 0 })}
+        onExport={onExport}
+      />
+    );
+
+    fireEvent.click(getByRole('button', { name: 'Add' }));
+    await waitFor(() => getCell(document, 'new-2', 'name'));
+    fireEvent.click(getByRole('button', { name: 'Excel' }));
+
+    await waitFor(() => {
+      expect(onExport).toHaveBeenCalledTimes(1);
+      expect(onExport.mock.calls[0]?.[0].sourceData).toEqual(rows);
+      expect(onExport.mock.calls[0]?.[0].createdRows).toEqual([
+        { id: 'new-2', name: 'New Person', age: 0 },
+      ]);
+      expect(onExport.mock.calls[0]?.[0].data).toEqual([
+        { id: 'new-2', name: 'New Person', age: 0 },
+        ...rows,
+      ]);
+    });
+  });
+
+  it('disables Excel when no export handler is provided', () => {
+    const { getByRole } = render(
+      <GenDataGridCrud
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+      />
+    );
+
+    expect((getByRole('button', { name: 'Excel' }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
   it('renders ActionBar from state and actionApi without needing grid access', () => {
     const state: DataGridCrudUiState<Person> = {
       readonly: false,
       canCreateRow: true,
+      canExport: true,
       data: rows,
       sourceData: rows,
       createdRows: [],
