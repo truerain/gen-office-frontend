@@ -15,6 +15,8 @@ export type {
   DataGridCrudCommitArgs,
   DataGridCrudCommitResult,
   DataGridCrudController,
+  DataGridCrudFieldErrors,
   DataGridCrudUiState,
+  DataGridCrudValidationResult,
   GenDataGridCrudProps,
 } from './GenDataGridCrud.types';

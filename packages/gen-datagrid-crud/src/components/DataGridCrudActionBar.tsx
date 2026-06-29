@@ -66,7 +66,8 @@ export function DataGridCrudActionBar<TData>(props: {
         label: 'Add',
         icon: <Plus aria-hidden size={16} />,
         order: 10,
-        disabled: (item) => item.state.readonly || item.state.isCommitting,
+        disabled: (item) =>
+          item.state.readonly || item.state.isCommitting || !item.state.canCreateRow,
         onClick: (item) => item.actionApi.addRow(),
       },
       delete: {

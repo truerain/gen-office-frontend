@@ -31,9 +31,10 @@ const columns: ColumnDef<Person, unknown>[] = [
 function applyCommit(rows: readonly Person[], args: DataGridCrudCommitArgs<Person>) {
   const updates = new Map(args.changeSet.updated.map((item) => [item.rowId, item.patch]));
   const deleted = new Set(args.changeSet.deleted.map((item) => item.rowId));
-  return rows
+  const nextRows = rows
     .filter((row) => !deleted.has(row.id))
     .map((row) => ({ ...row, ...(updates.get(row.id) ?? {}) }));
+  return [...args.changeSet.created, ...nextRows];
 }
 
 function DirtySaveShellStory() {
@@ -44,6 +45,12 @@ function DirtySaveShellStory() {
       data={rows}
       columns={columns}
       getRowId={(row) => row.id}
+      createRow={({ data }) => ({
+        id: `new-${data.length + 1}`,
+        name: 'New person',
+        role: 'Analyst',
+        active: true,
+      })}
       onCommit={async (args) => {
         setRows((current) => applyCommit(current, args));
         return { ok: true };

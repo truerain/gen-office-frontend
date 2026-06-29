@@ -85,10 +85,14 @@ type GenDataGridCrudProps<TData> = {
   columns: readonly ColumnDef<TData, unknown>[];
   getRowId: (row: TData, index: number) => string;
   dataVersion?: string | number;
+  createRow?: (ctx: DataGridCrudCreateRowContext<TData>) => TData;
+  createdRowPosition?: 'top' | 'bottom';
   onCommit?: (args: DataGridCrudCommitArgs<TData>) => Promise<DataGridCrudCommitResult<TData>>;
   beforeCommit?: (args: DataGridCrudCommitArgs<TData>) => boolean | Promise<boolean>;
+  validateCommit?: (args: DataGridCrudCommitArgs<TData>) => DataGridCrudValidationResult | Promise<DataGridCrudValidationResult>;
   onCommitSuccess?: (result: { nextData?: readonly TData[] }) => void;
   onCommitError?: (result: { error: unknown; fieldErrors?: Record<string, string> }) => void;
+  onValidationError?: (result: { error?: unknown; fieldErrors: DataGridCrudFieldErrors }) => void;
   actionBar?: DataGridCrudActionBarOptions<TData>;
   onStateChange?: (state: DataGridCrudUiState<TData>) => void;
   gridProps?: Omit<GenDataGridProps<TData>, GridPropsOwnedByCrud>;
@@ -106,6 +110,8 @@ type DataGridCrudUiState<TData> = {
   dirtyState: GenDataGridDirtyState;
   dirty: boolean;
   isCommitting: boolean;
+  fieldErrors: DataGridCrudFieldErrors;
+  validationError?: unknown;
   currentRowId: string | null;
   selectedRowIds: string[];
   filterEnabled: boolean;
@@ -122,12 +128,24 @@ type DataGridCrudUiState<TData> = {
 save()
   -> gridRef.current.flushEditing()
   -> latest gridRef.current.getChangeSet()
+  -> fold created-row patches into changeSet.created
+  -> validateCommit?.(...)
   -> beforeCommit?.(...)
   -> onCommit?.(...)
   -> gridRef.current.acceptChanges()
 ```
 
 Save는 active editor가 dirty marker를 아직 만들기 전에도 누를 수 있어야 한다. 따라서 Save 버튼은 `dirty` 여부가 아니라 `readonly`와 `isCommitting`만으로 비활성화한다.
+
+## Validation design
+
+`validateCommit`은 `onCommit` 호출 전 업무 검증 단계다. 실패하면 `onCommit`을 호출하지 않고 `DataGridCrudUiState.fieldErrors`와 `validationError`에 결과를 보관한다.
+
+Field error key는 `${rowId}.${columnId}` 형식을 사용한다. wrapper는 이 값을 `GenDataGrid`의 `getCellValidation`과 compose한다.
+
+- field error가 있으면 `{ severity: 'error', message }`를 반환한다.
+- field error가 없으면 app이 `gridProps.getCellValidation`으로 제공한 기존 validation 결과를 반환한다.
+- Save 성공 또는 Reset 시 validation state를 정리한다.
 
 ## ActionBar design
 
@@ -163,10 +181,10 @@ Gate 10:
 
 Gate 11:
 
-- created row store
-- insert workflow
-- validation orchestration
-- field error marker
+- created row store: complete
+- insert workflow: complete
+- validation orchestration: complete
+- field error marker: complete
 - commit result 고도화
 
 Gate 12:

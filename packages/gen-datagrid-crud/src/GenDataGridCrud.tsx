@@ -3,10 +3,25 @@
 
 import * as React from 'react';
 import { GenDataGrid } from '@gen-office/gen-datagrid';
+import type {
+  GenDataGridCellValidation,
+  GenDataGridValidationContext,
+} from '@gen-office/gen-datagrid';
 
 import { DataGridCrudActionBar } from './components/DataGridCrudActionBar';
-import type { GenDataGridCrudProps } from './GenDataGridCrud.types';
+import type {
+  DataGridCrudFieldErrors,
+  GenDataGridCrudProps,
+} from './GenDataGridCrud.types';
 import { useDataGridCrudController } from './crud/useDataGridCrudController';
+
+function getFieldError(
+  fieldErrors: DataGridCrudFieldErrors,
+  rowId: string,
+  columnId: string
+) {
+  return fieldErrors[`${rowId}.${columnId}`];
+}
 
 export function GenDataGridCrud<TData>(props: GenDataGridCrudProps<TData>) {
   const {
@@ -16,10 +31,14 @@ export function GenDataGridCrud<TData>(props: GenDataGridCrudProps<TData>) {
     columns,
     getRowId,
     dataVersion,
+    createRow,
+    createdRowPosition,
     onCommit,
     beforeCommit,
+    validateCommit,
     onCommitSuccess,
     onCommitError,
+    onValidationError,
     actionBar,
     onStateChange,
     gridProps,
@@ -29,13 +48,35 @@ export function GenDataGridCrud<TData>(props: GenDataGridCrudProps<TData>) {
   const controller = useDataGridCrudController<TData>({
     readonly,
     data,
+    getRowId,
+    createRow,
+    createdRowPosition,
     onCommit,
     beforeCommit,
+    validateCommit,
     onCommitSuccess,
     onCommitError,
+    onValidationError,
     onStateChange,
   });
   const actionBarEnabled = actionBar?.enabled ?? true;
+  const userGetCellValidation = gridProps?.getCellValidation;
+  const getCellValidation = React.useCallback(
+    (
+      ctx: GenDataGridValidationContext<TData>
+    ): GenDataGridCellValidation | null | undefined => {
+      const message = getFieldError(controller.state.fieldErrors, ctx.rowId, ctx.columnId);
+      if (message) {
+        return {
+          severity: 'error',
+          message,
+        };
+      }
+
+      return userGetCellValidation?.(ctx);
+    },
+    [controller.state.fieldErrors, userGetCellValidation]
+  );
 
   return (
     <div className={['gen-datagrid-crud', className].filter(Boolean).join(' ')} style={style}>
@@ -52,12 +93,13 @@ export function GenDataGridCrud<TData>(props: GenDataGridCrudProps<TData>) {
           {...gridProps}
           {...controller.gridStateProps}
           ref={controller.gridRef}
-          data={[...data]}
+          data={[...controller.gridData]}
           columns={[...columns]}
           getRowId={getRowId}
           dataVersion={dataVersion}
           readOnly={readonly}
           readonly={readonly}
+          getCellValidation={getCellValidation}
         />
       </div>
     </div>

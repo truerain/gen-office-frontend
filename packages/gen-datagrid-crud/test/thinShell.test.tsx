@@ -164,10 +164,100 @@ describe('GenDataGridCrud thin shell', () => {
     });
   });
 
+  it('creates a local row, folds its edits into created changes, and clears it after save', async () => {
+    const onCommit = vi.fn(async () => ({ ok: true }));
+    const { container, getByRole } = render(
+      <GenDataGridCrud
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        createRow={() => ({ id: 'new-1', name: 'New Person', age: 0 })}
+        onCommit={onCommit}
+      />
+    );
+
+    fireEvent.click(getByRole('button', { name: 'Add' }));
+
+    const createdCell = await waitFor(() => getCell(container, 'new-1', 'name'));
+    expect(createdCell.closest('[role="row"]')?.querySelector('[data-row-status="created"]')).toBeTruthy();
+
+    fireEvent.doubleClick(createdCell);
+    const editor = createdCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.change(editor, { target: { value: 'Created Ada' } });
+    fireEvent.click(getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(onCommit).toHaveBeenCalledTimes(1);
+      expect(onCommit.mock.calls[0]?.[0].changeSet.created).toEqual([
+        { id: 'new-1', name: 'Created Ada', age: 0 },
+      ]);
+      expect(onCommit.mock.calls[0]?.[0].changeSet.updated).toEqual([]);
+    });
+  });
+
+  it('blocks commit and publishes field errors when commit validation fails', async () => {
+    const onCommit = vi.fn(async () => ({ ok: true }));
+    const onStateChange = vi.fn();
+    const onValidationError = vi.fn();
+    const { container, getByRole } = render(
+      <GenDataGridCrud
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        validateCommit={() => ({
+          valid: false,
+          fieldErrors: { '1.name': 'Name is required' },
+        })}
+        onValidationError={onValidationError}
+        onStateChange={onStateChange}
+        onCommit={onCommit}
+        gridProps={{
+          getCellValidation: ({ columnId }) =>
+            columnId === 'age'
+              ? { severity: 'warning', message: 'Age warning' }
+              : undefined,
+        }}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    const ageCell = getCell(container, '1', 'age');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.change(editor, { target: { value: '' } });
+    fireEvent.click(getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(onValidationError).toHaveBeenCalledWith({
+        error: undefined,
+        fieldErrors: { '1.name': 'Name is required' },
+      });
+      expect(
+        onStateChange.mock.calls.some(
+          ([state]: [DataGridCrudUiState<Person>]) =>
+            state.fieldErrors['1.name'] === 'Name is required'
+        )
+      ).toBe(true);
+      expect(firstCell.dataset.validationState).toBe('error');
+      expect(firstCell.getAttribute('title')).toBe('Name is required');
+      expect(ageCell.dataset.validationState).toBe('warning');
+      expect(ageCell.getAttribute('title')).toBe('Age warning');
+    });
+  });
+
   it('renders ActionBar from state and actionApi without needing grid access', () => {
     const state: DataGridCrudUiState<Person> = {
       readonly: false,
+      canCreateRow: true,
       data: rows,
+      sourceData: rows,
+      createdRows: [],
+      createdRowIds: [],
       dirtyState: {
         cells: [],
         rowIds: ['1'],
@@ -175,6 +265,7 @@ describe('GenDataGridCrud thin shell', () => {
       },
       dirty: true,
       isCommitting: false,
+      fieldErrors: {},
       currentRowId: '1',
       selectedRowIds: [],
       filterEnabled: false,

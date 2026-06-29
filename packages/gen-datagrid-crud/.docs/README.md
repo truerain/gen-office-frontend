@@ -12,6 +12,7 @@ Indexes planning documents for the GenDataGrid CRUD package.
 - [GenDataGrid CRUD Readiness Audit](gen-datagrid-crud-readiness-audit.md)
 - [GenDataGridCrud Package Design](gen-datagrid-crud-package-design.md)
 - [Gate 10 Thin Shell Plan](gate-10-thin-shell-plan.md)
+- [Gate 11 CRUD Mutation Completion Plan](gate-11-crud-mutation-plan.md)
 - [Implementation Log](implementation-log.md)
 
 ## 선행 GenDataGrid 문서

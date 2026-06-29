@@ -6,6 +6,36 @@ Records GenDataGridCrud package planning and implementation changes.
 
 ## 2026-06-30
 
+### Gate 11.3 Field error marker 연결
+
+- `DataGridCrudUiState.fieldErrors`를 `GenDataGrid`의 `getCellValidation`과 compose하도록 wrapper를 보강했다.
+- field error key 규칙을 `${rowId}.${columnId}`로 고정했다.
+- field error가 있는 cell은 `severity: 'error'`와 message를 반환하고, field error가 없으면 app이 제공한 기존 `gridProps.getCellValidation` 결과를 유지한다.
+- validation 실패 후 cell marker와 기존 app validation이 함께 유지되는 테스트를 추가했다.
+- 관련 파일: `src/GenDataGridCrud.tsx`, `test/thinShell.test.tsx`, `.docs/gate-11-crud-mutation-plan.md`, `.docs/gen-datagrid-crud-package-design.md`, `.docs/implementation-log.md`
+
+## 2026-06-30
+
+### Gate 11.2 Commit validation 구현
+
+- `GenDataGridCrudProps.validateCommit`을 추가해 commit 전 업무 검증을 실행할 수 있게 했다.
+- `DataGridCrudValidationResult`, `DataGridCrudFieldErrors` public type과 `onValidationError` callback을 추가했다.
+- validation 실패 시 `onCommit` 호출을 차단하고 `fieldErrors`, `validationError`를 `DataGridCrudUiState`에 보관하도록 했다.
+- Save 성공 또는 Reset 시 validation state를 정리하도록 처리했다.
+- validation 실패 시 commit이 호출되지 않고 field errors가 state로 발행되는 테스트를 추가했다.
+- 관련 파일: `src/GenDataGridCrud.tsx`, `src/GenDataGridCrud.types.ts`, `src/crud/useDataGridCrudController.tsx`, `src/index.ts`, `test/thinShell.test.tsx`, `.docs/gate-11-crud-mutation-plan.md`, `.docs/gen-datagrid-crud-package-design.md`, `.docs/implementation-log.md`
+
+## 2026-06-30
+
+### Gate 11.1 Created row store 구현
+
+- `GenDataGridCrudProps.createRow`와 `createdRowPosition`을 추가했다.
+- controller가 local `createdRows`를 보관하고 `gridData`를 `data`와 합성해 `GenDataGrid`에 전달하도록 변경했다.
+- created row는 row status `created`로 표시하고, Save 시 created row의 dirty patch를 `changeSet.created`에 병합한다.
+- created row patch가 `changeSet.updated`에 중복으로 남지 않도록 필터링했다.
+- Reset은 local created rows와 grid dirty marker를 함께 정리하고, Delete는 created row를 local store에서 제거하도록 처리했다.
+- 관련 파일: `src/GenDataGridCrud.tsx`, `src/GenDataGridCrud.types.ts`, `src/crud/useDataGridCrudController.tsx`, `src/components/DataGridCrudActionBar.tsx`, `test/thinShell.test.tsx`, `src/stories/GenDataGridCrud.stories.tsx`, `.docs/gate-11-crud-mutation-plan.md`, `.docs/gen-datagrid-crud-package-design.md`, `.docs/implementation-log.md`
+
 ### Gate 10 Storybook 후보 추가
 
 - Gate 10.7 Storybook smoke 후보를 추가했다.

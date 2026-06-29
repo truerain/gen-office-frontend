@@ -43,15 +43,37 @@ export type DataGridCrudCommitResult<TData> =
       ok?: boolean;
       nextData?: readonly TData[];
       error?: unknown;
-      fieldErrors?: Record<string, string>;
+      fieldErrors?: DataGridCrudFieldErrors;
+    };
+
+export type DataGridCrudCreateRowContext<TData> = {
+  data: readonly TData[];
+};
+
+export type DataGridCrudCreatedRowPosition = 'top' | 'bottom';
+export type DataGridCrudFieldErrors = Record<string, string>;
+
+export type DataGridCrudValidationResult =
+  | void
+  | boolean
+  | {
+      valid?: boolean;
+      fieldErrors?: DataGridCrudFieldErrors;
+      error?: unknown;
     };
 
 export type DataGridCrudUiState<TData> = {
   readonly: boolean;
+  canCreateRow: boolean;
   data: readonly TData[];
+  sourceData: readonly TData[];
+  createdRows: readonly TData[];
+  createdRowIds: string[];
   dirtyState: GenDataGridDirtyState;
   dirty: boolean;
   isCommitting: boolean;
+  fieldErrors: DataGridCrudFieldErrors;
+  validationError?: unknown;
   currentRowId: string | null;
   selectedRowIds: string[];
   filterEnabled: boolean;
@@ -104,6 +126,7 @@ export type DataGridCrudActionBarOptions<TData> = {
 export type DataGridCrudController<TData> = {
   gridRef: React.RefObject<GenDataGridHandle<TData>>;
   state: DataGridCrudUiState<TData>;
+  gridData: readonly TData[];
   actionApi: DataGridCrudActionApi;
   gridStateProps: Pick<
     GenDataGridProps<TData>,
@@ -128,12 +151,21 @@ export type GenDataGridCrudProps<TData> = {
   columns: readonly ColumnDef<TData, unknown>[];
   getRowId: (row: TData, index: number) => string;
   dataVersion?: string | number;
+  createRow?: (ctx: DataGridCrudCreateRowContext<TData>) => TData;
+  createdRowPosition?: DataGridCrudCreatedRowPosition;
   onCommit?: (args: DataGridCrudCommitArgs<TData>) => Promise<DataGridCrudCommitResult<TData>>;
   beforeCommit?: (
     args: DataGridCrudCommitArgs<TData>
   ) => boolean | Promise<boolean>;
+  validateCommit?: (
+    args: DataGridCrudCommitArgs<TData>
+  ) => DataGridCrudValidationResult | Promise<DataGridCrudValidationResult>;
   onCommitSuccess?: (result: { nextData?: readonly TData[] }) => void;
-  onCommitError?: (result: { error: unknown; fieldErrors?: Record<string, string> }) => void;
+  onCommitError?: (result: { error: unknown; fieldErrors?: DataGridCrudFieldErrors }) => void;
+  onValidationError?: (result: {
+    error?: unknown;
+    fieldErrors: DataGridCrudFieldErrors;
+  }) => void;
   actionBar?: DataGridCrudActionBarOptions<TData>;
   onStateChange?: (state: DataGridCrudUiState<TData>) => void;
   gridProps?: Omit<GenDataGridProps<TData>, GridPropsOwnedByCrud>;
@@ -145,10 +177,15 @@ export type DataGridCrudControllerArgs<TData> = Pick<
   GenDataGridCrudProps<TData>,
   | 'readonly'
   | 'data'
+  | 'getRowId'
+  | 'createRow'
+  | 'createdRowPosition'
   | 'onCommit'
   | 'beforeCommit'
+  | 'validateCommit'
   | 'onCommitSuccess'
   | 'onCommitError'
+  | 'onValidationError'
   | 'onStateChange'
 >;
 

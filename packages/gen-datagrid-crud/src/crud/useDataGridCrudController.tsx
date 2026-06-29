@@ -15,7 +15,9 @@ import type {
   DataGridCrudActionApi,
   DataGridCrudController,
   DataGridCrudControllerArgs,
+  DataGridCrudFieldErrors,
   DataGridCrudUiState,
+  DataGridCrudValidationResult,
 } from '../GenDataGridCrud.types';
 
 const EMPTY_DIRTY_STATE: GenDataGridDirtyState = {
@@ -23,6 +25,8 @@ const EMPTY_DIRTY_STATE: GenDataGridDirtyState = {
   rowIds: [],
   deletedRowIds: [],
 };
+
+const EMPTY_FIELD_ERRORS: DataGridCrudFieldErrors = {};
 
 function waitForAnimationFrame() {
   if (typeof requestAnimationFrame === 'function') {
@@ -37,6 +41,71 @@ function hasChangeSetChanges<TData>(changeSet: GenDataGridChangeSet<TData>) {
     changeSet.updated.length > 0 ||
     changeSet.deleted.length > 0
   );
+}
+
+function hasFieldErrors(fieldErrors: DataGridCrudFieldErrors) {
+  return Object.keys(fieldErrors).length > 0;
+}
+
+function normalizeValidationResult(result: DataGridCrudValidationResult) {
+  if (result == null || result === true) {
+    return {
+      valid: true,
+      fieldErrors: EMPTY_FIELD_ERRORS,
+      error: undefined,
+    };
+  }
+
+  if (result === false) {
+    return {
+      valid: false,
+      fieldErrors: EMPTY_FIELD_ERRORS,
+      error: undefined,
+    };
+  }
+
+  const fieldErrors = result.fieldErrors ?? EMPTY_FIELD_ERRORS;
+  return {
+    valid: result.valid ?? (!hasFieldErrors(fieldErrors) && result.error == null),
+    fieldErrors,
+    error: result.error,
+  };
+}
+
+function applyPatchToRow<TData>(row: TData, patch: Record<string, unknown>) {
+  return { ...(row as object), ...patch } as TData;
+}
+
+function mergeCreatedRowsIntoChangeSet<TData>(
+  changeSet: GenDataGridChangeSet<TData>,
+  createdRows: readonly TData[],
+  getRowId: (row: TData, index: number) => string
+): GenDataGridChangeSet<TData> {
+  if (createdRows.length === 0) return changeSet;
+
+  const createdRowIds = new Set(createdRows.map((row, index) => getRowId(row, index)));
+  const updatedByCreatedRowId = new Map(
+    changeSet.updated
+      .filter((item) => createdRowIds.has(item.rowId))
+      .map((item) => [item.rowId, item.patch])
+  );
+  const deletedCreatedRowIds = new Set(
+    changeSet.deleted
+      .filter((item) => createdRowIds.has(item.rowId))
+      .map((item) => item.rowId)
+  );
+
+  return {
+    ...changeSet,
+    created: createdRows.flatMap((row, index) => {
+      const rowId = getRowId(row, index);
+      if (deletedCreatedRowIds.has(rowId)) return [];
+      const patch = updatedByCreatedRowId.get(rowId);
+      return [patch ? applyPatchToRow(row, patch) : row];
+    }),
+    updated: changeSet.updated.filter((item) => !createdRowIds.has(item.rowId)),
+    deleted: changeSet.deleted.filter((item) => !createdRowIds.has(item.rowId)),
+  };
 }
 
 async function readChangeSetAfterFlush<TData>(
@@ -60,10 +129,15 @@ export function useDataGridCrudController<TData>(
   const {
     readonly = false,
     data,
+    getRowId,
+    createRow,
+    createdRowPosition = 'top',
     onCommit,
     beforeCommit,
+    validateCommit,
     onCommitSuccess,
     onCommitError,
+    onValidationError,
     onStateChange,
   } = args;
   const gridRef = React.useRef<GenDataGridHandle<TData>>(null);
@@ -74,6 +148,24 @@ export function useDataGridCrudController<TData>(
   const [filterEnabled, setFilterEnabled] = React.useState(false);
   const [columnReorderEnabled, setColumnReorderEnabled] = React.useState(false);
   const [lastChangeSet, setLastChangeSet] = React.useState<GenDataGridChangeSet<TData>>();
+  const [createdRows, setCreatedRows] = React.useState<TData[]>([]);
+  const [fieldErrors, setFieldErrors] =
+    React.useState<DataGridCrudFieldErrors>(EMPTY_FIELD_ERRORS);
+  const [validationError, setValidationError] = React.useState<unknown>();
+
+  const gridData = React.useMemo(
+    () => (createdRowPosition === 'top' ? [...createdRows, ...data] : [...data, ...createdRows]),
+    [createdRowPosition, createdRows, data]
+  );
+
+  const createdRowIds = React.useMemo(
+    () => createdRows.map((row, index) => getRowId(row, index)),
+    [createdRows, getRowId]
+  );
+  const createdRowIdSet = React.useMemo(
+    () => new Set(createdRowIds),
+    [createdRowIds]
+  );
 
   const selectedRowIds = React.useMemo(
     () => Object.keys(rowSelection).filter((rowId) => rowSelection[rowId]),
@@ -83,10 +175,19 @@ export function useDataGridCrudController<TData>(
   const state = React.useMemo<DataGridCrudUiState<TData>>(
     () => ({
       readonly,
-      data,
+      canCreateRow: Boolean(createRow),
+      data: gridData,
+      sourceData: data,
+      createdRows,
+      createdRowIds,
       dirtyState,
-      dirty: dirtyState.rowIds.length > 0,
+      dirty:
+        createdRows.length > 0 ||
+        dirtyState.rowIds.length > 0 ||
+        dirtyState.deletedRowIds.length > 0,
       isCommitting,
+      fieldErrors,
+      validationError,
       currentRowId,
       selectedRowIds,
       filterEnabled,
@@ -95,14 +196,20 @@ export function useDataGridCrudController<TData>(
     }),
     [
       columnReorderEnabled,
+      createRow,
       currentRowId,
       data,
+      gridData,
+      createdRows,
+      createdRowIds,
       dirtyState,
+      fieldErrors,
       filterEnabled,
       isCommitting,
       lastChangeSet,
       readonly,
       selectedRowIds,
+      validationError,
     ]
   );
 
@@ -126,8 +233,9 @@ export function useDataGridCrudController<TData>(
     setIsCommitting(true);
     try {
       await handle.flushEditing();
-      const changeSet = await readChangeSetAfterFlush(gridRef);
-      if (!changeSet) return;
+      const gridChangeSet = await readChangeSetAfterFlush(gridRef);
+      if (!gridChangeSet) return;
+      const changeSet = mergeCreatedRowsIntoChangeSet(gridChangeSet, createdRows, getRowId);
       setLastChangeSet(changeSet);
       if (!hasChangeSetChanges(changeSet)) return;
 
@@ -144,6 +252,17 @@ export function useDataGridCrudController<TData>(
         data: handle.getData(),
       };
 
+      const validation = normalizeValidationResult(await validateCommit?.(commitArgs));
+      setFieldErrors(validation.fieldErrors);
+      setValidationError(validation.error);
+      if (!validation.valid) {
+        onValidationError?.({
+          error: validation.error,
+          fieldErrors: validation.fieldErrors,
+        });
+        return;
+      }
+
       const shouldCommit = await beforeCommit?.(commitArgs);
       if (shouldCommit === false) return;
 
@@ -154,17 +273,34 @@ export function useDataGridCrudController<TData>(
       }
 
       handle.acceptChanges();
+      setCreatedRows([]);
+      setFieldErrors(EMPTY_FIELD_ERRORS);
+      setValidationError(undefined);
       onCommitSuccess?.({ nextData: result?.nextData });
     } catch (error) {
       onCommitError?.({ error });
     } finally {
       setIsCommitting(false);
     }
-  }, [beforeCommit, onCommit, onCommitError, onCommitSuccess, readonly, state]);
+  }, [
+    beforeCommit,
+    createdRows,
+    getRowId,
+    onCommit,
+    onCommitError,
+    onCommitSuccess,
+    onValidationError,
+    readonly,
+    state,
+    validateCommit,
+  ]);
 
   const reset = React.useCallback(() => {
     gridRef.current?.cancelEditing();
     gridRef.current?.resetDirtyState();
+    setCreatedRows([]);
+    setFieldErrors(EMPTY_FIELD_ERRORS);
+    setValidationError(undefined);
   }, []);
 
   const deleteSelectedRows = React.useCallback(() => {
@@ -175,9 +311,18 @@ export function useDataGridCrudController<TData>(
         ? [currentRowId]
         : [];
     if (targets.length === 0) return;
-    gridRef.current?.deleteRows(targets);
+    const targetSet = new Set(targets);
+    const persistentTargets = targets.filter((rowId) => !createdRowIdSet.has(rowId));
+    if (persistentTargets.length > 0) {
+      gridRef.current?.deleteRows(persistentTargets);
+    }
+    if (targets.some((rowId) => createdRowIdSet.has(rowId))) {
+      setCreatedRows((current) =>
+        current.filter((row, index) => !targetSet.has(getRowId(row, index)))
+      );
+    }
     setRowSelection({});
-  }, [currentRowId, readonly, selectedRowIds]);
+  }, [createdRowIdSet, currentRowId, getRowId, readonly, selectedRowIds]);
 
   const clearFilters = React.useCallback(() => {
     gridRef.current?.clearFilters();
@@ -192,8 +337,10 @@ export function useDataGridCrudController<TData>(
   }, []);
 
   const addRow = React.useCallback(() => {
-    // Created-row state is intentionally deferred to Gate 11.
-  }, []);
+    if (readonly || !createRow) return;
+    const row = createRow({ data: gridData });
+    setCreatedRows((current) => [...current, row]);
+  }, [createRow, gridData, readonly]);
 
   const exportExcel = React.useCallback(() => {
     // Real Excel export is intentionally deferred to Gate 11/12.
@@ -233,11 +380,12 @@ export function useDataGridCrudController<TData>(
 
   const rowStatusResolver = React.useCallback(
     (ctx: GenDataGridRowStatusContext<TData>): GenDataGridRowStatus => {
+      if (createdRowIdSet.has(ctx.rowId)) return 'created';
       if (deletedRowIds.has(ctx.rowId)) return 'deleted';
       if (dirtyRowIds.has(ctx.rowId)) return 'updated';
       return 'clean';
     },
-    [deletedRowIds, dirtyRowIds]
+    [createdRowIdSet, deletedRowIds, dirtyRowIds]
   );
 
   const gridStateProps = React.useMemo<DataGridCrudController<TData>['gridStateProps']>(
@@ -260,6 +408,7 @@ export function useDataGridCrudController<TData>(
   return {
     gridRef,
     state,
+    gridData,
     actionApi,
     gridStateProps,
   };
