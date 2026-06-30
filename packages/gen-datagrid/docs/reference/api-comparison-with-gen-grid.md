@@ -589,6 +589,7 @@ Implemented from the comparison surface:
 
 - `bodyColSpan` is implemented as TanStack column meta and rendered with CSS grid `grid-column` placement.
 - `headerSpan` is implemented as TanStack column meta for leaf header cells with CSS grid `grid-column` placement and pinned-zone fallback.
+- Ungrouped leaf headers, system headers, and `headerSpan` leaf headers row-span across grouped header rows when nested `ColumnDef.columns` creates a multi-row header.
 - TanStack nested `ColumnDef.columns` are rendered as grouped header rows. This is not the same as an arbitrary `headerSpan` API.
 - `columnFitMode: 'grow'` is implemented to fill remaining viewport width without shrinking below base column sizes.
 - `visualRowMerge` is implemented as DOM-preserving visual row merge with virtual continuation display and center-column sticky labels.

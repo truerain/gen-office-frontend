@@ -1,5 +1,15 @@
 ## 2026-06-30
 
+### grouped header vertical merge 구현
+
+- grouped column이 있어 header row가 여러 줄이 될 때, group에 속하지 않는 leaf header와 system header가 전체 header 높이를 세로로 span하도록 구현했다.
+- `headerSpan`이 적용된 leaf header도 가로 span 상태를 유지하면서 grouped header row 전체를 세로로 span하도록 처리했다.
+- header row wrapper는 `display: contents`로 전환하고, header rowgroup이 단일 CSS grid template을 소유하도록 바꿨다.
+- 기존 grid template DOM contract를 유지하도록 baseline 및 interaction 테스트를 갱신했다.
+- 관련 파일: `src/renderers/div-grid/DataGridHeader.tsx`, `src/index.css`, `test/interaction.test.tsx`, `docs/reference/api-structure.md`, `docs/reference/api-comparison-with-gen-grid.md`, `docs/log/implementation-log.md`
+
+## 2026-06-30
+
 ### headerSpan column meta 연결
 
 - TanStack `ColumnMeta.headerSpan` 타입을 추가하고 leaf header 렌더러가 해당 값을 CSS grid span으로 적용하도록 구현했다.

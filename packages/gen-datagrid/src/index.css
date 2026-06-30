@@ -32,6 +32,7 @@
   position: sticky;
   top: 0;
   z-index: 3;
+  min-width: max-content;
 }
 
 .gen-datagrid__header[data-filter-open='true'] {
@@ -61,6 +62,10 @@
 .gen-datagrid__row {
   display: grid;
   min-width: max-content;
+}
+
+.gen-datagrid__header > .gen-datagrid__header-row {
+  display: contents;
 }
 
 .gen-datagrid__row--placeholder {
@@ -128,6 +133,10 @@
 
 .gen-datagrid__header-cell[data-filter-open='true'] {
   z-index: 9;
+}
+
+.gen-datagrid__header-cell[data-header-rowspan] {
+  height: auto;
 }
 
 .gen-datagrid__header-cell[data-system-column='true'],

@@ -69,6 +69,32 @@ function clampHeaderSpan<TData>({
   return span <= maxSpan ? span : 1;
 }
 
+function getFirstVisibleLeafColumnIndex<TData>(
+  header: Header<TData, unknown>,
+  columns: Column<TData, unknown>[]
+) {
+  const visibleColumnIds = new Set(columns.map((column) => column.id));
+  const leafColumn = header.column
+    .getLeafColumns()
+    .find((column) => visibleColumnIds.has(column.id));
+  if (!leafColumn) return -1;
+  return columns.findIndex((column) => column.id === leafColumn.id);
+}
+
+function isGroupedLeafColumn<TData>(
+  column: Column<TData, unknown>,
+  headerGroups: HeaderGroup<TData>[]
+) {
+  return headerGroups.slice(0, -1).some((headerGroup) =>
+    headerGroup.headers.some(
+      (header) =>
+        !header.isPlaceholder &&
+        header.column.id !== column.id &&
+        header.column.getLeafColumns().some((leafColumn) => leafColumn.id === column.id)
+    )
+  );
+}
+
 export function DataGridHeader<TData>({
   table,
   headerGroups,
@@ -84,6 +110,7 @@ export function DataGridHeader<TData>({
   const [openFilterColumnId, setOpenFilterColumnId] = React.useState<string | null>(null);
   const columnPinning = enablePinning ? table.getState().columnPinning : undefined;
   const leafHeaderGroup = headerGroups[headerGroups.length - 1];
+  const headerRowCount = Math.max(1, headerGroups.length);
 
   React.useEffect(() => {
     if (!openFilterColumnId) return;
@@ -106,11 +133,14 @@ export function DataGridHeader<TData>({
       key={headerGroup.id}
       role="row"
       className="gen-datagrid__row gen-datagrid__header-row gen-datagrid__header-row--group"
-      style={{ gridTemplateColumns }}
     >
       {headerGroup.headers.map((header) => {
+        if (header.isPlaceholder) return null;
+
         const colSpan = getHeaderColSpan(header);
         const headerAlign = header.column.columnDef.meta?.headerAlign ?? 'center';
+        const columnIndex = getFirstVisibleLeafColumnIndex(header, columns);
+        if (columnIndex < 0) return null;
 
         return (
           <div
@@ -122,9 +152,11 @@ export function DataGridHeader<TData>({
             data-header-depth={depth}
             data-header-colspan={colSpan > 1 ? String(colSpan) : undefined}
             data-align={headerAlign}
-            aria-hidden={header.isPlaceholder ? 'true' : undefined}
             className="gen-datagrid__header-cell gen-datagrid__header-cell--group"
-            style={{ gridColumn: 'span ' + String(colSpan) }}
+            style={{
+              gridColumn: String(columnIndex + 1) + ' / span ' + String(colSpan),
+              gridRow: String(depth + 1) + ' / span 1',
+            }}
           >
             <div className="gen-datagrid__header-content">
               {header.isPlaceholder
@@ -145,7 +177,6 @@ export function DataGridHeader<TData>({
         key={headerGroup.id}
         role="row"
         className="gen-datagrid__row gen-datagrid__header-row gen-datagrid__header-row--leaf"
-        style={{ gridTemplateColumns }}
       >
         {columns.map((column, columnIndex) => {
         if (coveredHeaderCount > 0) {
@@ -158,6 +189,11 @@ export function DataGridHeader<TData>({
 
         const columnId = column.id;
         const isSystemColumn = isGenDataGridSystemColumnId(columnId);
+        const isGroupedColumn = isGroupedLeafColumn(column, headerGroups);
+        const headerRowSpan = isGroupedColumn ? 1 : headerRowCount;
+        const headerGridRow = isGroupedColumn
+          ? String(headerRowCount) + ' / span 1'
+          : '1 / span ' + String(headerRowSpan);
         const headerAlign = column.columnDef.meta?.headerAlign ?? 'center';
         const requestedHeaderSpan = column.columnDef.meta?.headerSpan;
         const headerSpan = requestedHeaderSpan
@@ -187,6 +223,7 @@ export function DataGridHeader<TData>({
             data-system-column={isSystemColumn ? 'true' : undefined}
             data-align={isSystemColumn ? undefined : headerAlign}
             data-header-colspan={headerSpan > 1 ? String(headerSpan) : undefined}
+            data-header-rowspan={headerRowSpan > 1 ? String(headerRowSpan) : undefined}
             data-pinned-cell={pinning?.pinned || undefined}
             data-pinned-edge={
               pinning?.isLastLeftPinned
@@ -202,6 +239,7 @@ export function DataGridHeader<TData>({
             style={{
               ...pinning?.style,
               gridColumn: String(columnIndex + 1) + ' / span ' + String(headerSpan),
+              gridRow: headerGridRow,
             }}
             onDragOver={(event) => {
               if (!canReorder || !dragColumnId.current) return;
@@ -309,8 +347,16 @@ export function DataGridHeader<TData>({
       role="rowgroup"
       data-gen-datagrid-header="true"
       data-filter-open={openFilterColumnId ? 'true' : undefined}
-      data-header-row-count={headerGroups.length}
+      data-header-row-count={headerRowCount}
       className="gen-datagrid__header"
+      style={{
+        display: 'grid',
+        gridTemplateColumns,
+        gridTemplateRows:
+          'repeat(' +
+          String(headerRowCount) +
+          ', var(--gen-datagrid-header-height, 40px))',
+      }}
     >
       {headerGroups.map((headerGroup, index) =>
         headerGroup === leafHeaderGroup

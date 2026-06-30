@@ -4512,9 +4512,14 @@ describe('columnFitMode grow', () => {
       );
 
       await waitFor(() => {
-        const renderedRows = Array.from(
-          container.querySelectorAll<HTMLElement>('.gen-datagrid__row')
-        );
+        const renderedRows = [
+          container.querySelector<HTMLElement>('[data-gen-datagrid-header="true"]'),
+          ...Array.from(
+            container.querySelectorAll<HTMLElement>(
+              '.gen-datagrid__row:not(.gen-datagrid__header-row)'
+            )
+          ),
+        ].filter((row): row is HTMLElement => Boolean(row));
         expect(renderedRows.length).toBeGreaterThanOrEqual(3);
         for (const row of renderedRows) {
           expect(row.style.gridTemplateColumns).toBe('240px 160px');
@@ -4557,10 +4562,44 @@ describe('Gate 8.6-b column group header', () => {
     expect(header?.dataset.headerRowCount).toBe('2');
     expect(groupCell?.textContent).toContain('Identity');
     expect(groupCell?.dataset.headerColspan).toBe('2');
-    expect(groupCell?.style.gridColumn).toBe('span 2');
+    expect(groupCell?.style.gridColumn).toBe('1 / span 2');
+    expect(groupCell?.style.gridRow).toBe('1 / span 1');
     expect(groupCell?.querySelector('[data-column-reorder-handle="true"]')).toBeNull();
     expect(getHeaderCell(container, 'name').querySelector('[data-column-reorder-handle="true"]')).toBeTruthy();
     expect(getHeaderCell(container, 'age').querySelector('[data-column-resize-handle="true"]')).toBeTruthy();
+  });
+
+  it('row-spans ungrouped and system leaf headers across grouped header rows', () => {
+    type ScoredPerson = Person & { score: number };
+    const scoredRows: ScoredPerson[] = rows.map((row) => ({ ...row, score: row.age * 10 }));
+    const groupedColumns: ColumnDef<ScoredPerson, unknown>[] = [
+      { accessorKey: 'name', header: 'Name', size: 120 },
+      {
+        header: 'Metrics',
+        columns: [{ accessorKey: 'score', header: 'Score', size: 90 }],
+      },
+    ];
+
+    const { container } = render(
+      <GenDataGrid
+        gridId="column-group-vertical-span-grid"
+        data={scoredRows}
+        columns={groupedColumns}
+        getRowId={(row) => row.id}
+        enableRowNumber
+      />
+    );
+
+    const numberHeader = getHeaderCell(container, '__gen_row_number');
+    const nameHeader = getHeaderCell(container, 'name');
+    const scoreHeader = getHeaderCell(container, 'score');
+
+    expect(numberHeader.dataset.headerRowspan).toBe('2');
+    expect(numberHeader.style.gridRow).toBe('1 / span 2');
+    expect(nameHeader.dataset.headerRowspan).toBe('2');
+    expect(nameHeader.style.gridRow).toBe('1 / span 2');
+    expect(scoreHeader.dataset.headerRowspan).toBeUndefined();
+    expect(scoreHeader.style.gridRow).toBe('2 / span 1');
   });
 });
 
@@ -4582,6 +4621,7 @@ describe('header span column meta', () => {
 
     const nameHeader = getHeaderCell(container, 'name');
     expect(nameHeader.dataset.headerColspan).toBe('2');
+    expect(nameHeader.dataset.headerRowspan).toBeUndefined();
     expect(nameHeader.style.gridColumn).toBe('1 / span 2');
     expect(
       container.querySelector(
@@ -4610,6 +4650,40 @@ describe('header span column meta', () => {
     expect(nameHeader.dataset.headerColspan).toBeUndefined();
     expect(nameHeader.style.gridColumn).toBe('1 / span 1');
     expect(getHeaderCell(container, 'age')).toBeTruthy();
+  });
+
+  it('row-spans a headerSpan leaf header when grouped columns create multiple header rows', () => {
+    type ScoredPerson = Person & { score: number };
+    const scoredRows: ScoredPerson[] = rows.map((row) => ({ ...row, score: row.age * 10 }));
+    const spanColumns: ColumnDef<ScoredPerson, unknown>[] = [
+      { accessorKey: 'name', header: 'Name', size: 120, meta: { headerSpan: 2 } },
+      { accessorKey: 'age', header: 'Age', size: 80 },
+      {
+        header: 'Metrics',
+        columns: [{ accessorKey: 'score', header: 'Score', size: 90 }],
+      },
+    ];
+
+    const { container } = render(
+      <GenDataGrid
+        gridId="header-span-vertical-grid"
+        data={scoredRows}
+        columns={spanColumns}
+        getRowId={(row) => row.id}
+      />
+    );
+
+    const nameHeader = getHeaderCell(container, 'name');
+    expect(nameHeader.dataset.headerColspan).toBe('2');
+    expect(nameHeader.dataset.headerRowspan).toBe('2');
+    expect(nameHeader.style.gridColumn).toBe('1 / span 2');
+    expect(nameHeader.style.gridRow).toBe('1 / span 2');
+    expect(
+      container.querySelector(
+        '[data-gen-datagrid-cell="true"][data-cell-kind="header"][data-colid="age"]'
+      )
+    ).toBeNull();
+    expect(getHeaderCell(container, 'score').style.gridRow).toBe('2 / span 1');
   });
 });
 
