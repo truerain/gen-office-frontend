@@ -76,6 +76,7 @@ export function DataGridHeader<TData>({
     >
       {headerGroup.headers.map((header) => {
         const colSpan = getHeaderColSpan(header);
+        const headerAlign = header.column.columnDef.meta?.headerAlign ?? 'center';
 
         return (
           <div
@@ -86,6 +87,7 @@ export function DataGridHeader<TData>({
             data-header-group-cell="true"
             data-header-depth={depth}
             data-header-colspan={colSpan > 1 ? String(colSpan) : undefined}
+            data-align={headerAlign}
             aria-hidden={header.isPlaceholder ? 'true' : undefined}
             className="gen-datagrid__header-cell gen-datagrid__header-cell--group"
             style={{ gridColumn: 'span ' + String(colSpan) }}
@@ -114,6 +116,7 @@ export function DataGridHeader<TData>({
 
         const columnId = column.id;
         const isSystemColumn = isGenDataGridSystemColumnId(columnId);
+        const headerAlign = column.columnDef.meta?.headerAlign ?? 'center';
         const pinning = enablePinning ? getColumnPinningInfo(column, { zIndex: 4 }) : undefined;
         const canResize = enableColumnSizing && !isSystemColumn && column.getCanResize();
         const canReorder = enableColumnReorder && !isSystemColumn && !header.isPlaceholder;
@@ -128,6 +131,7 @@ export function DataGridHeader<TData>({
             data-cell-kind="header"
             data-colid={columnId}
             data-system-column={isSystemColumn ? 'true' : undefined}
+            data-align={isSystemColumn ? undefined : headerAlign}
             data-pinned-cell={pinning?.pinned || undefined}
             data-pinned-edge={
               pinning?.isLastLeftPinned

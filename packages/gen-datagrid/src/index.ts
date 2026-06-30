@@ -18,6 +18,7 @@ export type {
   GenDataGridTreeExpandedState,
   GenDataGridTreeRowContext,
   GenDataGridCellValidation,
+  GenDataGridColumnAlign,
   GenDataGridDetailPanelContext,
   GenDataGridDeleteRowsBehavior,
   GenDataGridEditableContext,

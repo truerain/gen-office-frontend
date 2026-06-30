@@ -4913,6 +4913,10 @@ describe('Gate 8.7 system columns', () => {
     expect(getHeaderCell(container, '__gen_row_status').dataset.systemColumn).toBe('true');
     expect(getHeaderCell(container, '__gen_row_selection').dataset.systemColumn).toBe('true');
     expect(getHeaderCell(container, '__gen_row_number').dataset.systemColumn).toBe('true');
+    expect(getCell(container, '1', '__gen_row_status').dataset.systemColumn).toBe('true');
+    expect(getCell(container, '1', '__gen_row_selection').dataset.systemColumn).toBe('true');
+    expect(getCell(container, '1', '__gen_row_number').dataset.systemColumn).toBe('true');
+    expect(getCell(container, '1', 'name').dataset.systemColumn).toBeUndefined();
     expect(getHeaderCell(container, '__gen_row_status').querySelector('[data-column-resize-handle="true"]')).toBeNull();
     expect(getHeaderCell(container, '__gen_row_selection').querySelector('[data-column-reorder-handle="true"]')).toBeNull();
     expect(getCell(container, '1', '__gen_row_number').textContent).toContain('1');
@@ -5051,6 +5055,39 @@ describe('Gate 8.7 system columns', () => {
     expect(
       getCell(container, '1', 'name').querySelector('[data-gen-datagrid-tree-toggle="true"]')
     ).toBeTruthy();
+  });
+});
+
+describe('column alignment meta', () => {
+  it('defaults header alignment to center and uses headerAlign as header override', () => {
+    const alignedColumns: ColumnDef<Person>[] = [
+      {
+        accessorKey: 'name',
+        header: 'Name',
+        size: 120,
+        meta: { align: 'center', headerAlign: 'right' },
+      },
+      {
+        accessorKey: 'age',
+        header: 'Age',
+        size: 80,
+        meta: { align: 'right' },
+      },
+    ];
+
+    const { container } = render(
+      <GenDataGrid
+        gridId="column-alignment-grid"
+        data={rows}
+        columns={alignedColumns}
+        getRowId={(row) => row.id}
+      />
+    );
+
+    expect(getHeaderCell(container, 'name').dataset.align).toBe('right');
+    expect(getCell(container, '1', 'name').dataset.align).toBe('center');
+    expect(getHeaderCell(container, 'age').dataset.align).toBe('center');
+    expect(getCell(container, '1', 'age').dataset.align).toBe('right');
   });
 });
 

@@ -391,6 +391,8 @@ src/columns/cellFormat.ts
 | `align` | body align | MVP |
 | `headerAlign` | header align | MVP |
 
+Implementation status: column meta `align` and `headerAlign` are implemented on TanStack `ColumnMeta`. Body cells render `data-align` from `align`; leaf and group headers render `data-align` from `headerAlign` and default to `center` when omitted; footer row cells follow `align`. The baseline CSS applies left, center, and right alignment through those attributes.
+
 ### 7.2 Editing Meta
 
 | Meta | 설명 | 우선순위 |

@@ -262,6 +262,7 @@ export type GenDataGridFilterMode = 'client' | 'manual';
 export type GenDataGridPaginationMode = 'client' | 'manual';
 export type GenDataGridDeleteRowsBehavior = 'mark' | 'removeUncontrolled';
 export type GenDataGridColumnFitMode = 'none' | 'grow';
+export type GenDataGridColumnAlign = 'left' | 'center' | 'right';
 export type GenDataGridSystemColumnKind = 'rowStatus' | 'rowSelection' | 'rowNumber';
 export type GenDataGridRowSelectionMode = 'all' | 'createdOnly';
 export type GenDataGridRowStatus = 'clean' | 'created' | 'updated' | 'deleted';

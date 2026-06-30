@@ -499,6 +499,8 @@ export function DataGridBodyRow<TData>({
                 selections: rangeSelections,
               })
             }
+            isSystemColumn={isSystemColumn}
+            align={isSystemColumn ? undefined : meta?.align}
             isEditable={!isSystemColumn && isEditable}
             isEditing={!isSystemColumn && isEditing}
             isDirty={dirtyCellIds?.has(`${rowId}::${columnId}`)}

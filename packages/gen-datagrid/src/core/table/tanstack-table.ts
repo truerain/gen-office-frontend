@@ -6,6 +6,7 @@ import type * as React from 'react';
 
 import type {
   GenDataGridBodyColSpanContext,
+  GenDataGridColumnAlign,
   GenDataGridEditBlurOwnership,
   GenDataGridEditableContext,
   GenDataGridEditorContext,
@@ -18,6 +19,8 @@ import type {
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData, TValue> {
+    align?: GenDataGridColumnAlign;
+    headerAlign?: GenDataGridColumnAlign;
     editable?:
       | boolean
       | ((ctx: GenDataGridEditableContext<TData>) => boolean);

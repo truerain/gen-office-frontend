@@ -4,6 +4,7 @@
 import * as React from 'react';
 
 import type {
+  GenDataGridColumnAlign,
   GenDataGridCellValidation,
   GenDataGridEditEntryReason,
   GenDataGridVisualRowMergeDisplayState,
@@ -18,6 +19,8 @@ type DataGridCellProps = {
   columnId: string;
   isActive: boolean;
   isSelected: boolean;
+  isSystemColumn?: boolean;
+  align?: GenDataGridColumnAlign;
   isEditable: boolean;
   isEditing: boolean;
   isDirty?: boolean;
@@ -50,6 +53,8 @@ export function DataGridCell({
   columnId,
   isActive,
   isSelected,
+  isSystemColumn,
+  align,
   isEditable,
   isEditing,
   isDirty,
@@ -76,6 +81,8 @@ export function DataGridCell({
       data-colid={columnId}
       data-active-cell={isActive ? 'true' : undefined}
       data-selected-cell={isSelected ? 'true' : undefined}
+      data-system-column={isSystemColumn ? 'true' : undefined}
+      data-align={align}
       data-editable-cell={isEditable ? 'true' : undefined}
       data-editing-cell={isEditing ? 'true' : undefined}
       data-dirty-cell={isDirty ? 'true' : undefined}

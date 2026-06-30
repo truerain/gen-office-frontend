@@ -1,3 +1,32 @@
+## 2026-06-30
+
+### headerAlign 기본값 center 변경
+
+- 일반 컬럼 header 정렬 기본값을 `center`로 변경했다.
+- body 정렬은 `meta.align`을 계속 따르고, header는 `meta.headerAlign`이 있을 때만 별도 override되도록 정리했다.
+- 금액 컬럼처럼 body는 오른쪽 정렬, header는 중앙 정렬이 기본으로 동작하도록 테스트와 문서를 갱신했다.
+- 관련 파일: `src/renderers/div-grid/DataGridHeader.tsx`, `test/interaction.test.tsx`, `docs/reference/api-structure.md`, `docs/reference/api-comparison-with-gen-grid.md`, `docs/log/implementation-log.md`
+
+## 2026-06-30
+
+### Column align/headerAlign 메타 연결
+
+- TanStack `ColumnMeta`에 `align`, `headerAlign` 타입을 추가하고 public `GenDataGridColumnAlign` 타입을 export했다.
+- body cell은 `meta.align`, header cell은 `meta.headerAlign` 우선 적용 후 `meta.align` fallback, footer row cell은 `meta.align`을 `data-align`으로 렌더링하도록 연결했다.
+- baseline CSS가 `data-align="left|center|right"`를 기준으로 header/body/footer 정렬을 적용하도록 보강했다.
+- ActualsPage처럼 금액 컬럼이 `meta.align: 'right'`를 이미 선언한 화면에서 header/body 정렬이 같은 규칙으로 동작할 수 있게 했다.
+- 관련 파일: `src/GenDataGrid.types.ts`, `src/core/table/tanstack-table.ts`, `src/renderers/div-grid/DataGridHeader.tsx`, `src/renderers/div-grid/DataGridBodyRow.tsx`, `src/renderers/div-grid/DataGridCell.tsx`, `src/renderers/div-grid/DataGridFooterRow.tsx`, `src/index.css`, `src/index.ts`, `test/interaction.test.tsx`, `docs/reference/api-structure.md`, `docs/reference/api-comparison-with-gen-grid.md`, `docs/log/implementation-log.md`
+
+## 2026-06-30
+
+### 시스템 컬럼 body cell 중앙 정렬 기준 보강
+
+- `GenDataGrid` body cell에도 시스템 컬럼 여부를 `data-system-column="true"`로 표시하도록 보강했다.
+- header와 body 시스템 컬럼이 같은 속성 기반 CSS 규칙으로 기본 중앙 정렬되도록 정리했다.
+- body cell 내부 `.gen-datagrid__cell-merge-content`가 전체 폭을 차지해 내용이 왼쪽에 붙지 않도록 시스템 컬럼에서는 shrink 및 중앙 정렬되게 보정했다.
+- row number, row selection, row status 컬럼이 내부 렌더 구조나 `:has()` 지원 여부에 덜 의존하도록 테스트를 추가했다.
+- 관련 파일: `src/renderers/div-grid/DataGridCell.tsx`, `src/renderers/div-grid/DataGridBodyRow.tsx`, `src/index.css`, `test/interaction.test.tsx`, `docs/log/implementation-log.md`
+
 ## 2026-06-29
 
 ### Gate 9.5 Editing Flush API 구현

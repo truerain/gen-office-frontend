@@ -2,6 +2,14 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-06-30
+
+### ActualsPage GenDataGridCrud gridProps 정리
+
+- `GenDataGridCrud`가 소유하는 row selection 옵션을 `ActualsPage`의 `gridProps`에서 제거해 demo build 타입 오류를 정리했다.
+- 시스템 컬럼 중앙 정렬 보강 검증 과정에서 발견된 app integration 설정 불일치를 보정했다.
+- 관련 파일: `apps/demo/src/pages/co/actuals/ActualsPage.tsx`, `docs/logs/work-log.md`
+
 ## 2026-06-25
 
 ### 제안 평가 응답 규칙 추가

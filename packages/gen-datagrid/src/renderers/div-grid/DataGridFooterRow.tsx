@@ -68,6 +68,7 @@ export function DataGridFooterRow<TData>({
                 data-gen-datagrid-cell="true"
                 data-cell-kind="footer"
                 data-colid={column.id}
+                data-align={column.columnDef.meta?.align}
                 data-pinned-cell={pinning?.pinned || undefined}
                 data-pinned-edge={
                   pinning?.isLastLeftPinned

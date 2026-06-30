@@ -386,6 +386,8 @@ type GenDataGridHandle<TData = unknown> = {
 | 없음 | `pinned` | 신규 | MVP | meta 기반 initial pinning을 명시 지원할 경우 사용. 기존 pinningState에는 이미 유사 처리 존재. |
 | 없음 | `width` / `minWidth` / `maxWidth` | 신규 | MVP | column sizing 기본값을 meta 또는 columnDef size와 어떻게 통합할지 명확화 필요. TanStack `size` 우선 권장. |
 
+Implementation status: `align` and `headerAlign` are implemented as TanStack column meta. `align` drives body and footer cell `data-align`; `headerAlign` overrides header alignment, and headers default to center alignment when omitted.
+
 중요 원칙:
 
 - `GenDataGridColumnMeta`는 `renderers` 내부가 아니라 `columns/columnMeta.ts` 또는 `types/public.ts`에서 export한다.
