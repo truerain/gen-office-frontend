@@ -438,7 +438,7 @@ Implementation status: `editable`, `editType`, `editOptions`, `getEditOptions`, 
 | `visualRowMerge.getValue` | row merge compare value resolver | Deferred extension |
 | `visualRowMerge.compare` | row merge comparator | Deferred extension |
 
-Implementation status: column meta `bodyColSpan` is implemented for body cells with CSS grid placement and pinned-zone fallback. TanStack nested `ColumnDef.columns` group headers are implemented through header groups and `data-header-group-cell` markers. `visualRowMerge` is implemented as a visual DOM-preserving merge with virtual continuation and center-column sticky labels. `visualRowMerge: true` enables the full behavior, while object options can split `showContinuationValue` and `stickyLabel`. Arbitrary `headerSpan`, `groupVisibilityToggle`, `visualRowMerge.getValue`, and `visualRowMerge.compare` are still deferred.
+Implementation status: column meta `bodyColSpan` is implemented for body cells with CSS grid placement and pinned-zone fallback. Column meta `headerSpan` is implemented for leaf header cells with CSS grid placement and the same pinned-zone fallback. TanStack nested `ColumnDef.columns` group headers are implemented through header groups and `data-header-group-cell` markers. `visualRowMerge` is implemented as a visual DOM-preserving merge with virtual continuation and center-column sticky labels. `visualRowMerge: true` enables the full behavior, while object options can split `showContinuationValue` and `stickyLabel`. `groupVisibilityToggle`, `visualRowMerge.getValue`, and `visualRowMerge.compare` are still deferred.
 
 ## 8. Instance API
 
@@ -654,7 +654,6 @@ Implemented:
 
 Deferred:
 
-- Arbitrary header span API separate from TanStack column group headers.
 - Pinned group header split/sticky policy.
 - Pinned-column sticky merge labels for visual row merge.
 - Non-virtual continuation value rendering for visual row merge.

@@ -35,6 +35,40 @@ function getHeaderColSpan<TData>(header: Header<TData, unknown>) {
   return Number.isFinite(header.colSpan) && header.colSpan > 0 ? header.colSpan : 1;
 }
 
+function getPinningZone<TData>(
+  column: Column<TData, unknown>,
+  enablePinning: boolean
+) {
+  if (!enablePinning) return 'center';
+  return column.getIsPinned() || 'center';
+}
+
+function clampHeaderSpan<TData>({
+  columns,
+  columnIndex,
+  requestedSpan,
+  enablePinning,
+}: {
+  columns: Column<TData, unknown>[];
+  columnIndex: number;
+  requestedSpan: number;
+  enablePinning: boolean;
+}) {
+  const span = Math.max(1, Math.floor(requestedSpan));
+  if (span <= 1) return 1;
+
+  const currentColumn = columns[columnIndex];
+  if (!currentColumn) return 1;
+
+  const zone = getPinningZone(currentColumn, enablePinning);
+  const availableInZone = columns
+    .slice(columnIndex)
+    .findIndex((column) => getPinningZone(column, enablePinning) !== zone);
+  const maxSpan = availableInZone < 0 ? columns.length - columnIndex : availableInZone;
+
+  return span <= maxSpan ? span : 1;
+}
+
 export function DataGridHeader<TData>({
   table,
   headerGroups,
@@ -103,20 +137,40 @@ export function DataGridHeader<TData>({
     </div>
   );
 
-  const renderLeafHeaderRow = (headerGroup: HeaderGroup<TData>) => (
-    <div
-      key={headerGroup.id}
-      role="row"
-      className="gen-datagrid__row gen-datagrid__header-row gen-datagrid__header-row--leaf"
-      style={{ gridTemplateColumns }}
-    >
-      {columns.map((column) => {
+  const renderLeafHeaderRow = (headerGroup: HeaderGroup<TData>) => {
+    let coveredHeaderCount = 0;
+
+    return (
+      <div
+        key={headerGroup.id}
+        role="row"
+        className="gen-datagrid__row gen-datagrid__header-row gen-datagrid__header-row--leaf"
+        style={{ gridTemplateColumns }}
+      >
+        {columns.map((column, columnIndex) => {
+        if (coveredHeaderCount > 0) {
+          coveredHeaderCount -= 1;
+          return null;
+        }
+
         const header = headerGroup.headers.find((item) => item.column.id === column.id);
         if (!header) return null;
 
         const columnId = column.id;
         const isSystemColumn = isGenDataGridSystemColumnId(columnId);
         const headerAlign = column.columnDef.meta?.headerAlign ?? 'center';
+        const requestedHeaderSpan = column.columnDef.meta?.headerSpan;
+        const headerSpan = requestedHeaderSpan
+          ? clampHeaderSpan({
+              columns,
+              columnIndex,
+              requestedSpan: requestedHeaderSpan,
+              enablePinning,
+            })
+          : 1;
+        if (headerSpan > 1) {
+          coveredHeaderCount = headerSpan - 1;
+        }
         const pinning = enablePinning ? getColumnPinningInfo(column, { zIndex: 4 }) : undefined;
         const canResize = enableColumnSizing && !isSystemColumn && column.getCanResize();
         const canReorder = enableColumnReorder && !isSystemColumn && !header.isPlaceholder;
@@ -132,6 +186,7 @@ export function DataGridHeader<TData>({
             data-colid={columnId}
             data-system-column={isSystemColumn ? 'true' : undefined}
             data-align={isSystemColumn ? undefined : headerAlign}
+            data-header-colspan={headerSpan > 1 ? String(headerSpan) : undefined}
             data-pinned-cell={pinning?.pinned || undefined}
             data-pinned-edge={
               pinning?.isLastLeftPinned
@@ -144,7 +199,10 @@ export function DataGridHeader<TData>({
             data-reorderable-column={canReorder ? 'true' : undefined}
             data-filter-open={openFilterColumnId === columnId ? 'true' : undefined}
             className="gen-datagrid__header-cell"
-            style={pinning?.style}
+            style={{
+              ...pinning?.style,
+              gridColumn: String(columnIndex + 1) + ' / span ' + String(headerSpan),
+            }}
             onDragOver={(event) => {
               if (!canReorder || !dragColumnId.current) return;
               event.preventDefault();
@@ -240,9 +298,10 @@ export function DataGridHeader<TData>({
             ) : null}
           </div>
         );
-      })}
-    </div>
-  );
+        })}
+      </div>
+    );
+  };
 
   return (
     <div

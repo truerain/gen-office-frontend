@@ -4564,6 +4564,55 @@ describe('Gate 8.6-b column group header', () => {
   });
 });
 
+describe('header span column meta', () => {
+  it('renders a leaf header with CSS grid span and skips covered headers', () => {
+    const spanColumns: ColumnDef<Person, unknown>[] = [
+      { accessorKey: 'name', header: 'Name', size: 120, meta: { headerSpan: 2 } },
+      { accessorKey: 'age', header: 'Age', size: 80 },
+    ];
+
+    const { container } = render(
+      <GenDataGrid
+        gridId="header-span-grid"
+        data={rows}
+        columns={spanColumns}
+        getRowId={(row) => row.id}
+      />
+    );
+
+    const nameHeader = getHeaderCell(container, 'name');
+    expect(nameHeader.dataset.headerColspan).toBe('2');
+    expect(nameHeader.style.gridColumn).toBe('1 / span 2');
+    expect(
+      container.querySelector(
+        '[data-gen-datagrid-cell="true"][data-cell-kind="header"][data-colid="age"]'
+      )
+    ).toBeNull();
+  });
+
+  it('falls back to span 1 when a header span would cross pinned zones', () => {
+    const spanColumns: ColumnDef<Person, unknown>[] = [
+      { accessorKey: 'name', header: 'Name', size: 120, meta: { headerSpan: 2 } },
+      { accessorKey: 'age', header: 'Age', size: 80 },
+    ];
+
+    const { container } = render(
+      <GenDataGrid
+        gridId="header-span-pinned-grid"
+        data={rows}
+        columns={spanColumns}
+        getRowId={(row) => row.id}
+        columnPinning={{ left: ['name'] }}
+      />
+    );
+
+    const nameHeader = getHeaderCell(container, 'name');
+    expect(nameHeader.dataset.headerColspan).toBeUndefined();
+    expect(nameHeader.style.gridColumn).toBe('1 / span 1');
+    expect(getHeaderCell(container, 'age')).toBeTruthy();
+  });
+});
+
 describe('Gate 8.6-a body col span', () => {
   it('renders a body cell with CSS grid span and skips covered cells', () => {
     const spanColumns = [

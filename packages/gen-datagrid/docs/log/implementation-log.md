@@ -1,5 +1,15 @@
 ## 2026-06-30
 
+### headerSpan column meta 연결
+
+- TanStack `ColumnMeta.headerSpan` 타입을 추가하고 leaf header 렌더러가 해당 값을 CSS grid span으로 적용하도록 구현했다.
+- `headerSpan`이 적용된 header는 덮는 다음 leaf header cell을 렌더링하지 않으며 `data-header-colspan` marker를 남긴다.
+- pinned zone을 가로지르는 span은 body `bodyColSpan`과 동일하게 span 1로 fallback되도록 처리했다.
+- ActualsPage의 `acctCd` 컬럼에 선언된 `headerSpan: 2`가 `acctName` header까지 병합되어 표시될 수 있게 했다.
+- 관련 파일: `src/core/table/tanstack-table.ts`, `src/renderers/div-grid/DataGridHeader.tsx`, `test/interaction.test.tsx`, `docs/reference/api-structure.md`, `docs/reference/api-comparison-with-gen-grid.md`, `docs/plan/remaining-work-plan.md`, `docs/log/implementation-log.md`
+
+## 2026-06-30
+
 ### headerAlign 기본값 center 변경
 
 - 일반 컬럼 header 정렬 기본값을 `center`로 변경했다.

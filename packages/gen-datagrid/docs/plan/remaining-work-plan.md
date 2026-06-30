@@ -167,9 +167,8 @@ Exit criteria:
 - `visualRowMerge.compare`
 - tree/detail/body col span 조합 정책
 
-### Header Group And Span Follow-up
+### Header Group Follow-up
 
-- arbitrary `headerSpan`
 - pinned group header split/sticky behavior
 - `groupVisibilityToggle`
 - group header resize/reorder/filter affordance

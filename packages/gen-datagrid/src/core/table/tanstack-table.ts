@@ -33,6 +33,7 @@ declare module '@tanstack/react-table' {
     editBlurOwnership?: GenDataGridEditBlurOwnership;
     editPolicy?: GenDataGridEditPolicy;
     renderEditor?: (ctx: GenDataGridEditorContext<TData>) => React.ReactNode;
+    headerSpan?: number;
     bodyColSpan?: number | ((ctx: GenDataGridBodyColSpanContext<TData>) => number);
     visualRowMerge?: GenDataGridVisualRowMergeOption;
     systemColumn?: GenDataGridSystemColumnKind;

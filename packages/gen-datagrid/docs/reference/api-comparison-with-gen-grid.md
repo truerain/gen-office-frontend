@@ -588,11 +588,12 @@ Deferred from the GenGrid comparison surface:
 Implemented from the comparison surface:
 
 - `bodyColSpan` is implemented as TanStack column meta and rendered with CSS grid `grid-column` placement.
+- `headerSpan` is implemented as TanStack column meta for leaf header cells with CSS grid `grid-column` placement and pinned-zone fallback.
 - TanStack nested `ColumnDef.columns` are rendered as grouped header rows. This is not the same as an arbitrary `headerSpan` API.
 - `columnFitMode: 'grow'` is implemented to fill remaining viewport width without shrinking below base column sizes.
 - `visualRowMerge` is implemented as DOM-preserving visual row merge with virtual continuation display and center-column sticky labels.
 
 Still deferred:
 
-- Arbitrary header span and group header interaction APIs.
+- Group header interaction APIs.
 - Pinned-column sticky merge labels, non-virtual continuation value rendering, and custom visual row merge comparison through `getValue`/`compare`.
