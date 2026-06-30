@@ -6,6 +6,15 @@ Records GenDataGridCrud package planning and implementation changes.
 
 ## 2026-06-30
 
+### ActionBar와 Grid 사이 경계선 보강
+
+- `GenDataGridCrud` ActionBar와 Grid 사이에 명시적인 구분선이 보이도록 `.gen-datagrid-crud__grid` 상단 border를 추가했다.
+- ActionBar의 `border-bottom: 0` 정책은 유지하고, Grid 영역이 shell 경계선을 책임지도록 정리했다.
+- ActualsPage에서 ActionBar와 Grid가 한 덩어리처럼 붙어 보이면서도 경계가 사라지지 않도록 보정했다.
+- 관련 파일: `src/index.css`, `.docs/implementation-log.md`
+
+## 2026-06-30
+
 ### GenDataGrid 기본 CSS 포함 보정
 
 - `GenDataGridCrud` CSS entry가 내부 `GenDataGrid` 기본 스타일을 함께 포함하도록 보정했다.
