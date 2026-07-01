@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { LayoutDashboard } from 'lucide-react';
+//import { LayoutDashboard } from 'lucide-react';
 
 import { GenDataGridCrud } from '@gen-office/gen-datagrid-crud';
 import type { GenDataGridColumnDef } from '@gen-office/gen-datagrid';
@@ -7,7 +7,7 @@ import {
   GenChart,
   ResponsiveChartContainer,
 } from '@gen-office/gen-chart';
-import { PageHeader } from '@/components/PageHeader/PageHeader';
+//import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 
 import styles from './DashboardDemoPage.module.css';

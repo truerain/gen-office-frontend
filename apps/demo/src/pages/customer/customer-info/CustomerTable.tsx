@@ -65,9 +65,9 @@ function CustomerTable(props: CustomerTableProps) {
           const message = resolveApiErrorMessage(error, { defaultMessage: 'Commit failed (see console)' });
           addNotification(message, 'error');
         }}
-        beforeCommit={({ changes }) => {
+        beforeCommit={({ changeSet }) => {
           // 간단한 가드: 변경 건수가 너무 많으면 차단
-          if (changes.length > 200) {
+          if (changeSet.created.length + changeSet.updated.length + changeSet.deleted.length > 200) {
             addNotification('Too many changes', 'error');
             return false;
           }
