@@ -1,3 +1,7 @@
+:root {
+  --font-size-base: 14px;
+}
+
 @import '@gen-office/theme/index.css';
 
 * {

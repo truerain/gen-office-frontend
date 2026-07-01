@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import type { ColumnDef } from '@tanstack/react-table';
 import { LayoutDashboard } from 'lucide-react';
 
-import { GenGridCrud } from '@gen-office/gen-grid-crud';
+import { GenDataGridCrud } from '@gen-office/gen-datagrid-crud';
+import type { GenDataGridColumnDef } from '@gen-office/gen-datagrid';
 import {
   GenChart,
   ResponsiveChartContainer,
@@ -103,43 +103,43 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
     []
   );
 
-  const summaryColumns = useMemo<ColumnDef<SummaryRow, any>[]>(
+  const summaryColumns = useMemo<GenDataGridColumnDef<SummaryRow>[]>(
     () => [
-      { accessorKey: 'metric', header: '지표', size: 80, meta: { pinned: 'left', rowSpan: true } },
-      { accessorKey: 'subtitle', header: '', size: 80, meta: { pinned: 'left', rowSpan: true } },
+      { accessorKey: 'metric', header: '지표', size: 80, meta: { visualRowMerge: true } },
+      { accessorKey: 'subtitle', header: '', size: 80, meta: { visualRowMerge: true } },
       {
         accessorKey: 'value',
         header: '실적',
         size: 110,
-        meta: { align: 'right', mono: true },
+        meta: { align: 'right' },
         cell: ({ getValue }) => numberFormatter.format(Number(getValue() ?? 0)),
       },
       {
         accessorKey: 'target',
         header: '목표',
         size: 110,
-        meta: { align: 'right', mono: true },
+        meta: { align: 'right' },
         cell: ({ getValue }) => numberFormatter.format(Number(getValue() ?? 0)),
       },
       {
         accessorKey: 'rate',
         header: '달성률(%)',
         size: 110,
-        meta: { align: 'right', mono: true },
+        meta: { align: 'right' },
         cell: ({ getValue }) => percentFormatter.format(Number(getValue() ?? 0)),
       },
     ],
     [numberFormatter, percentFormatter]
   );
 
-  const summaryColumns2 = useMemo<ColumnDef<SummaryRow, any>[]>(
+  const summaryColumns2 = useMemo<GenDataGridColumnDef<SummaryRow>[]>(
     () => [
-      { accessorKey: 'metric', header: '구분', size: 150, meta: { pinned: 'left', rowSpan: true } },
+      { accessorKey: 'metric', header: '구분', size: 150, meta: { visualRowMerge: true } },
       {
         accessorKey: 'value',
         header: '매출',
         size: 210,
-        meta: { align: 'right', mono: true },
+        meta: { align: 'right' },
         cell: ({ row }) => {
           const value = Number(row.original.value ?? 0);
           const target = Number(row.original.target ?? 0);
@@ -191,35 +191,35 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
         accessorKey: 'rate',
         header: '달성도(%)',
         size: 100,
-        meta: { align: 'right', mono: true },
+        meta: { align: 'right' },
         cell: ({ getValue }) => percentFormatter.format(Number(getValue() ?? 0)),
       },
     ],
     [numberFormatter, percentFormatter]
   );
 
-  const summaryColumns3 = useMemo<ColumnDef<SummaryRow, any>[]>(
+  const summaryColumns3 = useMemo<GenDataGridColumnDef<SummaryRow>[]>(
     () => [
-      { accessorKey: 'metric', header: '구분', size: 150, meta: { pinned: 'left', rowSpan: true } },
+      { accessorKey: 'metric', header: '구분', size: 150, meta: { visualRowMerge: true } },
       {
         accessorKey: 'value',
         header: '전년',
         size: 110,
-        meta: { align: 'right', mono: true },
+        meta: { align: 'right' },
         cell: ({ getValue }) => numberFormatter.format(Number(getValue() ?? 0)),
       },
       {
         accessorKey: 'target',
         header: '실적',
         size: 110,
-        meta: { align: 'right', mono: true },
+        meta: { align: 'right' },
         cell: ({ getValue }) => numberFormatter.format(Number(getValue() ?? 0)),
       },
       {
         accessorKey: 'rate',
         header: '전년비(%)',
         size: 110,
-        meta: { align: 'right', mono: true },
+        meta: { align: 'right' },
         cell: ({ getValue }) => percentFormatter.format(Number(getValue() ?? 0)),
       },
     ],
@@ -228,6 +228,7 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
 
   return (
     <div className={styles.page}>
+      {/*
       <PageHeader
         title="Dashboard Demo"
         description="상단 3분할 Grid + 하단 2분할 Chart"
@@ -236,30 +237,28 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
           { label: 'Dashboard Demo', icon: <LayoutDashboard size={16} /> },
         ]}
       />
+      */}
 
       <div className={styles.layout}>
         <div className={styles.topRow}>
           <section className={`${styles.panel} ${styles.managementPanel}`}>
             <h3 className={styles.panelTitle}>3월 경영실적</h3>
             <div className={styles.gridWrap}>
-              <GenGridCrud<SummaryRow>
+              <GenDataGridCrud<SummaryRow>
                 data={managementResultRows}
                 columns={summaryColumns}
                 getRowId={(row) => row.id}
                 onCommit={async () => ({ ok: true, nextData: managementResultRows })}
                 actionBar={{ enabled: false }}
                 gridProps={{
-                  height: '100%',
+                  style: { height: '100%' },
                   enableColumnSizing: true,
-                  fitColumns: 'fill',
-                  enableActiveRowHighlight: true,
+                  columnFitMode: 'fill',
+                  enableCurrentRowHighlight: true,
+                  enableDirtyState: false,
+                  enableRowStatus: false,
+                  enableRowSelection: false,
                   rowHeight: 34,
-                  rowSpanning: true,
-                  rowSpanningMode: 'visual',
-                  getCellStyle: ({ columnId }) => ({
-                    borderRight: columnId == 'metric' ? '' : 'none',
-                    backgroundColor: columnId === 'value' ? '#d5d5d5' : undefined,
-                  }),
                 }}
               />
             </div>
@@ -268,22 +267,21 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
           <section className={styles.panel}>
             <h3 className={styles.panelTitle}>3월 매출 달성률</h3>
             <div className={styles.gridWrap}>
-              <GenGridCrud<SummaryRow>
+              <GenDataGridCrud<SummaryRow>
                 data={salesAchievementRows}
                 columns={summaryColumns2}
                 getRowId={(row) => row.id}
                 onCommit={async () => ({ ok: true, nextData: salesAchievementRows })}
                 actionBar={{ enabled: false }}
                 gridProps={{
-                  height: '100%',
+                  style: { height: '100%' },
                   enableColumnSizing: true,
-                  fitColumns: 'fill',
-                  enableActiveRowHighlight: true,
+                  columnFitMode: 'fill',
+                  enableCurrentRowHighlight: true,
+                  enableDirtyState: false,
+                  enableRowStatus: false,
+                  enableRowSelection: false,
                   rowHeight: 34,
-                  getCellStyle: ({ row }) => ({
-                    border: 'none',
-                  backgroundColor: row.id === 's0' ? '#d5d5d5' : undefined,   
-                  }),
                 }}
               />
             </div>
@@ -292,24 +290,21 @@ export default function DashboardDemoPage(_props: PageComponentProps) {
           <section className={`${styles.panel} ${styles.managementPanel3}`}>
             <h3 className={styles.panelTitle}>3월 주요지표</h3>
             <div className={styles.gridWrap}>
-              <GenGridCrud<SummaryRow>
+              <GenDataGridCrud<SummaryRow>
                 data={majorKpiRows}
                 columns={summaryColumns3}
                 getRowId={(row) => row.id}
                 onCommit={async () => ({ ok: true, nextData: majorKpiRows })}
                 actionBar={{ enabled: false }}
                 gridProps={{
-                  height: '100%',
+                  style: { height: '100%' },
                   enableColumnSizing: true,
-                  fitColumns: 'fill',
-                  enableActiveRowHighlight: true,
+                  columnFitMode: 'fill',
+                  enableCurrentRowHighlight: true,
+                  enableDirtyState: false,
+                  enableRowStatus: false,
+                  enableRowSelection: false,
                   rowHeight: 34,
-                  getCellStyle: ({columnId }) => ({
-                    border: 'none',
-                    borderRight:
-                      columnId === 'metric' ? '1px solid var(--grid-cell-border)' : 'none',
-                    backgroundColor: columnId === 'target' ? '#d5d5d5' : undefined,
-                  }),
                 }}
               />
             </div>

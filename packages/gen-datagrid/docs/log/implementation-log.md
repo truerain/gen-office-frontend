@@ -1,5 +1,17 @@
 ## 2026-07-01
 
+### DataGrid 하단 frame border 보정
+
+- 수평 scrollbar가 없고 grid 높이가 content보다 클 때 하단 외곽선이 비어 보이지 않도록 `gen-datagrid` root에 `border-bottom`을 추가했다.
+- root frame border 계약 테스트에 하단 border 검증을 추가했다.
+- 관련 파일: `src/index.css`, `test/baseline.mjs`
+
+### DataGrid 외곽 좌우 border 기본화
+
+- cell separator와 grid 외곽선 역할이 섞이지 않도록 `gen-datagrid` root에 좌우 border를 추가했다.
+- 각 row의 마지막 header/body/footer cell은 `border-right`를 제거해 오른쪽 외곽선은 root frame이 담당하도록 정리했다.
+- 관련 파일: `src/index.css`, `test/baseline.mjs`
+
 ### columnFitMode fill 수평 overflow 보정
 
 - `columnFitMode: 'fill'`에서 column 폭 합이 viewport와 맞아도 header resize handle이 `right: -3px`로 마지막 column 바깥에 렌더되어 수평 scrollbar가 생길 수 있는 문제를 보정했다.

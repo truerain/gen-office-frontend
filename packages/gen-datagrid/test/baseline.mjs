@@ -167,6 +167,18 @@ test('keeps the resize handle inside the column track', () => {
   assert.doesNotMatch(cssSource, /\.gen-datagrid__resize-handle\s*\{[^}]*right:\s*-[^;}]+/s);
 });
 
+test('uses the root frame for horizontal outer borders', () => {
+  const cssSource = readFileSync('./src/index.css', 'utf8');
+
+  assert.match(cssSource, /\.gen-datagrid\s*\{[^}]*border-left:\s*1px solid #d0d7de;/s);
+  assert.match(cssSource, /\.gen-datagrid\s*\{[^}]*border-right:\s*1px solid #d0d7de;/s);
+  assert.match(cssSource, /\.gen-datagrid\s*\{[^}]*border-bottom:\s*1px solid #d0d7de;/s);
+  assert.match(
+    cssSource,
+    /\.gen-datagrid__row > \.gen-datagrid__cell:last-child\s*,[\s\S]*?border-right:\s*0;/s
+  );
+});
+
 test('renders Gate 6 footer row with the shared grid template', () => {
   const markup = renderToStaticMarkup(
     React.createElement(GenDataGrid, {

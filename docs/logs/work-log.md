@@ -4,6 +4,30 @@
 
 ## 2026-07-01
 
+### GenDataGrid 하단 frame border 보정
+
+- 수평 scrollbar가 없을 때 DataGrid 하단 외곽선이 비어 보이지 않도록 root에 `border-bottom`을 추가했습니다.
+- root frame border CSS 계약 테스트에 하단 border 검증을 추가했습니다.
+- 관련 파일: `packages/gen-datagrid/src/index.css`, `packages/gen-datagrid/test/baseline.mjs`, `packages/gen-datagrid/docs/log/implementation-log.md`
+
+### GenDataGrid 외곽 좌우 border 기본화
+
+- DataGrid root가 좌우 frame border를 직접 그리도록 변경하고, row 마지막 cell의 `border-right`는 제거했습니다.
+- cell separator와 외곽 border 역할을 분리해 왼쪽은 없고 오른쪽만 보이는 dashboard grid 표시 문제를 보정했습니다.
+- 관련 파일: `packages/gen-datagrid/src/index.css`, `packages/gen-datagrid/test/baseline.mjs`, `packages/gen-datagrid/docs/log/implementation-log.md`
+
+### GenDataGrid fill 모드 수평 스크롤 보정
+
+- `columnFitMode: 'fill'`에서 마지막 header resize handle이 column track 바깥으로 3px 튀어나와 수평 scrollbar를 만들 수 있는 문제를 보정했습니다.
+- resize handle을 column 내부에 배치하고, CSS 계약 테스트를 추가했습니다.
+- 관련 파일: `packages/gen-datagrid/src/index.css`, `packages/gen-datagrid/test/baseline.mjs`, `packages/gen-datagrid/docs/log/implementation-log.md`
+
+### GenDataGrid columnFitMode fill 추가
+
+- `GenDataGrid`의 `columnFitMode`에 `fill` 옵션을 추가해 viewport 폭에 맞춰 column 폭을 확대/축소하도록 변경했습니다.
+- `fill` 축소는 column `minSize`를 하한으로 사용하며, DashboardDemoPage 상단 GenDataGridCrud grid에 `columnFitMode: 'fill'`을 적용했습니다.
+- 관련 파일: `packages/gen-datagrid/src/GenDataGrid.types.ts`, `packages/gen-datagrid/src/renderers/div-grid/gridTemplate.ts`, `packages/gen-datagrid/src/renderers/div-grid/DataGridRoot.tsx`, `packages/gen-datagrid/test/interaction.test.tsx`, `packages/gen-datagrid/docs/reference/api-structure.md`, `packages/gen-datagrid/docs/reference/api-comparison-with-gen-grid.md`, `packages/gen-datagrid/docs/architecture/gate-8-6-merge-span-validation-architecture.md`, `packages/gen-datagrid/docs/log/implementation-log.md`, `apps/demo/src/pages/demo/dashboard/DashboardDemoPage.tsx`
+
 ### GenDataGridCrud gridProps feature flag 전달 허용
 
 - `GenDataGridCrud`가 내부에서 고정하던 DataGrid feature flag를 `gridProps`로 전달할 수 있게 변경했습니다.

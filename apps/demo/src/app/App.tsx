@@ -28,7 +28,8 @@ const withLazyDelay = <T,>(loader: () => Promise<T>) =>
     }, LAZY_DELAY_MS);
   });
 
-const LazyHomePage = lazy(() => withLazyDelay(() => import('@/pages/home/HomePage')));
+//const LazyHomePage = lazy(() => withLazyDelay(() => import('@/pages/home/HomePage')));
+const LazyHomePage = lazy(() => withLazyDelay(() => import('@/pages/demo/dashboard/DashboardDemoPage')));
 
 function readCookie(name: string) {
   if (typeof document === 'undefined') return null;
