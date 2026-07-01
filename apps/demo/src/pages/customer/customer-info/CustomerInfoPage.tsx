@@ -1,5 +1,5 @@
 // apps/demo/src/pages/customer/CustomerInfoPage/CustomerInfoPage.tsx
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Home, Users } from 'lucide-react';
 
 import { PageHeader } from '@/components/PageHeader/PageHeader';
@@ -25,6 +25,8 @@ import {
   //useDeleteCustomerMutation,
 } from '@/pages/customer/customer-info/api/customer';
 import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
+
+const EMPTY_CUSTOMER_ROWS: Customer[] = [];
 
 interface CustomerInfoPageProps extends PageComponentProps {
   /** 초기 필터 파라미터 */
@@ -93,7 +95,7 @@ function CustomerInfoPage({
 
   //const _total = listQuery.data?.total || 0;
 
-  const rows = listQuery.data?.items || [];
+  const rows = listQuery.data?.items ?? EMPTY_CUSTOMER_ROWS;
   const dataVersion = listQuery.dataUpdatedAt;
 
   const initialLoading = listQuery.isLoading;
@@ -143,14 +145,14 @@ function CustomerInfoPage({
   };
   */
 
-  const handleRefetch = () => {
+  const handleRefetch = useCallback(() => {
     setFilters(draftFilters);
-  };
+  }, [draftFilters]);
 
-  const handleCommit = async (changeSet: GenDataGridChangeSet<Customer>) => {
+  const handleCommit = useCallback(async (changeSet: GenDataGridChangeSet<Customer>) => {
     // TODO: 서버 저장(create/update/delete) 호출로 교체
     console.log('commit changes', changeSet);
-  };
+  }, []);
 
   return (
     <div className={styles.page}>

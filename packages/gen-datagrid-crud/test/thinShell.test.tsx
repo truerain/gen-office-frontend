@@ -240,6 +240,67 @@ describe('GenDataGridCrud thin shell', () => {
     expect(getCell(container, '1', 'name')).toBeTruthy();
   });
 
+  it('does not emit state changes again only because the callback identity changed', async () => {
+    const states: DataGridCrudUiState<Person>[] = [];
+
+    function Harness() {
+      const [, setRenderCount] = React.useState(0);
+      return (
+        <GenDataGridCrud
+          data={rows}
+          columns={columns}
+          getRowId={(row) => row.id}
+          onStateChange={(state) => {
+            states.push(state);
+            setRenderCount((current) => current + 1);
+          }}
+        />
+      );
+    }
+
+    render(<Harness />);
+
+    await waitFor(() => {
+      expect(states.length).toBeGreaterThan(0);
+    });
+    await new Promise((resolve) => window.setTimeout(resolve, 50));
+    const settledCallCount = states.length;
+    await new Promise((resolve) => window.setTimeout(resolve, 50));
+
+    expect(states).toHaveLength(settledCallCount);
+  });
+
+  it('does not emit state changes again only because createRow identity changed', async () => {
+    const states: DataGridCrudUiState<Person>[] = [];
+
+    function Harness() {
+      const [, setRenderCount] = React.useState(0);
+      return (
+        <GenDataGridCrud
+          data={rows}
+          columns={columns}
+          getRowId={(row) => row.id}
+          createRow={() => ({ id: 'new-1', name: 'New Person', age: 0 })}
+          onStateChange={(state) => {
+            states.push(state);
+            setRenderCount((current) => current + 1);
+          }}
+        />
+      );
+    }
+
+    render(<Harness />);
+
+    await waitFor(() => {
+      expect(states.length).toBeGreaterThan(0);
+    });
+    await new Promise((resolve) => window.setTimeout(resolve, 50));
+    const settledCallCount = states.length;
+    await new Promise((resolve) => window.setTimeout(resolve, 50));
+
+    expect(states).toHaveLength(settledCallCount);
+  });
+
   it('flushes the active editor, commits the change set, and accepts markers on save', async () => {
     const onCommit = vi.fn(async () => ({ ok: true }));
     const { container, getByRole } = render(

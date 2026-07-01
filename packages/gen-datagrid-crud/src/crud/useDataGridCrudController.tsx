@@ -27,6 +27,7 @@ const EMPTY_DIRTY_STATE: GenDataGridDirtyState = {
 };
 
 const EMPTY_FIELD_ERRORS: DataGridCrudFieldErrors = {};
+const EMPTY_ROW_IDS: string[] = [];
 
 function waitForAnimationFrame() {
   if (typeof requestAnimationFrame === 'function') {
@@ -154,6 +155,11 @@ export function useDataGridCrudController<TData>(
   const [fieldErrors, setFieldErrors] =
     React.useState<DataGridCrudFieldErrors>(EMPTY_FIELD_ERRORS);
   const [validationError, setValidationError] = React.useState<unknown>();
+  const onStateChangeRef = React.useRef(onStateChange);
+
+  React.useEffect(() => {
+    onStateChangeRef.current = onStateChange;
+  }, [onStateChange]);
 
   const gridData = React.useMemo(
     () => (createdRowPosition === 'top' ? [...createdRows, ...data] : [...data, ...createdRows]),
@@ -161,7 +167,10 @@ export function useDataGridCrudController<TData>(
   );
 
   const createdRowIds = React.useMemo(
-    () => createdRows.map((row, index) => getRowId(row, index)),
+    () =>
+      createdRows.length === 0
+        ? EMPTY_ROW_IDS
+        : createdRows.map((row, index) => getRowId(row, index)),
     [createdRows, getRowId]
   );
   const createdRowIdSet = React.useMemo(
@@ -177,12 +186,14 @@ export function useDataGridCrudController<TData>(
   const resolvedFilterEnabled = gridFeatureOptions?.enableColumnFilters ?? filterEnabled;
   const resolvedColumnReorderEnabled =
     gridFeatureOptions?.enableColumnReorder ?? columnReorderEnabled;
+  const canCreateRow = Boolean(createRow);
+  const canExport = Boolean(onExport);
 
   const state = React.useMemo<DataGridCrudUiState<TData>>(
     () => ({
       readonly,
-      canCreateRow: Boolean(createRow),
-      canExport: Boolean(onExport),
+      canCreateRow,
+      canExport,
       data: gridData,
       sourceData: data,
       createdRows,
@@ -202,7 +213,8 @@ export function useDataGridCrudController<TData>(
       lastChangeSet,
     }),
     [
-      createRow,
+      canCreateRow,
+      canExport,
       currentRowId,
       data,
       gridData,
@@ -212,7 +224,6 @@ export function useDataGridCrudController<TData>(
       fieldErrors,
       isCommitting,
       lastChangeSet,
-      onExport,
       readonly,
       resolvedColumnReorderEnabled,
       resolvedFilterEnabled,
@@ -222,8 +233,8 @@ export function useDataGridCrudController<TData>(
   );
 
   React.useEffect(() => {
-    onStateChange?.(state);
-  }, [onStateChange, state]);
+    onStateChangeRef.current?.(state);
+  }, [state]);
 
   const handleDirtyStateChange = React.useCallback((nextState: GenDataGridDirtyState) => {
     const apply = () => setDirtyState(nextState);

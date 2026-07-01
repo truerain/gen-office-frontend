@@ -6,6 +6,22 @@ Records implementation changes for the GenDataGridCrud package.
 
 ## 2026-07-01
 
+### CRUD state 함수 identity 의존성 보정
+
+- `DataGridCrudUiState`의 `canCreateRow`, `canExport` 계산이 `createRow`, `onExport` 함수 identity 변화에 의해 매 렌더 새 state를 만들지 않도록 boolean 값으로 분리했습니다.
+- `GenDataGridCrud`가 `GenDataGrid`에 `data`와 `columns`를 전달할 때 매 렌더 배열을 복사하지 않고 입력 참조 변경 시에만 memoized copy를 만들도록 변경했습니다.
+- inline `createRow`와 `onStateChange`가 함께 쓰여도 `onStateChange`가 반복 통지되지 않는 회귀 테스트를 추가했습니다.
+- CustomerInfoPage에서 확인된 로딩 지연의 원인과 해결 내용을 `docs/customer-info-loading-loop.md`에 정리했습니다.
+- 관련 파일: `src/GenDataGridCrud.tsx`, `src/crud/useDataGridCrudController.tsx`, `test/thinShell.test.tsx`, `docs/customer-info-loading-loop.md`
+
+### onStateChange callback identity ?? ?? ??
+
+- `GenDataGridCrud` ????? `onStateChange` prop identity ????? ?? state? ?? ???? ??? ?? callback? ref? ???? ????.
+- inline `onStateChange`?? ?? state? ???? ??? callback ??? ??? ?? ??? ??? ? ?? ??? ???? ???? ????.
+- ?? row? ?? ? `createdRowIds`? stable empty array? ???? inline `getRowId` ?????? state? ??? ??? ??.
+- ?? ??: `src/crud/useDataGridCrudController.tsx`, `test/thinShell.test.tsx`
+
+
 ### gridProps DataGrid feature flag 전달 허용
 
 - `GenDataGridCrud`가 고정하던 `enableDirtyState`, `enableRowStatus`, `enableCurrentRowHighlight`, `enableRowSelection`, `enableColumnFilters`, `enableColumnReorder`를 `gridProps`로 opt-out 또는 override할 수 있게 했다.

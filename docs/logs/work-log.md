@@ -4,6 +4,21 @@
 
 ## 2026-07-01
 
+### CustomerInfoPage GenDataGridCrud 반복 렌더 보정
+
+- CustomerInfoPage에서 `GenDataGridCrud`를 제거하면 다른 메뉴 로딩이 정상화되는 증상을 기준으로 CRUD state identity와 demo inline prop 경로를 보정했습니다.
+- `GenDataGridCrud`가 `data`/`columns` 배열을 입력 참조 변경 시에만 복사하도록 변경하고, `DataGridCrudUiState`가 `createRow`/`onExport` 함수 identity 변화에 의존하지 않도록 수정했습니다.
+- CustomerInfoPage/CustomerTable의 빈 rows, refetch/commit, createRow, gridProps, actionBar, onStateChange 콜백을 안정화했습니다.
+- 원인과 해결, 재발 방지 기준을 `packages/gen-datagrid-crud/docs/customer-info-loading-loop.md`에 문서화하고 임시 진단 로그를 제거했습니다.
+- 관련 파일: `packages/gen-datagrid-crud/src/GenDataGridCrud.tsx`, `packages/gen-datagrid-crud/src/crud/useDataGridCrudController.tsx`, `packages/gen-datagrid-crud/test/thinShell.test.tsx`, `packages/gen-datagrid-crud/docs/implementation-log.md`, `packages/gen-datagrid-crud/docs/customer-info-loading-loop.md`, `apps/demo/src/pages/customer/customer-info/CustomerInfoPage.tsx`, `apps/demo/src/pages/customer/customer-info/CustomerTable.tsx`
+
+### GenDataGridCrud onStateChange ?? ?? ??
+
+- `GenDataGridCrud`? `onStateChange`? callback identity ????? ?? ???? ??? ???? ???? ?? callback? ref? ???? ??????.
+- CustomerInfoPage?? inline `onStateChange`?? ?? state? ???? ??? ?? ??? ??? ?? lazy page ??? ?? ? ?? ??? ??????.
+- ?? ??: `packages/gen-datagrid-crud/src/crud/useDataGridCrudController.tsx`, `packages/gen-datagrid-crud/test/thinShell.test.tsx`, `packages/gen-datagrid-crud/docs/implementation-log.md`
+
+
 ### GenDataGrid 하단 frame border 보정
 
 - 수평 scrollbar가 없을 때 DataGrid 하단 외곽선이 비어 보이지 않도록 root에 `border-bottom`을 추가했습니다.

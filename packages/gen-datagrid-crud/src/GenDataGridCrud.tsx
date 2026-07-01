@@ -70,6 +70,8 @@ export function GenDataGridCrud<TData>(props: GenDataGridCrudProps<TData>) {
       enableColumnReorder: gridProps?.enableColumnReorder,
     },
   });
+  const gridData = React.useMemo(() => [...controller.gridData], [controller.gridData]);
+  const gridColumns = React.useMemo(() => [...columns], [columns]);
   const actionBarEnabled = actionBar?.enabled ?? true;
   const userGetCellValidation = gridProps?.getCellValidation;
   const editPolicy = React.useMemo<GenDataGridEditPolicy>(
@@ -116,8 +118,8 @@ export function GenDataGridCrud<TData>(props: GenDataGridCrudProps<TData>) {
           editPolicy={editPolicy}
           {...controller.gridStateProps}
           ref={controller.gridRef}
-          data={[...controller.gridData]}
-          columns={[...columns]}
+          data={gridData}
+          columns={gridColumns}
           getRowId={getRowId}
           dataVersion={dataVersion}
           readOnly={readonly}
