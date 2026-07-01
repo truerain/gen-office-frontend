@@ -4,6 +4,36 @@
 
 ## 2026-07-01
 
+### GenDataGrid 편집 진단 로그 제거
+
+- CustomerInfoPage에서 편집 셀 클릭 전환이 정상 동작함을 확인해 임시 `debugEditing` prop과 console debug 출력 경로를 제거했습니다.
+- 실제 편집 전환 보정 로직은 유지하고, demo customer table의 `gridProps.debugEditing` 설정도 제거했습니다.
+- 관련 파일: `packages/gen-datagrid/src/GenDataGrid.types.ts`, `packages/gen-datagrid/src/renderers/div-grid/DataGridCell.tsx`, `packages/gen-datagrid/src/renderers/div-grid/DataGridBodyRow.tsx`, `packages/gen-datagrid/src/renderers/div-grid/DataGridBody.tsx`, `packages/gen-datagrid/src/renderers/div-grid/DataGridVirtualBody.tsx`, `packages/gen-datagrid/src/renderers/div-grid/DataGridRoot.tsx`, `apps/demo/src/pages/customer/customer-info/CustomerTable.tsx`, `packages/gen-datagrid/docs/log/implementation-log.md`, `packages/gen-datagrid/docs/reference/api-structure.md`
+
+### GenDataGrid 편집 전환 mousedown focus 경합 보정
+
+- CustomerInfoPage 진단 로그에서 `virtualContinueClickEditStart`까지 도달하는 것을 확인했고, 이후 기존 editor blur가 새 편집 상태와 경합할 수 있는 경로를 보정했습니다.
+- 편집 중 다른 cell을 클릭하는 경우 target cell의 즉시 focus를 생략해 blur commit/cancel이 새 editor 시작을 덮지 않도록 했습니다.
+- 관련 파일: `packages/gen-datagrid/src/renderers/div-grid/DataGridCell.tsx`, `packages/gen-datagrid/src/renderers/div-grid/DataGridBodyRow.tsx`, `packages/gen-datagrid/docs/log/implementation-log.md`
+
+### GenDataGrid 편집 진단 로그 추가
+
+- `GenDataGrid`에 `debugEditing` prop을 추가해 편집 cell 클릭 전환이 어느 단계에서 막히는지 브라우저 콘솔에서 확인할 수 있도록 했습니다.
+- CustomerInfoPage 확인을 위해 demo customer table의 `gridProps.debugEditing`을 임시 활성화했습니다.
+- 관련 파일: `packages/gen-datagrid/src/GenDataGrid.types.ts`, `packages/gen-datagrid/src/features/editing/debugEditing.ts`, `packages/gen-datagrid/src/renderers/div-grid/DataGridCell.tsx`, `packages/gen-datagrid/src/renderers/div-grid/DataGridBodyRow.tsx`, `packages/gen-datagrid/src/renderers/div-grid/DataGridBody.tsx`, `packages/gen-datagrid/src/renderers/div-grid/DataGridVirtualBody.tsx`, `packages/gen-datagrid/src/renderers/div-grid/DataGridRoot.tsx`, `apps/demo/src/pages/customer/customer-info/CustomerTable.tsx`, `packages/gen-datagrid/docs/log/implementation-log.md`, `packages/gen-datagrid/docs/reference/api-structure.md`
+
+### GenDataGrid 편집 셀 클릭 전환 보정
+
+- 편집 상태에서 다른 editable cell을 클릭해 바로 편집으로 이어갈 때 기존 셀 focus 복원 로직이 새 editor focus와 경합하지 않도록 패키지 내부 클릭 전환 경로를 보정했습니다.
+- 일반 editor blur/cancel의 focus 복원 동작은 유지하고, 다른 셀 활성화로 편집을 종료하는 경로만 focus 복원 없는 deactivate 콜백을 사용하도록 분리했습니다.
+- 관련 파일: `packages/gen-datagrid/src/renderers/div-grid/DataGridRoot.tsx`, `packages/gen-datagrid/src/renderers/div-grid/DataGridBody.tsx`, `packages/gen-datagrid/src/renderers/div-grid/DataGridVirtualBody.tsx`, `packages/gen-datagrid/docs/log/implementation-log.md`
+
+### GenDataGridCrud 클릭 편집 이어지기 기본값 적용
+
+- `GenDataGridCrud`의 CRUD 기본 UX로 `editPolicy.continueTriggers.click`을 기본 활성화해 편집 상태에서 다른 editable cell 클릭 시 즉시 편집으로 이어지도록 변경했습니다.
+- 사용자가 `gridProps.editPolicy.continueTriggers.click: false`를 전달하면 기본값을 opt-out할 수 있도록 유지했습니다.
+- 관련 파일: `packages/gen-datagrid-crud/src/GenDataGridCrud.tsx`, `packages/gen-datagrid-crud/test/thinShell.test.tsx`, `packages/gen-datagrid-crud/docs/implementation-log.md`, `packages/gen-datagrid/src/index.ts`, `packages/gen-datagrid/docs/log/implementation-log.md`, `packages/gen-datagrid/docs/reference/api-structure.md`, `packages/gen-datagrid/docs/reference/api-comparison-with-gen-grid.md`
+
 ### GenDataGridCrud 편집 선택 기본값 적용
 
 - `GenDataGridCrud`가 업무 CRUD 기본 UX로 `editSelectOnFocus`를 기본 활성화하도록 변경했습니다.

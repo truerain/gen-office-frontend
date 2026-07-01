@@ -277,6 +277,10 @@ export function DataGridBodyRow<TData>({
           isCellEditable,
         });
         const isEditing = editingCell?.rowId === rowId && editingCell.columnId === columnId;
+        const isActivatingAnotherCellWhileEditing = Boolean(
+          editingCell &&
+            (editingCell.rowId !== rowId || editingCell.columnId !== columnId)
+        );
         const validation = isSystemColumn
           ? null
           : getCellValidation?.({
@@ -511,6 +515,7 @@ export function DataGridBodyRow<TData>({
             allowReclickEdit={resolvedEditPolicy.startTriggers.reclick}
             allowDoubleClickEdit={resolvedEditPolicy.startTriggers.doubleClick}
             activateOnMouseDown={!isSystemColumn}
+            focusOnMouseDown={!isActivatingAnotherCellWhileEditing}
             pinning={pinning}
             bodyColSpan={bodyColSpan}
             style={{ gridColumn: String(cellIndex + 1) + ' / span ' + String(bodyColSpan) }}

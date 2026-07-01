@@ -117,6 +117,104 @@ describe('GenDataGridCrud thin shell', () => {
     selectSpy.mockRestore();
   });
 
+  it('continues editing on click by default for CRUD editors', async () => {
+    const { container } = render(
+      <GenDataGridCrud
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    const secondCell = getCell(container, '2', 'name');
+    fireEvent.doubleClick(firstCell);
+
+    await waitFor(() => {
+      expect(firstCell.dataset.editingCell).toBe('true');
+    });
+
+    fireEvent.mouseDown(secondCell, { button: 0 });
+
+    await waitFor(() => {
+      const secondEditor = secondCell.querySelector<HTMLInputElement>(
+        'input[aria-label="name editor"]'
+      );
+      expect(secondCell.dataset.activeCell).toBe('true');
+      expect(secondCell.dataset.editingCell).toBe('true');
+      expect(secondEditor).not.toBeNull();
+      expect(document.activeElement).toBe(secondEditor);
+    });
+  });
+
+  it('continues editing on click by default for virtualized CRUD editors', async () => {
+    const { container } = render(
+      <GenDataGridCrud
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        gridProps={{
+          enableVirtualization: true,
+          rowHeight: 36,
+          style: { height: 240 },
+        }}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    const secondCell = getCell(container, '2', 'name');
+    fireEvent.doubleClick(firstCell);
+
+    await waitFor(() => {
+      expect(firstCell.dataset.editingCell).toBe('true');
+    });
+
+    fireEvent.mouseDown(secondCell, { button: 0 });
+
+    await waitFor(() => {
+      const secondEditor = secondCell.querySelector<HTMLInputElement>(
+        'input[aria-label="name editor"]'
+      );
+      expect(secondCell.dataset.activeCell).toBe('true');
+      expect(secondCell.dataset.editingCell).toBe('true');
+      expect(secondEditor).not.toBeNull();
+      expect(document.activeElement).toBe(secondEditor);
+    });
+  });
+
+  it('allows gridProps to opt out of default click edit continuation', async () => {
+    const { container } = render(
+      <GenDataGridCrud
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        gridProps={{
+          editPolicy: {
+            continueTriggers: {
+              click: false,
+            },
+          },
+        }}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    const secondCell = getCell(container, '2', 'name');
+    fireEvent.doubleClick(firstCell);
+
+    await waitFor(() => {
+      expect(firstCell.dataset.editingCell).toBe('true');
+    });
+
+    fireEvent.mouseDown(secondCell, { button: 0 });
+
+    await waitFor(() => {
+      expect(secondCell.dataset.activeCell).toBe('true');
+      expect(secondCell.dataset.editingCell).toBeUndefined();
+      expect(secondCell.querySelector('input[aria-label="name editor"]')).toBeNull();
+    });
+  });
+
   it('flushes the active editor, commits the change set, and accepts markers on save', async () => {
     const onCommit = vi.fn(async () => ({ ok: true }));
     const { container, getByRole } = render(

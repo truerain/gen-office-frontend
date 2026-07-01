@@ -1,5 +1,35 @@
 ## 2026-07-01
 
+### 편집 진단 로그 제거
+
+- CustomerInfoPage에서 편집 셀 클릭 전환이 정상 동작함을 확인해 임시 `debugEditing` 진단 prop과 console debug 경로를 제거했다.
+- 편집 전환 보정 로직은 유지하고, public API 문서에서 진단 prop 언급을 제거했다.
+- 관련 파일: `src/GenDataGrid.types.ts`, `src/renderers/div-grid/DataGridCell.tsx`, `src/renderers/div-grid/DataGridBodyRow.tsx`, `src/renderers/div-grid/DataGridBody.tsx`, `src/renderers/div-grid/DataGridVirtualBody.tsx`, `src/renderers/div-grid/DataGridRoot.tsx`, `docs/reference/api-structure.md`, `../../apps/demo/src/pages/customer/customer-info/CustomerTable.tsx`
+
+### 편집 중 다른 셀 클릭 focus 선행 처리 보정
+
+- 편집 중 다른 editable cell을 클릭할 때 target cell의 `mousedown` 선행 focus가 기존 editor blur를 유발해 새 edit start와 경합할 수 있는 문제를 보정했다.
+- 다른 셀 편집 전환 중에는 `DataGridCell`의 즉시 focus를 생략하고, active/editing 상태 갱신 이후 root focus 복원 effect가 새 editor를 잡도록 변경했다.
+- 관련 파일: `src/renderers/div-grid/DataGridCell.tsx`, `src/renderers/div-grid/DataGridBodyRow.tsx`
+
+### 편집 진단 로그 debugEditing 추가
+
+- `debugEditing` prop을 추가해 cell mouse down, activate, click continuation, edit start 단계의 진단 로그를 opt-in으로 확인할 수 있게 했다.
+- CustomerInfoPage의 GenDataGridCrud 확인을 위해 demo customer table에서 `debugEditing: true`를 임시로 켰다.
+- 관련 파일: `src/GenDataGrid.types.ts`, `src/features/editing/debugEditing.ts`, `src/renderers/div-grid/DataGridCell.tsx`, `src/renderers/div-grid/DataGridBodyRow.tsx`, `src/renderers/div-grid/DataGridBody.tsx`, `src/renderers/div-grid/DataGridVirtualBody.tsx`, `src/renderers/div-grid/DataGridRoot.tsx`, `../../apps/demo/src/pages/customer/customer-info/CustomerTable.tsx`
+
+### 편집 셀 클릭 전환 focus 복원 경합 보정
+
+- 편집 중 다른 셀을 클릭해 `continueTriggers.click`으로 편집을 이어갈 때 기존 셀 focus 복원 로직이 새 editor focus와 경합하지 않도록 클릭 전환용 deactivate 콜백을 분리했다.
+- 일반 editor blur/cancel 경로는 기존 focus 복원 동작을 유지하고, 다른 셀 활성화로 편집을 종료하는 경로만 focus 복원 없이 cancel하도록 보정했다.
+- 관련 파일: `src/renderers/div-grid/DataGridRoot.tsx`, `src/renderers/div-grid/DataGridBody.tsx`, `src/renderers/div-grid/DataGridVirtualBody.tsx`
+
+### GenDataGrid editPolicy 타입 public export
+
+- `GenDataGridEditPolicy`, `GenDataGridEditStartTriggers`, `GenDataGridEditContinuationTriggers`를 package entrypoint에서 public 타입으로 export했다.
+- `GenDataGridCrud`가 CRUD 기본 편집 정책을 타입 안전하게 합성할 수 있도록 공개 API export 누락을 보정했다.
+- 관련 파일: `src/index.ts`, `docs/reference/api-structure.md`, `docs/reference/api-comparison-with-gen-grid.md`, `../gen-datagrid-crud/src/GenDataGridCrud.tsx`
+
 ### GenDataGrid 전용 컬럼 타입 public export
 
 - `GenDataGridColumnMeta`와 `GenDataGridColumnDef`를 public 타입으로 추가해 앱 컬럼 정의가 TanStack `ColumnMeta` 전역 병합에 직접 의존하지 않도록 정리했다.

@@ -120,6 +120,7 @@ type DataGridVirtualBodyProps<TData> = {
   draftValue: unknown;
   setDraftValue: (nextValue: unknown) => void;
   onEditStart: (args: GenDataGridEditingCell & { value: unknown }) => void;
+  onEditDeactivate: () => void;
   onEditCancel: () => void;
   getGridRoot?: () => HTMLElement | null;
   getEditorSurfaces?: () => Iterable<HTMLElement>;
@@ -260,6 +261,7 @@ export function DataGridVirtualBody<TData>({
   draftValue,
   setDraftValue,
   onEditStart,
+  onEditDeactivate,
   onEditCancel,
   getGridRoot,
   getEditorSurfaces,
@@ -305,10 +307,10 @@ export function DataGridVirtualBody<TData>({
             blurOwnership: editingRuntime.blurOwnership,
             continueClick: nextRuntime?.resolvedEditPolicy.continueTriggers.click ?? false,
             onCellValueChange,
-            onEditCancel,
+            onEditCancel: onEditDeactivate,
           });
         } else {
-          onEditCancel();
+          onEditDeactivate();
         }
 
         onEditingNavigate?.(next);
@@ -326,7 +328,7 @@ export function DataGridVirtualBody<TData>({
 
       onActiveCellChange(next);
     },
-    [draftValue, editingCell, getCellRuntime, onActiveCellChange, onCellValueChange, onEditCancel, onEditStart, onEditingNavigate]
+    [draftValue, editingCell, getCellRuntime, onActiveCellChange, onCellValueChange, onEditDeactivate, onEditStart, onEditingNavigate]
   );
 
   const [isLargeJumpScrolling, setIsLargeJumpScrolling] = React.useState(false);

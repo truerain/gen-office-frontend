@@ -1210,6 +1210,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             draftValue={editing.draftValue}
             setDraftValue={editing.setDraftValue}
             onEditStart={editing.startEditing}
+            onEditDeactivate={cancelEditing}
             onEditCancel={cancelEditingAndRestoreFocus}
             getGridRoot={() => rootRef.current}
             getEditorSurfaces={editing.getEditorSurfaces}
@@ -1248,6 +1249,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             draftValue={editing.draftValue}
             setDraftValue={editing.setDraftValue}
             onEditStart={editing.startEditing}
+            onEditDeactivate={cancelEditing}
             onEditCancel={cancelEditingAndRestoreFocus}
             getGridRoot={() => rootRef.current}
             getEditorSurfaces={editing.getEditorSurfaces}

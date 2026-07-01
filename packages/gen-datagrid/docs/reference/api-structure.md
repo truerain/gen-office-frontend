@@ -223,6 +223,9 @@ ownership directly. `GenDataGridEditorContext` exposes `arrowNavigate`,
 `getEditorSurfaces`. The inline blur default is commit; set
 `editCommitOnBlur={false}` or column `meta.editCommitOnBlur: false` to cancel on
 blur and other-cell activation.
+The package entrypoint exports `GenDataGridEditPolicy`,
+`GenDataGridEditStartTriggers`, and `GenDataGridEditContinuationTriggers` for
+consumer and wrapper packages that compose editing policy defaults.
 
 Gate 4.2 status: plain-text paste application is implemented. `pasteOptions`
 controls paste error reporting through `errorMode`, `failureBehavior`, and

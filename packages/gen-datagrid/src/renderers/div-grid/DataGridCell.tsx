@@ -31,6 +31,7 @@ type DataGridCellProps = {
   allowReclickEdit?: boolean;
   allowDoubleClickEdit?: boolean;
   activateOnMouseDown?: boolean;
+  focusOnMouseDown?: boolean;
   pinning?: {
     pinned: 'left' | 'right' | false;
     isLastLeftPinned: boolean;
@@ -65,6 +66,7 @@ export function DataGridCell({
   allowReclickEdit = true,
   allowDoubleClickEdit = true,
   activateOnMouseDown = true,
+  focusOnMouseDown = true,
   pinning,
   bodyColSpan,
   style,
@@ -113,7 +115,9 @@ export function DataGridCell({
           return;
         }
         event.preventDefault();
-        event.currentTarget.focus({ preventScroll: true });
+        if (focusOnMouseDown) {
+          event.currentTarget.focus({ preventScroll: true });
+        }
         if (allowReclickEdit && isActive && isEditable && !isEditing) {
           onEditStart?.({ rowId, columnId, entryReason: 'reclick' });
           return;

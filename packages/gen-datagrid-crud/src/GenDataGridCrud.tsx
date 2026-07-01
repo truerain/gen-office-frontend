@@ -5,6 +5,7 @@ import * as React from 'react';
 import { GenDataGrid } from '@gen-office/gen-datagrid';
 import type {
   GenDataGridCellValidation,
+  GenDataGridEditPolicy,
   GenDataGridValidationContext,
 } from '@gen-office/gen-datagrid';
 
@@ -63,6 +64,16 @@ export function GenDataGridCrud<TData>(props: GenDataGridCrudProps<TData>) {
   });
   const actionBarEnabled = actionBar?.enabled ?? true;
   const userGetCellValidation = gridProps?.getCellValidation;
+  const editPolicy = React.useMemo<GenDataGridEditPolicy>(
+    () => ({
+      ...gridProps?.editPolicy,
+      continueTriggers: {
+        click: true,
+        ...gridProps?.editPolicy?.continueTriggers,
+      },
+    }),
+    [gridProps?.editPolicy]
+  );
   const getCellValidation = React.useCallback(
     (
       ctx: GenDataGridValidationContext<TData>
@@ -94,6 +105,7 @@ export function GenDataGridCrud<TData>(props: GenDataGridCrudProps<TData>) {
         <GenDataGrid<TData>
           {...gridProps}
           editSelectOnFocus={gridProps?.editSelectOnFocus ?? true}
+          editPolicy={editPolicy}
           {...controller.gridStateProps}
           ref={controller.gridRef}
           data={[...controller.gridData]}
