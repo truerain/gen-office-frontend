@@ -2,6 +2,26 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-07-01
+
+### GenDataGridCrud 편집 선택 기본값 적용
+
+- `GenDataGridCrud`가 업무 CRUD 기본 UX로 `editSelectOnFocus`를 기본 활성화하도록 변경했습니다.
+- 소비자가 `gridProps.editSelectOnFocus: false`를 넘기면 기존처럼 opt-out할 수 있도록 유지했습니다.
+- 관련 파일: `packages/gen-datagrid-crud/src/GenDataGridCrud.tsx`, `packages/gen-datagrid-crud/test/thinShell.test.tsx`, `apps/demo/src/pages/customer/customer-info/CustomerInfoColumns.tsx`, `packages/gen-datagrid-crud/docs/implementation-log.md`
+
+### GenDataGrid 컬럼 타입 정리
+
+- `GenDataGridColumnMeta`와 `GenDataGridColumnDef` public 타입을 추가하고 `GenDataGridCrud`도 해당 컬럼 타입을 사용하도록 정리했습니다.
+- demo의 GenDataGrid 사용 화면인 고객 정보, Actuals 컬럼 정의를 GenDataGrid 전용 타입과 meta로 전환했습니다.
+- 관련 파일: `packages/gen-datagrid/src/GenDataGrid.types.ts`, `packages/gen-datagrid/src/core/table/tanstack-table.ts`, `packages/gen-datagrid/src/index.ts`, `packages/gen-datagrid-crud/src/GenDataGridCrud.types.ts`, `apps/demo/src/pages/customer/customer-info/CustomerInfoColumns.tsx`, `apps/demo/src/pages/co/actuals/ActualsColumns.tsx`
+
+### CustomerInfoPage GenDataGridCrud 전환
+
+- 고객 정보 화면의 CRUD 그리드 래퍼를 `GenGridCrud`에서 `GenDataGridCrud`로 전환했습니다.
+- `changeSet` 기반 저장 콜백과 내장 선택 삭제 액션을 사용하도록 타입과 컬럼 구성을 정리했습니다.
+- 관련 파일: `apps/demo/src/pages/customer/customer-info/CustomerInfoPage.tsx`, `apps/demo/src/pages/customer/customer-info/CustomerTable.tsx`, `apps/demo/src/pages/customer/customer-info/CustomerInfoColumns.tsx`, `docs/logs/work-log.md`
+
 ## 2026-06-30
 
 ### ActualsPage GenDataGridCrud gridProps 정리

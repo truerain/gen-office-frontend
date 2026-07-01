@@ -93,6 +93,7 @@ export function GenDataGridCrud<TData>(props: GenDataGridCrudProps<TData>) {
       <div className="gen-datagrid-crud__grid">
         <GenDataGrid<TData>
           {...gridProps}
+          editSelectOnFocus={gridProps?.editSelectOnFocus ?? true}
           {...controller.gridStateProps}
           ref={controller.gridRef}
           data={[...controller.gridData]}

@@ -1,26 +1,25 @@
-import type { ColumnDef } from '@tanstack/react-table';
+import type { GenDataGridColumnDef } from '@gen-office/gen-datagrid';
 import type { Customer } from './model/types';
 
-import { Badge, Button } from '@gen-office/ui';
+import { Badge } from '@gen-office/ui';
 
-export function createCustomerColumns(): ColumnDef<Customer>[] {
+export function createCustomerColumns(): GenDataGridColumnDef<Customer>[] {
   return [
     {
       id: 'id',
       header: '고객번호',
       accessorKey: 'id',
+      size: 150,
       meta: {
-        width: 150,
         align: 'center',
-        pinned: 'left',
       },
     },
     {
       id: 'name',
       header: '고객명',
       accessorKey: 'name',
+      size: 120,
       meta: {
-        width: 120,
         align: 'center',
         editable: true,
         editType: 'text',
@@ -31,25 +30,18 @@ export function createCustomerColumns(): ColumnDef<Customer>[] {
       id: 'email',
       header: '이메일',
       accessorKey: 'email',
+      size: 200,
       meta: {
-        width: 200,
         editable: true,
         editType: 'text',
-        editValidator: (value: string) => {
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(value)) {
-            return { valid: false, error: '올바른 이메일 형식이 아닙니다' };
-          }
-          return { valid: true };
-        },
       },
     },
     {
       id: 'phone',
       header: '전화번호',
       accessorKey: 'phone',
+      size: 130,
       meta: {
-        width: 130,
         editable: true,
         editType: 'text',
       },
@@ -58,8 +50,8 @@ export function createCustomerColumns(): ColumnDef<Customer>[] {
       id: 'company',
       header: '회사',
       accessorKey: 'company',
+      size: 150,
       meta: {
-        width: 150,
         editable: true,
         editType: 'text',
       },
@@ -68,8 +60,8 @@ export function createCustomerColumns(): ColumnDef<Customer>[] {
       id: 'grade',
       header: '등급',
       accessorKey: 'grade',
+      size: 100,
       meta: {
-        width: 100,
         align: 'center',
         editable: true,
         editType: 'select',
@@ -97,8 +89,8 @@ export function createCustomerColumns(): ColumnDef<Customer>[] {
       id: 'status',
       header: '상태',
       accessorKey: 'status',
+      size: 100,
       meta: {
-        width: 100,
         align: 'center',
         editable: true,
         editType: 'select',
@@ -124,8 +116,8 @@ export function createCustomerColumns(): ColumnDef<Customer>[] {
       id: 'totalOrders',
       header: '주문수',
       accessorKey: 'totalOrders',
+      size: 100,
       meta: {
-        width: 100,
         align: 'right',
       },
       cell: ({ row }) => <span>{row.original.totalOrders.toLocaleString()}건</span>,
@@ -134,8 +126,8 @@ export function createCustomerColumns(): ColumnDef<Customer>[] {
       id: 'totalSpent',
       header: '총 구매액',
       accessorKey: 'totalSpent',
+      size: 130,
       meta: {
-        width: 130,
         align: 'right',
       },
       cell: ({ row }) => <span>₩{(row.original.totalSpent / 10000).toLocaleString()}만</span>,
@@ -144,8 +136,10 @@ export function createCustomerColumns(): ColumnDef<Customer>[] {
       id: 'registeredAt',
       header: '가입일',
       accessorKey: 'registeredAt',
+      size: 120,
       meta: {
-        width: 110,
+        editable: true,
+        editType: 'date',
         align: 'center',
       },
     },
@@ -153,33 +147,9 @@ export function createCustomerColumns(): ColumnDef<Customer>[] {
       id: 'lastContactAt',
       header: '최근 접촉일',
       accessorKey: 'lastContactAt',
+      size: 120,
       meta: {
-        width: 120,
         align: 'center',
-      },
-    },
-    {
-      id: 'actions',
-      header: '',
-      size: 80,
-      enableSorting: false,
-      meta: {
-        system: 'actions',
-        align: 'center',
-        pinned: 'right',
-      },
-      cell: ({ row, table }) => {
-        const api = table.options.meta?.genGridCrud;
-        return (
-          <Button
-            type="button"
-            size="sm"
-            variant="danger"
-            onClick={() => api?.deleteRow?.(String(row.id))}
-          >
-            Delete
-          </Button>
-        );
       },
     },
   ];

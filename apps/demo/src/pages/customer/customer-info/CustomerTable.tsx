@@ -1,8 +1,8 @@
 // apps/demo/src/pages/customer/CustomerInfoPage/components/CustomerTable.tsx
 
 import { useState, useEffect, useMemo } from 'react';
-import { GenGridCrud } from '@gen-office/gen-grid-crud';
-import type { CrudChange } from '@gen-office/gen-grid-crud';
+import { GenDataGridCrud } from '@gen-office/gen-datagrid-crud';
+import type { GenDataGridChangeSet } from '@gen-office/gen-datagrid';
 
 import type { Customer } from './model/types';
 import { createCustomerColumns } from './CustomerInfoColumns';
@@ -16,7 +16,7 @@ interface CustomerTableProps {
   rows: Customer[];
   dataVersion: number | string;
   onDiffChange: (diff: PendingDiff<Customer, string>) => void;
-  onCommit: (changes: readonly CrudChange<Customer>[]) => Promise<void>;
+  onCommit: (changeSet: GenDataGridChangeSet<Customer>) => Promise<void>;
   onRefetch?: () => void;
   loading?: boolean;
 }
@@ -36,12 +36,12 @@ function CustomerTable(props: CustomerTableProps) {
 
   return (
     <div className={styles.tableContainer}>
-      <GenGridCrud<Customer>
+      <GenDataGridCrud<Customer>
         data={gridState.rows}
         columns={columns}
         getRowId={(row) => row.id}
-        createRow={() => ({
-          id: 'temp-0', // 임시 id (서버 저장 후 실제 id로 교체)
+        createRow={({ data }) => ({
+          id: `temp-${data.length + 1}`, // 임시 id (서버 저장 후 실제 id로 교체)
           name: '',
           email: '',
           phone: '',
@@ -53,11 +53,8 @@ function CustomerTable(props: CustomerTableProps) {
           totalSpent: 0,
           grade: 'bronze',
         })}
-        // columnId -> patch 매핑 (accessorKey가 있으면 기본 동작으로 충분)
-        makePatch={({ columnId, value }) => ({ [columnId]: value } as any)}
-        deleteMode="selected"
-        onCommit={async ({ changes }) => {
-          await props.onCommit(changes);
+        onCommit={async ({ changeSet }) => {
+          await props.onCommit(changeSet);
           return { ok: true };
         }}
         onCommitSuccess={() => {
@@ -76,20 +73,30 @@ function CustomerTable(props: CustomerTableProps) {
           }
           return true;
         }}
-        showActionBar
-        actionBarPosition="top"
+        actionBar={{
+          includeBuiltIns: ['add', 'delete', 'save', 'reset'],
+        }}
+        dataVersion={gridState.version}
         gridProps={{
-          dataVersion: gridState.version,
           rowHeight: 36,
-          overscan: 8,
           enablePinning: true,
           enableColumnSizing: true,
           enableVirtualization: true,
-          enableRowStatus: true,
-          checkboxSelection: true,
         }}
         onStateChange={(s) => {
-          props.onDiffChange(s.pendingDiff as any);
+          const dirtyRowIds = new Set(s.dirtyState.rowIds);
+          const deletedRowIds = new Set(s.dirtyState.deletedRowIds);
+          const createdRowIds = new Set(s.createdRowIds);
+          props.onDiffChange({
+            added: [...s.createdRows],
+            modified: s.data.filter(
+              (row) =>
+                dirtyRowIds.has(row.id) &&
+                !deletedRowIds.has(row.id) &&
+                !createdRowIds.has(row.id)
+            ),
+            deleted: s.dirtyState.deletedRowIds.map((id) => ({ id })),
+          });
         }}
       />
     </div>

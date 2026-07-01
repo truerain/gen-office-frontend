@@ -267,6 +267,38 @@ export type GenDataGridSystemColumnKind = 'rowStatus' | 'rowSelection' | 'rowNum
 export type GenDataGridRowSelectionMode = 'all' | 'createdOnly';
 export type GenDataGridRowStatus = 'clean' | 'created' | 'updated' | 'deleted';
 
+export type GenDataGridColumnMeta<TData, TValue = unknown> = {
+  align?: GenDataGridColumnAlign;
+  headerAlign?: GenDataGridColumnAlign;
+  editable?:
+    | boolean
+    | ((ctx: GenDataGridEditableContext<TData>) => boolean);
+  editType?: GenDataGridEditType;
+  editOptions?: readonly GenDataGridEditOption[];
+  getEditOptions?: (ctx: GenDataGridEditableContext<TData>) => readonly GenDataGridEditOption[];
+  editPlaceholder?: string;
+  editSelectOnFocus?: boolean;
+  editCommitOnBlur?: boolean;
+  editBlurOwnership?: GenDataGridEditBlurOwnership;
+  editPolicy?: GenDataGridEditPolicy;
+  renderEditor?: (ctx: GenDataGridEditorContext<TData>) => React.ReactNode;
+  headerSpan?: number;
+  bodyColSpan?: number | ((ctx: GenDataGridBodyColSpanContext<TData>) => number);
+  visualRowMerge?: GenDataGridVisualRowMergeOption;
+  systemColumn?: GenDataGridSystemColumnKind;
+};
+
+type WithGenDataGridColumnMeta<TData, TValue, TColumn> =
+  TColumn extends ColumnDef<TData, TValue>
+    ? Omit<TColumn, 'meta' | 'columns'> & {
+    meta?: GenDataGridColumnMeta<TData, TValue>;
+    columns?: GenDataGridColumnDef<TData, unknown>[];
+  }
+    : never;
+
+export type GenDataGridColumnDef<TData, TValue = unknown> =
+  WithGenDataGridColumnMeta<TData, TValue, ColumnDef<TData, TValue>>;
+
 export type GenDataGridRowStatusContext<TData> = GenDataGridRowContext<TData> & {
   dirty: boolean;
   deleted: boolean;
@@ -282,7 +314,7 @@ export type GenDataGridRenderContext<TData> = {
 export type GenDataGridProps<TData> = {
   data?: TData[];
   defaultData?: TData[];
-  columns: ColumnDef<TData, unknown>[];
+  columns: GenDataGridColumnDef<TData, unknown>[];
   getRowId: (row: TData, index: number) => string;
   readOnly?: boolean;
   readonly?: boolean;

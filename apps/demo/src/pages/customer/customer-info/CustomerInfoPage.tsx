@@ -8,7 +8,7 @@ import { DataPanel } from '@/components/DataPanel';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 
 import type { Customer } from './model/types';
-import type { CrudChange } from '@gen-office/gen-grid-crud';
+import type { GenDataGridChangeSet } from '@gen-office/gen-datagrid';
 import CustomerFilterBar from './CustomerFilterBar';
 //import CustomerActionBar from '@/shared/ui/list/CustomerActionBar';
 import CustomerTable from './CustomerTable';
@@ -147,9 +147,9 @@ function CustomerInfoPage({
     setFilters(draftFilters);
   };
 
-  const handleCommit = async (changes: readonly CrudChange<Customer>[]) => {
+  const handleCommit = async (changeSet: GenDataGridChangeSet<Customer>) => {
     // TODO: 서버 저장(create/update/delete) 호출로 교체
-    console.log('commit changes', changes);
+    console.log('commit changes', changeSet);
   };
 
   return (

@@ -1,3 +1,12 @@
+## 2026-07-01
+
+### GenDataGrid 전용 컬럼 타입 public export
+
+- `GenDataGridColumnMeta`와 `GenDataGridColumnDef`를 public 타입으로 추가해 앱 컬럼 정의가 TanStack `ColumnMeta` 전역 병합에 직접 의존하지 않도록 정리했다.
+- package entrypoint가 TanStack table meta augmentation 선언 파일을 타입 export로 참조하도록 보정해 dist 타입에서도 meta 확장이 누락되지 않게 했다.
+- `GenDataGridCrud`의 `columns` prop도 `GenDataGridColumnDef`를 사용하도록 맞췄다.
+- 관련 파일: `src/GenDataGrid.types.ts`, `src/core/table/tanstack-table.ts`, `src/index.ts`, `../gen-datagrid-crud/src/GenDataGridCrud.types.ts`
+
 ## 2026-06-30
 
 ### grouped header vertical merge 구현

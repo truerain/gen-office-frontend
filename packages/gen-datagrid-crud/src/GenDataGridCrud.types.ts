@@ -2,9 +2,10 @@
 // Defines public types for the GenDataGridCrud thin shell.
 
 import type * as React from 'react';
-import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
+import type { RowSelectionState } from '@tanstack/react-table';
 import type {
   GenDataGridChangeSet,
+  GenDataGridColumnDef,
   GenDataGridDirtyState,
   GenDataGridHandle,
   GenDataGridProps,
@@ -157,7 +158,7 @@ export type GenDataGridCrudProps<TData> = {
   title?: React.ReactNode;
   readonly?: boolean;
   data: readonly TData[];
-  columns: readonly ColumnDef<TData, unknown>[];
+  columns: readonly GenDataGridColumnDef<TData, unknown>[];
   getRowId: (row: TData, index: number) => string;
   dataVersion?: string | number;
   createRow?: (ctx: DataGridCrudCreateRowContext<TData>) => TData;

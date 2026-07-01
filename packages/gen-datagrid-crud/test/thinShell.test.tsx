@@ -2,7 +2,7 @@
 // Verifies the GenDataGridCrud Gate 10 thin shell behavior.
 
 import * as React from 'react';
-import type { ColumnDef } from '@tanstack/react-table';
+import type { GenDataGridColumnDef } from '@gen-office/gen-datagrid';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
 
@@ -20,7 +20,7 @@ const rows: Person[] = [
   { id: '2', name: 'Grace', age: 41 },
 ];
 
-const columns: ColumnDef<Person, unknown>[] = [
+const columns: GenDataGridColumnDef<Person, unknown>[] = [
   { accessorKey: 'name', header: 'Name', size: 120, meta: { editable: true } },
   { accessorKey: 'age', header: 'Age', size: 80 },
 ];
@@ -70,6 +70,53 @@ afterEach(() => {
 });
 
 describe('GenDataGridCrud thin shell', () => {
+  it('selects text on focus by default for CRUD editors', async () => {
+    const selectSpy = vi
+      .spyOn(window.HTMLInputElement.prototype, 'select')
+      .mockImplementation(() => undefined);
+    const { container } = render(
+      <GenDataGridCrud
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.focus(editor);
+
+    expect(selectSpy).toHaveBeenCalled();
+    selectSpy.mockRestore();
+  });
+
+  it('allows gridProps to opt out of default select-on-focus', async () => {
+    const selectSpy = vi
+      .spyOn(window.HTMLInputElement.prototype, 'select')
+      .mockImplementation(() => undefined);
+    const { container } = render(
+      <GenDataGridCrud
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        gridProps={{ editSelectOnFocus: false }}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.focus(editor);
+
+    expect(selectSpy).not.toHaveBeenCalled();
+    selectSpy.mockRestore();
+  });
+
   it('flushes the active editor, commits the change set, and accepts markers on save', async () => {
     const onCommit = vi.fn(async () => ({ ok: true }));
     const { container, getByRole } = render(

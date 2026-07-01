@@ -1,4 +1,4 @@
-import type { ColumnDef } from '@tanstack/react-table';
+import type { GenDataGridColumnDef } from '@gen-office/gen-datagrid';
 import type { CoActual } from '@/pages/co/actuals/model/types';
 
 const numberFormatter = new Intl.NumberFormat('ko-KR');
@@ -14,27 +14,30 @@ function formatAmount(value: unknown) {
   return numberFormatter.format(value);
 }
 
-function createMonthlyColumn(monthKey: (typeof monthKeys)[number], index: number): ColumnDef<CoActual> {
+function createMonthlyColumn(
+  monthKey: (typeof monthKeys)[number],
+  index: number
+): GenDataGridColumnDef<CoActual> {
   return {
     id: monthKey,
     header: `${index + 1}월`,
     accessorKey: monthKey,
     size: 200,
     cell: ({ getValue }) => formatAmount(getValue()),
-    meta: { align: 'right', semanticType: 'amount', amountOptions: { negativeStyle: 'triangle' } },
+    meta: { align: 'right' },
   };
 }
 
 export const createActualsColumns = (
   viewMode: ActualsViewMode = 'summary',
   options: CreateActualsColumnsOptions = {}
-): ColumnDef<CoActual>[] => [
+): GenDataGridColumnDef<CoActual>[] => [
   {
     id: 'acctCd',
     header: '계정코드',
     accessorKey: 'acctCd',
     size: 120,
-    meta: { align: 'center', pinned: 'left', headerSpan: 2, headerAlign: 'center' },
+    meta: { align: 'center', headerSpan: 2, headerAlign: 'center' },
   },
   {
     id: 'acctName',
@@ -57,7 +60,6 @@ export const createActualsColumns = (
         </span>
       );
     },
-    meta: { pinned: 'left' },
   },
   {
     id: 'prevActAmt',
@@ -80,15 +82,6 @@ export const createActualsColumns = (
         {
           id: 'currGroup',
           header: '당기',
-          meta: {
-            groupVisibilityToggle: {
-              //columnIds: [...monthKeys],
-              expandLabel: '+',
-              collapseLabel: '-',
-              defaultExpanded: false,
-              ariaLabel: '월별 컬럼 접기 또는 펼치기',
-            },
-          } as any,
           columns: [
             {
               id: 'currActAmt',
@@ -100,7 +93,7 @@ export const createActualsColumns = (
             },
             ...monthKeys.map((monthKey, index) => createMonthlyColumn(monthKey, index)),
           ],
-        } satisfies ColumnDef<CoActual>,
+        } satisfies GenDataGridColumnDef<CoActual>,
       ]
     : [
         {
@@ -110,6 +103,6 @@ export const createActualsColumns = (
           size: 150,
           cell: ({ getValue }) => formatAmount(getValue()),
           meta: { align: 'right' },
-        } satisfies ColumnDef<CoActual>,
+        } satisfies GenDataGridColumnDef<CoActual>,
       ]),
 ];
