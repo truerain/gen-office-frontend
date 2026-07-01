@@ -4,6 +4,20 @@
 
 ## 2026-07-01
 
+### GenDataGridCrud gridProps feature flag 전달 허용
+
+- `GenDataGridCrud`가 내부에서 고정하던 DataGrid feature flag를 `gridProps`로 전달할 수 있게 변경했습니다.
+- `enableRowSelection`, `enableRowStatus`, `enableDirtyState` 등을 dashboard 같은 읽기 전용 CRUD 화면에서 끌 수 있도록 했고, DashboardDemoPage 상단 grid에 적용했습니다.
+- CRUD가 소유해야 하는 data, columns, getRowId, controlled state callback은 계속 내부에서 관리합니다.
+- 관련 파일: `packages/gen-datagrid-crud/src/GenDataGridCrud.types.ts`, `packages/gen-datagrid-crud/src/GenDataGridCrud.tsx`, `packages/gen-datagrid-crud/src/crud/useDataGridCrudController.tsx`, `packages/gen-datagrid-crud/test/thinShell.test.tsx`, `apps/demo/src/pages/demo/dashboard/DashboardDemoPage.tsx`, `packages/gen-datagrid-crud/docs/implementation-log.md`
+
+### DashboardDemoPage GenDataGridCrud 전환
+
+- demo dashboard 화면의 상단 3개 CRUD grid를 `GenGridCrud`에서 `GenDataGridCrud`로 전환했습니다.
+- 컬럼 타입을 `GenDataGridColumnDef`로 바꾸고, `fitColumns`는 `columnFitMode: 'grow'`, `enableActiveRowHighlight`는 `enableCurrentRowHighlight`로 치환했습니다.
+- `GenDataGridCrud`에서 아직 지원하지 않는 `getCellStyle`, `rowSpanning`, `rowSpanningMode` 설정은 제거하고 column meta `visualRowMerge`로 가능한 병합 표시만 반영했습니다.
+- 관련 파일: `apps/demo/src/pages/demo/dashboard/DashboardDemoPage.tsx`, `docs/logs/work-log.md`
+
 ### GenDataGrid 편집 진단 로그 제거
 
 - CustomerInfoPage에서 편집 셀 클릭 전환이 정상 동작함을 확인해 임시 `debugEditing` prop과 console debug 출력 경로를 제거했습니다.

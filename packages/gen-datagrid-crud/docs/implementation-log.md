@@ -6,6 +6,13 @@ Records implementation changes for the GenDataGridCrud package.
 
 ## 2026-07-01
 
+### gridProps DataGrid feature flag 전달 허용
+
+- `GenDataGridCrud`가 고정하던 `enableDirtyState`, `enableRowStatus`, `enableCurrentRowHighlight`, `enableRowSelection`, `enableColumnFilters`, `enableColumnReorder`를 `gridProps`로 opt-out 또는 override할 수 있게 했다.
+- CRUD가 소유해야 하는 data, columns, getRowId, controlled state callback은 계속 내부 소유로 유지했다.
+- Dashboard처럼 읽기 전용으로 쓰는 CRUD 화면에서 row selection/status 시스템 컬럼을 숨길 수 있도록 테스트를 추가했다.
+- 관련 파일: `src/GenDataGridCrud.types.ts`, `src/GenDataGridCrud.tsx`, `src/crud/useDataGridCrudController.tsx`, `test/thinShell.test.tsx`
+
 ### CRUD 편집 click continuation 기본 활성화
 
 - `GenDataGridCrud`에서 `gridProps.editPolicy.continueTriggers.click`이 없으면 `true`를 적용해 편집 상태에서 다른 editable cell을 클릭할 때 즉시 편집 진입하도록 변경했다.

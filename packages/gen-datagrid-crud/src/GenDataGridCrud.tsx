@@ -61,6 +61,14 @@ export function GenDataGridCrud<TData>(props: GenDataGridCrudProps<TData>) {
     onValidationError,
     onExport,
     onStateChange,
+    gridFeatureOptions: {
+      enableDirtyState: gridProps?.enableDirtyState,
+      enableRowStatus: gridProps?.enableRowStatus,
+      enableCurrentRowHighlight: gridProps?.enableCurrentRowHighlight,
+      enableRowSelection: gridProps?.enableRowSelection,
+      enableColumnFilters: gridProps?.enableColumnFilters,
+      enableColumnReorder: gridProps?.enableColumnReorder,
+    },
   });
   const actionBarEnabled = actionBar?.enabled ?? true;
   const userGetCellValidation = gridProps?.getCellValidation;

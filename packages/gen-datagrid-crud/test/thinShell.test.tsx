@@ -35,6 +35,12 @@ function getCell(root: ParentNode, rowId: string, columnId: string) {
   return cell;
 }
 
+function queryCell(root: ParentNode, rowId: string, columnId: string) {
+  return root.querySelector<HTMLElement>(
+    `[data-gen-datagrid-cell="true"][data-cell-kind="body"][data-rowid="${rowId}"][data-colid="${columnId}"]`
+  );
+}
+
 beforeAll(() => {
   class ResizeObserverMock {
     observe() {}
@@ -213,6 +219,25 @@ describe('GenDataGridCrud thin shell', () => {
       expect(secondCell.dataset.editingCell).toBeUndefined();
       expect(secondCell.querySelector('input[aria-label="name editor"]')).toBeNull();
     });
+  });
+
+  it('passes fixed DataGrid feature flags through gridProps', () => {
+    const { container } = render(
+      <GenDataGridCrud
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        gridProps={{
+          enableRowSelection: false,
+          enableRowStatus: false,
+          enableDirtyState: false,
+        }}
+      />
+    );
+
+    expect(queryCell(container, '1', '__gen_row_selection')).toBeNull();
+    expect(queryCell(container, '1', '__gen_row_status')).toBeNull();
+    expect(getCell(container, '1', 'name')).toBeTruthy();
   });
 
   it('flushes the active editor, commits the change set, and accepts markers on save', async () => {

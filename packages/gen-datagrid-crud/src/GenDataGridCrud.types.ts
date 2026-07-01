@@ -18,13 +18,9 @@ type GridPropsOwnedByCrud =
   | 'getRowId'
   | 'readOnly'
   | 'readonly'
-  | 'enableDirtyState'
   | 'onDirtyStateChange'
-  | 'enableRowStatus'
   | 'rowStatusResolver'
-  | 'enableCurrentRowHighlight'
   | 'onCurrentRowChange'
-  | 'enableRowSelection'
   | 'rowSelection'
   | 'onRowSelectionChange'
   | 'ref';
@@ -154,6 +150,16 @@ export type DataGridCrudController<TData> = {
   >;
 };
 
+export type DataGridCrudGridFeatureOptions<TData> = Pick<
+  GenDataGridProps<TData>,
+  | 'enableDirtyState'
+  | 'enableRowStatus'
+  | 'enableCurrentRowHighlight'
+  | 'enableRowSelection'
+  | 'enableColumnFilters'
+  | 'enableColumnReorder'
+>;
+
 export type GenDataGridCrudProps<TData> = {
   title?: React.ReactNode;
   readonly?: boolean;
@@ -199,6 +205,8 @@ export type DataGridCrudControllerArgs<TData> = Pick<
   | 'onValidationError'
   | 'onExport'
   | 'onStateChange'
->;
+> & {
+  gridFeatureOptions?: Partial<DataGridCrudGridFeatureOptions<TData>>;
+};
 
 export type DataGridCrudRowSelectionState = RowSelectionState;
