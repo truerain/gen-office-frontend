@@ -160,6 +160,13 @@ test('renders Gate 5 header resize and reorder affordances', () => {
   assert.match(markup, /draggable="true"/);
 });
 
+test('keeps the resize handle inside the column track', () => {
+  const cssSource = readFileSync('./src/index.css', 'utf8');
+
+  assert.match(cssSource, /\.gen-datagrid__resize-handle\s*\{[^}]*right:\s*0;/s);
+  assert.doesNotMatch(cssSource, /\.gen-datagrid__resize-handle\s*\{[^}]*right:\s*-[^;}]+/s);
+});
+
 test('renders Gate 6 footer row with the shared grid template', () => {
   const markup = renderToStaticMarkup(
     React.createElement(GenDataGrid, {

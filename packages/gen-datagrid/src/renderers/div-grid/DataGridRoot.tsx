@@ -361,7 +361,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
   const resolvedReadOnly = readOnly ?? readonly ?? false;
 
   React.useEffect(() => {
-    if (columnFitMode !== 'grow' || !viewportElement) {
+    if ((columnFitMode !== 'grow' && columnFitMode !== 'fill') || !viewportElement) {
       setViewportWidth(undefined);
       return;
     }

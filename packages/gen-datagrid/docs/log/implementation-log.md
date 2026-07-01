@@ -1,5 +1,18 @@
 ## 2026-07-01
 
+### columnFitMode fill 수평 overflow 보정
+
+- `columnFitMode: 'fill'`에서 column 폭 합이 viewport와 맞아도 header resize handle이 `right: -3px`로 마지막 column 바깥에 렌더되어 수평 scrollbar가 생길 수 있는 문제를 보정했다.
+- resize handle을 column track 내부(`right: 0`)에 두고, CSS 계약 테스트를 추가했다.
+- 관련 파일: `src/index.css`, `test/baseline.mjs`
+
+### columnFitMode fill 추가
+
+- `columnFitMode` public type에 `fill`을 추가하고, viewport 폭에 맞춰 column 폭을 확대/축소하도록 grid template 계산을 확장했다.
+- `fill`은 column `minSize`를 하한으로 사용하며, 축소 가능한 폭을 기준으로 비율 축소한다.
+- DashboardDemoPage 상단 GenDataGridCrud grid는 `columnFitMode: 'fill'`을 사용하도록 바꿨다.
+- 관련 파일: `src/GenDataGrid.types.ts`, `src/renderers/div-grid/gridTemplate.ts`, `src/renderers/div-grid/DataGridRoot.tsx`, `test/interaction.test.tsx`, `docs/reference/api-structure.md`, `docs/reference/api-comparison-with-gen-grid.md`, `docs/architecture/gate-8-6-merge-span-validation-architecture.md`, `../../apps/demo/src/pages/demo/dashboard/DashboardDemoPage.tsx`
+
 ### 편집 진단 로그 제거
 
 - CustomerInfoPage에서 편집 셀 클릭 전환이 정상 동작함을 확인해 임시 `debugEditing` 진단 prop과 console debug 경로를 제거했다.

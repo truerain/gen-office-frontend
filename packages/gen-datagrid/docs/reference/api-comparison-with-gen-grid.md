@@ -53,7 +53,7 @@ type GenDataGridDataProps<TData> =
 | `headerHeight` | `headerHeight` | 유지 | MVP | header row height. virtual body에서도 반드시 동일 source 사용. |
 | `rowHeight` | `rowHeight` | 유지 | MVP | default row height. |
 | 없음 | `getRowHeight` | 신규 | MVP | per-row height resolver. Non-virtualized rendering에서는 row별 height로, virtualized rendering에서는 Gate 8.4 dynamic measurement의 estimate/base height로 사용한다. |
-| `fitColumns` | `columnFitMode` | 변경 | MVP | 현재 구현은 `'none' \| 'grow'`. CSS grid template 계산에 반영한다. |
+| `fitColumns` | `columnFitMode` | 변경 | MVP | 현재 구현은 `'none' \| 'grow' \| 'fill'`. CSS grid template 계산에 반영한다. |
 | 없음 | `className` | 신규 | MVP | root className. 기존 GenGrid에는 명시적 root className이 없다. |
 | 없음 | `style` | 신규 | MVP | root inline style. |
 | `enableStickyHeader` | `enableStickyHeader` | 유지 | MVP | div header sticky 처리. 기본값은 true 권장. |
@@ -416,7 +416,7 @@ type GenDataGridProps<TData> =
       rowId: string;
       rowIndex: number;
     }) => number | undefined;
-    columnFitMode?: 'none' | 'grow';
+    columnFitMode?: 'none' | 'grow' | 'fill';
 
     enableStickyHeader?: boolean;
     enableVirtualization?: boolean;
@@ -592,6 +592,7 @@ Implemented from the comparison surface:
 - Ungrouped leaf headers, system headers, and `headerSpan` leaf headers row-span across grouped header rows when nested `ColumnDef.columns` creates a multi-row header.
 - TanStack nested `ColumnDef.columns` are rendered as grouped header rows. This is not the same as an arbitrary `headerSpan` API.
 - `columnFitMode: 'grow'` is implemented to fill remaining viewport width without shrinking below base column sizes.
+- `columnFitMode: 'fill'` is implemented to grow or shrink columns to the measured viewport width while respecting column `minSize`.
 - `visualRowMerge` is implemented as DOM-preserving visual row merge with virtual continuation display and center-column sticky labels.
 
 Still deferred:

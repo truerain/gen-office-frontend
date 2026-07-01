@@ -4535,6 +4535,44 @@ describe('columnFitMode grow', () => {
   });
 });
 
+describe('columnFitMode fill', () => {
+  it('shrinks columns proportionally down to minSize when viewport is narrower than base widths', async () => {
+    const descriptor = Object.getOwnPropertyDescriptor(window.HTMLElement.prototype, 'clientWidth');
+    Object.defineProperty(window.HTMLElement.prototype, 'clientWidth', {
+      configurable: true,
+      get() {
+        return this.getAttribute?.('data-gen-datagrid-viewport') === 'true' ? 300 : 0;
+      },
+    });
+
+    try {
+      const { container } = render(
+        <GenDataGrid
+          gridId="fit-fill-grid"
+          data={rows}
+          columns={[
+            { accessorKey: 'name', header: 'Name', size: 240, minSize: 120 },
+            { accessorKey: 'role', header: 'Role', size: 160, minSize: 80 },
+          ]}
+          getRowId={(row) => row.id}
+          columnFitMode="fill"
+        />
+      );
+
+      await waitFor(() => {
+        const header = container.querySelector<HTMLElement>('[data-gen-datagrid-header="true"]');
+        expect(header?.style.gridTemplateColumns).toBe('180px 120px');
+      });
+    } finally {
+      if (descriptor) {
+        Object.defineProperty(window.HTMLElement.prototype, 'clientWidth', descriptor);
+      } else {
+        delete (window.HTMLElement.prototype as { clientWidth?: number }).clientWidth;
+      }
+    }
+  });
+});
+
 describe('Gate 8.6-b column group header', () => {
   it('renders grouped header cells above leaf headers', () => {
     const groupedColumns: ColumnDef<Person, unknown>[] = [

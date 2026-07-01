@@ -87,6 +87,7 @@ Gate 8.6은 span, merge, validation이 묶여 있는 구간이다. 각 기능은
 - `columnFitMode` public prop을 추가했다.
 - 기본값은 `none`이며 기존처럼 column size 합계를 그대로 사용한다.
 - `grow`는 visible column size 합이 viewport보다 작을 때 남는 폭을 비율대로 배분한다.
+- `fill`은 viewport가 넓을 때는 `grow`와 같이 남는 폭을 배분하고, viewport가 좁을 때는 column `minSize` 아래로 내려가지 않는 범위에서 비율대로 축소한다.
 - `grow`는 viewport 폭을 측정한 뒤 모든 header/body/footer row가 같은 px grid template을 공유하도록 계산한다.
 - viewport가 column 합보다 좁으면 base size 아래로 줄이지 않고 기존 px width와 horizontal scroll을 유지한다. column 합이 viewport보다 클 때도 강제로 축소하는 `grow-and-shrink` 계열 정책은 minSize, resize, pinned offset 정책이 필요하므로 deferred로 둔다.
 
