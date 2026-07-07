@@ -1,3 +1,12 @@
+## 2026-07-07
+
+### Masked edit type 구현 계획 문서 추가
+
+- `GenDataGrid` built-in `editType: 'mask'` 추가를 위한 API, editor contract, 테스트, 문서 갱신 범위를 계획 문서로 정리했습니다.
+- `dateTime`, `combo`, `lookup`, `multiSelect` 등 후속 built-in editor 후보를 로드맵 문서로 분리했습니다.
+- root demo 계획 문서와 연결해 패키지 구현 이후 demo app에서 formatted 저장과 unmasked 저장을 확인할 수 있도록 범위를 나눴습니다.
+- 관련 파일: `docs/plan/edit-type-extension-roadmap.md`, `docs/plan/masked-edit-type-plan.md`, `docs/README.md`, `docs/plan/remaining-work-plan.md`, `docs/log/implementation-log.md`, `../../../../docs/demo/gen-datagrid-mask-edit-demo-plan.md`, `../../../../docs/logs/work-log.md`
+
 ## 2026-07-01
 
 ### DataGrid 하단 frame border 보정

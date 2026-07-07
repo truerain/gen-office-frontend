@@ -11,8 +11,8 @@ type LoginPageProps = {
 export default function LoginPage({ onLoggedIn }: LoginPageProps) {
   const setUser = useAppStore((state) => state.setUser);
   const addNotification = useAppStore((state) => state.addNotification);
-  const [empNo, setEmpNo] = useState('');
-  const [password, setPassword] = useState('');
+  const [empNo, setEmpNo] = useState('demo');
+  const [password, setPassword] = useState('1234');
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

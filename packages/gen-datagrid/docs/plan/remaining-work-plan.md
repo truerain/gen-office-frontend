@@ -152,6 +152,13 @@ Exit criteria:
 
 ## Backlog After Gate 12
 
+### Built-in Mask Edit Type
+
+- `editType: 'mask'`를 추가해 전화번호, 사업자번호, 우편번호처럼 고정 입력 형식이 필요한 업무 필드를 built-in editor로 지원한다.
+- built-in editor 확장 후보와 우선순위는 `edit-type-extension-roadmap.md`를 따른다.
+- 세부 계획은 `masked-edit-type-plan.md`를 따른다.
+- demo app 연계 계획은 `../../../../docs/demo/gen-datagrid-mask-edit-demo-plan.md`를 따른다.
+
 ### Documentation Consistency
 
 - stale status text 정리

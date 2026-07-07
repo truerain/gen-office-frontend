@@ -10,6 +10,8 @@ Current status: the main GenDataGrid MVP surface has implementation coverage. Ac
 
 - [Remaining Work Plan](plan/remaining-work-plan.md)
 - [Gate 9 Handle / Data Ownership Readiness Plan](plan/handle-extension-plan.md)
+- [Edit Type Extension Roadmap](plan/edit-type-extension-roadmap.md)
+- [Masked Edit Type Plan](plan/masked-edit-type-plan.md)
 
 ## Architecture
 

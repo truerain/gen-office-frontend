@@ -35,4 +35,5 @@ export * from './composed/Combobox';
 export * from './composed/TreeCombobox';
 export * from './composed/PopupInput';
 export * from './composed/ModalInput';
+export * from './composed/MaskedInput';
 export * from './composed/RichTextEditor';

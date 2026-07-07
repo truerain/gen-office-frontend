@@ -2,6 +2,15 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-07-07
+
+### GenDataGrid mask edit type 및 demo 연계 계획 문서화
+
+- `GenDataGrid` built-in `editType: 'mask'` 구현 계획을 패키지 문서 아래에 추가했습니다.
+- `dateTime`, `combo`, `lookup`, `multiSelect` 등 후속 editType 확장 후보를 패키지 로드맵 문서로 정리했습니다.
+- demo app에서 mask editor를 확인하기 위한 화면 구성, 메뉴 연결, 검증 시나리오를 root demo 문서로 분리했습니다.
+- 관련 파일: `packages/gen-datagrid/docs/plan/edit-type-extension-roadmap.md`, `packages/gen-datagrid/docs/plan/masked-edit-type-plan.md`, `packages/gen-datagrid/docs/README.md`, `packages/gen-datagrid/docs/plan/remaining-work-plan.md`, `packages/gen-datagrid/docs/log/implementation-log.md`, `docs/demo/gen-datagrid-mask-edit-demo-plan.md`, `docs/logs/work-log.md`
+
 ## 2026-07-01
 
 ### CustomerInfoPage GenDataGridCrud 반복 렌더 보정

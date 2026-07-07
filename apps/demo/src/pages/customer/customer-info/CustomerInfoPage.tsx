@@ -4,27 +4,21 @@ import { Home, Users } from 'lucide-react';
 
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import { DataPanel } from '@/components/DataPanel';
-//import { usePageContext } from '@/contexts';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 
 import type { Customer } from './model/types';
 import type { GenDataGridChangeSet } from '@gen-office/gen-datagrid';
 import CustomerFilterBar from './CustomerFilterBar';
-//import CustomerActionBar from '@/shared/ui/list/CustomerActionBar';
 import CustomerTable from './CustomerTable';
 
 import { type PendingDiff } from '@/shared/models/pendingDiff';
 
+import type { CustomerFilter, CustomerStatus } from '@/pages/customer/customer-info/model/types';
+import { useCustomerListQuery, } from '@/pages/customer/customer-info/api/customer';
+import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
+
 import styles from './CustomerInfoPage.module.css';
 
-import type { CustomerFilter, CustomerStatus } from '@/pages/customer/customer-info/model/types';
-import {
-  useCustomerListQuery,
-  //useCreateCustomerMutation,
-  //useUpdateCustomerMutation,
-  //useDeleteCustomerMutation,
-} from '@/pages/customer/customer-info/api/customer';
-import { resolveApiErrorMessage } from '@/shared/api/errorMessage';
 
 const EMPTY_CUSTOMER_ROWS: Customer[] = [];
 
