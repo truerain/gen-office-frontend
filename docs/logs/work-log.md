@@ -2,6 +2,41 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-07-21
+
+### GenCalendar 확정 결정사항 문서 반영
+
+- 반복 일정 자체 타입 우선, 외부 시스템 어댑터 레이어, 30분 드래그 스냅, 주간 24시간 표시, 자체 구현 우선, 월간 초과 일정 콜백 제공 결정을 계획 문서와 아키텍처 문서에 반영했습니다.
+- 관련 파일: `packages/gen-calendar/.docs/calendar-concept-and-plan.md`, `packages/gen-calendar/.docs/calendar-architecture.md`, `packages/gen-calendar/.docs/implementation-log.md`, `docs/logs/work-log.md`
+
+### GenCalendar 아키텍처 다이어그램 문서 작성
+
+- `gen-calendar`의 전체 구조, 내부 모듈 후보, 데이터 흐름, 편집 상호작용, 반복 일정 모델을 Mermaid 다이어그램으로 정리했습니다.
+- 캘린더 패키지와 업무 화면의 책임 분리를 아키텍처 문서에 명시했습니다.
+- 관련 파일: `packages/gen-calendar/.docs/calendar-architecture.md`, `packages/gen-calendar/.docs/implementation-log.md`, `docs/logs/work-log.md`
+
+### GenCalendar ?? ?? ? ?? ?? ??
+
+- `packages/gen-calendar/.docs` ??? ??? ?? ???? ??, ??? ??, MVP ??, ?? ?? ??, ??? ??? ??????.
+- ??? ???? ??? ?? ??? ?? ???? ??? ??????.
+- ?? ??: `packages/gen-calendar/.docs/calendar-concept-and-plan.md`, `packages/gen-calendar/.docs/implementation-log.md`, `docs/logs/work-log.md`
+
+## 2026-07-21
+
+## 2026-07-21
+
+### GenCalendar 1차 범위와 일정 데이터 필드 제안 문서화
+
+- `gen-calendar`의 1차 범위를 월간/주간 뷰, 편집 가능 캘린더, 드래그 기간 변경, 반복 일정 허용으로 조정했습니다.
+- 일정 데이터 기본 필드와 반복 일정 처리 원칙을 문서에 추가했습니다.
+- 관련 파일: `packages/gen-calendar/.docs/calendar-concept-and-plan.md`, `packages/gen-calendar/.docs/implementation-log.md`, `docs/logs/work-log.md`
+
+### GenCalendar 초기 개념 및 계획 문서 작성
+
+- `packages/gen-calendar/.docs` 아래에 캘린더 기반 패키지의 목적, 패키지 경계, MVP 범위, 구현 전략 후보, 단계별 계획을 정리했습니다.
+- 고객별 일정관리 화면과 공통 캘린더 기반 패키지의 책임을 분리했습니다.
+- 관련 파일: `packages/gen-calendar/.docs/calendar-concept-and-plan.md`, `packages/gen-calendar/.docs/implementation-log.md`, `docs/logs/work-log.md`
+
 ## 2026-07-07
 
 ### GenDataGrid mask edit type 및 demo 연계 계획 문서화
