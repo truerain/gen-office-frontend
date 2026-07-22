@@ -2,6 +2,14 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-07-22
+
+### GenGrid Pivot 사전 조사 문서 작성
+
+- `gen-grid` 기반 Pivot 기능을 별도 `gen-grid-pivot` 패키지 확장으로 검토하는 사전 조사 문서를 작성했습니다.
+- AG Grid Pivot과 Flexmonster Pivot의 기능 범위를 비교하고, 기업용 백오피스 업무 화면에 적합한 MVP 범위와 제외 범위를 정리했습니다.
+- 관련 파일: `packages/gen-grid-pivot/.docs/preliminary-research.md`, `packages/gen-grid-pivot/.docs/implementation-log.md`, `docs/logs/work-log.md`
+
 ## 2026-07-21
 
 ### GenCalendar 확정 결정사항 문서 반영
