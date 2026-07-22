@@ -50,6 +50,8 @@ export function Tree<TItem>(props: TreeProps<TItem>) {
     expandedIds,
     defaultExpandedIds,
     onExpandedIdsChange,
+    expansionMode = 'collapsible',
+    connectorVariant = 'none',
     selectedId,
     onSelect,
     indent = 16,
@@ -66,6 +68,8 @@ export function Tree<TItem>(props: TreeProps<TItem>) {
   );
 
   const isControlled = expandedIds !== undefined;
+  const isFixedExpanded = expansionMode === 'fixed-expanded';
+  const showConnectorLines = isFixedExpanded && connectorVariant === 'line';
   const expandedSet = React.useMemo(() => {
     return isControlled ? new Set(expandedIds) : uncontrolledExpanded;
   }, [expandedIds, isControlled, uncontrolledExpanded]);
@@ -80,21 +84,22 @@ export function Tree<TItem>(props: TreeProps<TItem>) {
 
   const toggle = React.useCallback(
     (id: TreeId) => {
+      if (isFixedExpanded) return;
       const next = new Set(expandedSet);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       setExpanded(next);
     },
-    [expandedSet, setExpanded]
+    [expandedSet, isFixedExpanded, setExpanded]
   );
 
-  const renderNode = (id: TreeId, depth: number): React.ReactNode => {
+  const renderNode = (id: TreeId, depth: number, isLast: boolean): React.ReactNode => {
     const node = nodesById.get(id);
     if (!node) return null;
 
     const children = childrenById.get(id) ?? [];
     const hasChildren = children.length > 0;
-    const isExpanded = expandedSet.has(id);
+    const isExpanded = isFixedExpanded || expandedSet.has(id);
     const label = getLabel(node);
     const isSelected = selectedId != null && String(selectedId) === String(id);
 
@@ -103,13 +108,22 @@ export function Tree<TItem>(props: TreeProps<TItem>) {
     return (
       <li
         key={String(id)}
-        className={styles.item}
+        className={cn(
+          styles.item,
+          showConnectorLines && styles.itemWithLine,
+          showConnectorLines && isLast && styles.itemLast
+        )}
         style={itemStyle}
       >
         <div className={styles.row}>
-          {hasChildren ? (
+          {isFixedExpanded ? (
+            <span
+              className={cn(styles.connectorSlot, showConnectorLines && styles.connectorLine)}
+              aria-hidden='true'
+            />
+          ) : hasChildren ? (
             <button
-              type="button"
+              type='button'
               className={styles.toggle}
               aria-expanded={isExpanded}
               onClick={() => toggle(id)}
@@ -119,12 +133,12 @@ export function Tree<TItem>(props: TreeProps<TItem>) {
               />
             </button>
           ) : (
-            <span className={styles.leafBullet} aria-hidden="true">
+            <span className={styles.leafBullet} aria-hidden='true'>
               &bull;
             </span>
           )}
           <button
-            type="button"
+            type='button'
             className={cn(styles.label, isSelected && styles.labelSelected)}
             onClick={() => onSelect?.(node)}
           >
@@ -133,7 +147,7 @@ export function Tree<TItem>(props: TreeProps<TItem>) {
         </div>
         {hasChildren && isExpanded ? (
           <ul className={styles.children}>
-            {children.map((childId) => renderNode(childId, depth + 1))}
+            {children.map((childId, index) => renderNode(childId, depth + 1, index === children.length - 1))}
           </ul>
         ) : null}
       </li>
@@ -141,7 +155,7 @@ export function Tree<TItem>(props: TreeProps<TItem>) {
   };
 
   const rootStyle = {
-    ['--tree-indent' as any]: `${indent}px`,
+    ['--tree-indent' as any]: String(indent) + 'px',
   } as React.CSSProperties;
 
   return (
@@ -150,7 +164,7 @@ export function Tree<TItem>(props: TreeProps<TItem>) {
       style={rootStyle}
     >
       <ul className={styles.list}>
-        {rootIds.map((id) => renderNode(id, 0))}
+        {rootIds.map((id, index) => renderNode(id, 0, index === rootIds.length - 1))}
       </ul>
     </div>
   );

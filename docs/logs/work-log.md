@@ -4,6 +4,21 @@
 
 ## 2026-07-22
 
+### UI TreeView 연결선 위치 보정
+
+- 고정 펼침 연결선 모드에서 노드 가로선이 세로선 앞으로 침범하지 않도록 CSS 시작 위치를 조정했습니다.
+- 관련 파일: `packages/ui/src/core/Tree/Tree.module.css`, `packages/ui/docs/implementation-log.md`, `docs/logs/work-log.md`
+
+## 2026-07-22
+
+### UI TreeView 고정 펼침 및 연결선 옵션 추가
+
+- `TreeView`에 기존 기본 동작을 유지하면서 노드별 펼침/접힘을 비활성화하고 로드된 노드를 항상 펼치는 옵션을 추가했습니다.
+- fixed expanded 모드에서 토글 버튼 대신 세로/가로 연결선을 표시하는 옵션을 추가했습니다.
+- Storybook에서 변경 사항을 확인할 수 있도록 TreeView 스토리를 추가했습니다.
+- 통합 Storybook이 패키지 스토리의 아이콘 의존성을 해석할 수 있도록 `apps/storybook-all`에 `lucide-react` 의존성을 추가했습니다.
+- 관련 파일: `packages/ui/src/core/Tree/Tree.types.ts`, `packages/ui/src/core/Tree/Tree.tsx`, `packages/ui/src/core/Tree/Tree.module.css`, `packages/ui/src/composed/TreeView/TreeView.tsx`, `packages/ui/src/composed/TreeView/TreeView.stories.tsx`, `packages/ui/docs/implementation-log.md`, `docs/logs/work-log.md`, `apps/storybook-all/package.json`, `pnpm-lock.yaml`
+
 ### GenGrid Pivot 사전 조사 문서 작성
 
 - `gen-grid` 기반 Pivot 기능을 별도 `gen-grid-pivot` 패키지 확장으로 검토하는 사전 조사 문서를 작성했습니다.

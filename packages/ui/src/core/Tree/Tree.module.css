@@ -95,3 +95,41 @@
   margin: 0;
   padding: 0;
 }
+
+.itemWithLine {
+  position: relative;
+}
+
+.itemWithLine::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc((var(--tree-indent, 16px) * var(--tree-depth, 0)) + 0.625rem);
+  width: 1px;
+  background: var(--color-border-default);
+  pointer-events: none;
+}
+
+.itemWithLine.itemLast::before {
+  bottom: calc(100% - 0.9rem);
+}
+
+.connectorSlot {
+  position: relative;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 1.25rem;
+}
+
+.connectorLine::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0.45rem;
+  right: 0.25rem;
+  height: 1px;
+  background: var(--color-border-default);
+  transform: translateY(-50%);
+  pointer-events: none;
+}

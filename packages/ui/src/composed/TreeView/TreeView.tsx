@@ -34,6 +34,7 @@ export function TreeView<TItem>(props: TreeViewProps<TItem>) {
     data,
     title = 'Tree',
     showControls = true,
+    expansionMode = 'collapsible',
     expandedIds: expandedIdsProp,
     selectedId: selectedIdProp,
     onSelect: onSelectProp,
@@ -87,11 +88,13 @@ export function TreeView<TItem>(props: TreeViewProps<TItem>) {
     setExpanded([]);
   }, [setExpanded]);
 
+  const canShowControls = showControls && expansionMode !== 'fixed-expanded';
+
   return (
     <div className={cn(styles.root, className)}>
       <div className={styles.header}>
         <div className={styles.title}>{title}</div>
-        {showControls ? (
+        {canShowControls ? (
           <div className={styles.actions}>
             <Button size="sm" variant="ghost" className={styles.actionButton} onClick={handleExpandAll}>
               <ListChevronsUpDown size={16} />
@@ -109,6 +112,7 @@ export function TreeView<TItem>(props: TreeViewProps<TItem>) {
           className={cn(styles.tree, treeClassName)}
           expandedIds={expandedIds}
           onExpandedIdsChange={setExpanded}
+          expansionMode={expansionMode}
           selectedId={selectedId}
           onSelect={handleSelect}
           getId={getId}
