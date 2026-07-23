@@ -221,6 +221,47 @@ describe('GenDataGridCrud thin shell', () => {
     });
   });
 
+  it('applies committed cell edits to displayed CRUD data and composes the user callback', async () => {
+    const states: DataGridCrudUiState<Person>[] = [];
+    const onCellValueChange = vi.fn();
+    const { container } = render(
+      <GenDataGridCrud
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        onStateChange={(state) => {
+          states.push(state);
+        }}
+        gridProps={{ onCellValueChange }}
+      />
+    );
+
+    const firstCell = getCell(container, '1', 'name');
+    fireEvent.doubleClick(firstCell);
+    const editor = firstCell.querySelector<HTMLInputElement>('input[aria-label="name editor"]');
+    if (!editor) throw new Error('Missing editor');
+
+    fireEvent.change(editor, { target: { value: 'Ada Edited' } });
+    fireEvent.keyDown(editor, { key: 'Enter' });
+
+    await waitFor(() => {
+      expect(firstCell.textContent).toContain('Ada Edited');
+      expect(onCellValueChange).toHaveBeenCalledWith({
+        row: rows[0],
+        rowId: '1',
+        rowIndex: 0,
+        columnId: 'name',
+        previousValue: 'Ada',
+        value: 'Ada Edited',
+      });
+      expect(states[states.length - 1]?.data[0]).toEqual({
+        id: '1',
+        name: 'Ada Edited',
+        age: 37,
+      });
+    });
+  });
+
   it('passes fixed DataGrid feature flags through gridProps', () => {
     const { container } = render(
       <GenDataGridCrud
@@ -326,7 +367,7 @@ describe('GenDataGridCrud thin shell', () => {
       expect(onCommit.mock.calls[0]?.[0].changeSet.updated).toEqual([
         {
           rowId: '1',
-          row: rows[0],
+          row: { id: '1', name: 'Ada Saved', age: 37 },
           patch: { name: 'Ada Saved' },
           cells: [
             {
@@ -368,6 +409,7 @@ describe('GenDataGridCrud thin shell', () => {
 
     await waitFor(() => {
       expect(firstCell.dataset.dirtyCell).toBeUndefined();
+      expect(firstCell.textContent).toContain('Ada');
     });
   });
 

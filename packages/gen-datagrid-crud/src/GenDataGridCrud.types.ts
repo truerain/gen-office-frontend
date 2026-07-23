@@ -5,6 +5,7 @@ import type * as React from 'react';
 import type { RowSelectionState } from '@tanstack/react-table';
 import type {
   GenDataGridChangeSet,
+  GenDataGridCellValueChange,
   GenDataGridColumnDef,
   GenDataGridDirtyState,
   GenDataGridHandle,
@@ -147,6 +148,7 @@ export type DataGridCrudController<TData> = {
     | 'onRowSelectionChange'
     | 'enableColumnFilters'
     | 'enableColumnReorder'
+    | 'onCellValueChange'
   >;
 };
 
@@ -194,6 +196,8 @@ export type DataGridCrudControllerArgs<TData> = Pick<
   GenDataGridCrudProps<TData>,
   | 'readonly'
   | 'data'
+  | 'dataVersion'
+  | 'columns'
   | 'getRowId'
   | 'createRow'
   | 'createdRowPosition'
@@ -206,6 +210,7 @@ export type DataGridCrudControllerArgs<TData> = Pick<
   | 'onExport'
   | 'onStateChange'
 > & {
+  onCellValueChange?: (args: GenDataGridCellValueChange<TData>) => void;
   gridFeatureOptions?: Partial<DataGridCrudGridFeatureOptions<TData>>;
 };
 

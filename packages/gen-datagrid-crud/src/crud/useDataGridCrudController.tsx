@@ -3,7 +3,9 @@
 
 import * as React from 'react';
 import type {
+  GenDataGridCellValueChange,
   GenDataGridChangeSet,
+  GenDataGridColumnDef,
   GenDataGridDirtyState,
   GenDataGridHandle,
   GenDataGridRowStatus,
@@ -77,6 +79,45 @@ function applyPatchToRow<TData>(row: TData, patch: Record<string, unknown>) {
   return { ...(row as object), ...patch } as TData;
 }
 
+function getAccessorKey<TData>(
+  column: GenDataGridColumnDef<TData, unknown>
+): string | undefined {
+  const candidate = column as { accessorKey?: unknown };
+  return typeof candidate.accessorKey === 'string' ? candidate.accessorKey : undefined;
+}
+
+function getColumnId<TData>(column: GenDataGridColumnDef<TData, unknown>) {
+  const candidate = column as { id?: unknown };
+  return typeof candidate.id === 'string' ? candidate.id : getAccessorKey(column);
+}
+
+function findColumnFieldKey<TData>(
+  columns: readonly GenDataGridColumnDef<TData, unknown>[],
+  columnId: string
+): string {
+  for (const column of columns) {
+    if (getColumnId(column) === columnId) {
+      return getAccessorKey(column) ?? columnId;
+    }
+
+    if (column.columns) {
+      const nested = findColumnFieldKey(column.columns, columnId);
+      if (nested !== columnId) return nested;
+    }
+  }
+
+  return columnId;
+}
+
+function findRowIndex<TData>(
+  rows: readonly TData[],
+  rowId: string,
+  getRowId: (row: TData, index: number) => string,
+  getGridIndex: (localIndex: number) => number
+) {
+  return rows.findIndex((row, index) => getRowId(row, getGridIndex(index)) === rowId);
+}
+
 function mergeCreatedRowsIntoChangeSet<TData>(
   changeSet: GenDataGridChangeSet<TData>,
   createdRows: readonly TData[],
@@ -130,6 +171,8 @@ export function useDataGridCrudController<TData>(
   const {
     readonly = false,
     data,
+    dataVersion,
+    columns,
     getRowId,
     createRow,
     createdRowPosition = 'top',
@@ -141,9 +184,11 @@ export function useDataGridCrudController<TData>(
     onValidationError,
     onExport,
     onStateChange,
+    onCellValueChange,
     gridFeatureOptions,
   } = args;
   const gridRef = React.useRef<GenDataGridHandle<TData>>(null);
+  const [editableRows, setEditableRows] = React.useState<TData[]>(() => [...data]);
   const [dirtyState, setDirtyState] = React.useState<GenDataGridDirtyState>(EMPTY_DIRTY_STATE);
   const [isCommitting, setIsCommitting] = React.useState(false);
   const [currentRowId, setCurrentRowId] = React.useState<string | null>(null);
@@ -161,9 +206,16 @@ export function useDataGridCrudController<TData>(
     onStateChangeRef.current = onStateChange;
   }, [onStateChange]);
 
+  React.useEffect(() => {
+    setEditableRows([...data]);
+  }, [data, dataVersion]);
+
   const gridData = React.useMemo(
-    () => (createdRowPosition === 'top' ? [...createdRows, ...data] : [...data, ...createdRows]),
-    [createdRowPosition, createdRows, data]
+    () =>
+      createdRowPosition === 'top'
+        ? [...createdRows, ...editableRows]
+        : [...editableRows, ...createdRows],
+    [createdRowPosition, createdRows, editableRows]
   );
 
   const createdRowIds = React.useMemo(
@@ -217,6 +269,7 @@ export function useDataGridCrudController<TData>(
       canExport,
       currentRowId,
       data,
+      editableRows,
       gridData,
       createdRows,
       createdRowIds,
@@ -244,6 +297,54 @@ export function useDataGridCrudController<TData>(
     }
     void Promise.resolve().then(apply);
   }, []);
+
+  const handleCellValueChange = React.useCallback(
+    (args: GenDataGridCellValueChange<TData>) => {
+      const fieldKey = findColumnFieldKey(columns, args.columnId);
+      const patch = { [fieldKey]: args.value };
+      const createdOffset = createdRowPosition === 'top' ? 0 : editableRows.length;
+      const editableOffset = createdRowPosition === 'top' ? createdRows.length : 0;
+      const createdIndex = findRowIndex(
+        createdRows,
+        args.rowId,
+        getRowId,
+        (index) => createdOffset + index
+      );
+
+      if (createdIndex >= 0) {
+        setCreatedRows((current) =>
+          current.map((row, index) =>
+            index === createdIndex ? applyPatchToRow(row, patch) : row
+          )
+        );
+      } else {
+        const editableIndex = findRowIndex(
+          editableRows,
+          args.rowId,
+          getRowId,
+          (index) => editableOffset + index
+        );
+
+        if (editableIndex >= 0) {
+          setEditableRows((current) =>
+            current.map((row, index) =>
+              index === editableIndex ? applyPatchToRow(row, patch) : row
+            )
+          );
+        }
+      }
+
+      onCellValueChange?.(args);
+    },
+    [
+      columns,
+      createdRowPosition,
+      createdRows,
+      editableRows,
+      getRowId,
+      onCellValueChange,
+    ]
+  );
 
   const save = React.useCallback(async () => {
     const handle = gridRef.current;
@@ -320,10 +421,11 @@ export function useDataGridCrudController<TData>(
   const reset = React.useCallback(() => {
     gridRef.current?.cancelEditing();
     gridRef.current?.resetDirtyState();
+    setEditableRows([...data]);
     setCreatedRows([]);
     setFieldErrors(EMPTY_FIELD_ERRORS);
     setValidationError(undefined);
-  }, []);
+  }, [data]);
 
   const deleteSelectedRows = React.useCallback(() => {
     if (readonly) return;
@@ -430,12 +532,14 @@ export function useDataGridCrudController<TData>(
       onRowSelectionChange: setRowSelection,
       enableColumnFilters: resolvedFilterEnabled,
       enableColumnReorder: resolvedColumnReorderEnabled,
+      onCellValueChange: handleCellValueChange,
     }),
     [
       gridFeatureOptions?.enableCurrentRowHighlight,
       gridFeatureOptions?.enableDirtyState,
       gridFeatureOptions?.enableRowSelection,
       gridFeatureOptions?.enableRowStatus,
+      handleCellValueChange,
       handleDirtyStateChange,
       resolvedColumnReorderEnabled,
       resolvedFilterEnabled,

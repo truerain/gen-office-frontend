@@ -4,6 +4,16 @@ Records GenDataGridCrud package planning and implementation changes.
 
 # GenDataGridCrud 구현 로그
 
+## 2026-07-08
+
+### 셀 편집 표시 데이터 반영
+
+- `GenDataGridCrud`가 `onCellValueChange`를 내부에서 처리해 저장 전 편집값을 로컬 표시 데이터에 즉시 반영하도록 보강했습니다.
+- 기존 row와 created row를 각각 패치하고, 사용자가 `gridProps.onCellValueChange`를 제공한 경우 내부 처리 후 콜백을 계속 호출하도록 합성했습니다.
+- `dataVersion` 또는 외부 `data` 변경 시 로컬 표시 데이터를 원본과 다시 동기화하고, Reset 시 원본 표시값으로 복구되도록 했습니다.
+- 셀 편집 후 표시값, `onStateChange().data`, created row 저장, 사용자 콜백 합성 계약을 테스트로 고정했습니다.
+- 관련 파일: `src/GenDataGridCrud.tsx`, `src/GenDataGridCrud.types.ts`, `src/crud/useDataGridCrudController.tsx`, `test/thinShell.test.tsx`, `.docs/implementation-log.md`
+
 ## 2026-06-30
 
 ### ActionBar와 Grid 사이 경계선 보강

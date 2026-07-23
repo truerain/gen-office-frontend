@@ -47,9 +47,12 @@ export function GenDataGridCrud<TData>(props: GenDataGridCrudProps<TData>) {
     className,
     style,
   } = props;
+  const userOnCellValueChange = gridProps?.onCellValueChange;
   const controller = useDataGridCrudController<TData>({
     readonly,
     data,
+    dataVersion,
+    columns,
     getRowId,
     createRow,
     createdRowPosition,
@@ -61,6 +64,7 @@ export function GenDataGridCrud<TData>(props: GenDataGridCrudProps<TData>) {
     onValidationError,
     onExport,
     onStateChange,
+    onCellValueChange: userOnCellValueChange,
     gridFeatureOptions: {
       enableDirtyState: gridProps?.enableDirtyState,
       enableRowStatus: gridProps?.enableRowStatus,

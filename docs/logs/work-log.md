@@ -2,6 +2,15 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-07-08
+
+### GenDataGridCrud 셀 편집 표시값 반영
+
+- `GenDataGridCrud`가 셀 편집 commit 이벤트를 내부에서 처리해 업무화면이 별도 `onCellValueChange`를 구현하지 않아도 표시 데이터가 즉시 갱신되도록 했습니다.
+- 기존 row와 created row의 로컬 표시 데이터를 패치하고, Reset 및 외부 `dataVersion` 변경 시 원본 데이터와 다시 동기화하도록 보강했습니다.
+- 사용자 `gridProps.onCellValueChange` 콜백은 내부 처리 후 계속 호출되도록 합성하고, 관련 테스트를 추가했습니다.
+- 관련 파일: `packages/gen-datagrid-crud/src/GenDataGridCrud.tsx`, `packages/gen-datagrid-crud/src/GenDataGridCrud.types.ts`, `packages/gen-datagrid-crud/src/crud/useDataGridCrudController.tsx`, `packages/gen-datagrid-crud/test/thinShell.test.tsx`, `packages/gen-datagrid-crud/.docs/implementation-log.md`, `docs/logs/work-log.md`
+
 ## 2026-07-07
 
 ### GenDataGrid mask edit type 및 demo 연계 계획 문서화
