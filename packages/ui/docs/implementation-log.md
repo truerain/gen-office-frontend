@@ -1,5 +1,22 @@
 # UI 구현 로그
 
+## 2026-07-22
+
+### TreeView 연결선 가로선 시작 위치 보정
+
+- `connectorVariant=line`에서 가로선이 세로선보다 앞에서 시작하지 않도록 시작 위치를 세로선 위치에 맞췄습니다.
+- 관련 파일: `packages/ui/src/core/Tree/Tree.module.css`
+
+## 2026-07-22
+
+### TreeView 고정 펼침 및 연결선 옵션 추가
+
+- `Tree`/`TreeView`에 `expansionMode=fixed-expanded` 옵션을 추가해 노드별 펼침/접힘 버튼 없이 로드된 노드를 항상 펼칠 수 있게 했습니다.
+- `connectorVariant=line` 옵션을 추가해 fixed expanded 모드에서 버튼 자리 대신 노드 연결선을 표시할 수 있게 했습니다.
+- 기본값은 기존 collapsible 동작을 유지하도록 설정했습니다.
+- Storybook에서 기본 접힘/펼침, 고정 펼침 연결선, 고정 펼침 무연결선 상태를 확인할 수 있는 스토리를 추가했습니다.
+- 관련 파일: `packages/ui/src/core/Tree/Tree.types.ts`, `packages/ui/src/core/Tree/Tree.tsx`, `packages/ui/src/core/Tree/Tree.module.css`, `packages/ui/src/composed/TreeView/TreeView.tsx`, `packages/ui/src/composed/TreeView/TreeView.stories.tsx`
+
 ## 2026-07-07
 
 ### MaskedInput 컴포넌트 구현

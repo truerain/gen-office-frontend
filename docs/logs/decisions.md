@@ -102,3 +102,20 @@ GenOffice의 주요 개발 및 운영 문맥이 한국어로 논의되므로, �
 - API 문서는 `packages/gen-datagrid/docs/reference/` 아래에 둡니다.
 - 계획과 게이트 문서는 `packages/gen-datagrid/docs/plan/` 아래에 둡니다.
 - `AGENTS.md`의 GenDataGrid 문서 규칙도 이 경로를 기준으로 유지합니다.
+
+## 2026-07-21
+
+### GenCalendar 1차 구현 기본 결정
+
+- 반복 일정은 패키지 자체 구조화 타입을 우선 사용하고, RRULE 등 외부 시스템 연동은 어댑터 레이어에서 변환합니다.
+- 드래그 편집 기본 스냅 단위는 30분, 주간 뷰 기본 시간 범위는 24시간 전체로 합니다.
+- 구현 전략은 자체 구현을 우선하며, 월간 초과 일정 클릭은 패키지 내장 UI보다 `onMoreEventsClick` 콜백 제공을 우선합니다.
+- 관련 파일: `packages/gen-calendar/.docs/calendar-concept-and-plan.md`, `packages/gen-calendar/.docs/calendar-architecture.md`, `docs/logs/decisions.md`
+
+### GenCalendar 패키지 아키텍처 책임 분리
+
+- `gen-calendar`는 월간/주간 캘린더 표시, 반복 일정 전개, 드래그 편집 상호작용, 변경 콜백 전달을 담당하는 기능 패키지로 정의합니다.
+- 고객별 저장, 승인, 권한, 충돌 감지, 외부 캘린더 연동은 업무 화면 또는 별도 도메인 계층에서 담당합니다.
+- 이 결정은 공통 패키지가 고객별 정책을 직접 소유하지 않도록 하기 위한 것입니다.
+- 관련 파일: `packages/gen-calendar/.docs/calendar-architecture.md`, `docs/logs/decisions.md`
+
