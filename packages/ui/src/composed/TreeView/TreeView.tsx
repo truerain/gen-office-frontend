@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { cn } from '@gen-office/utils';
-import { ListChevronsUpDown, ListChevronsDownUp } from 'lucide-react';
+import { ListChevronsUpDown, ListChevronsDownUp, RefreshCw } from 'lucide-react';
 import { Button } from '../../core/Button';
 import { Tree } from '../../core/Tree';
 import type { TreeId } from '../../core/Tree';
@@ -34,6 +34,8 @@ export function TreeView<TItem>(props: TreeViewProps<TItem>) {
     data,
     title = 'Tree',
     showControls = true,
+    showRefresh = false,
+    onRefresh,
     expansionMode = 'collapsible',
     expandedIds: expandedIdsProp,
     selectedId: selectedIdProp,
@@ -89,19 +91,30 @@ export function TreeView<TItem>(props: TreeViewProps<TItem>) {
   }, [setExpanded]);
 
   const canShowControls = showControls && expansionMode !== 'fixed-expanded';
+  const canShowRefresh = showRefresh && typeof onRefresh === 'function';
+  const canShowActions = canShowRefresh || canShowControls;
 
   return (
     <div className={cn(styles.root, className)}>
       <div className={styles.header}>
         <div className={styles.title}>{title}</div>
-        {canShowControls ? (
+        {canShowActions ? (
           <div className={styles.actions}>
-            <Button size="sm" variant="ghost" className={styles.actionButton} onClick={handleExpandAll}>
-              <ListChevronsUpDown size={16} />
-            </Button>
-            <Button size="sm" variant="ghost" className={styles.actionButton} onClick={handleCollapseAll}>
-              <ListChevronsDownUp size={16} />
-            </Button>
+            {canShowRefresh ? (
+              <Button size="sm" variant="ghost" className={styles.actionButton} onClick={onRefresh}>
+                <RefreshCw size={16} />
+              </Button>
+            ) : null}
+            {canShowControls ? (
+              <>
+                <Button size="sm" variant="ghost" className={styles.actionButton} onClick={handleExpandAll}>
+                  <ListChevronsUpDown size={16} />
+                </Button>
+                <Button size="sm" variant="ghost" className={styles.actionButton} onClick={handleCollapseAll}>
+                  <ListChevronsDownUp size={16} />
+                </Button>
+              </>
+            ) : null}
           </div>
         ) : null}
       </div>

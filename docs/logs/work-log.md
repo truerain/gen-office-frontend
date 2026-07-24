@@ -2,6 +2,13 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-07-24
+
+### TreeView Refresh 버튼 옵션 추가
+
+- `@gen-office/ui` TreeView 헤더에 선택적 Refresh 버튼을 추가했습니다 (`showRefresh`, `onRefresh`).
+- 관련 파일: `packages/ui/src/composed/TreeView/TreeView.types.ts`, `packages/ui/src/composed/TreeView/TreeView.tsx`, `packages/ui/src/composed/TreeView/TreeView.stories.tsx`, `packages/ui/docs/implementation-log.md`
+
 ## 2026-07-07
 
 ### GenDataGrid mask edit type 및 demo 연계 계획 문서화

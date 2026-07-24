@@ -1,5 +1,14 @@
 # UI 구현 로그
 
+## 2026-07-24
+
+### TreeView Refresh 버튼 옵션 추가
+
+- 헤더에 Refresh 버튼을 선택적으로 표시할 수 있도록 `showRefresh` / `onRefresh` props를 추가했습니다.
+- 기본값은 `showRefresh=false`이며, `onRefresh`가 있을 때만 버튼을 렌더합니다. `showControls` / `expansionMode`와 독립적으로 동작합니다.
+- Storybook에 `WithRefresh` 스토리를 추가했습니다.
+- 관련 파일: `packages/ui/src/composed/TreeView/TreeView.types.ts`, `packages/ui/src/composed/TreeView/TreeView.tsx`, `packages/ui/src/composed/TreeView/TreeView.stories.tsx`
+
 ## 2026-07-22
 
 ### TreeView 연결선 가로선 시작 위치 보정

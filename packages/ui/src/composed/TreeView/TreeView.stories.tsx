@@ -45,6 +45,9 @@ const meta = {
     showControls: {
       control: 'boolean',
     },
+    showRefresh: {
+      control: 'boolean',
+    },
     indent: {
       control: 'number',
     },
@@ -76,6 +79,25 @@ export const Collapsible: Story = {
     showControls: true,
   },
   render: (args) => <TreeViewFrame {...args} />,
+};
+
+export const WithRefresh: Story = {
+  args: {
+    title: 'Menu Tree',
+    data: sampleTreeData,
+    defaultExpandedIds: [1, 2, 7],
+    showControls: true,
+    showRefresh: true,
+  },
+  render: (args) => (
+    <TreeViewFrame
+      {...args}
+      onRefresh={() => {
+        // Storybook action placeholder — replace with refetch in real usage.
+        console.log('TreeView refresh');
+      }}
+    />
+  ),
 };
 
 export const FixedExpandedWithLines: Story = {
