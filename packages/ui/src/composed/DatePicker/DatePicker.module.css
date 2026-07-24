@@ -75,6 +75,9 @@
   color: var(--color-fg-secondary);
   font-family: var(--font-family-primary);
   font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .input::placeholder {
@@ -141,10 +144,43 @@
   width: 14rem;
 }
 
+.monthPopoverWide {
+  width: 28.5rem;
+  max-width: calc(100vw - 2rem);
+}
+
 .monthContent {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.monthYears {
+  display: flex;
+  flex-direction: row;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.monthHeaderYears {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.monthHeaderYears .yearLabel {
+  flex: 1;
+  text-align: center;
+}
+
+.monthYearPanel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
 }
 
 .yearNav {

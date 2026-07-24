@@ -2,6 +2,29 @@
 
 ## 2026-07-24
 
+### MultiMonthPicker 2년 헤더 1줄 정리
+
+- `visibleYears=2`일 때 연도 범위 타이틀과 패널별 연도 라벨 중복을 제거하고, Prev/Next 사이에 각 연도를 나란히 표시하도록 바꿨습니다.
+- 관련 파일: `packages/ui/src/composed/DatePicker/MultiMonthPicker.tsx`, `packages/ui/src/composed/DatePicker/DatePicker.module.css`
+
+## 2026-07-24
+
+### MultiMonthPicker 추가
+
+- 비연속 다중 월 선택용 `MultiMonthPicker`를 추가했습니다. 월 토글 후 확인으로 확정하고 Clear로 draft를 비울 수 있습니다.
+- `visibleYears` 옵션(1|2, 기본 1)으로 팝오버에 1년 또는 연속 2년 패널을 표시합니다.
+- Storybook(`MultiMonth`, `MultiMonthTwoYears`)과 demo DatePicker 페이지에 예시를 추가했습니다.
+- 관련 파일: `packages/ui/src/composed/DatePicker/MultiMonthPicker.tsx`, `packages/ui/src/composed/DatePicker/MultiMonthPicker.types.ts`, `packages/ui/src/composed/DatePicker/DatePicker.module.css`, `packages/ui/src/composed/DatePicker/index.ts`, `packages/ui/src/composed/DatePicker/DatePicker.stories.tsx`, `apps/demo/src/pages/demo/datepicker/DatePickerDemoPage.tsx`
+
+## 2026-07-24
+
+### DatePicker Storybook 스토리 추가
+
+- `DatePicker`, `RangeDatePicker`, `MonthPicker`, `RangeMonthPicker` 사용 예시를 Storybook에 추가했습니다.
+- 관련 파일: `packages/ui/src/composed/DatePicker/DatePicker.stories.tsx`
+
+## 2026-07-24
+
 ### TreeView Refresh 버튼 옵션 추가
 
 - 헤더에 Refresh 버튼을 선택적으로 표시할 수 있도록 `showRefresh` / `onRefresh` props를 추가했습니다.

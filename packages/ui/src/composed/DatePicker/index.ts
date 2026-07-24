@@ -6,3 +6,5 @@ export { MonthPicker } from './MonthPicker';
 export type { MonthPickerProps } from './MonthPicker.types';
 export { RangeMonthPicker } from './RangeMonthPicker';
 export type { MonthRange, RangeMonthPickerProps } from './RangeMonthPicker.types';
+export { MultiMonthPicker } from './MultiMonthPicker';
+export type { MultiMonthPickerProps } from './MultiMonthPicker.types';

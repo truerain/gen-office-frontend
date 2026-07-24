@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
-import { Calendar, DatePicker, MonthPicker, RangeDatePicker, RangeMonthPicker } from '@gen-office/ui';
+import { Calendar, DatePicker, MonthPicker, MultiMonthPicker, RangeDatePicker, RangeMonthPicker } from '@gen-office/ui';
 import type { MonthRange } from '@gen-office/ui';
 import styles from './DatePickerDemoPage.module.css';
 
@@ -12,6 +12,11 @@ function DatePickerDemoPage() {
   const [rangeCalendar, setRangeCalendar] = useState<DateRange | undefined>();
   const [monthDate, setMonthDate] = useState<Date | undefined>(new Date());
   const [rangeMonth, setRangeMonth] = useState<MonthRange | undefined>();
+  const [multiMonths, setMultiMonths] = useState<Date[] | undefined>([
+    new Date(2026, 0, 1),
+    new Date(2026, 2, 1),
+  ]);
+  const [multiMonthsTwoYears, setMultiMonthsTwoYears] = useState<Date[] | undefined>();
 
   const formatted = useMemo(() => {
     if (!basicDate) return '';
@@ -30,6 +35,13 @@ function DatePickerDemoPage() {
     if (rangeMonth?.from) return `${fmt(rangeMonth.from)} ~`;
     return 'None';
   }, [rangeMonth]);
+
+  const formatMultiMonths = (months?: Date[]) => {
+    if (!months?.length) return 'None';
+    return months
+      .map((date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`)
+      .join(', ');
+  };
 
   return (
     <div className={styles.page}>
@@ -98,6 +110,35 @@ function DatePickerDemoPage() {
             <div className={styles.meta}>
               Range: {rangeMonthLabel}
             </div>
+          </div>
+
+          <div className={styles.card}>
+            <h3>Multi Month Picker</h3>
+            <MultiMonthPicker
+              value={multiMonths}
+              onChange={setMultiMonths}
+              placeholder="Select months"
+              format={(date) =>
+                `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+              }
+            />
+            <div className={styles.meta}>Months: {formatMultiMonths(multiMonths)}</div>
+          </div>
+
+          <div className={styles.card}>
+            <h3>Multi Month Picker (2 years)</h3>
+            <MultiMonthPicker
+              value={multiMonthsTwoYears}
+              onChange={setMultiMonthsTwoYears}
+              visibleYears={2}
+              placeholder="Select months"
+              fromMonth={new Date(2024, 0, 1)}
+              toMonth={new Date(2027, 11, 1)}
+              format={(date) =>
+                `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+              }
+            />
+            <div className={styles.meta}>Months: {formatMultiMonths(multiMonthsTwoYears)}</div>
           </div>
         </div>
       </section>
