@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
-import { Calendar, DatePicker, MonthPicker, MultiMonthPicker, RangeDatePicker, RangeMonthPicker } from '@gen-office/ui';
+import { Calendar, DatePicker, MonthPicker, MultiDatePicker, MultiMonthPicker, RangeDatePicker, RangeMonthPicker } from '@gen-office/ui';
 import type { MonthRange } from '@gen-office/ui';
 import styles from './DatePickerDemoPage.module.css';
 
@@ -9,6 +9,10 @@ function DatePickerDemoPage() {
   const [clearableDate, setClearableDate] = useState<Date | undefined>();
   const [calendarDate, setCalendarDate] = useState<Date | undefined>(new Date());
   const [rangeDate, setRangeDate] = useState<DateRange | undefined>();
+  const [multiDates, setMultiDates] = useState<Date[] | undefined>([
+    new Date(2026, 6, 1),
+    new Date(2026, 6, 10),
+  ]);
   const [rangeCalendar, setRangeCalendar] = useState<DateRange | undefined>();
   const [monthDate, setMonthDate] = useState<Date | undefined>(new Date());
   const [rangeMonth, setRangeMonth] = useState<MonthRange | undefined>();
@@ -41,6 +45,11 @@ function DatePickerDemoPage() {
     return months
       .map((date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`)
       .join(', ');
+  };
+
+  const formatMultiDates = (dates?: Date[]) => {
+    if (!dates?.length) return 'None';
+    return dates.map((date) => date.toDateString()).join(', ');
   };
 
   return (
@@ -80,6 +89,12 @@ function DatePickerDemoPage() {
             <div className={styles.meta}>
               Range: {rangeDate?.from ? rangeDate.from.toDateString() : 'None'}{rangeDate?.to ? ` ~ ${rangeDate.to.toDateString()}` : ''}
             </div>
+          </div>
+
+          <div className={styles.card}>
+            <h3>Multi DatePicker</h3>
+            <MultiDatePicker value={multiDates} onChange={setMultiDates} placeholder="Select dates" />
+            <div className={styles.meta}>Dates: {formatMultiDates(multiDates)}</div>
           </div>
 
           <div className={styles.card}>

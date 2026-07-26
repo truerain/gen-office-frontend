@@ -1,5 +1,36 @@
 # UI 구현 로그
 
+## 2026-07-27
+
+### formatSummary Storybook 샘플 추가
+
+- `MultiDateFormatSummary`, `MultiMonthFormatSummary`를 각각 `MultiDatePicker`/`MultiMonthPicker` props 기준으로 스토리 타입을 잡아 Controls에 `formatSummary` 프리셋 select와 `summaryThreshold`가 보이도록 했습니다.
+- 관련 파일: `packages/ui/src/composed/DatePicker/DatePicker.stories.tsx`
+
+## 2026-07-27
+
+### Multi 선택 오버플로 라벨을 `+N more`로 변경
+
+- 임계값 초과 시 필드 표시를 `N selected`에서 `{첫 항목} +{N} more`로 바꿨습니다. locale과 무관하게 동일 문구를 쓰고, `formatSummary(firstLabel, restCount)`로 커스텀할 수 있습니다.
+- 관련 파일: `packages/ui/src/composed/DatePicker/multiSelectionDisplay.ts`, `packages/ui/src/composed/DatePicker/MultiDatePicker.types.ts`, `packages/ui/src/composed/DatePicker/MultiMonthPicker.types.ts`
+
+## 2026-07-27
+
+### MultiDate/MultiMonth 필드 라벨 임계값 요약
+
+- 선택 수가 `summaryThreshold`(기본 2)를 넘으면 필드에 `N selected` 요약을 표시하고, `title`에 전체 목록을 넣어 hover로 상세를 확인하도록 바꿨습니다.
+- `format`은 목록/`title` 항목 포맷에, `formatSummary`는 요약 문구 커스텀에 사용합니다. 공통 헬퍼 `multiSelectionDisplay.ts`를 추가했습니다.
+- 관련 파일: `packages/ui/src/composed/DatePicker/multiSelectionDisplay.ts`, `packages/ui/src/composed/DatePicker/MultiDatePicker.tsx`, `packages/ui/src/composed/DatePicker/MultiDatePicker.types.ts`, `packages/ui/src/composed/DatePicker/MultiMonthPicker.tsx`, `packages/ui/src/composed/DatePicker/MultiMonthPicker.types.ts`
+
+## 2026-07-27
+
+### MultiDatePicker 추가
+
+- 비연속 다중 일자 선택용 `MultiDatePicker`를 추가했습니다. Calendar `mode=multiple`로 토글한 뒤 확인으로 확정하고 Clear로 draft를 비울 수 있습니다.
+- 빈 선택은 `undefined`로 전달하며, 일 단위 정규화·중복 제거·정렬을 적용합니다. 패널 수는 `calendarProps.numberOfMonths`로 제어합니다.
+- Storybook(`MultiDate`, `MultiDateTwoMonths`)과 demo DatePicker 페이지에 예시를 추가했습니다.
+- 관련 파일: `packages/ui/src/composed/DatePicker/MultiDatePicker.tsx`, `packages/ui/src/composed/DatePicker/MultiDatePicker.types.ts`, `packages/ui/src/composed/DatePicker/index.ts`, `packages/ui/src/composed/DatePicker/DatePicker.stories.tsx`, `apps/demo/src/pages/demo/datepicker/DatePickerDemoPage.tsx`
+
 ## 2026-07-24
 
 ### MultiMonthPicker 2년 헤더 1줄 정리

@@ -9,7 +9,10 @@ import { RangeDatePicker } from './RangeDatePicker';
 import { MonthPicker } from './MonthPicker';
 import { RangeMonthPicker } from './RangeMonthPicker';
 import { MultiMonthPicker } from './MultiMonthPicker';
+import { MultiDatePicker } from './MultiDatePicker';
 import type { MonthRange } from './RangeMonthPicker.types';
+import type { MultiDatePickerProps } from './MultiDatePicker.types';
+import type { MultiMonthPickerProps } from './MultiMonthPicker.types';
 
 const meta = {
   title: 'Composed/DatePicker',
@@ -34,8 +37,32 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
+type MultiDateStory = StoryObj<MultiDatePickerProps>;
+type MultiMonthStory = StoryObj<MultiMonthPickerProps>;
 
 const fieldStyle = { width: '280px' } as const;
+
+const formatSummaryOptions = ['default (+N more)', '외 N건', 'and N more'] as const;
+
+const formatSummaryArgType = {
+  control: 'select' as const,
+  options: [...formatSummaryOptions],
+  mapping: {
+    'default (+N more)': undefined,
+    '외 N건': (firstLabel: string, restCount: number) => `${firstLabel} 외 ${restCount}건`,
+    'and N more': (firstLabel: string, restCount: number) => `${firstLabel} and ${restCount} more`,
+  },
+  description: 'Overflow label when selection exceeds summaryThreshold',
+};
+
+function resolveFormatSummary(
+  value: MultiMonthPickerProps['formatSummary'] | (typeof formatSummaryOptions)[number] | undefined
+): MultiMonthPickerProps['formatSummary'] {
+  if (typeof value === 'string') {
+    return formatSummaryArgType.mapping[value as (typeof formatSummaryOptions)[number]];
+  }
+  return value;
+}
 
 function DatePickerExample(props: {
   disabled?: boolean;
@@ -105,6 +132,89 @@ export const Range: Story = {
   render: () => <RangeDatePickerExample />,
 };
 
+function MultiDatePickerExample(props: { numberOfMonths?: number }) {
+  const [value, setValue] = useState<Date[] | undefined>([
+    new Date(2026, 6, 1),
+    new Date(2026, 6, 10),
+    new Date(2026, 6, 24),
+  ]);
+
+  return (
+    <div style={fieldStyle}>
+      <MultiDatePicker
+        value={value}
+        onChange={setValue}
+        locale="ko-KR"
+        calendarProps={props.numberOfMonths ? { numberOfMonths: props.numberOfMonths } : undefined}
+      />
+    </div>
+  );
+}
+
+export const MultiDate: Story = {
+  args: {
+    placeholder: 'Select dates',
+  },
+  render: () => <MultiDatePickerExample />,
+};
+
+export const MultiDateTwoMonths: Story = {
+  args: {
+    placeholder: 'Select dates',
+  },
+  render: () => <MultiDatePickerExample numberOfMonths={2} />,
+};
+
+export const MultiDateFormatSummary: MultiDateStory = {
+  name: 'MultiDateFormatSummary',
+  args: {
+    placeholder: 'Select dates',
+    locale: 'ko-KR',
+    summaryThreshold: 2,
+    // Storybook mapping key; resolved to formatSummary fn via argTypes.mapping
+    formatSummary: '외 N건' as unknown as MultiDatePickerProps['formatSummary'],
+  },
+  argTypes: {
+    formatSummary: formatSummaryArgType,
+    summaryThreshold: {
+      control: { type: 'number', min: 1, max: 10 },
+    },
+    format: { control: false },
+    calendarProps: { control: false },
+    onChange: { control: false },
+    value: { control: false },
+  },
+  render: function MultiDateFormatSummaryRender(args) {
+    const [value, setValue] = useState<Date[] | undefined>([
+      new Date(2026, 6, 1),
+      new Date(2026, 6, 10),
+      new Date(2026, 6, 24),
+      new Date(2026, 7, 5),
+    ]);
+
+    return (
+      <div style={fieldStyle}>
+        <MultiDatePicker
+          {...args}
+          value={value}
+          onChange={setValue}
+          formatSummary={resolveFormatSummary(
+            args.formatSummary as
+              | MultiDatePickerProps['formatSummary']
+              | (typeof formatSummaryOptions)[number]
+              | undefined
+          )}
+          format={
+            args.format ??
+            ((date) =>
+              `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`)
+          }
+        />
+      </div>
+    );
+  },
+};
+
 function MonthPickerExample() {
   const [value, setValue] = useState<Date | undefined>(new Date(2026, 6, 1));
 
@@ -154,40 +264,100 @@ export const RangeMonth: Story = {
   render: () => <RangeMonthPickerExample />,
 };
 
-function MultiMonthPickerExample(props: { visibleYears?: 1 | 2 }) {
-  const [value, setValue] = useState<Date[] | undefined>([
-    new Date(2026, 0, 1),
-    new Date(2026, 2, 1),
-    new Date(2026, 6, 1),
-  ]);
+function MultiMonthPickerExample(
+  props: MultiMonthPickerProps & { initialValue?: Date[] }
+) {
+  const [value, setValue] = useState<Date[] | undefined>(
+    props.initialValue ?? [
+      new Date(2026, 0, 1),
+      new Date(2026, 2, 1),
+      new Date(2026, 6, 1),
+    ]
+  );
+
+  const { initialValue: _initialValue, value: _value, onChange: _onChange, ...pickerProps } = props;
 
   return (
     <div style={fieldStyle}>
       <MultiMonthPicker
+        {...pickerProps}
         value={value}
         onChange={setValue}
-        locale="ko-KR"
-        visibleYears={props.visibleYears}
-        fromMonth={new Date(2019, 0, 1)}
-        toMonth={new Date(2028, 11, 1)}
-        format={(date) =>
-          `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+        locale={props.locale ?? 'ko-KR'}
+        fromMonth={props.fromMonth ?? new Date(2019, 0, 1)}
+        toMonth={props.toMonth ?? new Date(2028, 11, 1)}
+        formatSummary={resolveFormatSummary(
+          props.formatSummary as
+            | MultiMonthPickerProps['formatSummary']
+            | (typeof formatSummaryOptions)[number]
+            | undefined
+        )}
+        format={
+          props.format ??
+          ((date) =>
+            `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`)
         }
       />
     </div>
   );
 }
 
-export const MultiMonth: Story = {
-  args: {
-    placeholder: 'Select months',
+const multiMonthControlArgTypes: MultiMonthStory['argTypes'] = {
+  formatSummary: formatSummaryArgType,
+  summaryThreshold: {
+    control: { type: 'number', min: 1, max: 10 },
   },
-  render: () => <MultiMonthPickerExample />,
+  format: { control: false },
+  onChange: { control: false },
+  value: { control: false },
+  fromMonth: { control: false },
+  toMonth: { control: false },
 };
 
-export const MultiMonthTwoYears: Story = {
+export const MultiMonth: MultiMonthStory = {
   args: {
     placeholder: 'Select months',
+    locale: 'ko-KR',
+    visibleYears: 1,
+    summaryThreshold: 2,
+    formatSummary: 'default (+N more)' as unknown as MultiMonthPickerProps['formatSummary'],
   },
-  render: () => <MultiMonthPickerExample visibleYears={2} />,
+  argTypes: multiMonthControlArgTypes,
+  render: (args) => <MultiMonthPickerExample {...args} />,
+};
+
+export const MultiMonthTwoYears: MultiMonthStory = {
+  args: {
+    placeholder: 'Select months',
+    locale: 'ko-KR',
+    visibleYears: 2,
+    summaryThreshold: 2,
+    formatSummary: 'default (+N more)' as unknown as MultiMonthPickerProps['formatSummary'],
+  },
+  argTypes: multiMonthControlArgTypes,
+  render: (args) => <MultiMonthPickerExample {...args} />,
+};
+
+export const MultiMonthFormatSummary: MultiMonthStory = {
+  name: 'MultiMonthFormatSummary',
+  args: {
+    placeholder: 'Select months',
+    locale: 'ko-KR',
+    summaryThreshold: 2,
+    fromMonth: new Date(2019, 0, 1),
+    toMonth: new Date(2028, 11, 1),
+    formatSummary: '외 N건' as unknown as MultiMonthPickerProps['formatSummary'],
+  },
+  argTypes: multiMonthControlArgTypes,
+  render: (args) => (
+    <MultiMonthPickerExample
+      {...args}
+      initialValue={[
+        new Date(2026, 0, 1),
+        new Date(2026, 2, 1),
+        new Date(2026, 6, 1),
+        new Date(2026, 9, 1),
+      ]}
+    />
+  ),
 };

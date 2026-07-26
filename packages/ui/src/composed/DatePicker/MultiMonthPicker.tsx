@@ -6,6 +6,7 @@ import { Calendar as CalendarIcon, Check, ChevronLeft, ChevronRight, X } from 'l
 import { Button } from '../../core/Button';
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '../../core/Popover';
 import type { MultiMonthPickerProps } from './MultiMonthPicker.types';
+import { formatMultiSelectionDisplay } from './multiSelectionDisplay';
 import styles from './DatePicker.module.css';
 
 const defaultFormatter = (date: Date, locale?: string) => {
@@ -35,16 +36,6 @@ const normalizeMonths = (months?: Date[]): Date[] => {
   return Array.from(byKey.values()).sort((a, b) => monthKey(a) - monthKey(b));
 };
 
-const formatMonths = (
-  months: Date[] | undefined,
-  locale?: string,
-  format?: (date: Date) => string
-) => {
-  if (!months?.length) return '';
-  const formatDate = (date: Date) => (format ? format(date) : defaultFormatter(date, locale));
-  return months.map(formatDate).join(', ');
-};
-
 const monthsSignature = (months?: Date[]) =>
   normalizeMonths(months)
     .map((date) => monthKey(date))
@@ -60,6 +51,8 @@ export function MultiMonthPicker({
   align = 'start',
   locale,
   format,
+  summaryThreshold,
+  formatSummary,
   clearable = true,
   visibleYears = 1,
   className,
@@ -108,10 +101,14 @@ export function MultiMonthPicker({
   const selectedValue = open ? draftValue : normalizedValue;
   const selectedKeys = useMemo(() => new Set(selectedValue.map(monthKey)), [selectedValue]);
 
-  const label = useMemo(
-    () => formatMonths(selectedValue, locale, format),
-    [selectedValue, locale, format]
-  );
+  const { label, title } = useMemo(() => {
+    const formatItem = (date: Date) => (format ? format(date) : defaultFormatter(date, locale));
+    return formatMultiSelectionDisplay(selectedValue, {
+      summaryThreshold,
+      formatItem,
+      formatSummary,
+    });
+  }, [selectedValue, locale, format, summaryThreshold, formatSummary]);
 
   const canGoPrevYear = minYear === undefined || displayYear > minYear;
   const canGoNextYear =
@@ -139,6 +136,7 @@ export function MultiMonthPicker({
             type="text"
             className={styles.input}
             value={label}
+            title={title}
             placeholder={placeholder}
             disabled={disabled}
             readOnly
