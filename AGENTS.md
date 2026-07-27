@@ -34,6 +34,7 @@ Keep package responsibilities clear.
 - `packages/gen-grid-crud`: CRUD behavior built on top of GenGrid.
 - `packages/gen-grid-chart`: grid and chart integration.
 - `packages/gen-chart`: chart components.
+- `packages/gen-calendar`: editable month/week calendar views, recurrence expansion, and drag edit callbacks.
 - `packages/gen-datagrid`: experimental or alternative data grid implementation.
 - `packages/tsconfig`: shared TypeScript configuration.
 

@@ -5,6 +5,15 @@
 - **Showcase 앱 전용:** `apps/showcase/docs/logs/decisions.md`
 - 최신 항목을 위에 추가합니다.
 
+## 2026-07-27
+
+### GenCalendar Phase 세분화 및 문서 경로
+
+- 1차 목표 범위(월/주/편집/반복)는 유지하고 구현 단위를 P0–P8로 세분화한다.
+- 패키지 문서는 구현 착수와 함께 `.docs`에서 `docs`로 이전한다.
+- 연동은 Storybook 스토리와 `apps/demo` Calendar Demo를 우선하고, 월간 초과 일정 예제는 우측 패널로 제공한다.
+- 관련 파일: `packages/gen-calendar/docs/calendar-concept-and-plan.md`, `docs/logs/decisions.md`
+
 ## 2026-06-19 - Showcase 결정 로그 분리
 
 결정:

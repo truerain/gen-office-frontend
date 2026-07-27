@@ -8,6 +8,7 @@ import '@gen-office/gen-grid/index.css';
 import '@gen-office/gen-grid-crud/index.css';
 import '@gen-office/gen-datagrid-crud/index.css';
 import '@gen-office/gen-chart/index.css';
+import '@gen-office/gen-calendar/index.css';
 
 import './styles/index.css';
 import { AppProviders } from './app/providers/AppProvider';

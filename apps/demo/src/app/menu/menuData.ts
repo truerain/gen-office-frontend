@@ -25,6 +25,7 @@ const componentNameByMenuId: Record<string, string> = {
   '991100': 'SimpleFilterBarDemoPage',
   '991200': 'CrudActionControlsDemoPage',
   '991300': 'GridDisplayScaleDemoPage',
+  '991400': 'CalendarDemoPage',
 };
 
 const iconByMenuId: Record<string, string> = {
@@ -53,6 +54,7 @@ const iconByMenuId: Record<string, string> = {
   '991100': 'Filter',
   '991200': 'SlidersHorizontal',
   '991300': 'Scale',
+  '991400': 'CalendarDays',
 };
 
 export type SystemMenuData = {

@@ -1,4 +1,4 @@
-<!-- packages/gen-calendar/.docs/calendar-architecture.md
+<!-- packages/gen-calendar/docs/calendar-architecture.md
 Documents the proposed GenCalendar architecture using Mermaid diagrams.
 -->
 
@@ -266,7 +266,7 @@ interface GenCalendarSlotSelection {
 
 ## 남은 결정
 
-- 패키지 이름을 `gen-calendar`로 확정할지
-- 문서 디렉터리를 `.docs`로 유지할지, 기존 관례처럼 `docs`로 둘지
-- 고객 일정관리 화면을 demo app에 먼저 만들지, 별도 앱 또는 업무 패키지로 둘지
-- 월간 초과 일정 콜백 이후의 기본 예제를 팝오버, 우측 패널, 일간 이동 중 무엇으로 보여줄지
+- (해소) 패키지 이름: `@gen-office/gen-calendar`
+- (해소) 문서 디렉터리: `docs/`
+- (해소) 연동: Storybook + demo
+- (해소) 월간 초과 일정 예제: demo 우측 패널

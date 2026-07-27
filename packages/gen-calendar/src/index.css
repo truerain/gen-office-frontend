@@ -1,0 +1,293 @@
+/* packages/gen-calendar/src/index.css
+ * Baseline styles for GenCalendar month and week views.
+ */
+
+.gen-calendar {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #1a1a1a);
+  border: 1px solid var(--color-border, #e5e5e5);
+  border-radius: var(--border-radius-lg, 8px);
+  overflow: hidden;
+}
+
+.gen-calendar__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border, #e5e5e5);
+  flex: 0 0 auto;
+}
+
+.gen-calendar__nav,
+.gen-calendar__views {
+  display: flex;
+  gap: 6px;
+}
+
+.gen-calendar__toolbar button {
+  appearance: none;
+  border: 1px solid var(--color-border, #e5e5e5);
+  background: var(--color-surface, #fff);
+  color: inherit;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.gen-calendar__toolbar button.is-active,
+.gen-calendar__toolbar button:hover {
+  border-color: var(--color-brand, #a50034);
+  color: var(--color-brand, #a50034);
+}
+
+.gen-calendar__title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.gen-calendar-month {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.gen-calendar-month__weekdays,
+.gen-calendar-month__week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.gen-calendar-month__weekday {
+  padding: 8px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #666);
+  border-bottom: 1px solid var(--color-border, #e5e5e5);
+}
+
+.gen-calendar-month__body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.gen-calendar-month__week {
+  flex: 1;
+  min-height: 96px;
+  border-bottom: 1px solid var(--color-border, #e5e5e5);
+}
+
+.gen-calendar-month__cell {
+  min-width: 0;
+  padding: 6px;
+  border-right: 1px solid var(--color-border, #e5e5e5);
+  cursor: pointer;
+}
+
+.gen-calendar-month__cell.is-outside {
+  background: var(--color-surface-muted, #fafafa);
+  color: var(--color-text-secondary, #999);
+}
+
+.gen-calendar-month__cell.is-today .gen-calendar-month__day-number {
+  background: var(--color-brand, #a50034);
+  color: #fff;
+}
+
+.gen-calendar-month__day-number {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.gen-calendar-month__events {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gen-calendar-event-chip,
+.gen-calendar-week__allday-event,
+.gen-calendar-week__event {
+  border: 0;
+  border-radius: 4px;
+  background: var(--color-brand, #a50034);
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gen-calendar-event-chip {
+  padding: 2px 6px;
+  font-size: 11px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.gen-calendar-month__more {
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary, #666);
+  font-size: 11px;
+  text-align: left;
+  padding: 2px 4px;
+  cursor: pointer;
+}
+
+.gen-calendar-week {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.gen-calendar-week__header,
+.gen-calendar-week__allday,
+.gen-calendar-week__time-grid {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+}
+
+.gen-calendar-week__header {
+  border-bottom: 1px solid var(--color-border, #e5e5e5);
+}
+
+.gen-calendar-week__gutter {
+  padding: 8px 6px;
+  font-size: 11px;
+  color: var(--color-text-secondary, #666);
+}
+
+.gen-calendar-week__day-header {
+  display: contents;
+}
+
+.gen-calendar-week__header {
+  display: grid;
+  grid-template-columns: 64px repeat(7, minmax(0, 1fr));
+}
+
+.gen-calendar-week__day-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px;
+  border-left: 1px solid var(--color-border, #e5e5e5);
+}
+
+.gen-calendar-week__day-name {
+  font-size: 12px;
+  color: var(--color-text-secondary, #666);
+}
+
+.gen-calendar-week__day-date {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.gen-calendar-week__allday {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  border-bottom: 1px solid var(--color-border, #e5e5e5);
+  min-height: 44px;
+}
+
+.gen-calendar-week__allday-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+  padding: 4px;
+  position: relative;
+}
+
+.gen-calendar-week__allday-event {
+  padding: 2px 6px;
+  font-size: 11px;
+}
+
+.gen-calendar-week__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.gen-calendar-week__time-grid {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  position: relative;
+}
+
+.gen-calendar-week__hour {
+  font-size: 11px;
+  color: var(--color-text-secondary, #666);
+  padding: 0 6px;
+  box-sizing: border-box;
+  border-top: 1px solid var(--color-border, #eee);
+}
+
+.gen-calendar-week__columns {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  position: relative;
+}
+
+.gen-calendar-week__column {
+  border-left: 1px solid var(--color-border, #e5e5e5);
+  position: relative;
+}
+
+.gen-calendar-week__slot {
+  box-sizing: border-box;
+  border-top: 1px solid var(--color-border, #eee);
+}
+
+.gen-calendar-week__event {
+  position: absolute;
+  z-index: 1;
+  padding: 4px 6px;
+  font-size: 11px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.gen-calendar-week__event.is-preview {
+  opacity: 0.7;
+  outline: 1px dashed #fff;
+}
+
+.gen-calendar-week__event-title {
+  font-weight: 700;
+}
+
+.gen-calendar-week__resize {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 6px;
+  cursor: ns-resize;
+}
+
+.gen-calendar-week__resize--start {
+  top: 0;
+}
+
+.gen-calendar-week__resize--end {
+  bottom: 0;
+}

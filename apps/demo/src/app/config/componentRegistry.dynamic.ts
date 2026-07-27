@@ -67,6 +67,7 @@ const componentPaths: Record<string, ComponentLoader> = {
   GridStyleDemoPage: () => import('@/pages/demo/grid-style'),
   DashboardDemoPage: () => import('@/pages/demo/dashboard'),
   ChartDemoPage: () => import('@/pages/demo/chart'),
+  CalendarDemoPage: () => import('@/pages/demo/calendar'),
   PaginationDemoPage: () => import('@/pages/demo/pagination'),
   SliderDemoPage: () => import('@/pages/demo/slider'),
   ComboboxDemoPage: () => import('@/pages/demo/combobox'),

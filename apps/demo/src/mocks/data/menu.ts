@@ -293,6 +293,17 @@ const menus: AppMenu[] = [
     sortOrder: 901300,
     execComponent: 'GridDisplayScaleDemoPage',
   },
+  {
+    menuId: 901400,
+    menuName: 'Calendar Demo',
+    menuNameEng: 'Calendar Demo',
+    menuIcon: 'CalendarDays',
+    parentMenuId: 900000,
+    displayYn: 'Y',
+    useYn: 'Y',
+    sortOrder: 901400,
+    execComponent: 'CalendarDemoPage',
+  },
 ];
 
 export function loadAppMenuData() {

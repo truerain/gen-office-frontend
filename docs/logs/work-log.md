@@ -2,6 +2,13 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-07-27
+
+### GenCalendar 패키지 1차 구현 (P0–P8)
+
+- `@gen-office/gen-calendar`를 추가하고 월간/주간 뷰, 선택, 드래그 이동/리사이즈, 기본 반복 전개, demo/Storybook 연동을 구현했다.
+- 관련 파일: `packages/gen-calendar/**`, `apps/demo/src/pages/demo/calendar/**`, `AGENTS.md`, `docs/logs/decisions.md`
+
 ## 2026-07-24
 
 ### MultiMonthPicker 2년 헤더 1줄 정리

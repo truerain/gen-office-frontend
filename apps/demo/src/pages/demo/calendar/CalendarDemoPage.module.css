@@ -1,0 +1,65 @@
+/* apps/demo/src/pages/demo/calendar/CalendarDemoPage.module.css
+ * Layout styles for the GenCalendar demo page.
+ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  padding-bottom: var(--spacing-md);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 12px;
+  min-height: 0;
+  flex: 1;
+}
+
+.calendarPane {
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+}
+
+.sidePanel {
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  background: var(--color-surface);
+  padding: 12px;
+  overflow: auto;
+}
+
+.sideTitle {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.sideText {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--color-text-secondary, #666);
+  word-break: break-all;
+}
+
+.moreList {
+  border-top: 1px solid var(--color-border);
+  padding-top: 10px;
+}
+
+.moreHeader {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.moreList ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+}

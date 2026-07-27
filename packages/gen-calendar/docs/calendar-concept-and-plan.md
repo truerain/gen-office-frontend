@@ -1,4 +1,4 @@
-<!-- packages/gen-calendar/.docs/calendar-concept-and-plan.md
+<!-- packages/gen-calendar/docs/calendar-concept-and-plan.md
 Documents the initial concept and implementation plan for GenCalendar.
 -->
 
@@ -222,57 +222,39 @@ interface GenCalendarMoreEventsClick {
 
 현재 1차 범위가 편집과 반복 일정을 포함하므로, 직접 구현과 외부 라이브러리 기반을 모두 비교해야 한다. 직접 구현은 장기 통제력이 좋지만 초기 비용이 크고, 외부 라이브러리는 속도가 빠르지만 패키지 API와 스타일 통제에 비용이 생긴다.
 
-## 단계별 계획
+## 단계별 계획 (P0–P8)
 
-### 0단계: 요구 정리
+1차 목표 범위(월/주/편집/반복)는 유지하고, 구현·검증 단위만 세분화한다. 각 Phase 끝에 스토리 또는 단위 테스트로 닫는다.
 
-- 고객이 필요한 기본 뷰 확인: 월간, 주간
-- 일정 데이터 최소 필드 확정
-- 드래그 이동과 기간 변경의 UX 범위 확정
-- 반복 일정 규칙의 1차 지원 범위 확정
-- 반복 일정의 서버 저장 모델과 화면 표시 모델 분리 여부 확인
+### P0: 패키지 골격
+- `package.json`, Vite lib build, `src/index.ts`, placeholder 컴포넌트
+- `.docs` → `docs` 이전
+- demo / Storybook 진입점
 
-### 1단계: 패키지 골격
+### P1: 날짜·이벤트 순수 모델
+- 월간 매트릭스, 주간 범위, 시간 슬롯, `normalizeEvents`
+- 단위 테스트
 
-- `packages/gen-calendar/package.json`
-- `src/index.ts`
-- `src/GenCalendar.tsx`
-- `src/GenCalendar.types.ts`
-- `src/index.css`
-- `.docs` 문서 정리
-- demo 또는 Storybook 진입점
+### P2: 월간 뷰 (읽기 전용)
+- 날짜별 이벤트, `+N more`, `onMoreEventsClick`
 
-### 2단계: 날짜 및 이벤트 모델
+### P3: 주간 뷰 (읽기 전용)
+- 시간표, all-day 행, 겹침 컬럼 레이아웃
 
-- 월간 날짜 매트릭스 생성
-- 주간 날짜 및 시간 슬롯 생성
-- 이벤트 날짜 범위 정규화
-- 반복 일정 타입 정의
-- 현재 표시 범위 기준 반복 일정 전개
+### P4: 탐색·선택
+- Today/Prev/Next, view 전환, 슬롯/이벤트 클릭 콜백
 
-### 3단계: 월간/주간 렌더링
+### P5: 드래그 이동
+- `onEventMove`, 월 날짜 단위 / 주 30분 스냅
 
-- 월간 셀 렌더링
-- 주간 시간표 렌더링
-- 이벤트를 날짜별 또는 시간 슬롯별로 배치
-- 겹치는 주간 이벤트 배치 규칙 구현
-- 초과 일정 표시 정책 정의
+### P6: 기간 변경
+- 주간 resize 핸들, `onEventResize`
 
-### 4단계: 편집 상호작용
+### P7: 반복 일정
+- `expandRecurrence` / 예외 회차, 표시 범위 전개
 
-- 날짜 셀 및 시간 슬롯 선택
-- 일정 드래그 이동
-- 일정 기간 변경
-- 드래그 스냅 단위 설정
-- 편집 결과 콜백 계약 정의
-
-### 5단계: 통합 및 검증
-
-- demo app 또는 Storybook 예제 구성
-- 날짜 계산 테스트
-- 반복 일정 전개 테스트
-- 드래그 편집 상호작용 테스트
-- 인코딩 및 문서 로그 확인
+### P8: 통합·문서·검증
+- demo 통합, 문서 정합, build/test/encoding
 
 ## 확정된 결정
 
@@ -285,8 +267,7 @@ interface GenCalendarMoreEventsClick {
 
 ## 남은 결정
 
-- 패키지 이름을 `gen-calendar`로 확정할지
-- 문서 디렉터리를 `.docs`로 유지할지, 기존 관례처럼 `docs`로 둘지
-- 고객 일정관리 화면을 demo app에 먼저 만들지, 별도 앱 또는 업무 패키지로 둘지
-- 월간 초과 일정 콜백 이후의 기본 예제를 팝오버, 우측 패널, 일간 이동 중 무엇으로 보여줄지
-
+- (해소) 패키지 이름: `@gen-office/gen-calendar`
+- (해소) 문서 디렉터리: `docs/`
+- (해소) 연동: Storybook + `apps/demo` Calendar Demo 페이지
+- (해소) 월간 초과 일정 예제: demo 우측 패널

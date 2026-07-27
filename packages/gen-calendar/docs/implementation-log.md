@@ -1,8 +1,17 @@
-<!-- packages/gen-calendar/.docs/implementation-log.md
+<!-- packages/gen-calendar/docs/implementation-log.md
 Tracks planning and implementation notes for GenCalendar.
 -->
 
 # GenCalendar 구현 로그
+
+## 2026-07-27
+
+### P0–P8 1차 구현 및 Phase 세분화 반영
+
+- `@gen-office/gen-calendar` 패키지 골격을 추가하고 월간/주간 뷰, 선택, 드래그 이동/리사이즈, 기본 반복 전개를 구현했다.
+- 문서 경로를 `.docs`에서 `docs`로 이전하고, 단계별 계획을 P0–P8로 세분화해 반영했다.
+- demo `CalendarDemoPage`와 Storybook 스토리, 날짜/정규화/반복/주간 레이아웃 단위 테스트를 추가했다.
+- 관련 파일: `packages/gen-calendar/src/**`, `packages/gen-calendar/docs/**`, `apps/demo/src/pages/demo/calendar/**`
 
 ## 2026-07-21
 
