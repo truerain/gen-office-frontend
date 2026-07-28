@@ -2,7 +2,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ColumnDef, PaginationState } from '@tanstack/react-table';
 import { Rows4 } from 'lucide-react';
 
-import { GenGridCrud } from '@gen-office/gen-grid-crud';
+import {
+  GenGridCrud,
+  formatServerSortQuery,
+  type ServerSortingState,
+} from '@gen-office/gen-grid-crud';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 
@@ -35,13 +39,34 @@ function buildRows(total: number): PaginationRow[] {
   });
 }
 
+function compareValues(a: unknown, b: unknown): number {
+  if (typeof a === 'number' && typeof b === 'number') return a - b;
+  return String(a ?? '').localeCompare(String(b ?? ''), undefined, { numeric: true });
+}
+
+function sortRows(rows: PaginationRow[], sorting: ServerSortingState): PaginationRow[] {
+  if (sorting.length === 0) return rows;
+  const next = [...rows];
+  next.sort((left, right) => {
+    for (const item of sorting) {
+      const key = item.id as keyof PaginationRow;
+      const cmp = compareValues(left[key], right[key]);
+      if (cmp !== 0) return item.desc ? -cmp : cmp;
+    }
+    return 0;
+  });
+  return next;
+}
+
 const INITIAL_SIZE = 137;
 
 export default function PaginationDemoPage(_props: PageComponentProps) {
   const [allRows, setAllRows] = useState<PaginationRow[]>(() => buildRows(INITIAL_SIZE));
   const [data, setData] = useState<PaginationRow[]>(() => buildRows(INITIAL_SIZE));
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 25 });
+  const [sorting, setSorting] = useState<ServerSortingState>([]);
   const [isFetching, setIsFetching] = useState(false);
+  const [lastSortQuery, setLastSortQuery] = useState('');
 
   const handlePaginationChange = useCallback((next: PaginationState) => {
     setPagination((prev) => {
@@ -50,6 +75,11 @@ export default function PaginationDemoPage(_props: PageComponentProps) {
       }
       return next;
     });
+  }, []);
+
+  const handleSortingChange = useCallback((next: ServerSortingState) => {
+    setSorting(next);
+    setPagination((prev) => (prev.pageIndex === 0 ? prev : { ...prev, pageIndex: 0 }));
   }, []);
 
   const columns = useMemo<ColumnDef<PaginationRow, any>[]>(
@@ -88,14 +118,15 @@ export default function PaginationDemoPage(_props: PageComponentProps) {
   );
 
   const runQuery = useCallback(
-    async (next: PaginationState, baseData: PaginationRow[]) => {
+    async (next: PaginationState, baseData: PaginationRow[], nextSorting: ServerSortingState) => {
       setIsFetching(true);
       try {
-        // Demo purpose: emulate external query on pagination change.
         await new Promise((resolve) => setTimeout(resolve, 120));
+        const sorted = sortRows(baseData, nextSorting);
         const start = next.pageIndex * next.pageSize;
         const end = start + next.pageSize;
-        setData(baseData.slice(start, end));
+        setData(sorted.slice(start, end));
+        setLastSortQuery(formatServerSortQuery(nextSorting) || '(none)');
       } finally {
         setIsFetching(false);
       }
@@ -104,8 +135,8 @@ export default function PaginationDemoPage(_props: PageComponentProps) {
   );
 
   useEffect(() => {
-    void runQuery(pagination, allRows);
-  }, [allRows, pagination.pageIndex, pagination.pageSize, runQuery]);
+    void runQuery(pagination, allRows, sorting);
+  }, [allRows, pagination.pageIndex, pagination.pageSize, sorting, runQuery]);
 
   const replaceData = (size: number) => {
     const nextRows = buildRows(size);
@@ -117,7 +148,7 @@ export default function PaginationDemoPage(_props: PageComponentProps) {
     <div className={styles.page}>
       <PageHeader
         title="Pagination Demo"
-        description="GenGridCrud pagination validation page"
+        description="GenGridCrud pagination + built-in server-side Sort (DnD priority)"
         breadcrumbItems={[
           { label: 'UI Demo', icon: <Rows4 size={16} /> },
           { label: 'Pagination Demo', icon: <Rows4 size={16} /> },
@@ -136,7 +167,7 @@ export default function PaginationDemoPage(_props: PageComponentProps) {
           503 rows
         </button>
         <span className={styles.hint}>
-          Next/Prev click updates external pagination state and triggers query.
+          ActionBar Sort로 서버 정렬·우선순위를 적용합니다. last sort: {lastSortQuery}
         </span>
       </div>
 
@@ -145,6 +176,8 @@ export default function PaginationDemoPage(_props: PageComponentProps) {
           data={data}
           columns={columns}
           getRowId={(row) => row.id}
+          sorting={sorting}
+          onSortingChange={handleSortingChange}
           onCommit={async () => ({ ok: true, nextData: data })}
           onCommitSuccess={(result) => {
             if (result.nextData) setData([...result.nextData] as PaginationRow[]);
@@ -153,7 +186,7 @@ export default function PaginationDemoPage(_props: PageComponentProps) {
             enabled: true,
             position: 'top',
             defaultStyle: 'text',
-            includeBuiltIns: ['add', 'delete', 'save', 'reset'],
+            includeBuiltIns: ['add', 'delete', 'save', 'reset', 'sort'],
           }}
           createRow={() => {
             const nextId = String(Date.now());
@@ -168,26 +201,28 @@ export default function PaginationDemoPage(_props: PageComponentProps) {
           }}
           gridProps={{
             height: '100%',
-            dataVersion: `${allRows.length}-${pagination.pageIndex}-${pagination.pageSize}`,
+            dataVersion: `${allRows.length}-${pagination.pageIndex}-${pagination.pageSize}-${lastSortQuery}`,
             rowHeight: 34,
             enableColumnSizing: true,
             enablePinning: true,
             enablePagination: true,
             pagination,
             onPaginationChange: handlePaginationChange,
-            //pageSizeOptions: [10, 25, 50, 100],
             enableRowNumber: true,
             enableFooter: true,
             renderFooter: (table) => {
-              const { pageIndex, pageSize } = table.getState().pagination ?? { pageIndex: 0, pageSize: 0 };
+              const { pageIndex, pageSize } = table.getState().pagination ?? {
+                pageIndex: 0,
+                pageSize: 0,
+              };
               return (
                 <div className={styles.footerSummary}>
-                  {isFetching ? 'loading...' : 'loaded'} | total {allRows.length} rows | page {pageIndex + 1}/
-                  {table.getPageCount()} | page size {pageSize}
+                  {isFetching ? 'loading...' : 'loaded'} | total {allRows.length} rows | page{' '}
+                  {pageIndex + 1}/{table.getPageCount()} | page size {pageSize} | sort {lastSortQuery}
                 </div>
               );
             },
-            totalRowCount: 1000,
+            totalRowCount: allRows.length,
           }}
         />
       </div>

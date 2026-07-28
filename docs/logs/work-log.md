@@ -2,6 +2,40 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-07-28
+
+### Server-Side Sort DnD UX CRUD 승격
+
+- demo Sort DnD UX를 `gen-grid-crud` built-in으로 승격하고 demo 전용 다이얼로그를 제거했다.
+- 관련 파일: `packages/gen-grid-crud/src/components/CrudServerSortDialog.*`, `apps/demo/.../PaginationDemoPage.tsx`, `docs/gen-grid/server-side-sort-architecture.md`
+
+### Server-Side Sort 우선순위 DnD (demo 실험)
+
+- Pagination Demo `ServerSortPriorityDialog`는 **단일 컬럼 목록**에서 방향(없음/오름/내림) 선택 + 선택 행 DnD로 우선순위를 바꾼다.
+- CRUD built-in Sort 대신 `customActions`로 열어, 패키지 승격 여부를 demo에서 판단한다.
+- 관련 파일: `apps/demo/src/pages/demo/pagination/ServerSortPriorityDialog.tsx`, `PaginationDemoPage.tsx`
+
+### Server-Side Sort 다이얼로그 UX 변경
+
+- Sort 다이얼로그를 전체 컬럼 나열 + 없음/오름/내림 선택 방식으로 바꿨다.
+- 관련 파일: `packages/gen-grid-crud/src/components/CrudServerSortDialog.tsx`, `docs/gen-grid/server-side-sort-architecture.md`
+
+### Server-Side Sort 다이얼로그 높이 보정
+
+- `CrudServerSortDialog`에 `initialHeight={360}`을 지정해 SimpleDialog body 접힘(콘텐츠 미표시)을 수정했다.
+- 관련 파일: `packages/gen-grid-crud/src/components/CrudServerSortDialog.tsx`, `CrudServerSortDialog.module.css`
+
+### Server-Side Sort Phase 0·2 구현
+
+- gen-grid에 `enableSorting`을 공개하고, gen-grid-crud에 ActionBar Sort 다이얼로그·`onSortingChange` 계약을 추가했다.
+- Pagination Demo에서 서버 정렬(전체 집합 정렬 후 페이지 슬라이스) 시나리오를 검증용으로 연동했다.
+- 관련 파일: `packages/gen-grid/**`, `packages/gen-grid-crud/**`, `apps/demo/src/pages/demo/pagination/PaginationDemoPage.tsx`, `docs/gen-grid/server-side-sort-architecture.md`
+
+### Server-Side Sort 아키텍처·계획 문서 추가
+
+- 서버 페이징용 Sort 팝오버 시나리오의 아키텍처와 Phase 0~2 구현 계획을 문서화했다.
+- 관련 파일: `docs/gen-grid/server-side-sort-architecture.md`, `docs/logs/decisions.md`
+
 ## 2026-07-27
 
 ### GenCalendar 패키지 1차 구현 (P0–P8)

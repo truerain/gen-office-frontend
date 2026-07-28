@@ -14,8 +14,11 @@ import type {
   CrudBuiltInActionKey,
   CrudCellPatch,
   CrudFieldErrorMap,
+  ServerSortingState,
 } from './GenGridCrud.types';
 import { CrudActionBar } from './components/CrudActionBar';
+import { CrudServerSortDialog } from './components/CrudServerSortDialog';
+import { collectServerSortColumns } from './features/server-sort/serverSortColumns';
 import { resolveGenGridCellTooltip } from '@gen-office/gen-grid';
 import { exportAdditionalCrudExcel, exportCrudExcel } from './features/excel';
 import { findLeafColumnDef } from './utils/columnMeta';
@@ -193,6 +196,10 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
 
     clearDirtyOnRevert = true,
 
+    sorting: sortingControlled,
+    defaultSorting,
+    onSortingChange,
+
     gridProps,
   } = props;
 
@@ -212,8 +219,36 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     const defaults: readonly string[] = ['add', 'delete', 'save', 'columnReorder', 'filter'];
     return (includedBuiltInActions ?? defaults).includes('columnReorder');
   }, [includedBuiltInActions]);
+  const hasSortBuiltIn = React.useMemo(() => {
+    const defaults: readonly string[] = ['add', 'delete', 'save', 'columnReorder', 'filter'];
+    return (includedBuiltInActions ?? defaults).includes('sort');
+  }, [includedBuiltInActions]);
   const customActions = actionBar?.customActions;
   const [deleteBlockedDialogOpen, setDeleteBlockedDialogOpen] = React.useState(false);
+  const [serverSortDialogOpen, setServerSortDialogOpen] = React.useState(false);
+  const [sortingUncontrolled, setSortingUncontrolled] = React.useState<ServerSortingState>(
+    () => defaultSorting ?? []
+  );
+  const appliedSorting = sortingControlled ?? sortingUncontrolled;
+  const serverSortMode =
+    hasSortBuiltIn || sortingControlled != null || typeof onSortingChange === 'function';
+  const serverSortColumns = React.useMemo(
+    () => collectServerSortColumns(columns),
+    [columns]
+  );
+
+  const setAppliedSorting = React.useCallback(
+    (next: ServerSortingState) => {
+      onSortingChange?.(next);
+      if (sortingControlled == null) setSortingUncontrolled(next);
+    },
+    [onSortingChange, sortingControlled]
+  );
+
+  const handleOpenServerSort = React.useCallback(() => {
+    setServerSortDialogOpen(true);
+  }, []);
+
   const gridAreaRef = React.useRef<HTMLDivElement | null>(null);
   const [gridTableWidth, setGridTableWidth] = React.useState<number | null>(null);
 
@@ -950,6 +985,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       reset: handleReset,
       toggleFilter: handleToggleFilter,
       toggleColumnReorder: handleToggleColumnReorder,
+      openServerSort: hasSortBuiltIn ? handleOpenServerSort : undefined,
       exportExcel: excelExport ? handleExportExcel : undefined,
       exportAdditional:
         additionalExports && additionalExports.length > 0
@@ -965,6 +1001,9 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       handleReset,
       handleToggleFilter,
       handleToggleColumnReorder,
+      hasSortBuiltIn,
+      serverSortMode,
+      handleOpenServerSort,
       excelExport,
       handleExportExcel,
       additionalExports,
@@ -1004,6 +1043,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
           actionApi={actionApi}
           totalRowCount={gridProps?.totalRowCount}
           filterEnabled={filterEnabled}
+          sortingCount={appliedSorting.length}
           actionButtonStyle={resolvedActionButtonStyle}
           includeBuiltIns={includedBuiltInActions}
           customActions={customActions}
@@ -1015,6 +1055,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     () => ({
       ...gridProps,
       readonly: resolvedReadonly,
+      enableSorting: serverSortMode ? false : gridProps?.enableSorting,
       enableFiltering: filterEnabled,
       columnFilters,
       onColumnFiltersChange: setColumnFilters,
@@ -1073,6 +1114,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     [
       gridProps,
       resolvedReadonly,
+      serverSortMode,
       filterEnabled,
       columnFilters,
       hasColumnReorderBuiltIn,
@@ -1128,6 +1170,16 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
         hideCancelButton
         variant="warning"
       />
+
+      {hasSortBuiltIn ? (
+        <CrudServerSortDialog
+          open={serverSortDialogOpen}
+          onOpenChange={setServerSortDialogOpen}
+          columns={serverSortColumns}
+          applied={appliedSorting}
+          onApply={setAppliedSorting}
+        />
+      ) : null}
     </div>
   );
 }

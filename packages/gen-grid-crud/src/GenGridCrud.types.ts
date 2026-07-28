@@ -79,7 +79,16 @@ export type CrudBuiltInActionKey =
   | 'filter'
   | 'reset'
   | 'excel'
-  | 'columnReorder';
+  | 'columnReorder'
+  | 'sort';
+
+/** Applied / draft server-side sort item (TanStack SortingState compatible). */
+export type ServerSortItem = {
+  id: string;
+  desc: boolean;
+};
+
+export type ServerSortingState = ServerSortItem[];
 
 export type ExcelExportMode = 'frontend' | 'backend';
 
@@ -148,6 +157,7 @@ export type CrudActionApi = {
   reset: () => void;
   toggleFilter?: () => void;
   toggleColumnReorder?: () => void;
+  openServerSort?: () => void;
   exportExcel?: () => Promise<void>;
   exportAdditional?: (key: string) => Promise<void>;
 };
@@ -265,6 +275,16 @@ export type GenGridCrudProps<TData> = {
 
   /** when true, reverting a cell to its base value clears dirty for that field */
   clearDirtyOnRevert?: boolean;
+
+  /**
+   * Server-side sorting (ActionBar Sort dialog).
+   * When `onSortingChange` is provided (or `sorting` is controlled), header/client sorting is disabled.
+   * Consumer owns refetch / pageIndex reset on change.
+   */
+  sorting?: ServerSortingState;
+  /** Uncontrolled initial applied sorting when `sorting` is omitted. */
+  defaultSorting?: ServerSortingState;
+  onSortingChange?: (next: ServerSortingState) => void;
 
   /** UI hooks */
   onStateChange?: (state: CrudUiState<TData>) => void;

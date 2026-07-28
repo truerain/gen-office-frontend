@@ -5,6 +5,21 @@
 - **Showcase 앱 전용:** `apps/showcase/docs/logs/decisions.md`
 - 최신 항목을 위에 추가합니다.
 
+## 2026-07-28
+
+### 서버 페이징용 Server-Side Sort DnD 승격
+
+- Sort 다이얼로그는 단일 컬럼 목록 + 선택 행 DnD 우선순위를 기본 UX로 한다.
+- 스타일은 theme 토큰을 사용하고, 앱 커스터마이징은 토큰 override를 우선한다.
+- 관련 파일: `docs/gen-grid/server-side-sort-architecture.md`, `packages/gen-grid-crud/src/components/CrudServerSortDialog.tsx`
+
+### 서버 페이징용 Server-Side Sort 아키텍처
+
+- 서버 페이징 화면의 정렬 대안은 ActionBar Sort 팝오버 + 소비자 refetch로 정의한다.
+- 기능 활성 시 기존 헤더 클라이언트 정렬은 비활성(`enableSorting: false`)한다.
+- 구현은 demo 검증 → gen-grid 최소 스위치 → gen-grid-crud built-in 승격 순으로 진행한다.
+- 관련 파일: `docs/gen-grid/server-side-sort-architecture.md`
+
 ## 2026-07-27
 
 ### GenCalendar Phase 세분화 및 문서 경로

@@ -35,9 +35,15 @@ export type {
   CrudBuiltInActionKey,
   CrudValidationError,
   CrudFieldErrorMap,
+  ServerSortItem,
+  ServerSortingState,
   ExcelExportMode,
   ExcelExportOptions,
   AdditionalExportContext,
   AdditionalExportDefinition,
   AdditionalExportSource,
 } from './GenGridCrud.types';
+export {
+  collectServerSortColumns,
+  formatServerSortQuery,
+} from './features/server-sort/serverSortColumns';

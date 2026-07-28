@@ -101,6 +101,13 @@ type CommonGridOptions<TData> = {
   overscan?: number;
 
   enableFiltering?: boolean;
+  /**
+   * Header/client sorting. Default true.
+   * Set false for server-side sort UIs (e.g. GenGridCrud Sort dialog) so the
+   * current page is not re-ordered locally.
+   * Forced false when tree or rowSpanning is enabled.
+   */
+  enableSorting?: boolean;
   enablePinning?: boolean;
   enableColumnSizing?: boolean;
   /** enable column reorder by drag and drop on header */

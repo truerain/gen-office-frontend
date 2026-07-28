@@ -44,6 +44,7 @@ export type GenGridTableProps<TData> = {
   getRowId: (row: TData) => string;
 
   // sorting
+  enableSorting?: boolean;
   sorting?: SortingState;
   onSortingChange?: (next: SortingState) => void;
 
@@ -221,6 +222,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     data,
     columns,
 
+    enableSorting,
     sorting,
     onSortingChange,
 
@@ -282,6 +284,8 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
 
   const treeEnabled = Boolean(tree?.enabled);
   const rowSpanningEnabled = Boolean(rowSpanning);
+  const sortingEnabled =
+    !(treeEnabled || rowSpanningEnabled) && (enableSorting ?? true);
   const treeModel = useTreeRowModel<TData>({ data, tree });
   const tableData = treeEnabled ? treeModel.visibleRows : data;
 
@@ -506,7 +510,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     },
     autoResetExpanded: false,
     state: {
-      sorting: treeEnabled || rowSpanningEnabled ? undefined : resolvedSorting,
+      sorting: sortingEnabled ? resolvedSorting : undefined,
       rowSelection: resolvedRowSelection,
       grouping: treeEnabled ? undefined : enableGrouping ? resolvedGrouping : undefined,
       expanded: treeEnabled ? undefined : enableGrouping ? resolvedExpanded : undefined,
@@ -520,7 +524,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     },
 
     onSortingChange: (updater) => {
-      if (treeEnabled || rowSpanningEnabled) return;
+      if (!sortingEnabled) return;
       const next = typeof updater === 'function' ? updater(resolvedSorting) : updater;
       onSortingChange ? onSortingChange(next) : setInnerSorting(next);
     },
@@ -626,7 +630,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
       return true;
     },
     enableGrouping: treeEnabled ? false : enableGrouping ?? false,
-    enableSorting: treeEnabled || rowSpanningEnabled ? false : true,
+    enableSorting: sortingEnabled,
     enableColumnResizing: enableColumnSizing ?? false,
     columnResizeMode: 'onChange',
     manualPagination: Boolean(enablePagination),
@@ -638,7 +642,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
 
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: treeEnabled ? undefined : enableGrouping ? getGroupedRowModel() : undefined,
-    getSortedRowModel: treeEnabled || rowSpanningEnabled ? undefined : getSortedRowModel(),
+    getSortedRowModel: sortingEnabled ? getSortedRowModel() : undefined,
     getFilteredRowModel: enableAnyFiltering ? getFilteredRowModel() : undefined,
     getPaginationRowModel: undefined,
     getExpandedRowModel: treeEnabled ? undefined : enableGrouping ? getExpandedRowModel() : undefined,

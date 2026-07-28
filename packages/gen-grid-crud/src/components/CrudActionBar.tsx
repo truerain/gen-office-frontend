@@ -2,8 +2,6 @@
 
 import * as React from 'react';
 
-import { Columns3, ListFilter, RotateCcw, Save, SquareMinus, SquarePlus } from 'lucide-react';
-
 import {
   Button,
   Checkbox,
@@ -13,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@gen-office/ui';
+import { ArrowUpDown, Columns3, ListFilter, RotateCcw, Save, SquareMinus, SquarePlus } from 'lucide-react';
 import type {
   CrudActionApi,
   CrudActionButtonItem,
@@ -92,6 +91,7 @@ export function CrudActionBar<TData>(props: {
   actionApi: CrudActionApi;
   totalRowCount?: number;
   filterEnabled?: boolean;
+  sortingCount?: number;
   actionButtonStyle?: CrudActionButtonStyle;
   includeBuiltIns?: readonly CrudBuiltInActionKey[];
   customActions?: readonly CrudActionItem<TData>[];
@@ -104,6 +104,7 @@ export function CrudActionBar<TData>(props: {
     actionApi,
     totalRowCount,
     filterEnabled,
+    sortingCount = 0,
     actionButtonStyle = 'text',
     includeBuiltIns,
     customActions = [],
@@ -113,10 +114,12 @@ export function CrudActionBar<TData>(props: {
   const labelDelete = t('crud.delete');
   const labelSave = t('crud.save');
   const labelFilter = t('crud.filter');
+  const labelSort = t('crud.sort', { defaultValue: 'Sort' });
   const labelExcel = t('crud.excel', { defaultValue: 'Excel' });
   const labelReset = t('crud.reset', { defaultValue: 'Reset' });
   const labelColumnReorder = t('crud.column_reorder', { defaultValue: 'Column Reorder' });
-
+  const sortButtonLabel =
+    sortingCount > 0 ? `${labelSort} (${sortingCount})` : labelSort;
   const ctx = React.useMemo<CrudActionContext<TData>>(
     () => ({ state, api: actionApi }),
     [state, actionApi]
@@ -171,6 +174,16 @@ export function CrudActionBar<TData>(props: {
         disabled: (c) => !c.api.toggleFilter,
         onClick: (c) => c.api.toggleFilter?.(),
       },
+      sort: {
+        key: 'sort',
+        label: sortButtonLabel,
+        icon: <ArrowUpDown aria-hidden size={16} />,
+        side: 'right',
+        order: 15,
+        variant: sortingCount > 0 ? 'primary' : actionButtonStyle === 'icon' ? 'ghost' : 'secondary',
+        disabled: (c) => !c.api.openServerSort || c.state.isCommitting,
+        onClick: (c) => c.api.openServerSort?.(),
+      },
       columnReorder: {
         key: 'columnReorder',
         label: labelColumnReorder,
@@ -220,6 +233,8 @@ export function CrudActionBar<TData>(props: {
     labelFilter,
     labelReset,
     labelSave,
+    sortButtonLabel,
+    sortingCount,
     state.columnReorderEnabled,
   ]);
 
