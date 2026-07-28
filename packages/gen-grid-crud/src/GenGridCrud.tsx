@@ -18,7 +18,7 @@ import type {
 } from './GenGridCrud.types';
 import { CrudActionBar } from './components/CrudActionBar';
 import { CrudServerSortDialog } from './components/CrudServerSortDialog';
-import { collectServerSortColumns } from './features/server-sort/serverSortColumns';
+import { collectServerSortColumns, isSameServerSorting } from './features/server-sort/serverSortColumns';
 import { resolveGenGridCellTooltip } from '@gen-office/gen-grid';
 import { exportAdditionalCrudExcel, exportCrudExcel } from './features/excel';
 import { findLeafColumnDef } from './utils/columnMeta';
@@ -230,6 +230,8 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
     () => defaultSorting ?? []
   );
   const appliedSorting = sortingControlled ?? sortingUncontrolled;
+  const sortingBaseline = defaultSorting ?? [];
+  const sortingActive = !isSameServerSorting(appliedSorting, sortingBaseline);
   const serverSortMode =
     hasSortBuiltIn || sortingControlled != null || typeof onSortingChange === 'function';
   const serverSortColumns = React.useMemo(
@@ -1044,6 +1046,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
           totalRowCount={gridProps?.totalRowCount}
           filterEnabled={filterEnabled}
           sortingCount={appliedSorting.length}
+          sortingActive={sortingActive}
           actionButtonStyle={resolvedActionButtonStyle}
           includeBuiltIns={includedBuiltInActions}
           customActions={customActions}
@@ -1177,6 +1180,7 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
           onOpenChange={setServerSortDialogOpen}
           columns={serverSortColumns}
           applied={appliedSorting}
+          defaultSorting={sortingBaseline}
           onApply={setAppliedSorting}
         />
       ) : null}

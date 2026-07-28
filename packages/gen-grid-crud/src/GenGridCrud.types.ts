@@ -282,7 +282,12 @@ export type GenGridCrudProps<TData> = {
    * Consumer owns refetch / pageIndex reset on change.
    */
   sorting?: ServerSortingState;
-  /** Uncontrolled initial applied sorting when `sorting` is omitted. */
+  /**
+   * Default/baseline sorting.
+   * - Uncontrolled: initial applied sorting when `sorting` is omitted.
+   * - Clear/Reset in the Sort dialog restores this baseline (or `[]` if omitted).
+   * - ActionBar Sort button is primary only when applied sorting differs from this baseline.
+   */
   defaultSorting?: ServerSortingState;
   onSortingChange?: (next: ServerSortingState) => void;
 

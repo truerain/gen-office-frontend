@@ -91,7 +91,10 @@ export function CrudActionBar<TData>(props: {
   actionApi: CrudActionApi;
   totalRowCount?: number;
   filterEnabled?: boolean;
+  /** Current applied sort item count (for Sort label). */
   sortingCount?: number;
+  /** True when applied sorting differs from defaultSorting baseline. */
+  sortingActive?: boolean;
   actionButtonStyle?: CrudActionButtonStyle;
   includeBuiltIns?: readonly CrudBuiltInActionKey[];
   customActions?: readonly CrudActionItem<TData>[];
@@ -105,6 +108,7 @@ export function CrudActionBar<TData>(props: {
     totalRowCount,
     filterEnabled,
     sortingCount = 0,
+    sortingActive = false,
     actionButtonStyle = 'text',
     includeBuiltIns,
     customActions = [],
@@ -119,7 +123,7 @@ export function CrudActionBar<TData>(props: {
   const labelReset = t('crud.reset', { defaultValue: 'Reset' });
   const labelColumnReorder = t('crud.column_reorder', { defaultValue: 'Column Reorder' });
   const sortButtonLabel =
-    sortingCount > 0 ? `${labelSort} (${sortingCount})` : labelSort;
+    sortingActive && sortingCount > 0 ? `${labelSort} (${sortingCount})` : labelSort;
   const ctx = React.useMemo<CrudActionContext<TData>>(
     () => ({ state, api: actionApi }),
     [state, actionApi]
@@ -180,7 +184,7 @@ export function CrudActionBar<TData>(props: {
         icon: <ArrowUpDown aria-hidden size={16} />,
         side: 'right',
         order: 15,
-        variant: sortingCount > 0 ? 'primary' : actionButtonStyle === 'icon' ? 'ghost' : 'secondary',
+        variant: sortingActive ? 'primary' : actionButtonStyle === 'icon' ? 'ghost' : 'secondary',
         disabled: (c) => !c.api.openServerSort || c.state.isCommitting,
         onClick: (c) => c.api.openServerSort?.(),
       },
@@ -234,6 +238,7 @@ export function CrudActionBar<TData>(props: {
     labelReset,
     labelSave,
     sortButtonLabel,
+    sortingActive,
     sortingCount,
     state.columnReorderEnabled,
   ]);

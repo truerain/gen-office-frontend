@@ -16,7 +16,10 @@ import {
 } from '@gen-office/ui';
 
 import type { ServerSortingState } from '../GenGridCrud.types';
-import type { ServerSortColumnOption } from '../features/server-sort/serverSortColumns';
+import {
+  isSameServerSorting,
+  type ServerSortColumnOption,
+} from '../features/server-sort/serverSortColumns';
 
 import styles from './CrudServerSortDialog.module.css';
 
@@ -81,10 +84,13 @@ export function CrudServerSortDialog(props: {
   onOpenChange: (open: boolean) => void;
   columns: readonly ServerSortColumnOption[];
   applied: ServerSortingState;
+  /** Baseline restored by Reset (defaults to []). */
+  defaultSorting?: ServerSortingState;
   onApply: (next: ServerSortingState) => void;
 }) {
-  const { open, onOpenChange, columns, applied, onApply } = props;
+  const { open, onOpenChange, columns, applied, defaultSorting, onApply } = props;
   const { t } = useTranslation('common');
+  const baseline = defaultSorting ?? [];
 
   const columnIds = React.useMemo(() => columns.map((c) => c.id), [columns]);
   const labelById = React.useMemo(
@@ -109,6 +115,11 @@ export function CrudServerSortDialog(props: {
     setDropIndex(null);
   }, [open, applied, columnIds]);
 
+  const draftSorting = React.useMemo(
+    () => toSortingState(orderedIds, directions),
+    [orderedIds, directions]
+  );
+
   const priorityById = React.useMemo(() => {
     const map = new Map<string, number>();
     let rank = 1;
@@ -121,6 +132,7 @@ export function CrudServerSortDialog(props: {
   }, [orderedIds, directions]);
 
   const selectedCount = priorityById.size;
+  const draftIsBaseline = isSameServerSorting(draftSorting, baseline);
 
   const labelSort = t('crud.sort', { defaultValue: 'Sort' });
   const labelNone = t('crud.sort_none', { defaultValue: 'None' });
@@ -128,6 +140,7 @@ export function CrudServerSortDialog(props: {
   const labelDesc = t('crud.sort_desc', { defaultValue: 'Desc' });
   const labelConfirm = t('common.confirm', { defaultValue: 'Confirm' });
   const labelCancel = t('common.cancel', { defaultValue: 'Cancel' });
+  const labelReset = t('crud.sort_reset', { defaultValue: 'Reset' });
   const labelColumn = t('common.column', { defaultValue: 'Column' });
   const labelDirection = t('crud.sort_direction', { defaultValue: 'Direction' });
   const labelHint = t('crud.sort_priority_hint', {
@@ -139,6 +152,13 @@ export function CrudServerSortDialog(props: {
 
   const setDirection = (columnId: string, value: SortDirectionValue) => {
     setDirections((prev) => ({ ...prev, [columnId]: value }));
+  };
+
+  const handleResetToDefault = () => {
+    setOrderedIds(buildOrderedIds(columnIds, baseline));
+    setDirections(toDirectionMap(columnIds, baseline));
+    setDraggingId(null);
+    setDropIndex(null);
   };
 
   const canDrag = (columnId: string) => (directions[columnId] ?? 'none') !== 'none';
@@ -185,7 +205,7 @@ export function CrudServerSortDialog(props: {
   };
 
   const handleConfirm = () => {
-    onApply(toSortingState(orderedIds, directions));
+    onApply(draftSorting);
     onOpenChange(false);
   };
 
@@ -201,13 +221,23 @@ export function CrudServerSortDialog(props: {
       minResizableHeight={280}
       footer={
         <div className={styles.footerActions}>
-          <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
-            {labelCancel}
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={draftIsBaseline}
+            onClick={handleResetToDefault}
+          >
+            {labelReset}
           </Button>
-          <Button type="button" variant="brand" onClick={handleConfirm}>
-            {labelConfirm}
-            {selectedCount > 0 ? ` (${selectedCount})` : ''}
-          </Button>
+          <div className={styles.footerRight}>
+            <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
+              {labelCancel}
+            </Button>
+            <Button type="button" variant="brand" onClick={handleConfirm}>
+              {labelConfirm}
+              {selectedCount > 0 ? ` (${selectedCount})` : ''}
+            </Button>
+          </div>
         </div>
       }
     >

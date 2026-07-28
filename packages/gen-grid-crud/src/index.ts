@@ -46,4 +46,5 @@ export type {
 export {
   collectServerSortColumns,
   formatServerSortQuery,
+  isSameServerSorting,
 } from './features/server-sort/serverSortColumns';

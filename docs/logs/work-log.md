@@ -4,6 +4,11 @@
 
 ## 2026-07-28
 
+### Server-Side Sort defaultSorting / Reset / 토글 기준 반영
+
+- default sort baseline, 다이얼로그 Reset, ActionBar Sort primary 기준을 문서·CRUD에 반영했다.
+- 관련 파일: `docs/gen-grid/server-side-sort-architecture.md`, `packages/gen-grid-crud/**`, `apps/demo/.../PaginationDemoPage.tsx`
+
 ### formatServerSortQuery를 field:asc,field:desc 로 변경
 
 - 정렬 query가 SQL처럼 보이지 않도록 `field:dir` 스펙으로 통일했다.

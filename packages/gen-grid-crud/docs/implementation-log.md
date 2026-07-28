@@ -2,6 +2,13 @@
 
 ## 2026-07-28
 
+### Server-Side Sort default / Reset / 버튼 토글 기준
+
+- `defaultSorting`을 baseline으로 쓰고, 다이얼로그 Reset은 해당 값으로 draft를 복원한다.
+- ActionBar Sort primary는 `sorting.length > 0`이 아니라 default와 다를 때만 켠다.
+- `isSameServerSorting` 헬퍼를 export한다.
+- 관련 파일: `CrudServerSortDialog.tsx`, `CrudActionBar.tsx`, `GenGridCrud.tsx`, `serverSortColumns.ts`, Pagination Demo
+
 ### formatServerSortQuery 포맷을 field:dir 로 변경
 
 - API sort 문자열을 `name:asc,score:desc` 형식으로 바꿔 SQL ORDER BY와 구분한다.

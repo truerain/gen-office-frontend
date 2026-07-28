@@ -122,6 +122,20 @@ API 직렬화는 소비자 책임 예:
 
 또는 백엔드 규약에 맞는 query array로 변환.
 
+### 3.4.1 defaultSorting / Reset / 버튼 토글
+
+`defaultSorting`은 화면의 **기본 정렬 baseline**이다.
+
+| 항목 | 동작 |
+|------|------|
+| 초기값 | controlled: 앱이 `useState(default)`로 시작. uncontrolled: `defaultSorting`으로 시작 |
+| 미지정 | baseline = `[]` |
+| Sort 다이얼로그 **Reset** | draft를 `defaultSorting`으로 복원 (빈 정렬이 아님). Confirm 전까지 applied 미변경 |
+| ActionBar Sort **primary** | `!isSameServerSorting(applied, defaultSorting)` 일 때만 |
+| 라벨 `Sort (n)` | primary(변경됨)일 때 현재 적용 개수 표시 |
+
+비교는 `id` / `desc` / **배열 순서**까지 동일해야 같은 정렬로 본다 (`isSameServerSorting`).
+
 ### 3.5 컬럼 후보 추출
 
 팝오버에 나열할 컬럼:
@@ -246,18 +260,19 @@ onSortingChange?: (next: ServerSortingState) => void;
 - `onSortingChange`가 있거나 `includeBuiltIns`에 `'sort'`가 있으면 Sort 버튼 노출
 - 동시에 `gridProps`로 `enableSorting: false` 주입(소비자가 true를 강제해도 서버 Sort 모드에서는 false 우선 — 문서화)
 - Apply 시 `onSortingChange(next)`만 호출. refetch/page 리셋은 소비자
-- applied 값이 있으면 Sort 버튼 variant를 primary 등으로 강조(filter 패턴)
+- ActionBar Sort 버튼은 applied가 `defaultSorting`과 다를 때만 primary
+- 다이얼로그 Reset은 draft를 `defaultSorting`(없으면 `[]`)으로 복원
 
 ---
 
 ## 6. UX 스케치 (다이얼로그)
 
-1. ActionBar 우측 **Sort** 버튼
+1. ActionBar 우측 **Sort** 버튼 (default와 다르면 primary + `Sort (n)`)
 2. 클릭 시 Sort 다이얼로그
 3. **전체 sortable 컬럼을 단일 목록**으로 나열하고, 각 행 = grip + 컬럼명 + **없음 | 오름 | 내림** + 순위 배지
 4. **없음이 아닌 행만** 드래그해 multi-sort 우선순위 변경 (목록 순서 = 적용 순서)
-5. 확인 시 `없음`이 아닌 항목만 `ServerSortingState`로 전달
-6. 적용 중이면 버튼 라벨에 개수 표시: `Sort (2)` / Confirm `(2)`
+5. **Reset** → draft를 `defaultSorting`으로 복원 / **Cancel** → 닫기 / **Confirm** → `onSortingChange`
+6. Confirm 시 `없음`이 아닌 항목만 `ServerSortingState`로 전달
 
 스타일은 theme 토큰(`--color-*`, `--border-radius-*`)을 사용한다. 앱 커스터마이징은 토큰 override를 우선한다.
 

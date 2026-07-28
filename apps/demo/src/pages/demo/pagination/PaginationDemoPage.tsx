@@ -59,12 +59,13 @@ function sortRows(rows: PaginationRow[], sorting: ServerSortingState): Paginatio
 }
 
 const INITIAL_SIZE = 137;
+const DEFAULT_SORTING: ServerSortingState = [{ id: 'name', desc: false }];
 
 export default function PaginationDemoPage(_props: PageComponentProps) {
   const [allRows, setAllRows] = useState<PaginationRow[]>(() => buildRows(INITIAL_SIZE));
   const [data, setData] = useState<PaginationRow[]>(() => buildRows(INITIAL_SIZE));
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 25 });
-  const [sorting, setSorting] = useState<ServerSortingState>([]);
+  const [sorting, setSorting] = useState<ServerSortingState>(() => [...DEFAULT_SORTING]);
   const [isFetching, setIsFetching] = useState(false);
   const [lastSortQuery, setLastSortQuery] = useState('');
 
@@ -177,6 +178,7 @@ export default function PaginationDemoPage(_props: PageComponentProps) {
           columns={columns}
           getRowId={(row) => row.id}
           sorting={sorting}
+          defaultSorting={DEFAULT_SORTING}
           onSortingChange={handleSortingChange}
           onCommit={async () => ({ ok: true, nextData: data })}
           onCommitSuccess={(result) => {

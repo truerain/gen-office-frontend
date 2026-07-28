@@ -99,3 +99,20 @@ export function formatServerSortQuery(
 export function cloneSorting(sorting: ServerSortingState): ServerSortItem[] {
   return sorting.map((item) => ({ id: item.id, desc: item.desc }));
 }
+
+/** True when id/desc/order match (used for default baseline compare). */
+export function isSameServerSorting(
+  a: ServerSortingState | undefined,
+  b: ServerSortingState | undefined
+): boolean {
+  const left = a ?? [];
+  const right = b ?? [];
+  if (left.length !== right.length) return false;
+  for (let i = 0; i < left.length; i += 1) {
+    const l = left[i];
+    const r = right[i];
+    if (!l || !r) return false;
+    if (l.id !== r.id || Boolean(l.desc) !== Boolean(r.desc)) return false;
+  }
+  return true;
+}
