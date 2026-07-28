@@ -6,6 +6,7 @@ Documents the phased architecture and plan for server-side sorting with GenGrid 
 
 관련 문서
 - `docs/gen-grid/filtering.md` (클라이언트 필터 계약)
+- `docs/gen-grid/server-side-sort-spring-boot-sample.md` (Spring Boot 화이트리스트 샘플)
 - `packages/gen-grid/.ai/todo.md` (Sorting UI 고도화 TODO)
 - `packages/gen-grid/TREE_MODE_SPEC.md` (tree 모드에서 sorting 비활성)
 
@@ -116,7 +117,7 @@ API 직렬화는 소비자 책임 예:
 
 ```text
 [{ id: 'name', desc: false }, { id: 'createdAt', desc: true }]
-  → "name asc, createdAt desc"
+  → "name:asc,createdAt:desc"   // API 정렬 스펙 (SQL ORDER BY 아님)
 ```
 
 또는 백엔드 규약에 맞는 query array로 변환.

@@ -2,6 +2,12 @@
 
 ## 2026-07-28
 
+### formatServerSortQuery 포맷을 field:dir 로 변경
+
+- API sort 문자열을 `name:asc,score:desc` 형식으로 바꿔 SQL ORDER BY와 구분한다.
+- Spring Boot 샘플 파서·아키텍처 문서를 동일 포맷으로 갱신했다.
+- 관련 파일: `src/features/server-sort/serverSortColumns.ts`, `docs/gen-grid/server-side-sort-spring-boot-sample.md`
+
 ### Server-Side Sort DnD UX CRUD 승격
 
 - demo에서 검증한 단일 목록 + 선택 행 DnD 우선순위를 `CrudServerSortDialog`로 승격했다.

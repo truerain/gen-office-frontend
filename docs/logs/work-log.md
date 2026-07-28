@@ -4,6 +4,16 @@
 
 ## 2026-07-28
 
+### formatServerSortQuery를 field:asc,field:desc 로 변경
+
+- 정렬 query가 SQL처럼 보이지 않도록 `field:dir` 스펙으로 통일했다.
+- 관련 파일: `packages/gen-grid-crud/src/features/server-sort/serverSortColumns.ts`, `docs/gen-grid/server-side-sort-*.md`
+
+### Server-Side Sort Spring Boot 샘플 문서 추가
+
+- `formatServerSortQuery` 결과를 화이트리스트 검증 후 `Pageable`/`Sort`로 쓰는 Spring Boot 예제를 문서화했다.
+- 관련 파일: `docs/gen-grid/server-side-sort-spring-boot-sample.md`
+
 ### Server-Side Sort DnD UX CRUD 승격
 
 - demo Sort DnD UX를 `gen-grid-crud` built-in으로 승격하고 demo 전용 다이얼로그를 제거했다.

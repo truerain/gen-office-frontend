@@ -78,7 +78,11 @@ export function collectServerSortColumns<TData>(
   return result;
 }
 
-/** Serialize sorting for demo / typical Spring-style `sort` query strings. */
+/**
+ * Serialize sorting for API query params.
+ * Format: `field1:asc,field2:desc` (not SQL ORDER BY).
+ * Optional `columns` maps column id → meta.sortField.
+ */
 export function formatServerSortQuery(
   sorting: ServerSortingState,
   columns?: readonly ServerSortColumnOption[]
@@ -87,9 +91,9 @@ export function formatServerSortQuery(
   return sorting
     .map((item) => {
       const field = fieldById.get(item.id) ?? item.id;
-      return `${field} ${item.desc ? 'desc' : 'asc'}`;
+      return `${field}:${item.desc ? 'desc' : 'asc'}`;
     })
-    .join(', ');
+    .join(',');
 }
 
 export function cloneSorting(sorting: ServerSortingState): ServerSortItem[] {
