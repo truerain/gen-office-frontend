@@ -86,7 +86,6 @@ export default function CoActualsPage(_props: PageComponentProps) {
   const [gridDirty, setGridDirty] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ActualsViewMode>('summary');
-  const [searchResetSeq, setSearchResetSeq] = useState(0);
 
   const queryParams = useMemo<CoActualsListParams>(
     () => ({
@@ -148,7 +147,6 @@ export default function CoActualsPage(_props: PageComponentProps) {
       draftFilters.fiscalPrd.trim() === filters.fiscalPrd.trim() &&
       draftFilters.orgCd.trim() === filters.orgCd.trim() &&
       draftFilters.acctCd.trim() === filters.acctCd.trim();
-    setSearchResetSeq((prev) => prev + 1);
 
     if (same) {
       void refetch();
@@ -243,7 +241,6 @@ export default function CoActualsPage(_props: PageComponentProps) {
               </div>
             )}
             <GenDataGridCrud<CoActual>
-              key={`actuals-grid-${searchResetSeq}`}
               title="Actuals List"
               readonly
               data={gridRows}
@@ -288,6 +285,7 @@ export default function CoActualsPage(_props: PageComponentProps) {
                 enableRowNumber: true,
                 enableVirtualization: true,
                 enablePagination: false,
+                resetScrollOnDataVersion: true,
                 editOnActiveCell: false,
                 keepEditingOnNavigate: true,
                 enableFooterRow: false,

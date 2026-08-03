@@ -1,3 +1,13 @@
+## 2026-08-03
+
+### dataVersion 기반 스크롤 초기화 옵션 추가
+
+- `GenDataGrid` public prop에 `resetScrollOnDataVersion?: boolean`을 추가했다(기본값 `false`).
+- `dataVersion` 변경 시 dirty/deleted marker 초기화와 함께 옵션이 켜진 경우 viewport 스크롤을 첫 row로 이동하도록 `DataGridRoot`를 보강했다.
+- virtual body는 `scrollToRowIndex(0)`, non-virtual body는 `viewport.scrollTop = 0`을 사용한다.
+- ActualsPage는 조회 리셋을 key 재마운트 패턴 대신 `resetScrollOnDataVersion: true`로 전환했다.
+- 관련 파일: `src/GenDataGrid.types.ts`, `src/renderers/div-grid/DataGridRoot.tsx`, `../../apps/demo/src/pages/co/actuals/ActualsPage.tsx`, `docs/reference/api-structure.md`, `docs/reference/api-comparison-with-gen-grid.md`, `docs/log/implementation-log.md`
+
 ## 2026-07-07
 
 ### Masked edit type 구현 계획 문서 추가

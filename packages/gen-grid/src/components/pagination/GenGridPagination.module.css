@@ -74,3 +74,18 @@
   background: var(--grid-bg);
   color: var(--grid-cell-text);
 }
+
+.pagerJump {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagerInput {
+  width: 72px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--grid-border);
+  background: var(--grid-bg);
+  color: var(--grid-cell-text);
+}

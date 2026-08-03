@@ -10,6 +10,7 @@ export type {
   GenGridProps,
   GenGridEditorFactory,
   GenGridEditorContext,
+  GenGridPageJumpOptions,
   GenGridTreeOptions,
   GenGridContextMenuCell,
   GenGridContextMenuActionContext,

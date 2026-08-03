@@ -22,6 +22,7 @@
 | `defaultData` | `defaultData` | 유지 | MVP | uncontrolled 초기 data. 내부 state로 관리한다. |
 | `onDataChange` | `onDataChange` | 유지 | MVP | data 변경 콜백. editing, delete, load 등에서 호출된다. |
 | `dataVersion` | `dataVersion` | 유지 | MVP | 외부 data reset/baseline 갱신 트리거. dirty state와 연동한다. |
+| 없음 | `resetScrollOnDataVersion` | 신규 | MVP | `dataVersion` 변경 시 viewport 스크롤을 첫 row로 초기화할지 선택한다. 기본값은 `false`. |
 | `columns` | `columns` | 유지 | MVP | TanStack `ColumnDef` 기반 column 정의. meta 타입은 `GenDataGridColumnMeta`로 변경한다. |
 | `getRowId` | `getRowId` | 변경 | MVP | 기존은 필수. GenDataGrid도 안정성을 위해 MVP에서는 필수 유지 권장. signature는 `(row, index) => string` 허용을 검토한다. |
 

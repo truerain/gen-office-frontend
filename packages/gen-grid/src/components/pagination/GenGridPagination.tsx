@@ -3,11 +3,14 @@
 import * as React from 'react';
 import type { Table } from '@tanstack/react-table';
 
+import type { GenGridPageJumpOptions } from '../../GenGrid.types';
+
 import styles from './GenGridPagination.module.css';
 
 type Props<TData> = {
   table: Table<TData>;
   pageSizeOptions?: number[];
+  pageJumpOptions?: GenGridPageJumpOptions;
 };
 
 type PageItem = number | 'ellipsis';
@@ -42,7 +45,11 @@ function buildPageItems(pageCount: number, currentPageIndex: number): PageItem[]
   return items;
 }
 
-export function GenGridPagination<TData>({ table, pageSizeOptions }: Props<TData>) {
+export function GenGridPagination<TData>({
+  table,
+  pageSizeOptions,
+  pageJumpOptions,
+}: Props<TData>) {
   const options = React.useMemo(() => {
     if (!pageSizeOptions) return [];
     const uniq = new Set<number>();
@@ -60,8 +67,66 @@ export function GenGridPagination<TData>({ table, pageSizeOptions }: Props<TData
     () => buildPageItems(pageCount, pageIndex),
     [pageCount, pageIndex]
   );
+  const [pageInput, setPageInput] = React.useState(() => String(pageIndex + 1));
 
- return (
+  const pageJumpEnabled = pageJumpOptions?.enabled ?? false;
+  const hideWhenPageCountBelow = pageJumpOptions?.hideWhenPageCountBelow ?? 10;
+  const pageJumpButtonLabel = pageJumpOptions?.buttonLabel ?? 'Go';
+  const pageJumpPlaceholder = pageJumpOptions?.placeholder ?? 'Page';
+  const showPageJump =
+    pageJumpEnabled && pageCount >= Math.max(0, Math.floor(hideWhenPageCountBelow));
+
+  React.useEffect(() => {
+    setPageInput(String(pageIndex + 1));
+  }, [pageIndex]);
+
+  const commitPageJump = React.useCallback(() => {
+    if (pageCount <= 0) return;
+
+    const parsed = Number(pageInput);
+    if (!Number.isFinite(parsed)) {
+      setPageInput(String(pageIndex + 1));
+      return;
+    }
+
+    const normalizedPage = Math.min(pageCount, Math.max(1, Math.floor(parsed)));
+    setPageInput(String(normalizedPage));
+    table.setPageIndex(normalizedPage - 1);
+  }, [pageCount, pageIndex, pageInput, table]);
+
+  const pageJumpControls = showPageJump ? (
+    <div className={styles.pagerJump}>
+      <label className={styles.pagerLabel}>
+        Page
+        <input
+          type="number"
+          min={1}
+          max={Math.max(1, pageCount)}
+          inputMode="numeric"
+          className={styles.pagerInput}
+          value={pageInput}
+          placeholder={pageJumpPlaceholder}
+          onChange={(e) => setPageInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              commitPageJump();
+            }
+          }}
+        />
+      </label>
+      <button
+        type="button"
+        className={styles.pagerBtn}
+        onClick={commitPageJump}
+        disabled={pageCount <= 0}
+      >
+        {pageJumpButtonLabel}
+      </button>
+    </div>
+  ) : null;
+
+  return (
     <div className={styles.pager}>
       <div className={styles.pagerLeft}>
         <button
@@ -119,7 +184,10 @@ export function GenGridPagination<TData>({ table, pageSizeOptions }: Props<TData
               ))}
             </select>
           </label>
+          {pageJumpControls}
         </div>
+      ) : showPageJump ? (
+        <div className={styles.pagerRight}>{pageJumpControls}</div>
       ) : null}
     </div>
   );

@@ -390,6 +390,7 @@ export type GenDataGridProps<TData> = {
   pageSizeOptions?: readonly number[];
   deleteRowsBehavior?: GenDataGridDeleteRowsBehavior;
   dataVersion?: string | number;
+  resetScrollOnDataVersion?: boolean;
   columnOrder?: ColumnOrderState;
   defaultColumnOrder?: ColumnOrderState;
   onColumnOrderChange?: (next: ColumnOrderState) => void;

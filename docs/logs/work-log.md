@@ -2,6 +2,25 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-08-03
+
+### ActualsPage 조회 후 스크롤 초기화 방식 전환
+
+- `ActualsPage` 조회 리셋을 `key` 재마운트 패턴 대신 `dataVersion + resetScrollOnDataVersion` 옵션 기반으로 전환했다.
+- `GenDataGrid`에 `resetScrollOnDataVersion` public prop을 추가해 재조회 시 첫 row 스크롤 초기화를 명시적으로 제어할 수 있게 했다.
+- 관련 파일: `packages/gen-datagrid/src/GenDataGrid.types.ts`, `packages/gen-datagrid/src/renderers/div-grid/DataGridRoot.tsx`, `apps/demo/src/pages/co/actuals/ActualsPage.tsx`, `packages/gen-datagrid/docs/reference/api-structure.md`, `packages/gen-datagrid/docs/reference/api-comparison-with-gen-grid.md`, `packages/gen-datagrid/docs/log/implementation-log.md`, `docs/logs/work-log.md`
+
+### Pagination Demo page jump 노출 기준 조정
+
+- Pagination Demo에서 page jump 입력이 기본 데이터셋에서도 보이도록 `hideWhenPageCountBelow` 값을 `1`로 낮췄다.
+- 관련 파일: `apps/demo/src/pages/demo/pagination/PaginationDemoPage.tsx`, `docs/logs/work-log.md`
+
+### Pagination Demo에 페이지 직접 이동(Input+버튼) 옵션 적용
+
+- `gen-grid`에 추가한 `pageJumpOptions`를 Pagination Demo의 `gridProps`에 연결했다.
+- 페이지 수가 충분할 때만 입력 UI가 보이도록 `hideWhenPageCountBelow`를 함께 설정했다.
+- 관련 파일: `apps/demo/src/pages/demo/pagination/PaginationDemoPage.tsx`, `docs/logs/work-log.md`
+
 ## 2026-07-28
 
 ### Server-Side Sort defaultSorting / Reset / 토글 기준 반영

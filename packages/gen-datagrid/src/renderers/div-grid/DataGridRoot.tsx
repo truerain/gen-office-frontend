@@ -164,6 +164,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     onRowsDelete,
     deleteRowsBehavior = 'mark',
     dataVersion,
+    resetScrollOnDataVersion = false,
     pageSizeOptions,
     className,
     style,
@@ -502,7 +503,25 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     setDeletedRowIdList([]);
     setDirtyCells(new Map());
     onDirtyStateChange?.(createDirtyState(new Map(), []));
-  }, [createDirtyState, dataVersion, onDirtyStateChange]);
+
+    if (!resetScrollOnDataVersion) return;
+
+    if (enableVirtualization) {
+      virtualBodyRef.current?.scrollToRowIndex(0);
+      return;
+    }
+
+    if (viewportElement) {
+      viewportElement.scrollTop = 0;
+    }
+  }, [
+    createDirtyState,
+    dataVersion,
+    enableVirtualization,
+    onDirtyStateChange,
+    resetScrollOnDataVersion,
+    viewportElement,
+  ]);
 
   const deleteRows = React.useCallback(
     (rowIdsToDelete: readonly string[]) => {

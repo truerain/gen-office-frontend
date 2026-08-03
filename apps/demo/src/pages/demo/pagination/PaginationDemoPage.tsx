@@ -210,6 +210,12 @@ export default function PaginationDemoPage(_props: PageComponentProps) {
             enablePagination: true,
             pagination,
             onPaginationChange: handlePaginationChange,
+            pageJumpOptions: {
+              enabled: true,
+              buttonLabel: '이동',
+              placeholder: '페이지',
+              hideWhenPageCountBelow: 1,
+            },
             enableRowNumber: true,
             enableFooter: true,
             renderFooter: (table) => {

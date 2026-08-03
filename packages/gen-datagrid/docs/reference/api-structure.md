@@ -182,6 +182,7 @@ Implementation status: `columnOrder`, `columnVisibility`, `columnSizing`, and `c
 | `pageSizeOptions` | `number[]` | page size options |
 | `paginationMode` | `'client' \| 'manual'` | client/server pagination ownership |
 | `dataVersion` | `number \| string` | external data baseline reset signal |
+| `resetScrollOnDataVersion` | `boolean` | `dataVersion` 변경 시 viewport를 첫 row로 이동할지 여부 (기본 `false`) |
 
 ### 4.6 Dirty State
 
@@ -630,7 +631,7 @@ Gate 6 implemented the following public API surface in `GenDataGrid.types.ts`:
 - Footer rendering: `enableFooterRow`, `enableStickyFooterRow`, `footerRowHeight`, `enableFooter`, `footer`, `renderFooter`.
 - Pagination state: `enablePagination`, `pagination`, `defaultPagination`, `onPaginationChange`, `paginationMode`, `totalRowCount`, `pageSizeOptions`.
 - Dirty state: `enableDirtyState`, `onDirtyStateChange`, `GenDataGridDirtyCell`, `GenDataGridDirtyState`.
-- Gate 6.1 data ownership: `filterMode`, `deleteRowsBehavior`, and `dataVersion`.
+- Gate 6.1 data ownership: `filterMode`, `deleteRowsBehavior`, `dataVersion`, and `resetScrollOnDataVersion`.
 - Render context: `GenDataGridRenderContext<TData>` currently provides `table`, filtered `rows`, `dirtyState`, and `pagination`.
 - Handle additions: `resetDirtyState(rowIds?)`, `commitDirtyState(rowIds?)`, and `getDirtyState()`.
 
@@ -639,6 +640,7 @@ Current limitations:
 - Filtering and pagination default to client-side TanStack row models. `filterMode: 'manual'` disables local filtering, and `paginationMode: 'manual'` renders the current `data` as the current page while using `totalRowCount` for page count.
 - Filter UI is a minimal header popover with string input; advanced operators and typed editors are deferred.
 - `commitDirtyState` clears dirty markers. `dataVersion` also clears dirty/deleted markers when external data is accepted.
+- `resetScrollOnDataVersion`를 `true`로 주면 `dataVersion` 변경 시 virtual/non-virtual 모두 첫 row 기준으로 스크롤을 초기화한다.
 - `deleteRows(rowIds)` emits a delete request and marks rows as deleted. `deleteRowsBehavior: 'removeUncontrolled'` additionally removes rows from uncontrolled `defaultData`; controlled `data` remains consumer-owned.
 
 ## Gate 8.6 Implementation Notes

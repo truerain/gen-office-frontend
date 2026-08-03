@@ -216,6 +216,14 @@ type PaginationOptions = {
   onPaginationChange?: (next: PaginationState) => void;
   totalRowCount?: number;
   pageSizeOptions?: number[];
+  pageJumpOptions?: GenGridPageJumpOptions;
+};
+
+export type GenGridPageJumpOptions = {
+  enabled?: boolean;
+  buttonLabel?: string;
+  placeholder?: string;
+  hideWhenPageCountBelow?: number;
 };
 
 type ControlledDataProps<TData> = {

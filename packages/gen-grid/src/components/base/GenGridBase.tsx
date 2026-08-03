@@ -18,6 +18,7 @@ import { useClipboardActions } from '../../features/range-selection/useClipboard
 import { GenGridContextMenu } from './GenGridContextMenu';
 import { resolveRangeBounds, resolveRangeBoundsList } from '../../features/range-selection/clipboard';
 import type {
+  GenGridPageJumpOptions,
   GenGridContextMenuActionContext,
   GenGridContextMenuCustomAction,
 } from '../../GenGrid.types';
@@ -53,6 +54,7 @@ export type GenGridBaseProps<TData> = {
 
   enablePagination?: boolean;
   pageSizeOptions?: number[];
+  pageJumpOptions?: GenGridPageJumpOptions;
 
   enableFooter?: boolean;
   footer?: React.ReactNode;
@@ -146,6 +148,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
 
     enablePagination,
     pageSizeOptions,
+    pageJumpOptions,
 
     enableFooter,
     footer,
@@ -738,7 +741,11 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
       ) : null}
 
       {enablePagination ? (
-        <GenGridPagination table={table} pageSizeOptions={pageSizeOptions} />
+        <GenGridPagination
+          table={table}
+          pageSizeOptions={pageSizeOptions}
+          pageJumpOptions={pageJumpOptions}
+        />
       ) : null}
 
       <GenGridContextMenu
