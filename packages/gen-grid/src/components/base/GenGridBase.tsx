@@ -56,6 +56,9 @@ export type GenGridBaseProps<TData> = {
   pageSizeOptions?: number[];
   pageJumpOptions?: GenGridPageJumpOptions;
 
+  dataVersion?: number | string;
+  resetScrollOnDataVersion?: boolean;
+
   enableFooter?: boolean;
   footer?: React.ReactNode;
   renderFooter?: (table: Table<TData>) => React.ReactNode;
@@ -150,6 +153,9 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     pageSizeOptions,
     pageJumpOptions,
 
+    dataVersion,
+    resetScrollOnDataVersion = false,
+
     enableFooter,
     footer,
     renderFooter,
@@ -183,6 +189,16 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
   const footerRowEnabled = enableFooterRow !== undefined ? enableFooterRow : true;
   const stickyFooterRowEnabled =
     enableStickyFooterRow !== undefined ? enableStickyFooterRow : false;
+
+  const lastDataVersion = React.useRef(dataVersion);
+
+  React.useEffect(() => {
+    if (Object.is(lastDataVersion.current, dataVersion)) return;
+    lastDataVersion.current = dataVersion;
+    if (!resetScrollOnDataVersion) return;
+    const el = scrollRef.current;
+    if (el) el.scrollTop = 0;
+  }, [dataVersion, resetScrollOnDataVersion]);
 
   React.useLayoutEffect(() => {
     const el = scrollRef.current;

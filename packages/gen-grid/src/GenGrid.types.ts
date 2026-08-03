@@ -150,6 +150,8 @@ type CommonGridOptions<TData> = {
   onDirtyChange?: (dirty: boolean) => void;               // notify when dirty flag changes
   onDirtyRowsChange?: (rowIds: string[]) => void;         // notify when dirty row id list changes
   dirtyKeys?: string[];                                   // keys used for dirty comparison
+  /** when true, reset viewport scroll to top on dataVersion change (default false) */
+  resetScrollOnDataVersion?: boolean;
 
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: (next: RowSelectionState) => void;

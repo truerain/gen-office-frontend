@@ -1,5 +1,14 @@
 # GenGrid 구현 로그
 
+## 2026-08-04
+
+### dataVersion 기반 스크롤 초기화 옵션 추가
+
+- GenGridProps에 `resetScrollOnDataVersion?: boolean`을 추가했다(기본값 `false`).
+- `dataVersion` 변경 시 옵션이 켜진 경우 `.tableScroll` viewport의 `scrollTop`을 0으로 초기화한다. 최초 mount에서는 리셋하지 않는다.
+- Pagination Demo의 `gridProps`에 연결해 재조회/페이지 변경 시 스크롤 리셋 동작을 확인할 수 있게 했다.
+- 관련 파일: src/GenGrid.types.ts, src/components/base/GenGridBase.tsx, apps/demo/src/pages/demo/pagination/PaginationDemoPage.tsx
+
 ## 2026-08-03
 
 ### Pagination 직접 이동 옵션 추가

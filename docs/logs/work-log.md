@@ -2,6 +2,14 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-08-04
+
+### GenGrid resetScrollOnDataVersion 추가
+
+- `gen-grid`에 `resetScrollOnDataVersion` public prop을 추가해 `dataVersion` 변경 시 viewport 스크롤을 첫 row로 초기화할 수 있게 했다.
+- Pagination Demo `gridProps`에 `resetScrollOnDataVersion: true`를 연결했다.
+- 관련 파일: `packages/gen-grid/src/GenGrid.types.ts`, `packages/gen-grid/src/components/base/GenGridBase.tsx`, `apps/demo/src/pages/demo/pagination/PaginationDemoPage.tsx`, `packages/gen-grid/docs/implementation-log.md`, `packages/gen-datagrid/docs/reference/api-comparison-with-gen-grid.md`, `docs/logs/work-log.md`
+
 ## 2026-08-03
 
 ### ActualsPage 조회 후 스크롤 초기화 방식 전환

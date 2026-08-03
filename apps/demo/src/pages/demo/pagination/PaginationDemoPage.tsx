@@ -204,6 +204,7 @@ export default function PaginationDemoPage(_props: PageComponentProps) {
           gridProps={{
             height: '100%',
             dataVersion: `${allRows.length}-${pagination.pageIndex}-${pagination.pageSize}-${lastSortQuery}`,
+            resetScrollOnDataVersion: true,
             rowHeight: 34,
             enableColumnSizing: true,
             enablePinning: true,
