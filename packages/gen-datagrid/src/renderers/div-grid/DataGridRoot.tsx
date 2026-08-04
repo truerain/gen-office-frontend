@@ -140,6 +140,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
     rowStatusResolver,
     enableCurrentRowHighlight = false,
     onCurrentRowChange,
+    onRowDoubleClick,
     getCellValidation,
     enableVirtualization = false,
     enableTreeRows = false,
@@ -1231,6 +1232,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             onEditStart={editing.startEditing}
             onEditDeactivate={cancelEditing}
             onEditCancel={cancelEditingAndRestoreFocus}
+            onRowDoubleClick={onRowDoubleClick}
             getGridRoot={() => rootRef.current}
             getEditorSurfaces={editing.getEditorSurfaces}
             registerEditorSurface={editing.registerEditorSurface}
@@ -1270,6 +1272,7 @@ export function DataGridRoot<TData>(props: DataGridRootProps<TData>) {
             onEditStart={editing.startEditing}
             onEditDeactivate={cancelEditing}
             onEditCancel={cancelEditingAndRestoreFocus}
+            onRowDoubleClick={onRowDoubleClick}
             getGridRoot={() => rootRef.current}
             getEditorSurfaces={editing.getEditorSurfaces}
             registerEditorSurface={editing.registerEditorSurface}

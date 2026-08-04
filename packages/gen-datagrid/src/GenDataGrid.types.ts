@@ -353,6 +353,12 @@ export type GenDataGridProps<TData> = {
   rowStatusResolver?: (ctx: GenDataGridRowStatusContext<TData>) => GenDataGridRowStatus;
   enableCurrentRowHighlight?: boolean;
   onCurrentRowChange?: (rowId: string | null) => void;
+  /** Fires on body cell double-click (including readOnly). Edit start remains gated by editPolicy. */
+  onRowDoubleClick?: (args: {
+    rowId: string;
+    row: TData;
+    columnId: string;
+  }) => void;
   getCellValidation?: (
     ctx: GenDataGridValidationContext<TData>
   ) => GenDataGridCellValidation | null | undefined;

@@ -286,8 +286,9 @@ Implementation status: `enableRangeSelection`, `selectedRanges`, `defaultSelecte
 | `rowStatusResolver` | `(ctx: GenDataGridRowStatusContext<TData>) => GenDataGridRowStatus` | MVP | row status resolver |
 | `enableCurrentRowHighlight` | `boolean` | MVP | current row highlight |
 | `onCurrentRowChange` | `(rowId: string \| null) => void` | MVP | current row callback derived from active cell row |
+| `onRowDoubleClick` | `(args: { rowId; row; columnId }) => void` | MVP | body cell double-click callback (fires even when readOnly; edit start still gated by editPolicy) |
 
-Implementation status: row number, row selection, and row status props are implemented in Gate 8.7. `enableCurrentRowHighlight` and `onCurrentRowChange` are implemented in Gate 8.7-a. Controlled `currentRowId` and `defaultCurrentRowId` are deferred until a later slice.
+Implementation status: row number, row selection, and row status props are implemented in Gate 8.7. `enableCurrentRowHighlight` and `onCurrentRowChange` are implemented in Gate 8.7-a. Controlled `currentRowId` and `defaultCurrentRowId` are deferred until a later slice. `onRowDoubleClick` is available for navigation-style consumers (e.g. open detail on double-click).
 
 
 ### 5.6-a Validation Feature

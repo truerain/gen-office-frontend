@@ -37,6 +37,9 @@ import {
 import { DataGridCell } from './DataGridCell';
 import { formatCellValue } from './cellValue';
 
+const interactiveTargetSelector =
+  'input,select,textarea,button,[contenteditable="true"]';
+
 function getPinningZone<TData>(cell: Cell<TData, unknown>, enablePinning: boolean) {
   if (!enablePinning) return 'center';
   return cell.column.getIsPinned() || 'center';
@@ -99,6 +102,11 @@ type DataGridBodyRowProps<TData> = {
   setDraftValue: (nextValue: unknown) => void;
   onEditStart: (args: GenDataGridEditingCell & { value: unknown }) => void;
   onEditCancel: () => void;
+  onRowDoubleClick?: (args: {
+    rowId: string;
+    row: TData;
+    columnId: string;
+  }) => void;
   getGridRoot?: () => HTMLElement | null;
   getEditorSurfaces?: () => Iterable<HTMLElement>;
   registerEditorSurface?: (element: HTMLElement) => void;
@@ -147,6 +155,7 @@ export function DataGridBodyRow<TData>({
   setDraftValue,
   onEditStart,
   onEditCancel,
+  onRowDoubleClick,
   getGridRoot,
   getEditorSurfaces,
   registerEditorSurface,
@@ -259,6 +268,22 @@ export function DataGridBodyRow<TData>({
         gridTemplateColumns,
         ['--gen-datagrid-current-row-height' as string]: `${rowHeight}px`,
         ...style,
+      }}
+      onDoubleClick={(event) => {
+        if (!onRowDoubleClick) return;
+        if ((event.target as HTMLElement | null)?.closest(interactiveTargetSelector)) {
+          return;
+        }
+        const cell = (event.target as HTMLElement | null)?.closest(
+          '[data-gen-datagrid-cell="true"]'
+        ) as HTMLElement | null;
+        if (cell?.dataset.systemColumn === 'true') return;
+        const columnId = cell?.dataset.colid ?? '';
+        onRowDoubleClick({
+          rowId,
+          row: row.original,
+          columnId,
+        });
       }}
     >
       {orderedCells.map((cell, cellIndex) => {

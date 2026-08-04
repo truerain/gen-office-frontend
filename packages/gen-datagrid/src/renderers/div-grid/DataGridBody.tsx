@@ -66,6 +66,11 @@ type DataGridBodyProps<TData> = {
   onEditStart: (args: GenDataGridEditingCell & { value: unknown }) => void;
   onEditDeactivate: () => void;
   onEditCancel: () => void;
+  onRowDoubleClick?: (args: {
+    rowId: string;
+    row: TData;
+    columnId: string;
+  }) => void;
   getGridRoot?: () => HTMLElement | null;
   getEditorSurfaces?: () => Iterable<HTMLElement>;
   registerEditorSurface?: (element: HTMLElement) => void;
@@ -114,6 +119,7 @@ export function DataGridBody<TData>({
   onEditStart,
   onEditDeactivate,
   onEditCancel,
+  onRowDoubleClick,
   getGridRoot,
   getEditorSurfaces,
   registerEditorSurface,
@@ -242,6 +248,7 @@ export function DataGridBody<TData>({
               setDraftValue={setDraftValue}
               onEditStart={onEditStart}
               onEditCancel={onEditCancel}
+              onRowDoubleClick={onRowDoubleClick}
               getGridRoot={getGridRoot}
               getEditorSurfaces={getEditorSurfaces}
               registerEditorSurface={registerEditorSurface}

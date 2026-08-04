@@ -121,6 +121,7 @@ export function GenDataGridCrud<TData>(props: GenDataGridCrudProps<TData>) {
           editSelectOnFocus={gridProps?.editSelectOnFocus ?? true}
           editPolicy={editPolicy}
           {...controller.gridStateProps}
+          onRowDoubleClick={gridProps?.onRowDoubleClick}
           ref={controller.gridRef}
           data={gridData}
           columns={gridColumns}
