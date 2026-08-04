@@ -72,6 +72,11 @@ export type GenGridBaseProps<TData> = {
   keepEditingOnNavigate?: boolean;
 
   onCellValueChange?: (coord: { rowId: string; columnId: string }, value: unknown) => void;
+  onRowDoubleClick?: (args: {
+    rowId: string;
+    row: TData;
+    columnId: string;
+  }) => void;
   isRowDirty?: (rowId: string) => boolean;
   isCellDirty?: (rowId: string, columnId: string) => boolean;
   getRowClassName?: (args: { row: TData; rowId: string; rowIndex: number }) => string | undefined;
@@ -169,6 +174,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     contextMenu: contextMenuOptions,
 
     onCellValueChange,
+    onRowDoubleClick,
     isCellDirty,
   } = props;
   void enableGrouping;
@@ -694,6 +700,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
               editOnActiveCell={editOnActiveCell}
               keepEditingOnNavigate={keepEditingOnNavigate}
               onCellValueChange={handleCellValueChange}
+              onRowDoubleClick={onRowDoubleClick}
               isRowDirty={props.isRowDirty}
               isCellDirty={isCellDirty}
               getRowClassName={props.getRowClassName}
@@ -718,6 +725,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
               editOnActiveCell={editOnActiveCell}
               keepEditingOnNavigate={keepEditingOnNavigate}
               onCellValueChange={handleCellValueChange}
+              onRowDoubleClick={onRowDoubleClick}
               isRowDirty={props.isRowDirty}
               isCellDirty={isCellDirty}
               getRowClassName={props.getRowClassName}

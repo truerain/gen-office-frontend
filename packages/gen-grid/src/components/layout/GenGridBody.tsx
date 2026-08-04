@@ -58,6 +58,11 @@ type GenGridBodyProps<TData> = {
   
   /** Optional external handler for committed cell value changes. */
   onCellValueChange?: (coord: CellCoord, nextValue: unknown) => void;
+  onRowDoubleClick?: (args: {
+    rowId: string;
+    row: TData;
+    columnId: string;
+  }) => void;
   isRowDirty?: (rowId: string) => boolean;
   isCellDirty?: (rowId: string, columnId: string) => boolean;
   getRowClassName?: (args: { row: TData; rowId: string; rowIndex: number }) => string | undefined;
@@ -158,6 +163,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
     editOnActiveCell,
     keepEditingOnNavigate,
     onCellValueChange,
+    onRowDoubleClick,
     isCellDirty,
     getRowClassName,
     getRowStyle,
@@ -207,6 +213,7 @@ export function GenGridBody<TData>(props: GenGridBodyProps<TData>) {
     keepEditingOnNavigate,
     editMode,
     setEditMode,
+    onRowDoubleClick,
     isCellEditable: (rowId, columnId) => {
       // Exclude system columns from editing.
       if (isSystemCol(columnId)) return false;

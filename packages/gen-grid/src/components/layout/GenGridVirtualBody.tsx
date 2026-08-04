@@ -65,6 +65,11 @@ type GenGridVirtualBodyProps<TData> = {
   
   /** Optional external handler for committed cell value changes. */
   onCellValueChange?: (coord: CellCoord, nextValue: unknown) => void;
+  onRowDoubleClick?: (args: {
+    rowId: string;
+    row: TData;
+    columnId: string;
+  }) => void;
   isRowDirty?: (rowId: string) => boolean;
   isCellDirty?: (rowId: string, columnId: string) => boolean;
   getRowClassName?: (args: { row: TData; rowId: string; rowIndex: number }) => string | undefined;
@@ -168,6 +173,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
     editOnActiveCell,
     keepEditingOnNavigate,
     onCellValueChange,
+    onRowDoubleClick,
     getRowClassName,
     getRowStyle,
     getCellClassName,
@@ -271,6 +277,7 @@ export function GenGridVirtualBody<TData>(props: GenGridVirtualBodyProps<TData>)
     keepEditingOnNavigate,
     editMode,
     setEditMode,
+    onRowDoubleClick,
     isCellEditable: (rowId, columnId) => {
       // Exclude system columns from editing.
       if (isSystemCol(columnId)) return false;

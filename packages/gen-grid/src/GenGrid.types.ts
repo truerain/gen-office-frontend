@@ -172,6 +172,12 @@ type CommonGridOptions<TData> = {
   editOnActiveCell?: boolean;
   /** keep edit mode when active cell moves (arrow/mouse/tab) */
   keepEditingOnNavigate?: boolean;
+  /** Fires on body cell double-click. Edit start still runs when the cell is editable. */
+  onRowDoubleClick?: (args: {
+    rowId: string;
+    row: TData;
+    columnId: string;
+  }) => void;
 
   /** tanstack table meta */
   tableMeta?: Record<string, any>;

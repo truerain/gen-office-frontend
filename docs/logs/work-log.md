@@ -4,6 +4,11 @@
 
 ## 2026-08-04
 
+### GenGrid onRowDoubleClick 추가
+
+- gen-datagrid와 동일하게 `onRowDoubleClick` public prop을 gen-grid에 추가했다. 더블클릭 시 앱 콜백과 기존 셀 편집 시작이 공존한다.
+- 관련 파일: `packages/gen-grid/src/**`, `packages/gen-grid/docs/implementation-log.md`, `docs/logs/work-log.md`
+
 ### 결재함 목록/상세 전환 transition 추가
 
 - 우측 pane에서 목록과 상세를 겹쳐 두고 opacity + translateX(약 200ms)로 전환하도록 변경했다.

@@ -156,7 +156,7 @@ export default function ApprovalInboxPage(_props: PageComponentProps) {
   const handleApprove = useCallback(async () => {
     if (!selectedDocId || !canDecide) return;
     const confirmed = await openConfirm({
-      title: '선택한 문서를 승인하시겠습니까?',
+      title: '선택한 문서를 승인합니다',
       buttonSet: 'yesNo',
     });
     if (!confirmed) return;
@@ -209,7 +209,7 @@ export default function ApprovalInboxPage(_props: PageComponentProps) {
     }
 
     const confirmed = await openConfirm({
-      title: '선택한 문서를 반려하시겠습니까?',
+      title: '선택한 문서를 반려합니다',
       buttonSet: 'yesNo',
     });
     if (!confirmed) return;

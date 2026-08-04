@@ -2,6 +2,12 @@
 
 ## 2026-08-04
 
+### onRowDoubleClick public API 추가
+
+- `GenGridProps.onRowDoubleClick`를 추가했다. body cell 더블클릭 시 콜백을 호출한다.
+- 기존 `startEditing`은 유지한다. 편집 가능 셀이면 콜백 이후 편집이 시작되고, readonly/비편집 셀이면 콜백만 동작한다.
+- 관련 파일: src/GenGrid.types.ts, src/features/editing/useCellEditing.ts, src/components/base/GenGridBase.tsx, src/components/layout/GenGridBody.tsx, GenGridVirtualBody.tsx
+
 ### dataVersion 기반 스크롤 초기화 옵션 추가
 
 - GenGridProps에 `resetScrollOnDataVersion?: boolean`을 추가했다(기본값 `false`).

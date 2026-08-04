@@ -20,6 +20,12 @@ export function useCellEditing<TData>(args: {
 
   /** 편집 가능 여부(시스템 컨럼 제외 등) */
   isCellEditable?: (rowId: string, columnId: string) => boolean;
+  /** 더블클릭 시 행 콜백 (편집 시작과 공존) */
+  onRowDoubleClick?: (args: {
+    rowId: string;
+    row: TData;
+    columnId: string;
+  }) => void;
 }) {
   const {
     table,
@@ -28,6 +34,7 @@ export function useCellEditing<TData>(args: {
     clearSelectedRanges,
     updateValue,
     isCellEditable,
+    onRowDoubleClick,
     editOnActiveCell,
     keepEditingOnNavigate,
     editMode,
@@ -239,8 +246,14 @@ export function useCellEditing<TData>(args: {
         },
         onDoubleClick: () => {
           clearSelectedRanges?.();
-          // 더블클릭하면 해당 셀로 active 맞추고 편집 시작
+          // 더블클릭하면 해당 셀로 active 맞추고, 공개 콜백 후 편집 시작(가능 시)
           onActiveCellChange({ rowId, columnId });
+          const row =
+            table.getRowModel().rowsById?.[rowId]?.original ??
+            table.getRowModel().rows.find((item) => item.id === rowId)?.original;
+          if (row !== undefined) {
+            onRowDoubleClick?.({ rowId, row, columnId });
+          }
           startEditing({ rowId, columnId });
         },
         /*
@@ -337,12 +350,14 @@ export function useCellEditing<TData>(args: {
       isPrintableEditKey,
       isNavigationKey,
       onActiveCellChange,
+      onRowDoubleClick,
       clearSelectedRanges,
       startEditing,
       editMode,
       activeCell,
       blurActiveEditor,
       keepEditingOnNavigate,
+      table,
     ]
   );
 
