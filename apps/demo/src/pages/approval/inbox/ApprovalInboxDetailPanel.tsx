@@ -1,11 +1,17 @@
 // apps/demo/src/pages/approval/inbox/ApprovalInboxDetailPanel.tsx
 // Right-pane detail view for a selected approval document.
 
+import { useCallback, useMemo, type MouseEvent } from 'react';
 import { ArrowLeft, Check, X } from 'lucide-react';
 
 import { Button, Input } from '@gen-office/ui';
 
+import { usePageContext } from '@/contexts';
 import type { ApprovalDocument, ApprovalStep } from '@/pages/approval/inbox/model/types';
+import {
+  parseMenuParams,
+  sanitizeApprovalHtml,
+} from '@/pages/approval/inbox/sanitizeApprovalHtml';
 
 import styles from './ApprovalInboxPage.module.css';
 
@@ -66,6 +72,29 @@ export function ApprovalInboxDetailPanel({
   canDecide = false,
   isDeciding = false,
 }: ApprovalInboxDetailPanelProps) {
+  const { openMenuPage } = usePageContext();
+
+  const sanitizedBody = useMemo(
+    () => sanitizeApprovalHtml(document?.body ?? ''),
+    [document?.body]
+  );
+
+  const handleBodyClick = useCallback(
+    (event: MouseEvent<HTMLDivElement>) => {
+      const target = event.target as HTMLElement | null;
+      const anchor = target?.closest('a[data-menu-id]') as HTMLAnchorElement | null;
+      if (!anchor || !event.currentTarget.contains(anchor)) return;
+
+      event.preventDefault();
+      const menuId = anchor.getAttribute('data-menu-id')?.trim();
+      if (!menuId) return;
+
+      const params = parseMenuParams(anchor.getAttribute('data-menu-params'));
+      openMenuPage?.(menuId, params);
+    },
+    [openMenuPage]
+  );
+
   if (!document) {
     return (
       <div className={styles.detail}>
@@ -131,7 +160,11 @@ export function ApprovalInboxDetailPanel({
 
       <section className={styles.detailSection}>
         <h3>본문</h3>
-        <pre className={styles.detailBody}>{document.body}</pre>
+        <div
+          className={styles.detailBodyHtml}
+          onClick={handleBodyClick}
+          dangerouslySetInnerHTML={{ __html: sanitizedBody }}
+        />
       </section>
 
       <section className={styles.detailSection}>

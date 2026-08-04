@@ -4,6 +4,12 @@
 
 ## 2026-08-04
 
+### 결재 본문 HTML 메뉴 링크
+
+- 결재 상세 본문을 HTML로 렌더하고 `a[data-menu-id]` 클릭 위임으로 `openMenuPage`를 호출하도록 구현했다.
+- mock body를 HTML 샘플로 교체하고 script/on* 제거용 sanitize 유틸을 추가했다.
+- 관련 파일: `apps/demo/src/pages/approval/inbox/ApprovalInboxDetailPanel.tsx`, `sanitizeApprovalHtml.ts`, `ApprovalInboxPage.module.css`, `apps/demo/src/mocks/data/approvalInbox.ts`, `docs/logs/work-log.md`
+
 ### GenGrid onRowDoubleClick 추가
 
 - gen-datagrid와 동일하게 `onRowDoubleClick` public prop을 gen-grid에 추가했다. 더블클릭 시 앱 콜백과 기존 셀 편집 시작이 공존한다.

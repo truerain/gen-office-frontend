@@ -16,7 +16,7 @@ export const mockApprovalDocuments: ApprovalDocument[] = [
     currentStep: 1,
     amount: 300000,
     summary: '온라인 교육 수강 신청',
-    body: 'TypeScript 심화 과정 수강 신청입니다.',
+    body: '<p>TypeScript 심화 과정 수강 신청입니다.</p><p>관련 실적 조회: <a href="#" data-menu-id="300100" data-menu-params=\'{"sourceAction":"approvalBodyLink","payload":{"docId":"APV-2026-0101"}}\'>Actuals Inquiry 열기</a></p>',
     steps: [
       {
         stepNo: 1,
@@ -38,7 +38,7 @@ export const mockApprovalDocuments: ApprovalDocument[] = [
     currentStep: 2,
     amount: 450000,
     summary: '업무용 모니터 1대',
-    body: '재택/사무실 겸용 모니터 구매 품의입니다.',
+    body: '<p>재택/사무실 겸용 모니터 구매 품의입니다.</p><ul><li>모델: 27인치 QHD</li><li>수량: 1</li></ul>',
     steps: [
       {
         stepNo: 1,
@@ -68,7 +68,7 @@ export const mockApprovalDocuments: ApprovalDocument[] = [
     currentStep: 1,
     amount: 24000,
     summary: '야간 특근 택시비',
-    body: '야간 배포 지원 특근 교통비 정산입니다.',
+    body: '<p>야간 배포 지원 특근 교통비 정산입니다.</p>',
     steps: [
       {
         stepNo: 1,
@@ -92,7 +92,7 @@ export const mockApprovalDocuments: ApprovalDocument[] = [
     currentStep: 2,
     amount: 485000,
     summary: '부산 출장 교통비/숙박비 정산',
-    body: '8/1~8/2 부산 고객사 방문 출장 여비를 정산합니다.\n- KTX: 178,000원\n- 숙박: 220,000원\n- 식비: 87,000원',
+    body: '<p>8/1~8/2 부산 고객사 방문 출장 여비를 정산합니다.</p><ul><li>KTX: 178,000원</li><li>숙박: 220,000원</li><li>식비: 87,000원</li></ul><p>계정 실적 확인: <a href="#" data-menu-id="300100" data-menu-params=\'{"sourceAction":"approvalBodyLink","payload":{"acctCd":"510100","docId":"APV-2026-0001"}}\'>Actuals Inquiry 바로가기</a></p>',
     steps: [
       {
         stepNo: 1,
@@ -127,7 +127,7 @@ export const mockApprovalDocuments: ApprovalDocument[] = [
     status: 'pending',
     currentStep: 1,
     summary: '개인 사유 연차 2일',
-    body: '8월 12일~13일 연차 휴가를 신청합니다.\n잔여 연차: 8일',
+    body: '<p>8월 12일~13일 연차 휴가를 신청합니다.</p><p>잔여 연차: 8일</p>',
     steps: [
       {
         stepNo: 1,
@@ -155,7 +155,7 @@ export const mockApprovalDocuments: ApprovalDocument[] = [
     currentStep: 1,
     amount: 2100000,
     summary: '신규 입사자 개발용 노트북 2대',
-    body: '신규 입사자 2명 분 개발용 노트북 구매 품의입니다.\n모델: MacBook Pro 14\n수량: 2',
+    body: '<p>신규 입사자 2명 분 개발용 노트북 구매 품의입니다.</p><ul><li>모델: MacBook Pro 14</li><li>수량: 2</li></ul><p>관련 메뉴: <a href="#" data-menu-id="800100">User Management</a></p>',
     steps: [
       {
         stepNo: 1,
@@ -183,7 +183,7 @@ export const mockApprovalDocuments: ApprovalDocument[] = [
     currentStep: 3,
     amount: 120000000,
     summary: 'ABC 고객사 연간 유지보수 계약',
-    body: 'ABC 고객사 유지보수 계약 1년 갱신 건입니다.\n계약 기간: 2026-09-01 ~ 2027-08-31',
+    body: '<p>ABC 고객사 유지보수 계약 1년 갱신 건입니다.</p><p>계약 기간: 2026-09-01 ~ 2027-08-31</p>',
     steps: [
       {
         stepNo: 1,
@@ -221,7 +221,7 @@ export const mockApprovalDocuments: ApprovalDocument[] = [
     currentStep: 1,
     amount: 550000,
     summary: 'React 고급 과정 오프라인 교육',
-    body: '8월 React 고급 과정 수강 신청입니다.\n교육비 55만원, 2일 과정.',
+    body: '<p>8월 React 고급 과정 수강 신청입니다.</p><p>교육비 55만원, 2일 과정.</p>',
     steps: [
       {
         stepNo: 1,
@@ -245,7 +245,7 @@ export const mockApprovalDocuments: ApprovalDocument[] = [
     currentStep: 2,
     amount: 320000,
     summary: '3분기 사무용품 보충',
-    body: '복사지, 토너, 문구류 일괄 구매 건입니다.',
+    body: '<p>복사지, 토너, 문구류 일괄 구매 건입니다.</p>',
     steps: [
       {
         stepNo: 1,
