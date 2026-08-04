@@ -1,5 +1,13 @@
 ## 2026-08-03
 
+## 2026-08-04
+
+### onRowDoubleClick public API 추가
+
+- `GenDataGridProps.onRowDoubleClick`를 추가했다. body cell 더블클릭 시 readonly 포함해 콜백을 호출한다.
+- 편집 시작은 기존처럼 `editPolicy.startTriggers.doubleClick`과 editable 조건으로만 동작한다.
+- 관련 파일: src/GenDataGrid.types.ts, src/renderers/div-grid/DataGridCell.tsx, DataGridBodyRow.tsx, DataGridBody.tsx, DataGridVirtualBody.tsx, DataGridRoot.tsx, docs/reference/api-structure.md
+
 ### dataVersion 기반 스크롤 초기화 옵션 추가
 
 - `GenDataGrid` public prop에 `resetScrollOnDataVersion?: boolean`을 추가했다(기본값 `false`).

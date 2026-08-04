@@ -55,6 +55,7 @@ const componentPaths: Record<string, ComponentLoader> = {
   MessageManagementPage: () => import('@/pages/admin/message/MessageManagementPage'),
   LkupManagementPage: () => import('@/pages/admin/lkup/LkupManagementPage'),
   CoActualsPage: () => import('@/pages/co/actuals/ActualsPage'),
+  ApprovalInboxPage: () => import('@/pages/approval/inbox/ApprovalInboxPage'),
 
   // Demo
   PrimitivesPage: () => import('@/pages/demo/primitives/PrimitivesPage'),

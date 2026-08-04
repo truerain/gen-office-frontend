@@ -4,6 +4,35 @@
 
 ## 2026-08-04
 
+### 결재함 목록/상세 전환 transition 추가
+
+- 우측 pane에서 목록과 상세를 겹쳐 두고 opacity + translateX(약 200ms)로 전환하도록 변경했다.
+- `prefers-reduced-motion`이면 transition을 끈다.
+- 관련 파일: `apps/demo/src/pages/approval/inbox/ApprovalInboxPage.tsx`, `ApprovalInboxPage.module.css`
+
+
+### 결재함 더블클릭 상세 전환 수정
+
+- 원인: `gen-datagrid` dist에 `onRowDoubleClick` 미반영 + 행 단위 이벤트 미연결.
+- 행(`DataGridBodyRow`) 더블클릭으로 상세 진입하도록 보강하고 packages dist를 재빌드했다.
+- `GenDataGridCrud`에서 `onRowDoubleClick`을 gridStateProps 이후에 명시 전달하도록 수정했다.
+- 관련 파일: `packages/gen-datagrid/src/renderers/div-grid/DataGridBodyRow.tsx`, `packages/gen-datagrid-crud/src/GenDataGridCrud.tsx`, `apps/demo/src/pages/approval/inbox/ApprovalInboxPage.tsx`
+
+
+### 결재함 UI TreeView + list/detail 재구성
+
+- FilterBar/탭을 제거하고 좌측 `TreeView`(품의/결재함 상태 leaf) + 우측 목록/상세 전환으로 재구성했다.
+- 행 더블클릭 상세 진입을 위해 `GenDataGrid.onRowDoubleClick`을 추가하고 ApprovalInbox에 연결했다.
+- mock 문서에 `box: request|inbox`를 추가해 품의/결재함 목록을 분리했다.
+- 관련 파일: `packages/gen-datagrid/**`, `apps/demo/src/pages/approval/inbox/**`, `apps/demo/src/mocks/data/approvalInbox.ts`, `apps/demo/src/mocks/handlers/approval.handlers.ts`, `docs/logs/work-log.md`
+
+### 결재함(250100) 화면 Mock 연결
+
+- `ApprovalInboxPage`를 추가하고 메뉴 `250100`의 `execComponent`를 `CoActualsPage`에서 `ApprovalInboxPage`로 교체했다.
+- SplitLayout 기반 대기/완료/반려 함 + 상세 패널 + 승인/반려 Mock API를 연결했다.
+- 관련 파일: `apps/demo/src/pages/approval/inbox/**`, `apps/demo/src/mocks/data/approvalInbox.ts`, `apps/demo/src/mocks/handlers/approval.handlers.ts`, `apps/demo/src/mocks/data/menu.ts`, `apps/demo/src/app/config/componentRegistry.dynamic.ts`, `docs/logs/work-log.md`
+
+
 ### GenGrid resetScrollOnDataVersion 추가
 
 - `gen-grid`에 `resetScrollOnDataVersion` public prop을 추가해 `dataVersion` 변경 시 viewport 스크롤을 첫 row로 초기화할 수 있게 했다.

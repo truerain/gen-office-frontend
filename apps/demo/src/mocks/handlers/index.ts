@@ -6,6 +6,7 @@ import { noticeHandlers } from './notice.handlers';
 import { messageHandlers } from './message.handlers';
 import { commonFileHandlers } from './commonFile.handlers';
 import { coActualsHandlers } from './coActuals.handlers';
+import { approvalHandlers } from './approval.handlers';
 
 export const handlers = [
   ...customerHandlers,
@@ -16,4 +17,5 @@ export const handlers = [
   ...messageHandlers,
   ...commonFileHandlers,
   ...coActualsHandlers,
+  ...approvalHandlers,
 ];
