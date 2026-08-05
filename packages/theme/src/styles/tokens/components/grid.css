@@ -36,7 +36,7 @@
 
     --grid-cell-bg-hover: color-mix(in srgb, var(--base-brand) 8%, var(--grid-cell-bg));
     --grid-cell-bg-selected: color-mix(in srgb, var(--base-brand) 14%, var(--grid-cell-bg));
-    --grid-cell-bg-focus: var(--grid-cell-bg);
+    --grid-cell-bg-focus: color-mix(in srgb, var(--base-brand) 18%, var(--grid-cell-bg));
 
   /* Pinned / Sticky Columns */
   --grid-cell-bg-pinned: var(--color-bg-primary);

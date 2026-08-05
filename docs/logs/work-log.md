@@ -2,6 +2,13 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-08-05
+
+### grid-cell-bg-focus 라이트 테마 가시성 조정
+
+- active row highlight가 보이지 않던 원인을 라이트 토큰 값 문제로 보고 `--grid-cell-bg-focus`를 brand 18% mix로 조정했다.
+- 관련 파일: `packages/theme/src/styles/tokens/components/grid.css`, `packages/theme/docs/implementation-log.md`, `docs/logs/work-log.md`
+
 ## 2026-08-04
 
 ### 결재 본문 HTML 메뉴 링크
