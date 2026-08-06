@@ -2,6 +2,14 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-08-06
+
+### @gen-office/debug MVP 추가
+
+- `packages/debug`에 상태·리렌더 디버그 훅을 추가하고 demo Primitives 페이지에 사용 예를 넣었다.
+- 논의만 하고 미구현인 디버깅 후보는 `docs/debug/debug-tooling-backlog.md`로 정리했다.
+- 관련 파일: `packages/debug/**`, `apps/demo/src/pages/demo/primitives/PrimitivesPage.tsx`, `docs/debug/debug-tooling-backlog.md`, `AGENTS.md`, `README.md`, `docs/01.BUILD_GUIDE.md`
+
 ## 2026-08-05
 
 ### grid-cell-bg-focus 라이트 테마 가시성 조정

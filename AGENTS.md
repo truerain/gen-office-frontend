@@ -29,6 +29,7 @@ Keep package responsibilities clear.
 - `packages/theme`: design tokens, global styles, fonts, and theme primitives.
 - `packages/ui`: domain-neutral UI components.
 - `packages/utils`: shared utility functions.
+- `packages/debug`: DEV-oriented debug hooks (`useDebugState`, render inspection).
 - `packages/mdi`: multiple document interface layout and tab/window behavior.
 - `packages/gen-grid`: core grid package based on TanStack Table.
 - `packages/gen-grid-crud`: CRUD behavior built on top of GenGrid.
@@ -41,7 +42,7 @@ Keep package responsibilities clear.
 Preferred dependency direction:
 
 ```text
-apps -> feature packages -> ui -> theme/utils
+apps -> feature packages -> ui -> theme/utils/debug
 ```
 
 Avoid reverse dependencies and circular dependencies.

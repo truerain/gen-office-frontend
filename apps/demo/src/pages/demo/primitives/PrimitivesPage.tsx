@@ -1,5 +1,10 @@
 import { useState } from 'react';
 import {
+  useDebugState,
+  useRenderCount,
+  useWhyRender,
+} from '@gen-office/debug';
+import {
   Button,
   Input,
   SimpleSelect,
@@ -27,6 +32,18 @@ function PrimitivesPage() {
   const [selectedValue, setSelectedValue] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const renderCount = useRenderCount('PrimitivesPage', {
+    enabled: import.meta.env.DEV,
+  });
+  useDebugState('PrimitivesPage.inputValue', inputValue, {
+    enabled: import.meta.env.DEV,
+  });
+  useWhyRender(
+    'PrimitivesPage',
+    { inputValue, checked, switchOn, selectedValue, dialogOpen },
+    { enabled: import.meta.env.DEV },
+  );
+
   return (
     <div className={styles.page}>
       <div className={styles.pageHeader}>
@@ -37,6 +54,7 @@ function PrimitivesPage() {
           <h1>Primitives Components</h1>
           <p className={styles.subtitle}>
             Core UI components built on Radix UI with full accessibility support
+            {import.meta.env.DEV ? ` · renders ${renderCount}` : null}
           </p>
         </div>
       </div>

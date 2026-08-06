@@ -5,6 +5,15 @@
 - **Showcase 앱 전용:** `apps/showcase/docs/logs/decisions.md`
 - 최신 항목을 위에 추가합니다.
 
+## 2026-08-06
+
+### @gen-office/debug 패키지와 MVP 범위
+
+- 페이지 상태 확인·리렌더 확인용 foundation 패키지 `@gen-office/debug`를 추가한다.
+- MVP API는 관찰형 `useDebugState`, `useRenderCount`, `useWhyRender`다. useState 대체형·Dialog UI는 채택하지 않는다.
+- 데이터셋 DataGrid 조회, 덤프 헬퍼, DevTools 표준 장착, gen-grid-crud 내부 opt-in 등은 구현하지 않고 `docs/debug/debug-tooling-backlog.md`에 남겨 재검토한다.
+- 관련 파일: `packages/debug/**`, `docs/debug/debug-tooling-backlog.md`, `docs/logs/decisions.md`
+
 ## 2026-07-28
 
 ### 서버 페이징용 Server-Side Sort DnD 승격

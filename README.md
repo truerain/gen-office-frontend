@@ -82,6 +82,7 @@ packages/
   theme/          디자인 토큰, 글로벌 스타일, 폰트
   ui/             공통 UI 컴포넌트
   utils/          공통 유틸리티
+  debug/          DEV 지향 디버그 훅 (상태·리렌더)
   mdi/            Multiple Document Interface 레이아웃
   gen-grid/       TanStack Table 기반 데이터 그리드
   gen-grid-crud/  그리드 기반 CRUD 기능
@@ -99,11 +100,12 @@ scripts/          저장소 관리 및 코드 생성 스크립트
 기본 방향은 아래 의존성 흐름을 유지하는 것입니다.
 
 ```text
-apps -> feature packages -> ui -> theme/utils
+apps -> feature packages -> ui -> theme/utils/debug
 ```
 
 - `theme`은 색상, 폰트, 전역 스타일 같은 디자인 기반을 제공합니다.
 - `ui`는 버튼, 입력, 다이얼로그, 선택 컴포넌트처럼 도메인에 묶이지 않는 범용 UI를 제공합니다.
+- `debug`는 상태·리렌더 확인용 얇은 훅을 제공합니다. Dialog UI 등은 `docs/debug/debug-tooling-backlog.md`를 참고합니다.
 - `gen-grid`, `gen-grid-crud`, `gen-chart`, `mdi`는 백오피스 기능 단위 패키지입니다.
 - 앱은 필요한 패키지를 조합해서 실제 프로젝트 화면과 라우팅을 구성합니다.
 
