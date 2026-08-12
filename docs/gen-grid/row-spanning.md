@@ -175,6 +175,7 @@ const columns: ColumnDef<OrderRow>[] = [
 - 필터가 1개 이상 적용되면 row merge는 임시 해제한다. (필터 해제 시 다시 활성화)
 - merge 대상 컬럼이 pinned일 때도 동일 규칙으로 동작해야 한다.
 - `real` 모드에서는 covered 셀이 DOM에 없으므로 active cell/키보드 이동 시 anchor 기준 정합성 검토가 필요하다.
+- `enableActiveRowHighlight`는 현재 active 물리 행에만 적용된다. rowspan 셀(계정코드 등)을 active해도 covered 행까지 같이 켜지지는 않는다. span 구간 전체 highlight는 보류이며 이후 재검토한다.
 - `visual` 모드에서는 covered 셀 DOM이 유지되므로 포커스/편집이 일반 셀과 유사하게 동작한다.
 - virtualization에서는 화면 밖 run과 연결되는 경우를 고려해야 한다.
 

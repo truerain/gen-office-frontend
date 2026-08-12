@@ -5,7 +5,30 @@
 - **Showcase 앱 전용:** `apps/showcase/docs/logs/decisions.md`
 - 최신 항목을 위에 추가합니다.
 
+## 2026-08-12
+
+### 사업계획 입력 화면은 1행 2줄 셀 레이아웃
+
+- 실적/계획을 2개의 `<tr>`로 나누면 체크박스·행상태·선택·dirty가 계정 단위와 어긋난다. 이 화면은 계정 1행을 유지한다.
+- 월 칸은 위=실적(읽기), 아래=계획+비율(계획만 커스텀 에디터)로 표시한다. 엑셀 2줄 출력은 기본 그리드 내보내기에 맞추지 않고 별도 커스텀으로 둔다.
+- 관련 파일: `apps/demo/src/pages/demo/plan-vs-actual/**`
+
+### rowspan 구간 ActiveRowHighlight 확장 — 보류
+
+- 사업계획 2행 화면에서 계정코드 등 rowspan 셀을 active하면 실적(앵커) 행만 highlight되고 계획(covered) 행은 빠지는 문제가 있다.
+- 같은 span 구간의 모든 행에 ActiveRowHighlight를 퍼뜨리는 안은 가능하지만, 기본 동작으로 채택하지는 않는다. 병합되지 않은 컬럼(월 금액)은 물리 행 단위 highlight가 맞고, span 단위 highlight를 기본값으로 두면 선택 범위가 커진다.
+- 반영 여부는 이후 재검토한다. 재검토 시 확인할 것: span 컬럼 active 시에만 확장할지, 논리 레코드(계정) 단위로 항상 묶을지, `getRowStyle` 인라인 배경과의 우선순위.
+- 관련 파일: `docs/gen-grid/row-spanning.md`, `packages/gen-grid/src/components/layout/rowSpanModel.ts`, `apps/demo/src/pages/demo/plan-vs-actual/PlanVsActualDemoPage.tsx`
+
 ## 2026-08-06
+
+### demo MDI ↔ Browser History 연동
+
+- demo에서 브라우저 Back을 MDI 활성화(MRU) 스택과 연동하는 방향을 채택한다. Back은 탭 전환이며 탭을 닫지 않는다.
+- 논리 스택을 소스 오브 트루스로 두고, 브라우저 History는 신호로만 쓴다. close 시 History 중간 삭제는 불가하므로 논리 스택에서만 제거하고 popstate에서 스킵한다.
+- Home을 히스토리 바닥으로 두어 Home만 남으면 Back 시 앱 밖으로 나간다. Showcase MVP(History 미사용)와 분기하며 flag로 off 한다.
+- `@gen-office/mdi`는 v1에서 변경하지 않고 demo bridge로 구현한다.
+- 관련 파일: `docs/mdi-history-bridge.md`, `docs/logs/decisions.md`
 
 ### @gen-office/debug 패키지와 MVP 범위
 

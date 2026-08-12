@@ -5,6 +5,8 @@ import type { GenDataGridColumnDef } from '@gen-office/gen-datagrid';
 
 import type { ApprovalDocument } from '@/pages/approval/inbox/model/types';
 
+import styles from './ApprovalInboxPage.module.css';
+
 const DOC_TYPE_LABEL: Record<ApprovalDocument['docType'], string> = {
   expense: '경비',
   leave: '휴가',
@@ -17,6 +19,10 @@ const STATUS_LABEL: Record<ApprovalDocument['status'], string> = {
   pending: '대기',
   completed: '완료',
   rejected: '반려',
+};
+
+export type CreateApprovalInboxColumnsOptions = {
+  onOpenDetail: (docId: string) => void;
 };
 
 function formatDateTime(value: string) {
@@ -37,7 +43,9 @@ function formatAmount(value: number | undefined) {
   return value.toLocaleString('ko-KR');
 }
 
-export function createApprovalInboxColumns(): GenDataGridColumnDef<ApprovalDocument, unknown>[] {
+export function createApprovalInboxColumns({
+  onOpenDetail,
+}: CreateApprovalInboxColumnsOptions): GenDataGridColumnDef<ApprovalDocument, unknown>[] {
   return [
     {
       id: 'docId',
@@ -59,6 +67,22 @@ export function createApprovalInboxColumns(): GenDataGridColumnDef<ApprovalDocum
       accessorKey: 'title',
       header: '제목',
       size: 260,
+      cell: ({ getValue, row }) => {
+        const title = String(getValue() ?? '');
+        return (
+          <a
+            href="#"
+            className={styles.titleLink}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              onOpenDetail(row.original.docId);
+            }}
+          >
+            {title}
+          </a>
+        );
+      },
       meta: { align: 'left' },
     },
     {

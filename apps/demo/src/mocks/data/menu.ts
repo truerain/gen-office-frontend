@@ -325,6 +325,17 @@ const menus: AppMenu[] = [
     sortOrder: 901400,
     execComponent: 'CalendarDemoPage',
   },
+  {
+    menuId: 901500,
+    menuName: '사업계획 입력 Demo',
+    menuNameEng: 'Plan vs Actual Input Demo',
+    menuIcon: 'ClipboardList',
+    parentMenuId: 900000,
+    displayYn: 'Y',
+    useYn: 'Y',
+    sortOrder: 901500,
+    execComponent: 'PlanVsActualDemoPage',
+  },
 ];
 
 export function loadAppMenuData() {

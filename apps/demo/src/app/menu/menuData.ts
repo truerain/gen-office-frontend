@@ -26,6 +26,7 @@ const componentNameByMenuId: Record<string, string> = {
   '991200': 'CrudActionControlsDemoPage',
   '991300': 'GridDisplayScaleDemoPage',
   '991400': 'CalendarDemoPage',
+  '991500': 'PlanVsActualDemoPage',
 };
 
 const iconByMenuId: Record<string, string> = {
@@ -55,6 +56,7 @@ const iconByMenuId: Record<string, string> = {
   '991200': 'SlidersHorizontal',
   '991300': 'Scale',
   '991400': 'CalendarDays',
+  '991500': 'ClipboardList',
 };
 
 export type SystemMenuData = {

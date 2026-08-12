@@ -244,6 +244,21 @@
   padding-left: 1.25em;
 }
 
+.titleLink {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-primary, #2563eb);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.titleLink:hover {
+  text-decoration: underline;
+  color: var(--color-text);
+}
+
 .detailBodyHtml a {
   color: var(--color-primary, #2563eb);
   text-decoration: underline;

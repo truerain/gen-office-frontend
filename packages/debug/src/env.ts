@@ -1,18 +1,18 @@
 // packages/debug/src/env.ts
 // Resolves whether debug hooks should run.
-// Prefer passing `enabled: import.meta.env.DEV` from apps when using the built dist.
+// Prefer passing `enabled` from the app (import.meta.env.DEV or VITE_DEBUG).
 
 export type DebugEnabledOptions = {
   /**
-   * When omitted, reads Vite `import.meta.env` (works when the app resolves package source).
-   * Built dist may bake DEV=false — pass `enabled` explicitly from the app if unsure.
+   * When omitted, reads Vite `import.meta.env` when available.
+   * If env cannot be resolved, defaults to false (fail closed).
    */
   enabled?: boolean;
 };
 
 /**
- * Prefer explicit `enabled` from the app (`import.meta.env.DEV`).
- * Fallback reads `import.meta.env` when the module is compiled by the app bundler.
+ * Prefer explicit `enabled` from the app.
+ * When omitted: use `import.meta.env.DEV` / `MODE` if present, otherwise false.
  */
 export function resolveDebugEnabled(enabled?: boolean): boolean {
   if (typeof enabled === 'boolean') {
@@ -29,5 +29,5 @@ export function resolveDebugEnabled(enabled?: boolean): boolean {
     }
   }
 
-  return true;
+  return false;
 }

@@ -1,0 +1,127 @@
+/* apps/demo/src/pages/demo/plan-vs-actual/PlanVsActualDemoPage.module.css
+ * Layout for the plan-vs-actual input demo page.
+ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  padding-bottom: var(--spacing-md);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  background: var(--color-surface);
+}
+
+.hint {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  padding: 8px;
+}
+
+.stack {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+  grid-template-rows: 1fr 1fr;
+  align-items: stretch;
+  width: 100%;
+  height: var(--gen-grid-row-height);
+  margin: 0 0 /*(calc(-1 * var(--grid-cell-padding-x))*/;
+  min-width: 0;
+  column-gap: 6px;
+}
+
+.actualAmount,
+.planAmount,
+.ratio,
+.ratioSlot {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.actualAmount,
+.planAmount {
+  justify-content: flex-end;
+  padding-left: var(--grid-cell-padding-x);
+  font-variant-numeric: tabular-nums;
+}
+
+.actualAmount {
+  color: var(--color-text-muted, #6b7280);
+  border-bottom: 1px solid var(--grid-cell-border);
+}
+
+.planAmount {
+  font-weight: 600;
+}
+
+.ratio,
+.ratioSlot {
+  justify-content: flex-end;
+  padding-right: var(--grid-cell-padding-x);
+}
+
+.ratioSlot {
+  border-bottom: 1px solid var(--grid-cell-border);
+}
+
+.ratio {
+  color: var(--color-text-muted, #6b7280);
+  font-size: 11px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.ratioOver {
+  color: #2563eb;
+}
+
+.ratioUnder {
+  color: var(--color-danger, #dc3545);
+}
+
+.editorInput {
+  box-sizing: border-box;
+  width: 100%;
+  height: 22px;
+  margin: 0;
+  padding: 0 4px;
+  border: 1px solid var(--grid-selection-border, #2563eb);
+  border-radius: 2px;
+  background: var(--grid-cell-bg, #fff);
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  outline: none;
+}
+
+.actualAmount .editorInput {
+  font-weight: 500;
+}

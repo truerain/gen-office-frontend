@@ -76,6 +76,7 @@ const componentPaths: Record<string, ComponentLoader> = {
   PopupInputDemoPage: () => import('@/pages/demo/popup-input'),
   CrudActionControlsDemoPage: () => import('@/pages/demo/crud-action-controls'),
   GridDisplayScaleDemoPage: () => import('@/pages/demo/grid-display-scale'),
+  PlanVsActualDemoPage: () => import('@/pages/demo/plan-vs-actual'),
 };
 
 /**

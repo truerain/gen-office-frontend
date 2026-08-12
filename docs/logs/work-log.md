@@ -2,7 +2,64 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-08-12
+
+### 사업계획 10~12월 실적·계획 동시 편집
+
+- 10월 이후 칸은 커스텀 에디터에서 실적과 계획을 함께 수정한다. 1~9월은 계획만 수정한다.
+- Tab은 칸 안에서 실적→계획으로 이동하고, 저장 시 실적 월 값도 반영한다.
+- 관련 파일: `apps/demo/src/pages/demo/plan-vs-actual/PlanMonthStack.tsx`, `PlanVsActualDemoPage.tsx`, `planVsActualModel.ts`
+
+### 사업계획 셀 비율 칸 너비 조정
+
+- 월/합계 셀에서 비율 칸이 너비의 약 30%를 차지하도록 바꿨다.
+- 관련 파일: `apps/demo/src/pages/demo/plan-vs-actual/PlanVsActualDemoPage.module.css`
+
+### 사업계획 데모 합계 컬럼 순서 반영
+
+- 컬럼 배열 순서를 바꿔도 gen-grid가 최초 columnOrder를 유지해 합계가 뒤에 남아 있던 문제를, 컬럼 id 순서 key로 그리드를 다시 타게 해서 맞췄다.
+- 관련 파일: `apps/demo/src/pages/demo/plan-vs-actual/PlanVsActualDemoPage.tsx`
+
+### 사업계획 셀 타입 오류와 비율 색
+
+- 월 컬럼 `meta.align` 추론을 맞춰 타입 오류를 고쳤다.
+- 비율이 100%를 넘으면 파랑, 이하이면 붉은색으로 표시한다.
+- 관련 파일: `apps/demo/src/pages/demo/plan-vs-actual/PlanVsActualDemoPage.tsx`, `PlanMonthStack.tsx`, `PlanVsActualDemoPage.module.css`
+
+### 사업계획 셀 금액 정렬과 계획 에디터 테두리
+
+- 실적 금액을 계획 금액과 같은 열에 맞추고, 비율은 오른쪽 고정 칸에 두었다.
+- 계획 편집 input에 선택 테두리와 배경을 넣었다.
+- 관련 파일: `apps/demo/src/pages/demo/plan-vs-actual/PlanMonthStack.tsx`, `PlanVsActualDemoPage.module.css`
+
+### 사업계획 데모를 1행 2줄 셀로 전환
+
+- 실적/계획 2 `<tr>` 전개를 제거하고 계정 1행으로 바꿨다. 월/합계 칸은 위 실적, 아래 계획+비율이며 계획만 커스텀 에디터로 수정한다.
+- 체크박스·행상태를 계정 단위로 쓸 수 있게 했고, 엑셀은 계획 금액만 기본 출력한다.
+- 관련 파일: `apps/demo/src/pages/demo/plan-vs-actual/**`, `docs/logs/decisions.md`
+
+### rowspan ActiveRowHighlight 확장 보류 기록
+
+- rowspan 셀 active 시 covered 행까지 같이 highlight할지 여부는 기본 채택하지 않고 이후 재검토로 남겼다.
+- 관련 파일: `docs/logs/decisions.md`, `docs/gen-grid/row-spanning.md`, `packages/gen-grid/docs/implementation-log.md`
+
+### 사업계획 실적/계획 2행 입력 데모 추가
+
+- 월 컬럼 + 실적/계획 2행 레이아웃의 사업계획 입력 demo 페이지를 추가했다. API는 계정 1행(wide)을 유지하고 화면에서만 2행으로 펼친다.
+- 실적 행은 읽기 전용, 계획 월 금액만 편집 가능하며 비율은 계획합계/실적합계로 계산한다. 실적 행 표시 토글과 실적 x 105% 일괄 채우기를 넣었다.
+- 관련 파일: `apps/demo/src/pages/demo/plan-vs-actual/**`, `apps/demo/src/app/config/componentRegistry.dynamic.ts`, `apps/demo/src/mocks/data/menu.ts`, `apps/demo/src/app/menu/menuData.ts`, `docs/logs/work-log.md`
+
 ## 2026-08-06
+
+### MDI History 연동 설계 문서화
+
+- demo용 MDI ↔ Browser History 연동 설계안을 문서화했다.
+- 관련 파일: `docs/mdi-history-bridge.md`, `docs/logs/decisions.md`, `docs/logs/work-log.md`
+
+### 결재함 제목 링크 상세 이동
+
+- 목록 제목 컬럼을 `<a>`로 렌더하고 클릭 시 행 더블클릭과 동일하게 상세 화면으로 전환한다.
+- 관련 파일: `apps/demo/src/pages/approval/inbox/ApprovalInboxColumns.tsx`, `ApprovalInboxPage.tsx`, `ApprovalInboxPage.module.css`, `docs/logs/work-log.md`
 
 ### @gen-office/debug MVP 추가
 

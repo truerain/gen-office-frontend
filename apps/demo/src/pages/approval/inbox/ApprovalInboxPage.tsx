@@ -122,7 +122,6 @@ export default function ApprovalInboxPage(_props: PageComponentProps) {
     viewMode === 'detail' && Boolean(selectedDocId)
   );
   const decisionMutation = useApprovalDecisionMutation();
-  const columns = useMemo(() => createApprovalInboxColumns(), []);
 
   useEffect(() => {
     setViewMode('list');
@@ -147,6 +146,11 @@ export default function ApprovalInboxPage(_props: PageComponentProps) {
     setComment('');
     setViewMode('detail');
   }, []);
+
+  const columns = useMemo(
+    () => createApprovalInboxColumns({ onOpenDetail: handleOpenDetail }),
+    [handleOpenDetail]
+  );
 
   const handleBackToList = useCallback(() => {
     setViewMode('list');

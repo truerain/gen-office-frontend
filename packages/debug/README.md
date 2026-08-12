@@ -19,24 +19,29 @@ import {
   useWhyRender,
 } from '@gen-office/debug';
 
-// 기존 값 관찰 (useState 대체 아님)
-useDebugState('Primitives.inputValue', inputValue);
+useDebugState('Primitives.inputValue', inputValue, {
+  enabled: import.meta.env.DEV,
+});
 
-// 렌더 횟수 (Strict Mode에서는 DEV에서 더 크게 보일 수 있음)
-const renders = useRenderCount('PrimitivesPage', { log: true });
+const renders = useRenderCount('PrimitivesPage', {
+  enabled: import.meta.env.DEV,
+  log: true,
+});
 
-// shallow deps 변화 힌트
-useWhyRender('PrimitivesPage', { inputValue, checked });
+useWhyRender('PrimitivesPage', { inputValue, checked }, {
+  enabled: import.meta.env.DEV,
+});
 ```
 
-`enabled`를 생략하면 Vite `import.meta.env`를 읽으려 시도합니다.  
-앱에서 쓰는 권장 패턴:
+`enabled`를 생략하면 Vite `import.meta.env`를 읽습니다. env를 해석할 수 없으면 **기본은 `false`(꺼짐)** 입니다.  
+앱에서 빌드 모드별로 제어하려면 `VITE_DEBUG` 등을 두고 넘기면 됩니다.
 
 ```ts
-useDebugState('x', value, { enabled: import.meta.env.DEV });
+enabled: import.meta.env.VITE_DEBUG === 'true'
 ```
 
-개발 서버에서는 `package.json`의 `development` export로 소스가 해석됩니다. 빌드된 `dist`만 쓰면 Vite가 `DEV`를 인라인할 수 있으니, 위처럼 앱에서 `enabled`를 넘기는 편이 안전합니다.
+개발 시 `package.json`의 `development` export로 소스가 해석될 수 있습니다. 빌드된 `dist`만 쓰면 `DEV`가 인라인될 수 있으니, 앱에서 `enabled`를 명시하는 편이 안전합니다.
+
 ## 범위 밖
 
 Dialog UI, 데이터셋 DataGrid 뷰어, 그리드 CRUD 내부 디버그 등은  

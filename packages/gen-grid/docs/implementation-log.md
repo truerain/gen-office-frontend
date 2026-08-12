@@ -1,5 +1,13 @@
 # GenGrid 구현 로그
 
+## 2026-08-12
+
+### rowspan 구간 ActiveRowHighlight 확장 보류
+
+- span 컬럼 active 시 covered 행까지 highlight를 퍼뜨리는 안은 채택하지 않고 보류한다.
+- 현재 동작은 active 물리 행만 highlight한다. 재검토 포인트는 `docs/logs/decisions.md`에 기록했다.
+- 관련 파일: docs/gen-grid/row-spanning.md, docs/logs/decisions.md
+
 ## 2026-08-04
 
 ### onRowDoubleClick public API 추가
