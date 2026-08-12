@@ -77,6 +77,8 @@
 }
 
 .planAmount {
+  align-items: flex-end;
+  padding-bottom: 2px;
   font-weight: 600;
 }
 
@@ -91,6 +93,8 @@
 }
 
 .ratio {
+  align-items: flex-end;
+  padding-bottom: 2px;
   color: var(--color-text-muted, #6b7280);
   font-size: 11px;
   font-weight: 500;

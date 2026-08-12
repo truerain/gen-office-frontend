@@ -52,6 +52,7 @@ function createColumns(): ColumnDef<PlanVsActualGridRow, any>[] {
         <PlanMonthStack actual={row.original.actualTotal} plan={row.original.planTotal} />
       ),
       meta: {
+        pinned: 'left',
         align: 'right',
         mono: true,
         exportValue: ({ row }: { row: PlanVsActualGridRow }) => row.planTotal,
@@ -90,6 +91,20 @@ function createColumns(): ColumnDef<PlanVsActualGridRow, any>[] {
         },
       };
     }),
+    {
+      id: 'status',
+      accessorKey: 'status',
+      header: '상태',
+      size: 120,
+      meta: { align: 'left' },
+    },
+    {
+      id: 'reason',
+      accessorKey: 'reason',
+      header: '사유',
+      size: 160,
+      meta: { align: 'left' },
+    },
   ];
 }
 
