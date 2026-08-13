@@ -1,5 +1,13 @@
 # GenGrid 구현 로그
 
+## 2026-08-13
+
+### sticky footer 고정 컬럼 z-index 보정
+
+- sticky footer 칸은 `z-index: header(20)`인데, 고정 컬럼 인라인이 `pinned(15)`라 가로 스크롤 시 일반 footer 칸에 가려졌다.
+- footer 고정 컬럼은 헤더와 같이 `header + 3`으로 올려 좌우 스크롤에도 위에 남게 했다.
+- 관련 파일: `src/components/layout/cellStyles.ts`, `GenGridFooter.tsx`, `GenGridPinning.module.css`
+
 ## 2026-08-12
 
 ### rowspan 구간 ActiveRowHighlight 확장 보류

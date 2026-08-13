@@ -12,6 +12,10 @@
 tfoot .pinned {
   background: var(--grid-header-bg);
 }
+
+[data-sticky-footer-row] tfoot .pinned {
+  z-index: calc(var(--grid-z-header) + 3);
+}
 tfoot .pinnedLeft {
   box-shadow: var(--grid-header-shadow-pinned);
 }

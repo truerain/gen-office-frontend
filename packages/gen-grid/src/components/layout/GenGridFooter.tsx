@@ -82,7 +82,7 @@ export function GenGridFooter<TData>(props: GenGridFooterProps<TData>) {
                 style={getCellStyle(col, {
                   enablePinning,
                   enableColumnSizing,
-                  isHeader: false,
+                  isFooter: true,
                 })}
                 colSpan={footer.colSpan}
               >

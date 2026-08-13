@@ -9,10 +9,11 @@ export function getCellStyle<TData>(
     enablePinning?: boolean;
     enableColumnSizing?: boolean;
     isHeader?: boolean;
+    isFooter?: boolean;
   }
 ): React.CSSProperties | undefined {
   const pinnedStyle = opts.enablePinning
-    ? getPinnedStyles(column, { isHeader: opts.isHeader })
+    ? getPinnedStyles(column, { isHeader: opts.isHeader, isFooter: opts.isFooter })
     : undefined;
 
   const sizeStyle = opts.enableColumnSizing
@@ -27,14 +28,17 @@ export function getCellStyle<TData>(
 
 export function getPinnedStyles<TData>(
   column: Column<TData, unknown>,
-  opts?: { isHeader?: boolean }
+  opts?: { isHeader?: boolean; isFooter?: boolean }
 ): React.CSSProperties | undefined {
   const pinned = column.getIsPinned();
   if (!pinned) return undefined;
 
   const style: React.CSSProperties = {
     position: 'sticky',
-    zIndex: opts?.isHeader ? 'calc(var(--grid-z-header) + 3)' : 'var(--grid-z-pinned)'
+    zIndex:
+      opts?.isHeader || opts?.isFooter
+        ? 'calc(var(--grid-z-header) + 3)'
+        : 'var(--grid-z-pinned)',
   };
 
   if (pinned === 'left') style.left = column.getStart('left');

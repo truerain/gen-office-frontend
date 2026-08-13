@@ -2,6 +2,24 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-08-13
+
+### 사업계획 데모 columnOrderKey 타입 오류 제거
+
+- `ColumnDef` 유니온에서 `accessorKey`를 바로 읽지 않고, `id` 또는 `'accessorKey' in column`으로 컬럼 식별자를 가져오게 했다.
+- 관련 파일: `apps/demo/src/pages/demo/plan-vs-actual/PlanVsActualDemoPage.tsx`
+
+### sticky footer 고정 컬럼이 가로 스크롤에 가려지던 문제
+
+- footer 고정 컬럼 z-index가 일반 sticky footer 칸보다 낮아 좌우 스크롤 시 덮였다. 헤더 고정 컬럼과 같은 층으로 올렸다.
+- 관련 파일: `packages/gen-grid/src/components/layout/cellStyles.ts`, `GenGridFooter.tsx`, `GenGridPinning.module.css`
+
+### 사업계획 데모 하단 합계 footer 추가
+
+- 계정코드에 합계 라벨을 두고, 합계·월 컬럼 footer에서 실적/계획 합과 비율을 표시한다.
+- 기존 `enableFooterRow`를 사용하고 스크롤 시에도 보이도록 sticky footer를 켰다.
+- 관련 파일: `apps/demo/src/pages/demo/plan-vs-actual/PlanVsActualDemoPage.tsx`, `planVsActualModel.ts`, `PlanVsActualDemoPage.module.css`
+
 ## 2026-08-12
 
 ### 사업계획 셀 계획·비율 하단 정렬
