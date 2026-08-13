@@ -199,3 +199,17 @@ export function recomputeTotals(row: PlanVsActualGridRow): Pick<
     totalRatio: computeRatio(planTotal, actualTotal),
   };
 }
+
+export function sumPlanVsActual(
+  rows: readonly PlanVsActualGridRow[],
+  actualKey: ActualField | 'actualTotal',
+  planKey: PlanField | 'planTotal'
+) {
+  let actual = 0;
+  let plan = 0;
+  for (const row of rows) {
+    actual += Number(row[actualKey]) || 0;
+    plan += Number(row[planKey]) || 0;
+  }
+  return { actual, plan };
+}

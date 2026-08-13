@@ -39,6 +39,15 @@
   padding: 8px;
 }
 
+.grid :global(tfoot td) {
+  font-weight: 400;
+  overflow: hidden;
+}
+
+.footerLabel {
+  font-weight: 600;
+}
+
 .stack {
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);

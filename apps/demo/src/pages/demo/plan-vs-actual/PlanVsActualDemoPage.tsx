@@ -24,11 +24,22 @@ import {
   monthKeyFromPlanField,
   planField,
   recomputeTotals,
+  sumPlanVsActual,
   type PlanVsActualAccount,
   type PlanVsActualGridRow,
 } from './planVsActualModel';
 
 import styles from './PlanVsActualDemoPage.module.css';
+
+function footerRows(table: { getFilteredRowModel: () => { rows: Array<{ original: PlanVsActualGridRow }> } }) {
+  return table.getFilteredRowModel().rows.map((row) => row.original);
+}
+
+function columnDefId(column: ColumnDef<PlanVsActualGridRow, any>) {
+  if (column.id) return column.id;
+  if ('accessorKey' in column && column.accessorKey != null) return String(column.accessorKey);
+  return '';
+}
 
 function createColumns(): ColumnDef<PlanVsActualGridRow, any>[] {
   return [
@@ -36,6 +47,7 @@ function createColumns(): ColumnDef<PlanVsActualGridRow, any>[] {
       accessorKey: 'acctCd',
       header: '계정코드',
       size: 110,
+      footer: () => <span className={styles.footerLabel}>합계</span>,
       meta: { pinned: 'left', align: 'center' },
     },
     {
@@ -51,6 +63,10 @@ function createColumns(): ColumnDef<PlanVsActualGridRow, any>[] {
       cell: ({ row }) => (
         <PlanMonthStack actual={row.original.actualTotal} plan={row.original.planTotal} />
       ),
+      footer: ({ table }) => {
+        const { actual, plan } = sumPlanVsActual(footerRows(table), 'actualTotal', 'planTotal');
+        return <PlanMonthStack actual={actual} plan={plan} />;
+      },
       meta: {
         pinned: 'left',
         align: 'right',
@@ -70,6 +86,10 @@ function createColumns(): ColumnDef<PlanVsActualGridRow, any>[] {
         cell: ({ row }) => (
           <PlanMonthStack actual={row.original[actualKey]} plan={row.original[planKey]} />
         ),
+        footer: ({ table }) => {
+          const { actual, plan } = sumPlanVsActual(footerRows(table), actualKey, planKey);
+          return <PlanMonthStack actual={actual} plan={plan} />;
+        },
         meta: {
           align: 'right',
           mono: true,
@@ -111,9 +131,7 @@ function createColumns(): ColumnDef<PlanVsActualGridRow, any>[] {
 export default function PlanVsActualDemoPage(_props: PageComponentProps) {
   const [accounts, setAccounts] = useState<PlanVsActualAccount[]>(() => createSeedAccounts());
   const columns = createColumns();
-  const columnOrderKey = columns
-    .map((column) => String(column.id ?? column.accessorKey ?? ''))
-    .join('|');
+  const columnOrderKey = columns.map(columnDefId).join('|');
   const gridRows = useMemo(() => buildGridRows(accounts), [accounts]);
 
   return (
@@ -201,6 +219,8 @@ export default function PlanVsActualDemoPage(_props: PageComponentProps) {
             enableColumnSizing: true,
             enableRowStatus: true,
             checkboxSelection: true,
+            enableFooterRow: true,
+            enableStickyFooterRow: true,
             //enableActiveRowHighlight: true,
             rowHeight: 64,
           }}
