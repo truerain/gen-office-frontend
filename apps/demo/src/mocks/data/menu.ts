@@ -336,6 +336,17 @@ const menus: AppMenu[] = [
     sortOrder: 901500,
     execComponent: 'PlanVsActualDemoPage',
   },
+  {
+    menuId: 901600,
+    menuName: '사업계획 PlanScope Demo',
+    menuNameEng: 'Plan Scope Demo',
+    menuIcon: 'Layers3',
+    parentMenuId: 900000,
+    displayYn: 'Y',
+    useYn: 'Y',
+    sortOrder: 901600,
+    execComponent: 'PlanScopeDemoPage',
+  },
 ];
 
 export function loadAppMenuData() {

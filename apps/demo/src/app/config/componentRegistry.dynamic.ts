@@ -77,6 +77,7 @@ const componentPaths: Record<string, ComponentLoader> = {
   CrudActionControlsDemoPage: () => import('@/pages/demo/crud-action-controls'),
   GridDisplayScaleDemoPage: () => import('@/pages/demo/grid-display-scale'),
   PlanVsActualDemoPage: () => import('@/pages/demo/plan-vs-actual'),
+  PlanScopeDemoPage: () => import('@/pages/demo/plan-scope'),
 };
 
 /**
