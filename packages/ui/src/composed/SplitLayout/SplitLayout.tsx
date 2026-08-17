@@ -8,6 +8,46 @@ function toCssSize(value?: number | string, fallback?: string) {
   return typeof value === 'number' ? `${value}px` : value;
 }
 
+function getRootSize(root: HTMLElement, direction: 'horizontal' | 'vertical') {
+  const rect = root.getBoundingClientRect();
+  return direction === 'vertical' ? rect.height : rect.width;
+}
+
+function resolveToPixels(leftWidth: number | string, rootSize: number): number | null {
+  if (typeof leftWidth === 'number') return leftWidth;
+
+  const raw = leftWidth.trim();
+  if (raw.endsWith('%')) {
+    if (rootSize <= 0) return null;
+    const ratio = Number(raw.slice(0, -1));
+    if (!Number.isFinite(ratio)) return null;
+    return (rootSize * ratio) / 100;
+  }
+
+  if (raw.endsWith('px')) {
+    const px = Number(raw.slice(0, -2));
+    return Number.isFinite(px) ? px : null;
+  }
+
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+}
+
+function clampSize(
+  next: number,
+  rootSize: number,
+  minLeftWidth?: number | string,
+  maxLeftWidth?: number | string,
+  minRightWidth?: number | string
+) {
+  const min = typeof minLeftWidth === 'number' ? minLeftWidth : 0;
+  const max =
+    typeof maxLeftWidth === 'number'
+      ? maxLeftWidth
+      : rootSize - (typeof minRightWidth === 'number' ? minRightWidth : 0);
+  return Math.max(min, Math.min(next, max));
+}
+
 export function SplitLayout({
   left,
   right,
@@ -25,41 +65,45 @@ export function SplitLayout({
   rightClassName,
 }: SplitLayoutProps) {
   const rootRef = React.useRef<HTMLDivElement | null>(null);
+  const sizeLockedRef = React.useRef(false);
   const [isDragging, setIsDragging] = React.useState(false);
-  const [currentSize, setCurrentSize] = React.useState<number>(() => {
-    return typeof leftWidth === 'number' ? leftWidth : 280;
+  const [currentSize, setCurrentSize] = React.useState<number | null>(() => {
+    return typeof leftWidth === 'number' ? leftWidth : null;
   });
 
   React.useEffect(() => {
-    if (!resizable) return;
+    sizeLockedRef.current = false;
 
-    if (typeof leftWidth === 'number') {
-      setCurrentSize(leftWidth);
+    if (!resizable) {
+      setCurrentSize(null);
       return;
     }
 
-    if (typeof leftWidth !== 'string') return;
+    if (typeof leftWidth === 'number') {
+      setCurrentSize(leftWidth);
+      sizeLockedRef.current = true;
+      return;
+    }
+
+    setCurrentSize(null);
+
     const root = rootRef.current;
     if (!root) return;
 
-    const rect = root.getBoundingClientRect();
-    const rootSize = direction === 'vertical' ? rect.height : rect.width;
-    const raw = leftWidth.trim();
-    let next: number | null = null;
+    const applyMeasure = () => {
+      if (sizeLockedRef.current) return;
+      const rootSize = getRootSize(root, direction);
+      const next = resolveToPixels(leftWidth, rootSize);
+      if (next == null) return;
+      setCurrentSize(clampSize(next, rootSize, minLeftWidth, maxLeftWidth, minRightWidth));
+      sizeLockedRef.current = true;
+    };
 
-    if (raw.endsWith('%')) {
-      const ratio = Number(raw.slice(0, -1));
-      if (Number.isFinite(ratio)) next = (rootSize * ratio) / 100;
-    } else if (raw.endsWith('px')) {
-      const px = Number(raw.slice(0, -2));
-      if (Number.isFinite(px)) next = px;
-    } else {
-      const n = Number(raw);
-      if (Number.isFinite(n)) next = n;
-    }
-
-    if (next != null && Number.isFinite(next)) setCurrentSize(next);
-  }, [direction, leftWidth, resizable]);
+    applyMeasure();
+    const observer = new ResizeObserver(applyMeasure);
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, [direction, leftWidth, maxLeftWidth, minLeftWidth, minRightWidth, resizable]);
 
   const handlePointerDown = React.useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
@@ -79,15 +123,9 @@ export function SplitLayout({
 
       const rect = root.getBoundingClientRect();
       const raw = direction === 'vertical' ? e.clientY - rect.top : e.clientX - rect.left;
-
-      const min = typeof minLeftWidth === 'number' ? minLeftWidth : 0;
-      const max =
-        typeof maxLeftWidth === 'number'
-          ? maxLeftWidth
-          : (direction === 'vertical' ? rect.height : rect.width) -
-            (typeof minRightWidth === 'number' ? minRightWidth : 0);
-
-      const next = Math.max(min, Math.min(raw, max));
+      const rootSize = direction === 'vertical' ? rect.height : rect.width;
+      const next = clampSize(raw, rootSize, minLeftWidth, maxLeftWidth, minRightWidth);
+      sizeLockedRef.current = true;
       setCurrentSize(next);
       onResize?.(next);
     },
@@ -105,7 +143,7 @@ export function SplitLayout({
     [resizable]
   );
 
-  const resolvedLeftWidth = resizable ? currentSize : leftWidth;
+  const resolvedLeftWidth = resizable && currentSize != null ? currentSize : leftWidth;
 
   const style = {
     ['--split-gap' as any]: toCssSize(gap, '16px'),

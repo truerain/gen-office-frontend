@@ -5,6 +5,15 @@
 - **Showcase 앱 전용:** `apps/showcase/docs/logs/decisions.md`
 - 최신 항목을 위에 추가합니다.
 
+## 2026-08-14
+
+### 사업계획 PlanScope Demo 용어와 2탭 UX
+
+- Actual / Pooled / PlanScope 용어를 demo에 적용한다. Actual은 실적 조합으로 생성된 라인, Pooled는 묶인 계획 단위, PlanScope는 Member가 아닌 Actual과 Pooled의 합집합이다.
+- 새 Pooled 생성은 Actual 선선택(탭 1)만 담당하고, Pooled 선선택 후 Member 관리(탭 2)는 별도 탭으로 분리한다. 탭 1 팝업에서 신규/호환 Pooled를 고르고, 탭 2에서는 Member 추가 팝업으로 Non-Member Actual을 편입한다.
+- 계획 금액 입력은 이 데모 범위 밖이며, 기존 사업계획 입력 Demo와 연동하지 않는다.
+- 관련 파일: `apps/demo/src/pages/demo/plan-scope/**`, `docs/logs/work-log.md`
+
 ## 2026-08-12
 
 ### 사업계획 입력 화면은 1행 2줄 셀 레이아웃

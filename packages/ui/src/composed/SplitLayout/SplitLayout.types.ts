@@ -5,6 +5,7 @@ export type SplitLayoutProps = {
   right: React.ReactNode;
   direction?: 'horizontal' | 'vertical';
 
+  /** Initial left pane size. Strings such as `"42%"` stay as CSS until the pane is measurable. */
   leftWidth?: number | string;
   minLeftWidth?: number | string;
   maxLeftWidth?: number | string;

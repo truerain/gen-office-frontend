@@ -2,6 +2,31 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-08-17
+
+### SplitLayout 퍼센트 초기 너비 측정 수정
+
+- 숨은 탭처럼 컨테이너 width가 0일 때 `"42%"`를 px로 바꾸면 0으로 고정되던 문제를 고쳤다. 측정 전에는 CSS 퍼센트를 유지하고, 보일 때 한 번만 px로 잠근다.
+- 관련 파일: `packages/ui/src/composed/SplitLayout/SplitLayout.tsx`, `packages/ui/docs/implementation-log.md`
+
+## 2026-08-14
+
+### PlanScope Demo Pooled 팝업 높이 확대
+
+- `Pooled에 넣기` 팝업을 xl·560px, `멤버 추가` 팝업을 960×720px로 키웠다. 멤버 추가 그리드는 팝업 높이에 맞춰 100%를 쓰도록 했다.
+- 관련 파일: `AssignPooledDialog.tsx`, `AddMembersDialog.tsx`, `PlanScopeDemoPage.module.css`
+
+### PlanScope Demo Select 필터 런타임 오류 수정
+
+- Radix Select는 `Select.Item`에 빈 문자열 value를 허용하지 않는다. 필터 "전체" 옵션을 `ALL_FILTER = 'ALL'` 센티널로 바꿨다.
+- 관련 파일: `apps/demo/src/pages/demo/plan-scope/planScopeModel.ts`, `ActualPickerGrid.tsx`
+
+### 사업계획 PlanScope Demo 추가
+
+- Actual(계정×CC×부서)을 Pooled로 묶어 PlanScope를 확정하는 형제 데모 페이지를 추가했다. 탭 1은 Non-Member Actual 선택 후 신규/호환 Pooled 배정, 탭 2는 Pooled 마스터/디테일에서 Member 추가·제외·해제를 처리한다.
+- 기존 사업계획 입력 Demo는 수정하지 않았다.
+- 관련 파일: `apps/demo/src/pages/demo/plan-scope/**`, `apps/demo/src/mocks/data/menu.ts`, `apps/demo/src/app/menu/menuData.ts`, `apps/demo/src/app/config/componentRegistry.dynamic.ts`
+
 ## 2026-08-13
 
 ### 사업계획 데모 columnOrderKey 타입 오류 제거

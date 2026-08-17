@@ -1,5 +1,12 @@
 # UI 구현 로그
 
+## 2026-08-17
+
+### SplitLayout 퍼센트 leftWidth 초기값 수정
+
+- `resizable`일 때 `"42%"` 같은 문자열을 숨은 컨테이너(width 0)에서 px로 바꾸면 0으로 고정됐다. 측정 전에는 CSS 값을 유지하고, 크기가 생긴 뒤에만 ResizeObserver로 한 번 px 변환한다.
+- 관련 파일: `packages/ui/src/composed/SplitLayout/SplitLayout.tsx`, `SplitLayout.types.ts`
+
 ## 2026-07-27
 
 ### formatSummary Storybook 샘플 추가
