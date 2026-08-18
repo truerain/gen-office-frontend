@@ -103,6 +103,8 @@ type CommonGridOptions<TData> = {
   enableFiltering?: boolean;
   /**
    * Header/client sorting. Default true.
+   * Click replaces the sort. Ctrl-click (Cmd-click on macOS) adds a column.
+   * When two or more columns are sorted, the header shows the sort order.
    * Set false for server-side sort UIs (e.g. GenGridCrud Sort dialog) so the
    * current page is not re-ordered locally.
    * Forced false when tree or rowSpanning is enabled.

@@ -5,6 +5,14 @@
 - **Showcase 앱 전용:** `apps/showcase/docs/logs/decisions.md`
 - 최신 항목을 위에 추가합니다.
 
+## 2026-08-18
+
+### GenGrid 헤더 다중 정렬은 Ctrl/Cmd
+
+- 클라이언트 헤더 다중 정렬 수정 키는 TanStack 기본 Shift가 아니라 Ctrl(Windows) / Cmd(macOS)다.
+- 정렬 순번은 헤더에 항상 두지 않고, 정렬 컬럼이 2개 이상일 때만 아이콘 옆에 표시한다.
+- 관련 파일: `packages/gen-grid/src/core/table/useGenGridTable.ts`, `GenGridHeader.tsx`
+
 ## 2026-08-14
 
 ### 사업계획 PlanScope Demo 용어와 2탭 UX

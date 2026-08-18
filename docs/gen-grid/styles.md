@@ -45,7 +45,7 @@
 ### 헤더
 - `GenGridHeader.module.css`
 - sticky header: `data-sticky-header` + `headerRow0/1/2` 오프셋
-- 정렬 상태: `sortable`, `sorted`, `sortIcon`
+- 정렬 상태: `sortable`, `sorted`, `sortIcon`, `sortOrder`
 - 필터 행: `columnFilter`, `filterInput`
 
 ### 바디

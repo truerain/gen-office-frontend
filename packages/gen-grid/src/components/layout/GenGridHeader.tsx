@@ -40,6 +40,7 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
   const headerGroups = table.getHeaderGroups();
   const leafHeaderGroup = headerGroups[headerGroups.length - 1];
   const totalHeaderRows = headerGroups.length;
+  const sortCount = table.getState().sorting.length;
   const renderedLeafColumnIds = new Set<string>();
   const systemColumnIds = React.useMemo(
     () =>
@@ -414,6 +415,8 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
               const isSelectCol = header.column.id === '__select__';
               const canSort = col.getCanSort();
               const sortState = col.getIsSorted();
+              const sortIndex = col.getSortIndex();
+              const showSortOrder = Boolean(sortState) && sortCount > 1 && sortIndex >= 0;
               const fallbackRowSpan = isLeafHeader ? Math.max(1, totalHeaderRows - idx) : 1;
               const normalizedHeaderRowSpan =
                 Number.isFinite(header.rowSpan) && header.rowSpan > 0 ? header.rowSpan : 1;
@@ -555,7 +558,14 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
                         {groupToggle.isExpanded ? groupToggle.collapseLabel : groupToggle.expandLabel}
                       </button>
                     ) : null}
-                    {sortState ? <span className={styles.sortIcon}>{sortState === 'asc' ? '^' : 'v'}</span> : null}
+                    {sortState ? (
+                      <span className={styles.sortIcon}>
+                        {sortState === 'asc' ? '^' : 'v'}
+                        {showSortOrder ? (
+                          <span className={styles.sortOrder}>{sortIndex + 1}</span>
+                        ) : null}
+                      </span>
+                    ) : null}
                   </div>
 
                   {enableColumnSizing && resolvedColSpan === 1 && header.getResizeHandler ? (

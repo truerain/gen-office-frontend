@@ -2,6 +2,13 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-08-18
+
+### GenGrid 헤더 다중 정렬 Ctrl과 순번 표시
+
+- 헤더 다중 정렬 키를 Shift에서 Ctrl(macOS Cmd)로 바꿨다. 정렬이 2개 이상이면 아이콘 옆에 순번을 표시한다.
+- 관련 파일: `packages/gen-grid/src/core/table/useGenGridTable.ts`, `GenGridHeader.tsx`, `GenGridHeader.module.css`, `docs/gen-grid/styles.md`
+
 ## 2026-08-17
 
 ### SplitLayout 퍼센트 초기 너비 측정 수정

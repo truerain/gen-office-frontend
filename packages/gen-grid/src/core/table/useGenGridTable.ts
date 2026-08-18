@@ -38,6 +38,12 @@ import { genGridOperatorFilterFn } from '../../features/filtering/filterModel';
 
 import { GenGridTableActions } from './tanstack-table';
 
+function isCtrlOrMetaMultiSortEvent(event: unknown) {
+  if (typeof event !== 'object' || event == null) return false;
+  const mouse = event as { ctrlKey?: unknown; metaKey?: unknown };
+  return mouse.ctrlKey === true || mouse.metaKey === true;
+}
+
 export type GenGridTableProps<TData> = {
   data: TData[];
   columns: ColumnDef<TData, any>[];
@@ -631,6 +637,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
     },
     enableGrouping: treeEnabled ? false : enableGrouping ?? false,
     enableSorting: sortingEnabled,
+    isMultiSortEvent: isCtrlOrMetaMultiSortEvent,
     enableColumnResizing: enableColumnSizing ?? false,
     columnResizeMode: 'onChange',
     manualPagination: Boolean(enablePagination),

@@ -1,5 +1,13 @@
 # GenGrid 구현 로그
 
+## 2026-08-18
+
+### 헤더 다중 정렬을 Ctrl로 바꾸고 순번 표시
+
+- TanStack 기본 Shift 대신 Ctrl(macOS는 Cmd)로 컬럼을 추가 정렬한다.
+- 정렬 컬럼이 2개 이상일 때 헤더 아이콘 옆에 `getSortIndex() + 1` 순번을 표시한다.
+- 관련 파일: `src/core/table/useGenGridTable.ts`, `src/components/layout/GenGridHeader.tsx`, `GenGridHeader.module.css`, `src/GenGrid.types.ts`
+
 ## 2026-08-13
 
 ### sticky footer 고정 컬럼 z-index 보정
