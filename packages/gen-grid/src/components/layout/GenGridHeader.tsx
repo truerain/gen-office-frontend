@@ -40,7 +40,7 @@ export function GenGridHeader<TData>(props: GenGridHeaderProps<TData>) {
   const headerGroups = table.getHeaderGroups();
   const leafHeaderGroup = headerGroups[headerGroups.length - 1];
   const totalHeaderRows = headerGroups.length;
-  const sortCount = table.getState().sorting.length;
+  const sortCount = table.getState().sorting?.length ?? 0;
   const renderedLeafColumnIds = new Set<string>();
   const systemColumnIds = React.useMemo(
     () =>

@@ -2,6 +2,11 @@
 
 ## 2026-08-18
 
+### 헤더 sortCount undefined 가드
+
+- 정렬 비활성 시 `state.sorting`이 없어서 `length` 접근이 깨질 수 있어 `sorting?.length ?? 0`으로 막았다.
+- 관련 파일: `src/components/layout/GenGridHeader.tsx`
+
 ### 헤더 다중 정렬을 Ctrl로 바꾸고 순번 표시
 
 - TanStack 기본 Shift 대신 Ctrl(macOS는 Cmd)로 컬럼을 추가 정렬한다.
