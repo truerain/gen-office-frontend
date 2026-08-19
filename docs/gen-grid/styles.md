@@ -59,6 +59,7 @@
   - row class: `tr`, `activeRow`, `rowDirty`, `groupRow`
   - cell attribute: `data-active-cell`, `data-editing-cell`, `data-pinned`
 - 정렬 class: `alignLeft|alignCenter|alignRight`
+- `textareaCell`: `editType: 'textarea'` 표시 셀. `pre-wrap`으로 개행을 유지하고 행 높이 안에서 자른다.
 - tree/group row 전용 스타일 포함
 
 ### 푸터 행

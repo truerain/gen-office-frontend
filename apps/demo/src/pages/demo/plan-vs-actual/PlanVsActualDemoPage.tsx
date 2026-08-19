@@ -122,8 +122,13 @@ function createColumns(): ColumnDef<PlanVsActualGridRow, any>[] {
       id: 'reason',
       accessorKey: 'reason',
       header: '사유',
-      size: 160,
-      meta: { align: 'left' },
+      size: 220,
+      meta: {
+        align: 'left',
+        editable: true,
+        editType: 'textarea',
+        cellClassName: styles.reasonCell,
+      },
     },
   ];
 }

@@ -1,3 +1,10 @@
+## 2026-08-19
+
+### textarea 에디터가 행 높이를 채움
+
+- 편집 중 셀을 stretch하고 textarea는 셀 높이를 채운 뒤 넘치는 줄을 내부 스크롤한다. 행 높이는 `rowHeight`로 유지한다.
+- 관련 파일: `src/index.css`, `docs/reference/editor-implementation-contract.md`
+
 ## 2026-08-03
 
 ## 2026-08-04

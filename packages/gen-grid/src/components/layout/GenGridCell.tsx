@@ -183,6 +183,25 @@ function toFiniteNumber(value: unknown): number | null {
   return null;
 }
 
+function normalizeNewlines(value: string) {
+  return value.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+}
+
+function readContentEditableText(el: HTMLElement, multiline?: boolean) {
+  if (!multiline) return el.textContent ?? '';
+  return normalizeNewlines(el.innerText ?? el.textContent ?? '');
+}
+
+function writeContentEditableText(el: HTMLElement, text: string, multiline?: boolean) {
+  const next = multiline ? normalizeNewlines(text) : text;
+  const current = readContentEditableText(el, multiline);
+  if (current === next) return;
+  const caretOffset = document.activeElement === el ? getCaretOffset(el) : null;
+  if (multiline) el.innerText = next;
+  else el.textContent = next;
+  if (caretOffset != null) setCaretOffset(el, caretOffset);
+}
+
 function ContentEditableEditor({
   value,
   onChange,
@@ -222,13 +241,7 @@ function ContentEditableEditor({
     const el = ref.current;
     if (!el) return;
     const nextText = value == null ? '' : String(value);
-    if (el.textContent !== nextText) {
-      const caretOffset = document.activeElement === el ? getCaretOffset(el) : null;
-      el.textContent = nextText;
-      if (caretOffset != null) {
-        setCaretOffset(el, caretOffset);
-      }
-    }
+    writeContentEditableText(el, nextText, multiline);
     if (pendingAutoSelectRef.current && document.activeElement === el) {
       const range = document.createRange();
       range.selectNodeContents(el);
@@ -281,7 +294,7 @@ function ContentEditableEditor({
       e.preventDefault();
       e.stopPropagation();
       setAutoSelectActive(false);
-      const nextText = ref.current?.textContent ?? '';
+      const nextText = ref.current ? readContentEditableText(ref.current, multiline) : '';
       onCommit(sanitizeInput ? sanitizeInput(nextText) : nextText);
       onTabMove?.(e.shiftKey ? -1 : 1);
       return;
@@ -290,7 +303,7 @@ function ContentEditableEditor({
       e.preventDefault();
       e.stopPropagation();
       setAutoSelectActive(false);
-      const nextText = ref.current?.textContent ?? '';
+      const nextText = ref.current ? readContentEditableText(ref.current, multiline) : '';
       onCommit(sanitizeInput ? sanitizeInput(nextText) : nextText);
       return;
     }
@@ -330,15 +343,11 @@ function ContentEditableEditor({
           return;
         }
 
-        const raw = root.textContent ?? '';
+        const raw = readContentEditableText(root, multiline);
         const next = sanitizeInput ? sanitizeInput(raw) : raw;
 
         if (next !== raw) {
-          const caret = getCaretOffset(root);
-          root.textContent = next;
-          if (caret != null) {
-            setCaretOffset(root, Math.min(caret, next.length));
-          }
+          writeContentEditableText(root, next, multiline);
         }
 
         onChange(next);
@@ -350,7 +359,7 @@ function ContentEditableEditor({
         didAutoSelectRef.current = false;
         pendingAutoSelectRef.current = false;
         setAutoSelectActive(false);
-        const rawText = ref.current?.textContent ?? '';
+        const rawText = ref.current ? readContentEditableText(ref.current, multiline) : '';
         const nextText = sanitizeInput ? sanitizeInput(rawText) : rawText;
         onChange(nextText);
         onCommit(nextText);
@@ -359,7 +368,9 @@ function ContentEditableEditor({
       style={{
         ...style,
         whiteSpace: multiline ? 'pre-wrap' : 'nowrap',
-        overflow: 'hidden',
+        overflow: multiline ? 'auto' : 'hidden',
+        boxSizing: 'border-box',
+        minHeight: 0,
       }}
     />
   );
@@ -656,6 +667,9 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     const commonEditorStyle: React.CSSProperties = {
       width: '100%',
       height: '100%',
+      minHeight: 0,
+      flex: '1 1 auto',
+      boxSizing: 'border-box',
       border: 'none',
       background: 'var(--grid-cell-bg)',
       font: 'inherit',
@@ -958,6 +972,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
         alignClass,
         isSystemCol ? bodyStyles.selectCol : '',
         meta?.mono ? bodyStyles.mono : '',
+        meta?.editType === 'textarea' ? bodyStyles.textareaCell : '',
         pinned ? pinningStyles.pinned : '',
         pinned === 'left' ? pinningStyles.pinnedLeft : '',
         pinned === 'right' ? pinningStyles.pinnedRight : '',
@@ -1019,6 +1034,9 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
         }) ?? {}),
         ...(metaColor != null ? { color: metaColor } : {}),
         ...(metaBackgroundColor != null ? { backgroundColor: metaBackgroundColor } : {}),
+        ...(cellRowSpan && cellRowSpan > 1
+          ? { ['--gen-grid-cell-row-span' as string]: String(cellRowSpan) }
+          : {}),
       }}
       data-rowid={rowId}
       data-colid={colId}
@@ -1052,19 +1070,9 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
       }}
     >
 
-      {isEditing 
-        ? (<div 
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              padding: "1px",
-              border: "0 none",
-              boxSizing: "border-box",
-            }}
-          >
-            {editor}
-          </div>) 
-        : (
+      {isEditing ? (
+        <div className={bodyStyles.editorWrap}>{editor}</div>
+      ) : (
           <span 
             className={[
               isRowSpanCovered ? bodyStyles.rowSpanCoveredContent : '',

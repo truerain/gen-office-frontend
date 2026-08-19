@@ -2,6 +2,28 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-08-19
+
+### textarea 셀이 개행을 한 줄로 붙이던 문제
+
+- 편집 값은 `innerText`로 개행을 남기고, 표시 셀은 `pre-wrap`으로 여러 줄을 보여 준다. 행 높이를 넘는 줄은 잘린다.
+- 관련 파일: `packages/gen-grid/src/components/layout/GenGridCell.tsx`, `GenGridBody.module.css`
+
+### textarea 에디터가 행 높이를 채우고 행을 늘리지 않음
+
+- GenGrid/GenDataGrid textarea 편집이 시작부터 행 높이를 채운다. Enter로 행이 커지지 않고 에디터 안에서 스크롤한다.
+- 관련 파일: `packages/gen-grid/src/components/layout/GenGridCell.tsx`, `GenGridBody.module.css`, `packages/gen-datagrid/src/index.css`
+
+### 사업계획 데모 사유 컬럼 멀티라인 편집
+
+- 사유를 `editType: 'textarea'` 편집 컬럼으로 바꾸고, 행 모델·저장에 `reason`을 넣었다. 표시는 `pre-wrap`으로 줄바꿈을 유지한다.
+- 관련 파일: `apps/demo/src/pages/demo/plan-vs-actual/PlanVsActualDemoPage.tsx`, `planVsActualModel.ts`, `PlanVsActualDemoPage.module.css`
+
+### GenGridCrud refetch pending 유지 계약 문서화
+
+- refetch 시 수정이 남는 것은 overlay 계약이다. 폐기는 `api.reset()`, 조회 단위 전환만 `key` remount로 둔다고 기록했다. 새 reset API는 추가하지 않았다.
+- 관련 파일: `packages/gen-grid-crud/src/GenGridCrud.types.ts`, `packages/gen-grid-crud/docs/implementation-log.md`, `docs/logs/decisions.md`
+
 ## 2026-08-18
 
 ### 헤더 sortCount가 sorting 없을 때 깨지던 문제

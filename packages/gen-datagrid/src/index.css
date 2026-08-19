@@ -363,6 +363,10 @@
   user-select: none;
 }
 
+.gen-datagrid__cell[data-editing-cell='true'] {
+  align-items: stretch;
+}
+
 .gen-datagrid__cell-merge-content {
   flex: 1 1 auto;
   min-width: 0;
@@ -370,6 +374,12 @@
   align-items: center;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.gen-datagrid__cell[data-editing-cell='true'] .gen-datagrid__cell-merge-content {
+  height: 100%;
+  min-height: 0;
+  align-items: stretch;
 }
 
 .gen-datagrid__cell:has(.gen-datagrid__row-status),
@@ -653,5 +663,10 @@
 }
 
 .gen-datagrid__editor--textarea {
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+  align-self: stretch;
   resize: none;
 }

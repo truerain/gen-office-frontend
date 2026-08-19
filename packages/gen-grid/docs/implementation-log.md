@@ -1,5 +1,19 @@
 # GenGrid 구현 로그
 
+## 2026-08-19
+
+### textarea 표시가 개행을 버리던 문제
+
+- contenteditable 커밋이 `textContent`라 Enter/`<br>`이 한 줄로 붙었다. multiline은 `innerText`로 읽고 쓴다.
+- `editType: 'textarea'` 셀에 `pre-wrap`을 기본 적용해 표시도 여러 줄로 보이게 했다.
+- 관련 파일: `src/components/layout/GenGridCell.tsx`, `GenGridBody.module.css`
+
+### textarea 에디터가 행 높이를 채우고 행을 늘리지 않음
+
+- td에 `max-height`를 두어 셀 내용이 행 높이를 키우지 않게 했다. rowspan은 `--gen-grid-cell-row-span`으로 배수를 연다.
+- 편집 래퍼를 셀에 absolute fill하고, multiline 에디터는 내부 스크롤한다.
+- 관련 파일: `src/components/layout/GenGridBody.module.css`, `GenGridCell.tsx`
+
 ## 2026-08-18
 
 ### 헤더 sortCount undefined 가드

@@ -93,6 +93,8 @@ Column `meta.editPolicy`는 grid default보다 우선한다.
 | --- | --- | --- | --- | --- |
 | `text`, `number`, `date` | grid 이동 | commit + 이동 | commit | cancel |
 | `textarea` | editor-local caret | commit + 이동 | newline | cancel |
+
+`textarea` 에디터는 행 높이(`rowHeight`)를 채우고, 넘치는 줄은 에디터 안에서 스크롤한다. 행 높이는 편집 내용에 따라 늘어나지 않는다.
 | `select` | editor-first | commit + 이동 | confirm/commit | native close/cancel |
 | `checkbox` | grid 이동 | commit + 이동 | toggle/commit | cancel |
 
@@ -153,7 +155,7 @@ Custom editor는 grid 바깥에서 독자적으로 편집을 끝내지 말고,
 | --- | --- | --- |
 | `text`, `number` | inline + grid Arrow | 일반 입력, 숫자 |
 | `date` | inline + grid Arrow + `openOnEditStart` | custom datepicker |
-| `textarea` | editor-local Arrow/Enter | multiline, code snippet |
+| `textarea` | editor-local Arrow/Enter | multiline, 행 높이를 채우고 내부 스크롤 |
 | `select` | editor-first Arrow + open + portal blur issue | combobox, lookup |
 | `checkbox` | inline toggle + grid Arrow | Y/N switch |
 

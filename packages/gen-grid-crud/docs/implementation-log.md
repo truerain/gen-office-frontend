@@ -1,5 +1,13 @@
 # GenGridCrud 구현 로그
 
+## 2026-08-19
+
+### refetch 시 pending 유지와 reset 계약 기록
+
+- `data` refetch는 pending overlay를 유지한다. 수정 폐기는 `CrudActionApi.reset()`이다.
+- `key` remount는 pending과 내부 UI state를 함께 버리므로 조회 단위 전환용으로 둔다. `resetOnDataVersion`/ref는 추가하지 않았다.
+- 관련 파일: `src/GenGridCrud.types.ts`, `docs/logs/decisions.md`
+
 ## 2026-07-28
 
 ### Server-Side Sort default / Reset / 버튼 토글 기준

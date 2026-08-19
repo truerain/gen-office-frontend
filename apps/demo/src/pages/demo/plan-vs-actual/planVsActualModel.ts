@@ -23,6 +23,7 @@ export type PlanField = `plan${Capitalize<MonthKey>}`;
 export type PlanVsActualAccount = {
   acctCd: string;
   acctName: string;
+  reason: string;
   actual: Record<MonthKey, number>;
   plan: Record<MonthKey, number>;
 };
@@ -30,6 +31,7 @@ export type PlanVsActualAccount = {
 export type PlanVsActualGridRow = {
   acctCd: string;
   acctName: string;
+  reason: string;
   actualTotal: number;
   planTotal: number;
   totalRatio: number | null;
@@ -121,7 +123,7 @@ export function createSeedAccounts(): PlanVsActualAccount[] {
       acc[key] = Math.round(actual[key] * row.planRate);
       return acc;
     }, {} as Record<MonthKey, number>);
-    return { acctCd: row.acctCd, acctName: row.acctName, actual, plan };
+    return { acctCd: row.acctCd, acctName: row.acctName, reason: '', actual, plan };
   });
 }
 
@@ -131,6 +133,7 @@ export function toGridRow(account: PlanVsActualAccount): PlanVsActualGridRow {
   const row = {
     acctCd: account.acctCd,
     acctName: account.acctName,
+    reason: account.reason ?? '',
     actualTotal,
     planTotal,
     totalRatio: computeRatio(planTotal, actualTotal),
@@ -181,6 +184,7 @@ export function applyGridRowsToAccounts(
     if (!row) return account;
     return {
       ...account,
+      reason: row.reason ?? '',
       actual: actualMonthsFromRow(row),
       plan: planMonthsFromRow(row),
     };

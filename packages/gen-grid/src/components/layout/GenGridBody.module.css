@@ -3,6 +3,7 @@
 /* td ?? */
 .td {
   height: var(--gen-grid-row-height);
+  max-height: calc(var(--gen-grid-row-height) * var(--gen-grid-cell-row-span, 1));
   padding: 0 var(--grid-cell-padding-x);
   vertical-align: middle;
 
@@ -17,6 +18,15 @@
 
   background: var(--grid-cell-bg);
   color: var(--grid-cell-text);
+}
+
+.td.textareaCell {
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: hidden;
+  text-overflow: clip;
+  line-height: 1.35;
+  vertical-align: top;
 }
 
 .td:last-child {
@@ -69,6 +79,15 @@
   overflow: visible;
   position: relative;
   z-index: 4;
+}
+
+.editorWrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
 }
 
 /* align/mono */

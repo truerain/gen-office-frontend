@@ -48,6 +48,14 @@
   font-weight: 600;
 }
 
+.reasonCell {
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: hidden;
+  text-overflow: clip;
+  line-height: 1.35;
+}
+
 .stack {
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);

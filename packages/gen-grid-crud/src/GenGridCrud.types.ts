@@ -154,6 +154,11 @@ export type CrudActionApi = {
   add?: () => void;
   deleteSelected?: () => void;
   save?: () => Promise<void>;
+  /**
+   * Discard pending create/update/delete. Keeps selection, filters, sort, and scroll.
+   * Call this before replacing `data` when a refetch should drop in-progress edits.
+   * Changing `key` on `GenGridCrud` also drops pending, but remounts the whole grid.
+   */
   reset: () => void;
   toggleFilter?: () => void;
   toggleColumnReorder?: () => void;
@@ -230,6 +235,10 @@ export type CrudActionBarOptions<TData> = {
 export type GenGridCrudProps<TData> = {
   title?: string;
   'readonly'?: boolean;
+  /**
+   * Server/base rows. Pending edits overlay this snapshot via applyDiff.
+   * Replacing `data` (refetch) does not clear pending; use `api.reset()` to discard edits.
+   */
   data: readonly TData[];
   columns: readonly ColumnDef<TData, any>[];
   getRowId: (row: TData, index: number) => CrudRowId;

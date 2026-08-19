@@ -5,6 +5,16 @@
 - **Showcase 앱 전용:** `apps/showcase/docs/logs/decisions.md`
 - 최신 항목을 위에 추가합니다.
 
+## 2026-08-19
+
+### GenGridCrud refetch는 pending을 유지한다
+
+- `data` 교체는 새 base 위에 기존 수정을 다시 입힌다. 자동 reset하지 않는다.
+- 수정만 버리려면 ActionBar/`customActions`의 `api.reset()`을 refetch와 짝짓는다. 선택·필터·정렬·스크롤은 유지된다.
+- `GenGridCrud`의 `key` remount로 pending을 비울 수는 있으나 UI 상태까지 초기화되므로 조회 단위(조직·연도 등) 전환에만 쓴다.
+- `resetOnDataVersion`·imperative ref는 이번에 추가하지 않는다. refetch 손이 ActionBar에 닿지 않을 때 재검토한다.
+- 관련 파일: `packages/gen-grid-crud/src/GenGridCrud.types.ts`, `usePendingChanges.tsx`, `applyDiff.ts`
+
 ## 2026-08-18
 
 ### GenGrid 헤더 다중 정렬은 Ctrl/Cmd
