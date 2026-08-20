@@ -2,6 +2,13 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-08-20
+
+### PlanScope Demo CrudRowId 타입 오류 수정
+
+- GenGridCrud 선택 ID(`string | number`)와 모델 API(`string[]`) 불일치, `removeMembers`의 잘못된 `getMembers` 호출을 고쳤다. ID 인자는 `RowIdLike`로 받고 내부에서 문자열로 정규화한다.
+- 관련 파일: `apps/demo/src/pages/demo/plan-scope/planScopeModel.ts`, `AssignPooledDialog.tsx`
+
 ## 2026-08-19
 
 ### textarea 셀이 개행을 한 줄로 붙이던 문제

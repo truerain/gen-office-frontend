@@ -169,13 +169,28 @@ export function planScopeCounts(state: PlanScopeState): PlanScopeCounts {
   };
 }
 
-export function validateSelection(actuals: readonly ActualItem[], ids: readonly string[]): AssignValidation {
+/** Accepts GenGridCrud selection ids (`string | number`) and Actual string ids. */
+export type RowIdLike = string | number;
+
+function toIdSet(ids: readonly RowIdLike[]): Set<string> {
+  return new Set(ids.map((id) => String(id)));
+}
+
+function toIdList(ids: readonly RowIdLike[]): string[] {
+  return ids.map((id) => String(id));
+}
+
+export function validateSelection(
+  actuals: readonly ActualItem[],
+  ids: readonly RowIdLike[]
+): AssignValidation {
   if (ids.length === 0) {
     return { ok: false, reason: 'Actual을 1건 이상 선택하세요.' };
   }
 
-  const selected = actuals.filter((row) => ids.includes(row.id));
-  if (selected.length !== ids.length) {
+  const idSet = toIdSet(ids);
+  const selected = actuals.filter((row) => idSet.has(row.id));
+  if (selected.length !== idSet.size) {
     return { ok: false, reason: '선택한 Actual을 찾을 수 없습니다.' };
   }
 
@@ -212,7 +227,7 @@ export function validateSelection(actuals: readonly ActualItem[], ids: readonly 
 
 export function commonDimensionsFromSelection(
   actuals: readonly ActualItem[],
-  ids: readonly string[]
+  ids: readonly RowIdLike[]
 ): CommonDimensions | null {
   const validation = validateSelection(actuals, ids);
   return validation.ok ? validation.common : null;
@@ -244,7 +259,7 @@ export function compatiblePooled(
 
 export function previewPlanScopeAfterAssign(
   state: PlanScopeState,
-  actualIds: readonly string[],
+  actualIds: readonly RowIdLike[],
   target: { type: 'new' } | { type: 'existing'; pooledId: string }
 ): PlanScopeCounts {
   const next = target.type === 'new'
@@ -255,7 +270,7 @@ export function previewPlanScopeAfterAssign(
 
 export function assignToNewPooled(
   state: PlanScopeState,
-  actualIds: readonly string[],
+  actualIds: readonly RowIdLike[],
   name: string
 ): PlanScopeState {
   const validation = validateSelection(state.actuals, actualIds);
@@ -263,10 +278,12 @@ export function assignToNewPooled(
     throw new Error(validation.reason);
   }
 
+  const idSet = toIdSet(actualIds);
+  const memberIds = toIdList(actualIds);
   const common = validation.common;
   const pooledId = nextPooledId(state.pooled);
   const nextActuals = state.actuals.map((row) =>
-    actualIds.includes(row.id) ? { ...row, pooledId } : row
+    idSet.has(row.id) ? { ...row, pooledId } : row
   );
 
   const nextPooled: PooledItem = {
@@ -282,7 +299,7 @@ export function assignToNewPooled(
       deptName: common.deptName,
     },
     collapsed: [...common.collapsed],
-    memberIds: [...actualIds],
+    memberIds,
   };
 
   return {
@@ -294,7 +311,7 @@ export function assignToNewPooled(
 export function assignToExistingPooled(
   state: PlanScopeState,
   pooledId: string,
-  actualIds: readonly string[]
+  actualIds: readonly RowIdLike[]
 ): PlanScopeState {
   const target = state.pooled.find((item) => item.id === pooledId);
   if (!target) {
@@ -310,9 +327,10 @@ export function assignToExistingPooled(
     throw new Error('선택한 Actual은 이 Pooled와 호환되지 않습니다.');
   }
 
-  const nextMemberIds = [...new Set([...target.memberIds, ...actualIds])];
+  const idSet = toIdSet(actualIds);
+  const nextMemberIds = [...new Set([...target.memberIds, ...toIdList(actualIds)])];
   const nextActuals = state.actuals.map((row) =>
-    actualIds.includes(row.id) ? { ...row, pooledId } : row
+    idSet.has(row.id) ? { ...row, pooledId } : row
   );
 
   return {
@@ -326,42 +344,28 @@ export function assignToExistingPooled(
 export function addMembers(
   state: PlanScopeState,
   pooledId: string,
-  actualIds: readonly string[]
+  actualIds: readonly RowIdLike[]
 ): PlanScopeState {
   return assignToExistingPooled(state, pooledId, actualIds);
 }
 
 export function removeMembers(
   state: PlanScopeState,
-  actualIds: readonly string[]
+  actualIds: readonly RowIdLike[]
 ): PlanScopeState {
   if (actualIds.length === 0) return state;
 
-  const affectedPooledIds = new Set<string>();
-  for (const id of actualIds) {
-    const row = state.actuals.find((item) => item.id === id);
-    if (row?.pooledId) affectedPooledIds.add(row.pooledId);
-  }
-
+  const idSet = toIdSet(actualIds);
   const nextActuals = state.actuals.map((row) =>
-    actualIds.includes(row.id) ? { ...row, pooledId: null } : row
+    idSet.has(row.id) ? { ...row, pooledId: null } : row
   );
 
-  let nextPooled = state.pooled
+  const nextPooled = state.pooled
     .map((item) => ({
       ...item,
-      memberIds: item.memberIds.filter((id) => !actualIds.includes(id)),
+      memberIds: item.memberIds.filter((id) => !idSet.has(id)),
     }))
     .filter((item) => item.memberIds.length > 0);
-
-  for (const pooledId of affectedPooledIds) {
-    const stillExists = nextPooled.some((item) => item.id === pooledId);
-    if (!stillExists) continue;
-    const members = getMembers({ actuals: nextActuals, pooled: nextPooled }, pooledId);
-    if (members.length === 0) {
-      nextPooled = nextPooled.filter((item) => item.id !== pooledId);
-    }
-  }
 
   return {
     actuals: nextActuals,
