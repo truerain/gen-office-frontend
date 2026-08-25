@@ -15,7 +15,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshCcw, Shield } from 'lucide-react';
 
-import { GenGridCrud } from '@gen-office/gen-grid-crud';
+import { GenGridCrud, type GenGridCrudHandle } from '@gen-office/gen-grid-crud';
 import type { CrudChange, CrudRowId } from '@gen-office/gen-grid-crud';
 import { SplitLayout } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
@@ -192,6 +192,7 @@ export default function RoleManagementPage(_props: PageComponentProps) {
       selectionTransitionRef.current = false;
     }
   };
+  const crudRef = useRef<GenGridCrudHandle<Role>>(null);
 
   return (
     <div className={`${layoutStyles.page} ${styles.page}`} data-grid-dirty={gridDirty ? 'true' : 'false'}>
@@ -211,6 +212,7 @@ export default function RoleManagementPage(_props: PageComponentProps) {
           left={
             <div className={styles.pane}>
               <GenGridCrud<Role>
+                ref={crudRef}
                 title={t('admin.role.grid.role_list', { defaultValue: 'Role List' })}
                 data={roleList}
                 columns={columns}
@@ -239,6 +241,22 @@ export default function RoleManagementPage(_props: PageComponentProps) {
                       order: 20,
                       onClick: () => {
                         void refetch();
+                      },
+                    },
+                    {
+                      key: 'addRow',
+                      label: 'Custom Add Row',
+                      side: 'left',
+                      style: 'text',
+                      order: 20,
+                      onClick: () => {
+                        console.log('Custom Add Row clicked');
+                        crudRef.current?.addRow({
+                          roleId: 0,
+                          roleName: 'New Role',
+                          roleCd: 'NEW',
+                          useYn: 'Y',
+                        });
                       },
                     },
                   ],

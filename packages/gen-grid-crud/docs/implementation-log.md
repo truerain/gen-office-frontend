@@ -1,5 +1,13 @@
 # GenGridCrud 구현 로그
 
+## 2026-08-25
+
+### GenGridCrudHandle로 외부 행 add/delete 공개
+
+- `forwardRef` + `useImperativeHandle`로 `addRow` / `addRows` / `deleteRowIds` / `reset`을 노출한다.
+- 팝업에서 고른 완성 `TData`를 pending create로 넣을 수 있다. ActionBar `createRow`와 별개이며 `CrudActionApi`는 확장하지 않았다.
+- 관련 파일: `src/GenGridCrudHandle.ts`, `src/GenGridCrud.tsx`, `src/index.ts`, `docs/app_guide/crud.md`
+
 ## 2026-08-19
 
 ### refetch 시 pending 유지와 reset 계약 기록

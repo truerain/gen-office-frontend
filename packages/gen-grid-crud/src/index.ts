@@ -6,6 +6,7 @@ export type { GenGridCrudProps as GenGridProps } from './GenGridCrud.types';
 
 // 원하면 원 이름도 노출
 export { GenGridCrud } from './GenGridCrud';
+export type { GenGridCrudHandle } from './GenGridCrudHandle';
 export type { CrudChange, CrudRowId } from './crud/types';
 export { prepareCommitChanges } from './crud/prepareCommitChanges';
 export { normalizeChanges } from './crud/normalizeChanges';

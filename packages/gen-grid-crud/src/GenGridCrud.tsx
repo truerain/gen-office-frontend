@@ -16,6 +16,7 @@ import type {
   CrudFieldErrorMap,
   ServerSortingState,
 } from './GenGridCrud.types';
+import type { GenGridCrudHandle } from './GenGridCrudHandle';
 import { CrudActionBar } from './components/CrudActionBar';
 import { CrudServerSortDialog } from './components/CrudServerSortDialog';
 import { collectServerSortColumns, isSameServerSorting } from './features/server-sort/serverSortColumns';
@@ -154,7 +155,10 @@ function buildPendingDiffFromPending<TData>(
   return { added, modified, deleted };
 }
 
-export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
+export const GenGridCrud = React.forwardRef(function GenGridCrudInner<TData>(
+  props: GenGridCrudProps<TData>,
+  ref: React.ForwardedRef<GenGridCrudHandle<TData>>
+) {
   const { t } = useTranslation('common');
   const {
     title,
@@ -558,15 +562,57 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
 
 
   // --- Action handlers
+  const insertPendingRow = React.useCallback(
+    (row: TData, opts?: { tempId?: CrudRowId; focus?: boolean }): CrudRowId | undefined => {
+      if (resolvedReadonly) return undefined;
+      const tempId = opts?.tempId ?? generateTempId();
+      const nextRow = withTempId(row, tempId);
+      pendingApi.addRow(nextRow, { tempId });
+      const shouldFocus = opts?.focus !== false;
+      if (shouldFocus && firstEditableColumnId) {
+        setActiveCell({ rowId: tempId, columnId: firstEditableColumnId });
+      }
+      return tempId;
+    },
+    [resolvedReadonly, pendingApi, firstEditableColumnId, setActiveCell]
+  );
+
   const handleAdd = React.useCallback(() => {
     if (!createRow) return;
-    const tempId = generateTempId();
-    const row = withTempId(createRow(), tempId);
-    pendingApi.addRow(row, { tempId });
-    if (firstEditableColumnId) {
-      setActiveCell({ rowId: tempId, columnId: firstEditableColumnId });
-    }
-  }, [createRow, pendingApi, firstEditableColumnId, onActiveCellChange]);
+    insertPendingRow(createRow());
+  }, [createRow, insertPendingRow]);
+
+  const handleAddRow = React.useCallback(
+    (row: TData, opts?: { tempId?: CrudRowId; focus?: boolean }): CrudRowId => {
+      const tempId = insertPendingRow(row, opts);
+      // Readonly: return a stable id without mutating pending.
+      return tempId ?? opts?.tempId ?? generateTempId();
+    },
+    [insertPendingRow]
+  );
+
+  const handleAddRows = React.useCallback(
+    (rows: readonly TData[], opts?: { focusLast?: boolean }): CrudRowId[] => {
+      if (resolvedReadonly || rows.length === 0) return [];
+      const focusLast = opts?.focusLast !== false;
+      const ids: CrudRowId[] = [];
+      rows.forEach((row, index) => {
+        const isLast = index === rows.length - 1;
+        const tempId = insertPendingRow(row, { focus: focusLast && isLast });
+        if (tempId != null) ids.push(tempId);
+      });
+      return ids;
+    },
+    [resolvedReadonly, insertPendingRow]
+  );
+
+  const handleDeleteRowIds = React.useCallback(
+    (rowIds: readonly CrudRowId[]) => {
+      if (resolvedReadonly || rowIds.length === 0) return;
+      pendingApi.deleteRowIds(rowIds);
+    },
+    [resolvedReadonly, pendingApi]
+  );
 
   // delete selected/active rows in pending state
   const handleDelete = React.useCallback(() => {
@@ -612,6 +658,17 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
   const handleReset = React.useCallback(() => {
     pendingApi.reset();
   }, [pendingApi]);
+
+  React.useImperativeHandle(
+    ref,
+    () => ({
+      addRow: handleAddRow,
+      addRows: handleAddRows,
+      deleteRowIds: handleDeleteRowIds,
+      reset: handleReset,
+    }),
+    [handleAddRow, handleAddRows, handleDeleteRowIds, handleReset]
+  );
 
   const handleToggleFilter = React.useCallback(() => {
     setColumnFilters([]);
@@ -1186,4 +1243,6 @@ export function GenGridCrud<TData>(props: GenGridCrudProps<TData>) {
       ) : null}
     </div>
   );
-}
+}) as <TData>(
+  props: GenGridCrudProps<TData> & { ref?: React.Ref<GenGridCrudHandle<TData>> }
+) => React.ReactElement;

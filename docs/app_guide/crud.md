@@ -127,6 +127,38 @@ onCommitError={({ error }) => {
 }}
 ```
 
+
+## 6) `GenGridCrudHandle` (외부 선택 행 추가)
+
+목적:
+- 그리드 밖 버튼 → 팝업에서 데이터 선택 → 선택 행을 그리드 pending create로 추가
+
+기본 처리:
+- `ref`로 `addRow` / `addRows` 호출 (ActionBar `api.add()`/`createRow`와 별개)
+- 부모 `data`에 직접 push하지 않는다 (base 행이 되어 커밋 의미가 달라짐)
+- `readonly`이면 add/delete는 no-op
+- 저장은 기존 ActionBar Save 또는 `onCommit` 경로를 그대로 사용
+
+코드:
+
+```tsx
+const crudRef = useRef<GenGridCrudHandle<LineItem>>(null);
+
+async function onPickFromPopup() {
+  const selected = await openItemPicker(); // 팝업에서 TData[]
+  crudRef.current?.addRows(selected);
+}
+
+<GenGridCrud ref={crudRef} data={...} onCommit={...} />
+<button type="button" onClick={onPickFromPopup}>항목 추가</button>
+```
+
+Handle 요약:
+- `addRow(row, opts?)`: 완성된 행 1건 pending create. `createRow` prop 불필요.
+- `addRows(rows, opts?)`: 다중 선택 추가. 기본으로 마지막 행 포커스.
+- `deleteRowIds(ids)`: 선택 UI 없이 id 기준 pending delete.
+- `reset()`: pending 전부 폐기 (ActionBar reset과 동일).
+
 ## 관련 파일
 
 - `apps/demo/src/pages/admin/menu/MenuManagementPage.tsx`

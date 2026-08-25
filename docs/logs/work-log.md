@@ -2,6 +2,13 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-08-25
+
+### GenGridCrud Handle API (외부 선택 행 추가)
+
+- 외부 버튼/팝업에서 고른 행을 pending create로 넣도록 `GenGridCrudHandle`(`addRow`/`addRows`/`deleteRowIds`/`reset`)을 추가했다.
+- 관련 파일: `packages/gen-grid-crud/src/GenGridCrudHandle.ts`, `GenGridCrud.tsx`, `index.ts`, `docs/app_guide/crud.md`, `packages/gen-grid-crud/docs/implementation-log.md`
+
 ## 2026-08-19
 
 ### textarea 셀이 개행을 한 줄로 붙이던 문제
