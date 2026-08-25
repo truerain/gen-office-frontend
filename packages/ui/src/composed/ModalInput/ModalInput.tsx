@@ -81,6 +81,7 @@ export function ModalInput<TData = unknown>(props: ModalInputProps<TData>) {
     dialogClassName,
     listClassName,
     formatDisplayValue,
+    keepSelectedVisibleInSearch = true,
   } = props;
 
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
@@ -180,7 +181,19 @@ export function ModalInput<TData = unknown>(props: ModalInputProps<TData>) {
     if (mode !== 'multi' || !showSelectedOnly) return filteredItems;
     return filteredItems.filter((item) => draftSelectedKeySet.has(item.value));
   }, [draftSelectedKeySet, filteredItems, mode, showSelectedOnly]);
+  const mergedVisibleItems = useMemo(() => {
+    if (mode !== 'multi' || !keepSelectedVisibleInSearch || showSelectedOnly) {
+      return visibleItems;
+    }
+    
+    const visibleKeySet = new Set(visibleItems.map((item) => item.value));
+    const pinnedSelected = draftSelectedItems.filter((item) => !visibleKeySet.has(item.value));
+    if(pinnedSelected.length === 0) {
+      return visibleItems;
+    }
 
+    return [...pinnedSelected, ...visibleItems];
+  }, [draftSelectedItems, keepSelectedVisibleInSearch, mode, showSelectedOnly, visibleItems])
   const applySelection = (nextItems: ModalInputSelection<TData>[]) => {
     if (controlledSelectedItems === undefined) {
       setInternalSelectedItems(nextItems);
@@ -399,9 +412,9 @@ export function ModalInput<TData = unknown>(props: ModalInputProps<TData>) {
                       event.stopPropagation();
                       setOpen(false);
                     }
-                    if (event.key === 'Enter' && mode === 'single' && visibleItems.length === 1) {
+                    if (event.key === 'Enter' && mode === 'single' && mergedVisibleItems.length === 1) {
                       event.preventDefault();
-                      const only = visibleItems[0];
+                      const only = mergedVisibleItems[0];
                       if (!only.disabled) commitSelection([only]);
                     }
                     if (event.key === 'Enter' && mode === 'multi') {
@@ -429,7 +442,7 @@ export function ModalInput<TData = unknown>(props: ModalInputProps<TData>) {
               >
                 {loading ? (
                   <div className={styles.empty}>{loadingMessage}</div>
-                ) : visibleItems.length === 0 ? (
+                ) : mergedVisibleItems.length === 0 ? (
                   <div className={styles.empty}>{emptyMessage}</div>
                 ) : hasTableColumns ? (
                   <div className={styles.table}>
@@ -452,7 +465,7 @@ export function ModalInput<TData = unknown>(props: ModalInputProps<TData>) {
                       ))}
                     </div>
                     <div className={styles.tableBody}>
-                      {visibleItems.map((item) => {
+                      {mergedVisibleItems.map((item) => {
                         const selected = draftSelectedKeySet.has(item.value);
                         return (
                           <button
@@ -493,7 +506,7 @@ export function ModalInput<TData = unknown>(props: ModalInputProps<TData>) {
                   </div>
                 ) : (
                   <div className={styles.list}>
-                    {visibleItems.map((item) => {
+                    {mergedVisibleItems.map((item) => {
                       const selected = draftSelectedKeySet.has(item.value);
                       return (
                         <button

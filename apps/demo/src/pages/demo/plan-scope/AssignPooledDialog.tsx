@@ -15,6 +15,7 @@ import {
   suggestPooledName,
   validateSelection,
   type PlanScopeState,
+  type RowIdLike,
 } from './planScopeModel';
 
 import styles from './PlanScopeDemoPage.module.css';
@@ -24,7 +25,7 @@ type AssignTarget = { type: 'new' } | { type: 'existing'; pooledId: string };
 type AssignPooledDialogProps = {
   open: boolean;
   state: PlanScopeState;
-  selectedIds: readonly string[];
+  selectedIds: readonly RowIdLike[];
   onOpenChange: (open: boolean) => void;
   onApply: (next: PlanScopeState) => void;
 };

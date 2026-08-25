@@ -58,6 +58,7 @@ type ModalInputBaseProps<TData = unknown> = {
     selectedItems: ModalInputSelection<TData>[],
     mode: 'single' | 'multi'
   ) => string;
+  keepSelectedVisibleInSearch?: boolean;
 };
 
 export type SingleModalInputProps<TData = unknown> = ModalInputBaseProps<TData> & {
