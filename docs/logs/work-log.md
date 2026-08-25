@@ -4,6 +4,11 @@
 
 ## 2026-08-25
 
+### GenGridCrudHandle clearSelection
+
+- 외부에서 checkbox 선택을 비우도록 `clearSelection`을 `GenGridCrudHandle`에 추가했다.
+- 관련 파일: `packages/gen-grid-crud/src/GenGridCrudHandle.ts`, `GenGridCrud.tsx`, `docs/app_guide/crud.md`, `packages/gen-grid-crud/docs/implementation-log.md`
+
 ### GenGridCrudHandle updateRow / updateRows
 
 - 외부에서 기존 행을 pending update로 반영하도록 `updateRow` / `updateRows`를 `GenGridCrudHandle`에 추가했다.

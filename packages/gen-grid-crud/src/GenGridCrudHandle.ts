@@ -30,6 +30,8 @@ export type GenGridCrudHandle<TData> = {
   updateRows: (updates: readonly GenGridCrudRowUpdate<TData>[]) => void;
   /** Mark rows as pending delete by id (no selection UI required). */
   deleteRowIds: (rowIds: readonly CrudRowId[]) => void;
+  /** Clear checkbox row selection. */
+  clearSelection: () => void;
   /** Discard pending create/update/delete (same as ActionBar reset). */
   reset: () => void;
 };

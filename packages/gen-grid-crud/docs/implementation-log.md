@@ -2,6 +2,11 @@
 
 ## 2026-08-25
 
+### GenGridCrudHandle clearSelection 추가
+
+- checkbox row selection을 비운다. `updateRows` 등 외부 mutation 직후 선택 정리용이다.
+- 관련 파일: `src/GenGridCrudHandle.ts`, `src/GenGridCrud.tsx`, `docs/app_guide/crud.md`
+
 ### GenGridCrudHandle updateRow / updateRows 추가
 
 - 외부 팝업·폼에서 기존 행 필드를 pending update로 반영한다. `Partial<TData>` patch + rowId 형태이며 셀 편집과 동일한 `pendingApi.updateRow` 경로를 사용한다.

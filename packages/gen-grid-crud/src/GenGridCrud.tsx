@@ -682,6 +682,10 @@ export const GenGridCrud = React.forwardRef(function GenGridCrudInner<TData>(
     pendingApi.reset();
   }, [pendingApi]);
 
+  const handleClearSelection = React.useCallback(() => {
+    setRowSelectionIds([]);
+  }, [setRowSelectionIds]);
+
   React.useImperativeHandle(
     ref,
     () => ({
@@ -690,9 +694,18 @@ export const GenGridCrud = React.forwardRef(function GenGridCrudInner<TData>(
       updateRow: handleUpdateRow,
       updateRows: handleUpdateRows,
       deleteRowIds: handleDeleteRowIds,
+      clearSelection: handleClearSelection,
       reset: handleReset,
     }),
-    [handleAddRow, handleAddRows, handleUpdateRow, handleUpdateRows, handleDeleteRowIds, handleReset]
+    [
+      handleAddRow,
+      handleAddRows,
+      handleUpdateRow,
+      handleUpdateRows,
+      handleDeleteRowIds,
+      handleClearSelection,
+      handleReset,
+    ]
   );
 
   const handleToggleFilter = React.useCallback(() => {

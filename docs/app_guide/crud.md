@@ -166,6 +166,7 @@ Handle 요약:
 - `updateRow(rowId, patch)`: 기존/created 행에 pending update patch 적용.
 - `updateRows([{ rowId, patch }, ...])`: 다중 행 pending update.
 - `deleteRowIds(ids)`: 선택 UI 없이 id 기준 pending delete.
+- `clearSelection()`: checkbox row selection 비우기.
 - `reset()`: pending 전부 폐기 (ActionBar reset과 동일).
 
 ## 관련 파일
