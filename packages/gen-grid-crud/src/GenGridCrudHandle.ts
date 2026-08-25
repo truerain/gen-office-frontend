@@ -1,7 +1,12 @@
 // packages/gen-grid-crud/src/GenGridCrudHandle.ts
-// Imperative handle for GenGridCrud (external row add/delete).
+// Imperative handle for GenGridCrud (external row add/update/delete).
 
 import type { CrudRowId } from './crud/types';
+
+export type GenGridCrudRowUpdate<TData> = {
+  rowId: CrudRowId;
+  patch: Partial<TData>;
+};
 
 export type GenGridCrudHandle<TData> = {
   /**
@@ -19,6 +24,10 @@ export type GenGridCrudHandle<TData> = {
     rows: readonly TData[],
     opts?: { focusLast?: boolean }
   ) => CrudRowId[];
+  /** Apply a pending update patch to an existing or created row. */
+  updateRow: (rowId: CrudRowId, patch: Partial<TData>) => void;
+  /** Apply pending update patches to multiple rows. */
+  updateRows: (updates: readonly GenGridCrudRowUpdate<TData>[]) => void;
   /** Mark rows as pending delete by id (no selection UI required). */
   deleteRowIds: (rowIds: readonly CrudRowId[]) => void;
   /** Discard pending create/update/delete (same as ActionBar reset). */

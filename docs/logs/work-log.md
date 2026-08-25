@@ -4,6 +4,11 @@
 
 ## 2026-08-25
 
+### GenGridCrudHandle updateRow / updateRows
+
+- 외부에서 기존 행을 pending update로 반영하도록 `updateRow` / `updateRows`를 `GenGridCrudHandle`에 추가했다.
+- 관련 파일: `packages/gen-grid-crud/src/GenGridCrudHandle.ts`, `GenGridCrud.tsx`, `index.ts`, `docs/app_guide/crud.md`, `packages/gen-grid-crud/docs/implementation-log.md`
+
 ### GenGridCrud Handle API (외부 선택 행 추가)
 
 - 외부 버튼/팝업에서 고른 행을 pending create로 넣도록 `GenGridCrudHandle`(`addRow`/`addRows`/`deleteRowIds`/`reset`)을 추가했다.

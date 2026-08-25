@@ -606,12 +606,35 @@ export const GenGridCrud = React.forwardRef(function GenGridCrudInner<TData>(
     [resolvedReadonly, insertPendingRow]
   );
 
+  const resolvePendingRowId = React.useCallback(
+    (rowId: CrudRowId) => pendingRowIdByGridId.get(String(rowId)) ?? rowId,
+    [pendingRowIdByGridId]
+  );
+
+  const handleUpdateRow = React.useCallback(
+    (rowId: CrudRowId, patch: Partial<TData>) => {
+      if (resolvedReadonly) return;
+      pendingApi.updateRow(resolvePendingRowId(rowId), patch);
+    },
+    [resolvedReadonly, pendingApi, resolvePendingRowId]
+  );
+
+  const handleUpdateRows = React.useCallback(
+    (updates: readonly { rowId: CrudRowId; patch: Partial<TData> }[]) => {
+      if (resolvedReadonly || updates.length === 0) return;
+      for (const { rowId, patch } of updates) {
+        pendingApi.updateRow(resolvePendingRowId(rowId), patch);
+      }
+    },
+    [resolvedReadonly, pendingApi, resolvePendingRowId]
+  );
+
   const handleDeleteRowIds = React.useCallback(
     (rowIds: readonly CrudRowId[]) => {
       if (resolvedReadonly || rowIds.length === 0) return;
-      pendingApi.deleteRowIds(rowIds);
+      pendingApi.deleteRowIds(rowIds.map((rowId) => resolvePendingRowId(rowId)));
     },
-    [resolvedReadonly, pendingApi]
+    [resolvedReadonly, pendingApi, resolvePendingRowId]
   );
 
   // delete selected/active rows in pending state
@@ -664,10 +687,12 @@ export const GenGridCrud = React.forwardRef(function GenGridCrudInner<TData>(
     () => ({
       addRow: handleAddRow,
       addRows: handleAddRows,
+      updateRow: handleUpdateRow,
+      updateRows: handleUpdateRows,
       deleteRowIds: handleDeleteRowIds,
       reset: handleReset,
     }),
-    [handleAddRow, handleAddRows, handleDeleteRowIds, handleReset]
+    [handleAddRow, handleAddRows, handleUpdateRow, handleUpdateRows, handleDeleteRowIds, handleReset]
   );
 
   const handleToggleFilter = React.useCallback(() => {
