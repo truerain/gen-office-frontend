@@ -289,7 +289,10 @@ export function TitleBarLayout({
         onConfirm={setLayoutMode}
       />
       <Dialog open={noticeViewerOpen} onOpenChange={setNoticeViewerOpen}>
-        <DialogContent style={{ width: 'min(1100px, 92vw)', maxWidth: '1100px', height: 'min(88vh, 900px)', display: 'flex', flexDirection: 'column' }}>
+        <DialogContent
+          style={{ width: 'min(1100px, 92vw)', maxWidth: '1100px', height: 'min(88vh, 900px)', display: 'flex', flexDirection: 'column' }}
+          aria-describedby={undefined}
+        >
           <DialogHeader>
             <DialogTitle>공지사항</DialogTitle>
           </DialogHeader>

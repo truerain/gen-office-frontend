@@ -1,5 +1,13 @@
 # UI 구현 로그
 
+## 2026-08-26
+
+### Dialog Missing Description 경고 수정
+
+- `AlertDialog`는 `message`를 `DialogDescription`으로 연결하고, 없을 때는 `aria-describedby={undefined}`로 경고를 끈다.
+- `ModalInput`도 `modalDescription`이 있으면 Description, 없으면 opt-out 한다.
+- 관련 파일: `src/composed/AlertDialog/AlertDialog.tsx`, `src/composed/ModalInput/ModalInput.tsx`, `src/core/Dialog/Dialog.stories.tsx`
+
 ## 2026-08-17
 
 ### SplitLayout 퍼센트 leftWidth 초기값 수정

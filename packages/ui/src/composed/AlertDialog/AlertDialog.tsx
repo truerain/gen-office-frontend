@@ -13,6 +13,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogBody,
+  DialogDescription,
   DialogTitle,
   DialogFooter,
 } from '../../core/Dialog';
@@ -101,7 +102,11 @@ export function AlertDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={getVariantClass()} showClose={false}>
+      <DialogContent
+        className={getVariantClass()}
+        showClose={false}
+        {...(message ? {} : { 'aria-describedby': undefined })}
+      >
         <DialogHeader>
           <div className={styles.headerRow}>
             <DialogTitle>{title}</DialogTitle>
@@ -118,7 +123,9 @@ export function AlertDialog({
             <div className={styles.iconWrapper} aria-hidden="true">
               <Icon className={styles.icon} />
             </div>
-            <div className={styles.bodyContent}>{message}</div>
+            <DialogDescription asChild>
+              <div className={styles.bodyContent}>{message}</div>
+            </DialogDescription>
           </DialogBody>
         )}
 

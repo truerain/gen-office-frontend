@@ -8,6 +8,7 @@ import {
   DialogBody,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -355,6 +356,7 @@ export function ModalInput<TData = unknown>(props: ModalInputProps<TData>) {
           className={cn(styles.dialog, dialogClassName)}
           showClose={false}
           data-gen-grid-editor-overlay="true"
+          {...(modalDescription ? {} : { 'aria-describedby': undefined })}
           style={
             {
               ...(resolvedModalWidth
@@ -396,7 +398,11 @@ export function ModalInput<TData = unknown>(props: ModalInputProps<TData>) {
           </DialogHeader>
           <DialogBody>
             <div className={styles.content} style={{ height: resolvedModalHeight }}>
-              {modalDescription ? <div className={styles.itemMeta}>{modalDescription}</div> : null}
+              {modalDescription ? (
+                <DialogDescription className={styles.itemMeta}>
+                  {modalDescription}
+                </DialogDescription>
+              ) : null}
               <div className={styles.searchRow}>
                 <Input
                   value={searchValue}

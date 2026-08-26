@@ -59,7 +59,7 @@ export const WithoutDescription: Story = {
       <DialogTrigger asChild>
         <Button>Open Dialog</Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Confirm Action</DialogTitle>
         </DialogHeader>

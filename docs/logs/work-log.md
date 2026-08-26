@@ -2,6 +2,13 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-08-26
+
+### Radix Dialog Missing Description 경고 수정
+
+- `AlertDialog`/`ModalInput`에 `DialogDescription`(또는 `aria-describedby` opt-out)을 적용하고, 공지 뷰어 Dialog와 Storybook `WithoutDescription`도 동일하게 맞췄다.
+- 관련 파일: `packages/ui/src/composed/AlertDialog/AlertDialog.tsx`, `ModalInput.tsx`, `Dialog.stories.tsx`, `apps/demo/src/layouts/LeftPanelLayout.tsx`, `TitleBarLayout.tsx`
+
 ## 2026-08-25
 
 ### GenGridCrudHandle clearSelection
