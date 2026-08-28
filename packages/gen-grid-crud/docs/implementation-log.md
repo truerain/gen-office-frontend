@@ -1,5 +1,13 @@
 # GenGridCrud 구현 로그
 
+## 2026-08-28
+
+### ActionBar renderTotalRows 커스텀 렌더러 함수 추가
+
+- ActionBar의 TotalRows 표시 영역을 커스텀할 수 있도록 `CrudActionBarOptions.renderTotalRows` 함수형 API를 추가했다.
+- `CrudTotalRowsContext`를 통해 `{ count, totalRowCount, state }`를 제공하여 현재 표시 행 수, 서버 총 행 수 및 `state.viewData` 기반 조건부 집계(예: 완료 건수 등)나 커스텀 노드를 렌더링할 수 있다.
+- 관련 파일: `src/GenGridCrud.types.ts`, `src/components/CrudActionBar.tsx`, `src/GenGridCrud.tsx`, `src/index.ts`
+
 ## 2026-08-25
 
 ### GenGridCrudHandle clearSelection 추가

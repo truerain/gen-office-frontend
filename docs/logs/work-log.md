@@ -2,6 +2,14 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-08-28
+
+### GenGridCrud ActionBar renderTotalRows 커스텀 렌더러 추가
+
+- ActionBar의 TotalRows 영역을 커스텀 표현할 수 있도록 `CrudActionBarOptions.renderTotalRows` 함수형 API를 추가했다.
+- `{ count, totalRowCount, state }` 컨텍스트를 받아 행 필터/집계 결과나 커스텀 ReactNode를 표시할 수 있다.
+- 관련 파일: `packages/gen-grid-crud/src/GenGridCrud.types.ts`, `packages/gen-grid-crud/src/components/CrudActionBar.tsx`, `packages/gen-grid-crud/src/GenGridCrud.tsx`, `packages/gen-grid-crud/src/index.ts`, `packages/gen-grid-crud/docs/implementation-log.md`
+
 ## 2026-08-26
 
 ### Radix Dialog Missing Description 경고 수정

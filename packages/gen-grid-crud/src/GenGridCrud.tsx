@@ -212,6 +212,7 @@ export const GenGridCrud = React.forwardRef(function GenGridCrudInner<TData>(
   const resolvedActionBarPosition = actionBar?.position ?? actionBarPosition;
   const resolvedActionBarWidthMode = actionBar?.widthMode ?? 'container';
   const resolvedActionBarShowTotalRows = actionBar?.showTotalRows ?? true;
+  const resolvedActionBarRenderTotalRows = actionBar?.renderTotalRows;
   const resolvedActionButtonStyle = actionBar?.defaultStyle ?? actionButtonStyle;
   const includedBuiltInActions = React.useMemo<readonly CrudBuiltInActionKey[] | undefined>(() => {
     const builtIns = actionBar?.includeBuiltIns;
@@ -1121,6 +1122,7 @@ export const GenGridCrud = React.forwardRef(function GenGridCrudInner<TData>(
           className={resolvedActionBarWidthMode === 'grid' ? styles.actionBarGridWidth : undefined}
           title={title}
           showTotalRows={resolvedActionBarShowTotalRows}
+          renderTotalRows={resolvedActionBarRenderTotalRows}
           state={{
             readonly: resolvedReadonly,
             baseData: data,

@@ -23,6 +23,7 @@ import type {
   CrudActionCheckboxValue,
   CrudActionItem,
   CrudBuiltInActionKey,
+  CrudTotalRowsContext,
   CrudUiState,
 } from '../GenGridCrud.types';
 import { useTranslation } from 'react-i18next';
@@ -87,6 +88,7 @@ export function CrudActionBar<TData>(props: {
   title?: string;
   className?: string;
   showTotalRows?: boolean;
+  renderTotalRows?: (ctx: CrudTotalRowsContext<TData>) => React.ReactNode;
   state: CrudUiState<TData>;
   actionApi: CrudActionApi;
   totalRowCount?: number;
@@ -103,6 +105,7 @@ export function CrudActionBar<TData>(props: {
     title,
     className,
     showTotalRows = true,
+    renderTotalRows,
     state,
     actionApi,
     totalRowCount,
@@ -269,8 +272,17 @@ export function CrudActionBar<TData>(props: {
     [visibleActions]
   );
 
-  const totalRowsText = React.useMemo(() => {
+  const totalRowsContent = React.useMemo(() => {
     const viewCount = state.viewData.length;
+
+    if (typeof renderTotalRows === 'function') {
+      return renderTotalRows({
+        count: viewCount,
+        totalRowCount,
+        state,
+      });
+    }
+
     const viewText = viewCount.toLocaleString();
 
     if (typeof totalRowCount === 'number' && Number.isFinite(totalRowCount)) {
@@ -280,7 +292,7 @@ export function CrudActionBar<TData>(props: {
     }
 
     return t('common:total_rows', { defaultValue:'{row}', row: viewText });
-  }, [state.viewData.length, t, totalRowCount]);
+  }, [renderTotalRows, state, t, totalRowCount]);
 
   const renderAction = (action: CrudActionItem<TData>) => {
     const style = action.style ?? actionButtonStyle;
@@ -382,7 +394,7 @@ export function CrudActionBar<TData>(props: {
         )}
         {showTotalRows ? (
           <div className={`${styles.section} ${styles.total}`}>
-            <span>{totalRowsText}</span>
+            <span>{totalRowsContent}</span>
           </div>
         ) : null}
 
