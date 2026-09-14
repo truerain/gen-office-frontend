@@ -49,7 +49,6 @@
 - `{ count, totalRowCount, state }` 컨텍스트를 받아 행 필터/집계 결과나 커스텀 ReactNode를 표시할 수 있다.
 - 관련 파일: `packages/gen-grid-crud/src/GenGridCrud.types.ts`, `packages/gen-grid-crud/src/components/CrudActionBar.tsx`, `packages/gen-grid-crud/src/GenGridCrud.tsx`, `packages/gen-grid-crud/src/index.ts`, `packages/gen-grid-crud/docs/implementation-log.md`
 
-
 ## 2026-08-26
 
 ### Radix Dialog Missing Description 경고 수정
@@ -107,7 +106,7 @@
 
 ### 헤더 sortCount가 sorting 없을 때 깨지던 문제
 
-- tree/rowSpanning/서버 Sort처럼 헤더 정렬이 꺼지면 `state.sorting`이 `undefined`다. `sorting?.length ?? 0`으로 읽게 했다.
+- tree/rowSpanning/서버 Sort처럼 헤더 정렬이 꺼지면 `state.sorting`이 `undefined`다. `sorting?.length`가 없으면 0으로 읽게 했다.
 - 관련 파일: `packages/gen-grid/src/components/layout/GenGridHeader.tsx`
 
 ### GenGrid 헤더 다중 정렬 Ctrl과 순번 표시
