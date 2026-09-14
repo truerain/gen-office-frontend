@@ -4,6 +4,21 @@
 
 ## 2026-09-14
 
+### 편집 셀 editorWrap 왼쪽 border 가림 수정
+
+- 편집 래퍼에 셀과 같은 가로 패딩을 적용해 ModalInput 왼쪽 border가 이전 셀에 가려지지 않게 했다.
+- 관련 파일: `packages/gen-grid/src/components/layout/GenGridBody.module.css`, `packages/gen-grid/docs/implementation-log.md`
+
+### DataGrid Demo mock 메뉴 등록
+
+- UI Demo 하위에 `DataGridPage`(ModalEditor 샘플)를 mock 메뉴로 등록했다.
+- 관련 파일: `apps/demo/src/mocks/data/menu.ts`
+
+### ModalEditor 현재 셀 값 표시 fallback
+
+- items 미매칭 시에도 편집 입력칸에 현재 셀 값이 보이도록 `ModalEditor` fallback과 `getDisplayLabel`을 추가했고, `readOnly` 기본값을 `true`로 맞췄다.
+- 관련 파일: `packages/gen-grid/src/features/editing/ModalEditor.tsx`, `apps/demo/src/pages/demo/datagrid/DataGridPage.tsx`, `packages/gen-grid/docs/implementation-log.md`
+
 ### GenGrid 단줄 편집 셀 세로 정렬 middle 기본화
 
 - 편집 모드 contenteditable 텍스트가 상단으로 보이던 문제를 단줄 에디터 기준 middle 정렬로 맞췄다. textarea는 top 유지.

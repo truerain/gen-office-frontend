@@ -347,6 +347,17 @@ const menus: AppMenu[] = [
     sortOrder: 901600,
     execComponent: 'PlanScopeDemoPage',
   },
+  {
+    menuId: 901700,
+    menuName: 'DataGrid Demo',
+    menuNameEng: 'DataGrid Demo',
+    menuIcon: 'Grid3x3',
+    parentMenuId: 900000,
+    displayYn: 'Y',
+    useYn: 'Y',
+    sortOrder: 901700,
+    execComponent: 'DataGridPage',
+  },
 ];
 
 export function loadAppMenuData() {

@@ -84,6 +84,7 @@
 .editorWrap {
   position: absolute;
   inset: 0;
+  padding: 0 var(--grid-cell-padding-x);
   display: flex;
   align-items: center;
   min-width: 0;

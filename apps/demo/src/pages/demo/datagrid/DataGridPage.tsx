@@ -109,6 +109,9 @@ function DataGridPage() {
               searchPlaceholder="Type name, id, department..."
               modalHeight={320}
               items={assigneeOptions}
+              getDisplayLabel={({ row }) =>
+                row.assigneeId ? `${row.assigneeName} (${row.assigneeId})` : undefined
+              }
               listColumns={[
                 {
                   key: 'name',

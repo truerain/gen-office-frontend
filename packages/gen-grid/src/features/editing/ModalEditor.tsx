@@ -16,12 +16,14 @@ export type ModalEditorSelection<TData = unknown> = {
 type ModalEditorBaseProps<TRow, TSelectionData = unknown> = {
   editor: Pick<
     CellEditorRenderArgs<TRow>,
-    'value' | 'onChange' | 'onCommit' | 'onCancel' | 'onTab' | 'commitValue'
+    'value' | 'row' | 'onChange' | 'onCommit' | 'onCancel' | 'onTab' | 'commitValue'
   >;
   title?: string;
   placeholder?: string;
   searchPlaceholder?: string;
   readOnly?: boolean;
+  /** When items has no match, use this label instead of raw editor.value. */
+  getDisplayLabel?: (args: { value: unknown; row: TRow }) => string | undefined;
   items?: ModalEditorSelection<TSelectionData>[];
   fetchItems?: (keyword: string) => Promise<ModalEditorSelection<TSelectionData>[]>;
   searchOnInputChange?: boolean;
@@ -54,6 +56,28 @@ type ModalEditorProps<TRow, TSelectionData = unknown> =
   | SingleModalEditorProps<TRow, TSelectionData>
   | MultiModalEditorProps<TRow, TSelectionData>;
 
+function resolveCurrentSelection<TRow, TSelectionData>(args: {
+  value: unknown;
+  row: TRow;
+  items?: ModalEditorSelection<TSelectionData>[];
+  getDisplayLabel?: (args: { value: unknown; row: TRow }) => string | undefined;
+}): ModalEditorSelection<TSelectionData> | null {
+  const resolvedValue = String(args.value ?? '').trim();
+  if (!resolvedValue) return null;
+
+  const matched =
+    args.items?.find((item) => item.value === resolvedValue || item.label === resolvedValue) ?? null;
+  if (matched) return matched;
+
+  // PopupInput-style fallback: keep showing the current cell value when items has no match
+  // (e.g. fetchItems-only, stale option list, or value not in local items).
+  const fallbackLabel = String(args.getDisplayLabel?.({ value: args.value, row: args.row }) ?? '').trim();
+  return {
+    value: resolvedValue,
+    label: fallbackLabel || resolvedValue,
+  };
+}
+
 export function ModalEditor<TRow, TSelectionData = unknown>(
   props: ModalEditorProps<TRow, TSelectionData>
 ) {
@@ -63,7 +87,8 @@ export function ModalEditor<TRow, TSelectionData = unknown>(
     title,
     placeholder,
     searchPlaceholder,
-    readOnly = false,
+    readOnly = true,
+    getDisplayLabel,
     items,
     fetchItems,
     searchOnInputChange = false,
@@ -75,9 +100,12 @@ export function ModalEditor<TRow, TSelectionData = unknown>(
     confirmLabel,
     cancelLabel,
   } = props;
-  const resolvedValue = String(editor.value ?? '').trim();
-  const currentSelection =
-    items?.find((item) => item.value === resolvedValue || item.label === resolvedValue) ?? null;
+  const currentSelection = resolveCurrentSelection({
+    value: editor.value,
+    row: editor.row,
+    items,
+    getDisplayLabel,
+  });
   const currentSelections = currentSelection ? [currentSelection] : [];
 
   const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (event) => {
