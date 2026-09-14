@@ -2,6 +2,30 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-09-14
+
+### GenGrid 단줄 편집 셀 세로 정렬 middle 기본화
+
+- 편집 모드 contenteditable 텍스트가 상단으로 보이던 문제를 단줄 에디터 기준 middle 정렬로 맞췄다. textarea는 top 유지.
+- 관련 파일: `packages/gen-grid/src/components/layout/GenGridCell.tsx`, `GenGridBody.module.css`, `packages/gen-grid/docs/implementation-log.md`
+
+## 2026-08-31
+
+### 사업계획 입력 데모 Footer 내 PlanMonthStack 테두리 제거
+
+- Footer(`tfoot td`) 합계 영역에서는 `.planValue`, `.actualValue`의 테두리(`border: none`)와 배경(`background: transparent`)을 초기화하여 일반 텍스트 형태로 깔끔하게 표시되도록 CSS 규칙을 추가했다.
+- 관련 파일: `apps/demo/src/pages/demo/plan-vs-actual/PlanVsActualDemoPage.module.css`
+
+### 사업계획 입력 데모 PlanMonthStack actualAmount 편집 가능 월 테두리 스타일 적용
+
+- 실적/계획 동시 편집이 가능한 월(10~12월, `canEditActual`)의 경우 `PlanMonthStack`의 `actualAmount`에도 `PlanMonthEditor`의 input과 동일한 테두리(.actualValue)를 적용하도록 개선했다.
+- 관련 파일: `apps/demo/src/pages/demo/plan-vs-actual/PlanMonthStack.tsx`, `PlanVsActualDemoPage.tsx`, `PlanVsActualDemoPage.module.css`
+
+### 사업계획 입력 데모 PlanMonthStack planAmount 테두리 스타일 적용
+
+- `PlanMonthStack`의 `planAmount`에 `PlanMonthEditor`의 input과 동일한 높이(22px), 패딩, 라운드(2px) 및 border를 갖는 `.planValue` 스타일을 적용해 평상시에도 편집 가능 영역임을 표시하고 에디터 전환 시 레이아웃 일관성을 맞췄다.
+- 관련 파일: `apps/demo/src/pages/demo/plan-vs-actual/PlanMonthStack.tsx`, `PlanVsActualDemoPage.module.css`
+
 ## 2026-08-26
 
 ### Radix Dialog Missing Description 경고 수정

@@ -40,13 +40,26 @@ export function parseAmount(value: unknown) {
   return Number.isFinite(next) ? next : 0;
 }
 
-export function PlanMonthStack(props: { actual: number; plan: number }) {
-  const ratio = computeRatio(props.plan, props.actual);
+export function PlanMonthStack(props: {
+  actual: number;
+  plan: number;
+  canEditActual?: boolean;
+}) {
+  const { actual, plan, canEditActual = false } = props;
+  const ratio = computeRatio(plan, actual);
   return (
     <div className={styles.stack}>
-      <div className={styles.actualAmount}>{formatAmount(props.actual)}</div>
+      <div className={styles.actualAmount}>
+        {canEditActual ? (
+          <div className={styles.actualValue}>{formatAmount(actual)}</div>
+        ) : (
+          formatAmount(actual)
+        )}
+      </div>
       <div className={styles.ratioSlot} aria-hidden="true" />
-      <div className={styles.planAmount}>{formatAmount(props.plan)}</div>
+      <div className={styles.planAmount}>
+        <div className={styles.planValue}>{formatAmount(plan)}</div>
+      </div>
       <div className={ratioClassName(ratio)}>{formatRatio(ratio)}</div>
     </div>
   );

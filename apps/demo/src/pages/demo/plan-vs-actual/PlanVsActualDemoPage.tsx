@@ -84,7 +84,11 @@ function createColumns(): ColumnDef<PlanVsActualGridRow, any>[] {
         header: monthHeader(key),
         size: 150,
         cell: ({ row }) => (
-          <PlanMonthStack actual={row.original[actualKey]} plan={row.original[planKey]} />
+          <PlanMonthStack
+            actual={row.original[actualKey]}
+            plan={row.original[planKey]}
+            canEditActual={canEditActual}
+          />
         ),
         footer: ({ table }) => {
           const { actual, plan } = sumPlanVsActual(footerRows(table), actualKey, planKey);

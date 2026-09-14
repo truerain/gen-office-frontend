@@ -1,5 +1,14 @@
 # GenGrid 구현 로그
 
+## 2026-09-14
+
+### 단줄 셀 편집 세로 정렬을 middle로 기본화
+
+- contenteditable 단줄 에디터에 `display:flex` + `align-items:center`를 적용해 표시 모드의 `vertical-align:middle`과 맞췄다.
+- `display:flex` 때문에 `text-align`이 무시되므로 `meta.align`을 `justify-content`로 매핑했다.
+- textarea(multiline)는 기존처럼 top/stretch를 유지한다.
+- 관련 파일: `src/components/layout/GenGridCell.tsx`, `GenGridBody.module.css`
+
 ## 2026-08-19
 
 ### textarea 표시가 개행을 버리던 문제

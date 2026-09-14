@@ -371,6 +371,14 @@ function ContentEditableEditor({
         overflow: multiline ? 'auto' : 'hidden',
         boxSizing: 'border-box',
         minHeight: 0,
+        // Single-line editors fill the cell height; center text like display-mode vertical-align:middle.
+        // Multiline/textarea keeps top alignment for natural top-down editing.
+        ...(!multiline
+          ? {
+              display: 'flex',
+              alignItems: 'center',
+            }
+          : null),
       }}
     />
   );
@@ -664,6 +672,11 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
   }, [cell, draft, meta?.editType, onCommitEdit, onCommitValue]);
 
   const renderDefaultEditor = () => {
+    // contenteditable uses display:flex; map meta.align to justify-content so right/center stay intact.
+    const contentEditableAlignStyle: React.CSSProperties = {
+      justifyContent:
+        meta?.align === 'right' ? 'flex-end' : meta?.align === 'center' ? 'center' : 'flex-start',
+    };
     const commonEditorStyle: React.CSSProperties = {
       width: '100%',
       height: '100%',
@@ -691,7 +704,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
             onCancel={() => cancel({ preserve: false })}
             onEscFocus={focusActiveCell}
             onTabMove={onTab}
-            style={commonEditorStyle}
+            style={{ ...commonEditorStyle, ...contentEditableAlignStyle }}
             allowArrowNavigation={Boolean(options.keepEditingOnNavigate)}
             sanitizeInput={sanitizeNumberText}
           />
@@ -847,7 +860,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
             onCancel={() => cancel({ preserve: false })}
             onTabMove={onTab}
             onEscFocus={focusActiveCell}
-            style={commonEditorStyle}
+            style={{ ...commonEditorStyle, ...contentEditableAlignStyle }}
           />
         );
     }
@@ -1071,7 +1084,16 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     >
 
       {isEditing ? (
-        <div className={bodyStyles.editorWrap}>{editor}</div>
+        <div
+          className={[
+            bodyStyles.editorWrap,
+            meta?.editType === 'textarea' ? bodyStyles.editorWrapMultiline : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
+          {editor}
+        </div>
       ) : (
           <span 
             className={[

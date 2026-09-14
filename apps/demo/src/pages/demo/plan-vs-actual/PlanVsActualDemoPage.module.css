@@ -44,6 +44,13 @@
   overflow: hidden;
 }
 
+.grid :global(tfoot td) .planValue,
+.grid :global(tfoot td) .actualValue {
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
 .footerLabel {
   font-weight: 600;
 }
@@ -94,9 +101,31 @@
 }
 
 .planAmount {
-  align-items: flex-end;
-  padding-bottom: 2px;
+  align-items: center;
   font-weight: 600;
+}
+
+.planValue,
+.actualValue {
+  box-sizing: border-box;
+  width: 100%;
+  height: 22px;
+  margin: 0;
+  padding: 0 4px;
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: 2px;
+  background: var(--grid-cell-bg, #fff);
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.actualValue {
+  font-weight: 500;
 }
 
 .ratio,
