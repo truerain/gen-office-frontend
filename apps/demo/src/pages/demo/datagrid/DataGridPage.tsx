@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
-import { GenGrid, ModalEditor, MonthEditor } from '@gen-office/gen-grid';
+import { EditableFieldCell, GenGrid, ModalEditor, MonthEditor } from '@gen-office/gen-grid';
 import type { ModalEditorSelection } from '@gen-office/gen-grid';
 import styles from './DataGridPage.module.css';
+
 
 
 type Employee = {
@@ -68,6 +69,7 @@ function DataGridPage() {
         meta: {
           editable: true,
           editType: 'text',
+          renderCell: ({ value }) => <EditableFieldCell value={value} />,
         },
       },
       {
@@ -94,12 +96,13 @@ function DataGridPage() {
         header: 'Assignee',
         accessorKey: 'assigneeId',
         size: 220,
-        cell: ({ row }) => {
-          const { assigneeId, assigneeName } = row.original;
-          return assigneeId ? `${assigneeName} (${assigneeId})` : '';
-        },
         meta: {
           editable: true,
+          renderCell: ({ row }) => (
+            <EditableFieldCell>
+              {row.assigneeId ? `${row.assigneeName} (${row.assigneeId})` : ''}
+            </EditableFieldCell>
+          ),
           renderEditor: (editor) => (
             <ModalEditor<DemoRow, Employee>
               editor={editor}
@@ -169,6 +172,7 @@ function DataGridPage() {
         meta: {
           editable: true,
           editType: 'date',
+          renderCell: ({ value }) => <EditableFieldCell value={value} />,
         },
       },
     ],

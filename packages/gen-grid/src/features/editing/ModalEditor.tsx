@@ -6,6 +6,7 @@ import { ModalInput } from '@gen-office/ui';
 import type { ModalInputSelection } from '@gen-office/ui';
 import type { ModalInputListColumn } from '@gen-office/ui';
 import type { CellEditorRenderArgs } from './columnMeta';
+import inlineEditorChrome from './inlineEditorChrome.module.css';
 
 export type ModalEditorSelection<TData = unknown> = {
   value: string;
@@ -176,6 +177,9 @@ export function ModalEditor<TRow, TSelectionData = unknown>(
       {mode === 'single' ? (
         <ModalInput<TSelectionData>
           mode="single"
+          fullWidth
+          className={inlineEditorChrome.modalInputRoot}
+          inputClassName={inlineEditorChrome.compactInput}
           selectedItem={currentSelection}
           onSelectedItemChange={(selectedItem) => {
             const mappedValue = mapSingle(
@@ -216,6 +220,9 @@ export function ModalEditor<TRow, TSelectionData = unknown>(
       ) : (
         <ModalInput<TSelectionData>
           mode="multi"
+          fullWidth
+          className={inlineEditorChrome.modalInputRoot}
+          inputClassName={inlineEditorChrome.compactInput}
           selectedItems={currentSelections}
           onCommit={(selectedItems) => {
             const nextItems = selectedItems as ModalEditorSelection<TSelectionData>[];

@@ -4,6 +4,20 @@
 
 ## 2026-09-14
 
+### GenGrid EditableFieldCell Active 셀 배경 가림 수정
+
+- EditableFieldCell 고정 흰 배경이 Active 셀 하이라이트를 가리던 문제를 transparent로 고쳤다.
+- 관련 파일: packages/gen-grid/src/features/display/EditableFieldCell.module.css\n
+### GenGrid 인라인 편집 input 높이 overflow 수정
+
+- 편집 모드 input이 셀 높이를 넘치던 문제를 22px compact chrome으로 맞췄다.
+- 관련 파일: `packages/gen-grid/src/components/layout/GenGridCell.tsx`, `ModalEditor.tsx`, `GenGridBody.module.css`
+
+### GenGrid EditableFieldCell opt-in 표시 래퍼 추가
+
+- 편집 가능 셀에만 내부 border를 그리는 `EditableFieldCell`을 `@gen-office/gen-grid`에 추가하고 DataGrid Demo에 사용 예를 넣었다.
+- 관련 파일: `packages/gen-grid/src/features/display/EditableFieldCell.tsx`, `packages/gen-grid/src/index.ts`, `apps/demo/src/pages/demo/datagrid/DataGridPage.tsx`, `packages/gen-grid/docs/implementation-log.md`
+
 ### ModalEditor Partial 커밋 시 columnId 속성 표시
 
 - ModalEditor가 object 매핑값을 컬럼 속성으로 표시하고, 확정 시 Partial 전체를 commit하도록 바꿨다. DataGrid Demo는 assigneeId/assigneeName Partial 예시를 반영했다.

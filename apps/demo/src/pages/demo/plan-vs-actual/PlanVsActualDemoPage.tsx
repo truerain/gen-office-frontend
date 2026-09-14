@@ -176,7 +176,7 @@ export default function PlanVsActualDemoPage(_props: PageComponentProps) {
             }
             return { [columnId]: value } as Partial<PlanVsActualGridRow>;
           }}
-          onCellEdit={({ row, columnId, nextValue }) => {
+          onCellEdit={({ rowId, row, columnId, nextValue }) => {
             if (!isPlanField(columnId)) return [];
             const actualKey = actualField(monthKeyFromPlanField(columnId));
             const plan = isMonthAmountPair(nextValue) ? nextValue.plan : Number(nextValue) || 0;

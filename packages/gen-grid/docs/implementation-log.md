@@ -2,6 +2,22 @@
 
 ## 2026-09-14
 
+### EditableFieldCell 배경을 transparent로 변경
+
+- Active/hover/selected 셀 배경이 보이도록 고정 흰색(--grid-cell-bg) 대신 	ransparent를 사용한다.
+- 관련 파일: src/features/display/EditableFieldCell.module.css\n
+### 인라인 편집기 높이를 EditableFieldCell(22px)에 맞춤
+
+- 기본 에디터(`GenGridCell`)와 `ModalEditor`의 in-cell input 높이를 22px로 제한해 row height(예: 36px)를 넘치지 않게 했다.
+- `editorWrap`에 `max-height: 100%`, `overflow: hidden`을 추가했다.
+- 관련 파일: `src/components/layout/GenGridCell.tsx`, `GenGridBody.module.css`, `src/features/editing/ModalEditor.tsx`, `inlineEditorChrome.module.css`, `inlineEditorMetrics.ts`
+
+### EditableFieldCell opt-in 표시 래퍼 추가
+
+- 편집 가능 셀을 내부 border로 구분할 수 있는 `EditableFieldCell`을 추가했다. 컬럼 `meta.renderCell`에서만 opt-in 사용한다.
+- `disabled`면 chrome 없이 일반 텍스트로 렌더한다. DataGrid Demo의 title/assignee/updatedAt에 적용했다.
+- 관련 파일: `src/features/display/EditableFieldCell.tsx`, `EditableFieldCell.module.css`, `src/index.ts`, `apps/demo/src/pages/demo/datagrid/DataGridPage.tsx`
+
 ### ModalEditor Partial 커밋 시 columnId 속성 표시
 
 - `mapSelectedItemToValue`가 row Partial(object)을 반환해도 draft/표시는 `mapped[columnId]`만 사용하고, `commitValue`에는 Partial 전체를 넘긴다.

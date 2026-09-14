@@ -60,3 +60,8 @@ export type { PopupEditorSelection } from './features/editing/PopupEditor';
 export { ModalEditor } from './features/editing/ModalEditor';
 export type { ModalEditorSelection } from './features/editing/ModalEditor';
 export { MonthEditor } from './features/editing/MonthEditor';
+export { EditableFieldCell } from './features/display/EditableFieldCell';
+export type {
+  EditableFieldCellAlign,
+  EditableFieldCellProps,
+} from './features/display/EditableFieldCell';

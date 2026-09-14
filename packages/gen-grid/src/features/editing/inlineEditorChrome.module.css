@@ -1,0 +1,29 @@
+/* packages/gen-grid/src/features/editing/inlineEditorChrome.module.css
+ * Compact in-cell editor chrome aligned with EditableFieldCell display height.
+ */
+
+.modalInputRoot {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  height: 22px;
+  max-height: 100%;
+}
+
+.modalInputRoot button {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.compactInput {
+  height: 22px !important;
+  min-height: 22px !important;
+  max-height: 22px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+  font-size: inherit !important;
+  line-height: 1.2 !important;
+}
