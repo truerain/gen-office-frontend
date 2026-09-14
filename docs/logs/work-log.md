@@ -4,6 +4,11 @@
 
 ## 2026-09-14
 
+### ModalEditor Partial 커밋 시 columnId 속성 표시
+
+- ModalEditor가 object 매핑값을 컬럼 속성으로 표시하고, 확정 시 Partial 전체를 commit하도록 바꿨다. DataGrid Demo는 assigneeId/assigneeName Partial 예시를 반영했다.
+- 관련 파일: `packages/gen-grid/src/features/editing/ModalEditor.tsx`, `apps/demo/src/pages/demo/datagrid/DataGridPage.tsx`, `packages/gen-grid/docs/implementation-log.md`
+
 ### 편집 셀 editorWrap 왼쪽 border 가림 수정
 
 - 편집 래퍼에 셀과 같은 가로 패딩을 적용해 ModalInput 왼쪽 border가 이전 셀에 가려지지 않게 했다.

@@ -2,6 +2,13 @@
 
 ## 2026-09-14
 
+### ModalEditor Partial 커밋 시 columnId 속성 표시
+
+- `mapSelectedItemToValue`가 row Partial(object)을 반환해도 draft/표시는 `mapped[columnId]`만 사용하고, `commitValue`에는 Partial 전체를 넘긴다.
+- Tab 확정 시에도 마지막 mapped Partial을 `commitValue`로 보내 형제 필드가 빠지지 않게 했다.
+- `resolveCurrentSelection`도 object value면 columnId 속성으로 code를 추출한다.
+- 관련 파일: `src/features/editing/ModalEditor.tsx`, `apps/demo/src/pages/demo/datagrid/DataGridPage.tsx`
+
 ### 편집 셀 editorWrap 왼쪽 border 가림 수정
 
 - `.editorWrap`에 셀과 동일한 가로 패딩(`padding: 0 var(--grid-cell-padding-x)`)을 넣어 ModalInput 등 에디터 왼쪽 border가 이전 셀 `border-right`에 가려지지 않게 했다.

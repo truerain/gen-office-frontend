@@ -132,7 +132,15 @@ function DataGridPage() {
                   render: (item) => item.data?.dept ?? '-',
                 },
               ]}
-              mapSelectedItemToValue={(selectedItem) => selectedItem?.value ?? ''}
+              mapSelectedItemToValue={(selectedItem) => {
+                if (!selectedItem?.data) {
+                  return { assigneeId: '', assigneeName: '' } satisfies Partial<DemoRow>;
+                }
+                return {
+                  assigneeId: selectedItem.data.id,
+                  assigneeName: selectedItem.data.name,
+                } satisfies Partial<DemoRow>;
+              }}
               confirmOnDoubleClick={true}
               clearable={true}
               confirmLabel="Apply"
@@ -189,13 +197,21 @@ function DataGridPage() {
           <GenGrid<DemoRow>
             data={rows}
             onDataChange={(nextRows) => {
+              // Plain GenGrid stores commitValue on the edited column. When ModalEditor
+              // commits a Partial patch, flatten it onto assigneeId/assigneeName here
+              // (GenGridCrud would do the same via makePatch).
               setRows(
                 nextRows.map((row) => {
-                  const employee = employees.find((item) => item.id === row.assigneeId);
-                  return {
-                    ...row,
-                    assigneeName: employee?.name ?? '',
-                  };
+                  const assigneeField = row.assigneeId as unknown;
+                  if (assigneeField && typeof assigneeField === 'object') {
+                    const patch = assigneeField as Partial<DemoRow>;
+                    return {
+                      ...row,
+                      assigneeId: String(patch.assigneeId ?? ''),
+                      assigneeName: String(patch.assigneeName ?? ''),
+                    };
+                  }
+                  return row;
                 })
               );
             }}

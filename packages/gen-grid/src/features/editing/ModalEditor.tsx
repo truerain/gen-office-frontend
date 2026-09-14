@@ -1,4 +1,7 @@
-import type * as React from 'react';
+// packages/gen-grid/src/features/editing/ModalEditor.tsx
+// Modal lookup editor that maps ModalInput selection into GenGrid cell commit values.
+
+import * as React from 'react';
 import { ModalInput } from '@gen-office/ui';
 import type { ModalInputSelection } from '@gen-office/ui';
 import type { ModalInputListColumn } from '@gen-office/ui';
@@ -16,7 +19,7 @@ export type ModalEditorSelection<TData = unknown> = {
 type ModalEditorBaseProps<TRow, TSelectionData = unknown> = {
   editor: Pick<
     CellEditorRenderArgs<TRow>,
-    'value' | 'row' | 'onChange' | 'onCommit' | 'onCancel' | 'onTab' | 'commitValue'
+    'value' | 'row' | 'columnId' | 'onChange' | 'onCommit' | 'onCancel' | 'onTab' | 'commitValue'
   >;
   title?: string;
   placeholder?: string;
@@ -56,13 +59,36 @@ type ModalEditorProps<TRow, TSelectionData = unknown> =
   | SingleModalEditorProps<TRow, TSelectionData>
   | MultiModalEditorProps<TRow, TSelectionData>;
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return value != null && typeof value === 'object' && !Array.isArray(value);
+}
+
+/** When mapped commit value is a row patch, expose only the edited column for draft/display. */
+function draftValueFromMapped(mapped: unknown, columnId: string): unknown {
+  if (isPlainObject(mapped) && columnId in mapped) {
+    return mapped[columnId];
+  }
+  return mapped;
+}
+
+function scalarFromEditorValue(value: unknown, columnId: string): string {
+  if (isPlainObject(value) && columnId in value) {
+    return String(value[columnId] ?? '').trim();
+  }
+  if (isPlainObject(value)) {
+    return '';
+  }
+  return String(value ?? '').trim();
+}
+
 function resolveCurrentSelection<TRow, TSelectionData>(args: {
   value: unknown;
   row: TRow;
+  columnId: string;
   items?: ModalEditorSelection<TSelectionData>[];
   getDisplayLabel?: (args: { value: unknown; row: TRow }) => string | undefined;
 }): ModalEditorSelection<TSelectionData> | null {
-  const resolvedValue = String(args.value ?? '').trim();
+  const resolvedValue = scalarFromEditorValue(args.value, args.columnId);
   if (!resolvedValue) return null;
 
   const matched =
@@ -71,7 +97,12 @@ function resolveCurrentSelection<TRow, TSelectionData>(args: {
 
   // PopupInput-style fallback: keep showing the current cell value when items has no match
   // (e.g. fetchItems-only, stale option list, or value not in local items).
-  const fallbackLabel = String(args.getDisplayLabel?.({ value: args.value, row: args.row }) ?? '').trim();
+  const labelSource = isPlainObject(args.value)
+    ? scalarFromEditorValue(args.value, args.columnId)
+    : args.value;
+  const fallbackLabel = String(
+    args.getDisplayLabel?.({ value: labelSource, row: args.row }) ?? ''
+  ).trim();
   return {
     value: resolvedValue,
     label: fallbackLabel || resolvedValue,
@@ -100,9 +131,20 @@ export function ModalEditor<TRow, TSelectionData = unknown>(
     confirmLabel,
     cancelLabel,
   } = props;
+  const columnId = editor.columnId;
+  const lastMappedRef = React.useRef<unknown>(undefined);
+
+  const mapSingle = (selectedItem: ModalEditorSelection<TSelectionData> | null) => {
+    if ('mapSelectedItemToValue' in props && props.mapSelectedItemToValue) {
+      return props.mapSelectedItemToValue(selectedItem);
+    }
+    return selectedItem?.value ?? '';
+  };
+
   const currentSelection = resolveCurrentSelection({
     value: editor.value,
     row: editor.row,
+    columnId,
     items,
     getDisplayLabel,
   });
@@ -119,7 +161,12 @@ export function ModalEditor<TRow, TSelectionData = unknown>(
     if (event.key === 'Tab') {
       event.preventDefault();
       event.stopPropagation();
-      editor.onCommit();
+      // Prefer last Partial mapped from selection so sibling fields are not dropped.
+      if (lastMappedRef.current !== undefined) {
+        editor.commitValue(lastMappedRef.current);
+      } else {
+        editor.onCommit();
+      }
       editor.onTab?.(event.shiftKey ? -1 : 1);
     }
   };
@@ -131,23 +178,19 @@ export function ModalEditor<TRow, TSelectionData = unknown>(
           mode="single"
           selectedItem={currentSelection}
           onSelectedItemChange={(selectedItem) => {
-            const mappedValue =
-              'mapSelectedItemToValue' in props && props.mapSelectedItemToValue
-                ? props.mapSelectedItemToValue(
-                    selectedItem as ModalEditorSelection<TSelectionData> | null
-                  )
-                : (selectedItem?.value ?? '');
-            editor.onChange(mappedValue);
+            const mappedValue = mapSingle(
+              selectedItem as ModalEditorSelection<TSelectionData> | null
+            );
+            lastMappedRef.current = mappedValue;
+            editor.onChange(draftValueFromMapped(mappedValue, columnId));
           }}
           onCommit={(selectedItem) => {
-            const mappedValue =
-              'mapSelectedItemToValue' in props && props.mapSelectedItemToValue
-                ? props.mapSelectedItemToValue(
-                    selectedItem as ModalEditorSelection<TSelectionData> | null
-                  )
-                : (selectedItem?.value ?? '');
+            const mappedValue = mapSingle(
+              selectedItem as ModalEditorSelection<TSelectionData> | null
+            );
+            lastMappedRef.current = mappedValue;
             if (!selectedItem) {
-              editor.onChange(mappedValue);
+              editor.onChange(draftValueFromMapped(mappedValue, columnId));
               return;
             }
             editor.commitValue(mappedValue);
@@ -180,6 +223,7 @@ export function ModalEditor<TRow, TSelectionData = unknown>(
               'mapSelectedItemsToValue' in props && props.mapSelectedItemsToValue
                 ? props.mapSelectedItemsToValue(nextItems)
                 : nextItems.map((item) => item.value);
+            lastMappedRef.current = mappedValue;
             editor.commitValue(mappedValue);
           }}
           title={title}
