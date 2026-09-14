@@ -41,6 +41,15 @@
 - `PlanMonthStack`의 `planAmount`에 `PlanMonthEditor`의 input과 동일한 높이(22px), 패딩, 라운드(2px) 및 border를 갖는 `.planValue` 스타일을 적용해 평상시에도 편집 가능 영역임을 표시하고 에디터 전환 시 레이아웃 일관성을 맞췄다.
 - 관련 파일: `apps/demo/src/pages/demo/plan-vs-actual/PlanMonthStack.tsx`, `PlanVsActualDemoPage.module.css`
 
+## 2026-08-28
+
+### GenGridCrud ActionBar renderTotalRows 커스텀 렌더러 추가
+
+- ActionBar의 TotalRows 영역을 커스텀 표현할 수 있도록 `CrudActionBarOptions.renderTotalRows` 함수형 API를 추가했다.
+- `{ count, totalRowCount, state }` 컨텍스트를 받아 행 필터/집계 결과나 커스텀 ReactNode를 표시할 수 있다.
+- 관련 파일: `packages/gen-grid-crud/src/GenGridCrud.types.ts`, `packages/gen-grid-crud/src/components/CrudActionBar.tsx`, `packages/gen-grid-crud/src/GenGridCrud.tsx`, `packages/gen-grid-crud/src/index.ts`, `packages/gen-grid-crud/docs/implementation-log.md`
+
+
 ## 2026-08-26
 
 ### Radix Dialog Missing Description 경고 수정

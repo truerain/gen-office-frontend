@@ -243,6 +243,10 @@ export default function CrudActionControlsDemoPage(_props: PageComponentProps) {
               position: 'top',
               defaultStyle: 'icon',
               includeBuiltIns: ['excel', 'columnReorder'],
+              renderTotalRows: ({ count, state }) => {
+                const positiveCount = state.viewData.filter((r) => r.amount > 0).length;
+                return `총 ${count}건 / 양수 ${positiveCount}건`;
+              },
               customActions: [
                 {
                   key: 'exclude-zero',

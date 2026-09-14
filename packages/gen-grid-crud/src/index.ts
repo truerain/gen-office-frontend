@@ -22,6 +22,7 @@ export type {
   GenGridCrudProps,
   CrudActionApi,
   CrudActionBarOptions,
+  CrudTotalRowsContext,
   CrudActionButtonStyle,
   CrudActionControlStyle,
   CrudActionStyle,

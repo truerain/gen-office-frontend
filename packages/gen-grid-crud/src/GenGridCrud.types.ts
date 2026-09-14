@@ -220,6 +220,15 @@ export type CrudActionItem<TData> =
   | CrudActionComboItem<TData>
   | CrudActionCheckboxItem<TData>;
 
+export type CrudTotalRowsContext<TData> = {
+  /** Count of rows currently visible in the grid (state.viewData.length) */
+  count: number;
+  /** Total row count when using server-side pagination (gridProps.totalRowCount) */
+  totalRowCount?: number;
+  /** Current grid CRUD UI state (viewData, baseData, changes, rowSelection, etc.) */
+  state: CrudUiState<TData>;
+};
+
 export type CrudActionBarOptions<TData> = {
   enabled?: boolean;
   position?: 'top' | 'bottom' | 'both';
@@ -227,6 +236,8 @@ export type CrudActionBarOptions<TData> = {
   widthMode?: 'container' | 'grid';
   /** show total rows text in action bar */
   showTotalRows?: boolean;
+  /** Custom renderer for TotalRows section */
+  renderTotalRows?: (ctx: CrudTotalRowsContext<TData>) => React.ReactNode;
   defaultStyle?: CrudActionButtonStyle;
   includeBuiltIns?: readonly CrudBuiltInActionKey[];
   customActions?: readonly CrudActionItem<TData>[];
