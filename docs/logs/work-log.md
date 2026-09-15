@@ -4,6 +4,11 @@
 
 ## 2026-09-15
 
+### GenGrid EditableFieldCell multiline 추가
+
+- textarea 컬럼에서 EditableFieldCell이 위로 붙던 문제를 `multiline` prop으로 해결했다.
+- 관련 파일: `packages/gen-grid/src/features/display/EditableFieldCell.tsx`, `GenGridBody.module.css`
+
 ### GenGrid EditableFieldCell 높이를 rowHeight에 연동
 
 - 고정 22px 대신 `--gen-grid-row-height` 기반 `--gen-grid-inline-field-height`로 EditableFieldCell과 인라인 에디터 높이를 맞췄다.

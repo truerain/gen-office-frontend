@@ -10,7 +10,7 @@
   max-height: 100%;
   margin: 0;
   padding: 0 4px;
-  border: 1px solid color-mix(in srgb, var(--color-border, #393a3b) 575%, black);
+  border: 1px solid color-mix(in srgb, var(--color-border, #393a3b) 75%, black);
   border-radius: 4px;
   /* Transparent so active/hover/selected td background shows through. */
   background: transparent;
@@ -22,6 +22,20 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.multiline {
+  /* Fill textarea cells (vertical-align: top) instead of a single-line strip at the top. */
+  height: 100%;
+  min-height: var(--gen-grid-inline-field-height, calc(var(--gen-grid-row-height, 36px) - 14px));
+  align-items: flex-start;
+  align-content: flex-start;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  text-overflow: clip;
+  overflow: auto;
 }
 
 .alignLeft {
@@ -45,4 +59,9 @@
   padding: 0;
   height: auto;
   min-height: var(--gen-grid-inline-field-height, calc(var(--gen-grid-row-height, 36px) - 14px));
+}
+
+.disabled.multiline {
+  height: 100%;
+  overflow: auto;
 }

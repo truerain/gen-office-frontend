@@ -2,6 +2,12 @@
 
 ## 2026-09-15
 
+### EditableFieldCell multiline 지원
+
+- `multiline` prop으로 textarea 셀에서 필드를 셀 높이에 맞게 채우고 `pre-wrap` + top 정렬로 표시한다.
+- textarea td의 display span에 `height: 100%`를 주어 fill이 동작하게 했다.
+- 관련 파일: `EditableFieldCell.tsx`, `EditableFieldCell.module.css`, `GenGridBody.module.css`
+
 ### EditableFieldCell / 인라인 에디터 높이를 rowHeight에 연동
 
 - `--gen-grid-inline-field-height: calc(var(--gen-grid-row-height) - 14px)`를 GenGrid root에 두고 표시·편집 chrome이 이를 쓰도록 했다.

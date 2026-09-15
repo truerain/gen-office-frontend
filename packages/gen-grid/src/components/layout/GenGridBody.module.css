@@ -29,6 +29,14 @@
   vertical-align: top;
 }
 
+/* Let multiline EditableFieldCell fill the textarea cell height. */
+.td.textareaCell > span {
+  display: block;
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 0;
+}
+
 .td:last-child {
   border-right: none;
 }
