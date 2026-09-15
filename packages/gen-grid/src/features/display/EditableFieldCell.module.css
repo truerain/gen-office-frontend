@@ -10,8 +10,8 @@
   max-height: 100%;
   margin: 0;
   padding: 0 4px;
-  border: 1px solid var(--color-border, #d1d5db);
-  border-radius: 2px;
+  border: 1px solid color-mix(in srgb, var(--color-border, #393a3b) 575%, black);
+  border-radius: 4px;
   /* Transparent so active/hover/selected td background shows through. */
   background: transparent;
   color: inherit;
