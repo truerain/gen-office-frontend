@@ -65,3 +65,8 @@ export type {
   EditableFieldCellAlign,
   EditableFieldCellProps,
 } from './features/display/EditableFieldCell';
+export { EditableTextareaCell } from './features/display/EditableTextareaCell';
+export type {
+  EditableTextareaCellAlign,
+  EditableTextareaCellProps,
+} from './features/display/EditableTextareaCell';

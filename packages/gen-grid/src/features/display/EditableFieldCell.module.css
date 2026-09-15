@@ -1,5 +1,5 @@
 /* packages/gen-grid/src/features/display/EditableFieldCell.module.css
- * Inset field chrome for opt-in editable display cells.
+ * Inset field chrome for opt-in editable single-line display cells.
  */
 
 .field {
@@ -24,20 +24,6 @@
   white-space: nowrap;
 }
 
-.multiline {
-  /* Fill textarea cells (vertical-align: top) instead of a single-line strip at the top. */
-  height: 100%;
-  min-height: var(--gen-grid-inline-field-height, calc(var(--gen-grid-row-height, 36px) - 14px));
-  align-items: flex-start;
-  align-content: flex-start;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  white-space: pre-wrap;
-  word-break: break-word;
-  text-overflow: clip;
-  overflow: auto;
-}
-
 .alignLeft {
   justify-content: flex-start;
   text-align: left;
@@ -59,9 +45,4 @@
   padding: 0;
   height: auto;
   min-height: var(--gen-grid-inline-field-height, calc(var(--gen-grid-row-height, 36px) - 14px));
-}
-
-.disabled.multiline {
-  height: 100%;
-  overflow: auto;
 }

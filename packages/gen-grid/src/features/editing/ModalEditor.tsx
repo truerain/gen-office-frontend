@@ -173,7 +173,7 @@ export function ModalEditor<TRow, TSelectionData = unknown>(
   };
 
   return (
-    <div onKeyDown={handleKeyDown}>
+    <div className={inlineEditorChrome.root} onKeyDown={handleKeyDown}>
       {mode === 'single' ? (
         <ModalInput<TSelectionData>
           mode="single"

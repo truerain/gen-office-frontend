@@ -2,6 +2,12 @@
  * Compact in-cell editor chrome aligned with EditableFieldCell (--gen-grid-inline-field-height).
  */
 
+.root {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
 .modalInputRoot {
   width: 100%;
   min-width: 0;

@@ -296,6 +296,13 @@ export function useCellEditing<TData>(args: {
           }
         },
         onKeyDown: (e: any) => {
+          // Overlay editors (Dialog/Popover portals) bubble through the React tree into the cell.
+          // Ignore those keys so Enter in a textarea does not start cell editing / unmount the overlay.
+          const target = e.target as HTMLElement | null;
+          if (target?.closest?.('[data-gen-grid-editor-overlay="true"]')) {
+            return;
+          }
+
           // 편집 중이면 Esc로 취소 (Enter는 editor에서 commit 예정)
           if (isEditing) {
             if (!keepEditingOnNavigate && isNavigationKey(e.key)) {

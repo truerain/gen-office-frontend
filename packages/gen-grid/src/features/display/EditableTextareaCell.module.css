@@ -1,0 +1,176 @@
+/* packages/gen-grid/src/features/display/EditableTextareaCell.module.css
+ * Multiline preview: chrome uses the same inset height as EditableFieldCell;
+ * content is line-clamped inside.
+ */
+
+.root {
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  max-height: var(--gen-grid-row-height, 36px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.rootExpandable:hover .chrome,
+.rootExpandable:focus-within .chrome {
+  padding-right: 22px;
+}
+
+.chrome {
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  height: var(--gen-grid-inline-field-height, calc(var(--gen-grid-row-height, 36px) - 10px));
+  max-height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 2px 4px;
+  border: 1px solid color-mix(in srgb, var(--color-border, #393a3b) 75%, black);
+  border-radius: 4px;
+  background: transparent;
+  overflow: hidden;
+  transition: padding-right 0.12s ease;
+}
+
+.content {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  max-height: 100%;
+  margin: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  line-height: var(--editable-textarea-line-height, 1.35);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--editable-textarea-line-clamp, 3);
+  line-clamp: var(--editable-textarea-line-clamp, 3);
+  white-space: pre-wrap;
+  word-break: break-word;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.alignLeft {
+  text-align: left;
+}
+
+.alignCenter {
+  text-align: center;
+}
+
+.alignRight {
+  text-align: right;
+}
+
+.disabled {
+  border: none;
+  background: transparent;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.expandButton {
+  all: unset;
+  box-sizing: border-box;
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  color: var(--color-fg-secondary, #6b7280);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease, color 0.12s ease, background 0.12s ease;
+}
+
+.rootExpandable:hover .expandButton,
+.rootExpandable:focus-within .expandButton {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.expandButton:hover {
+  background: color-mix(in srgb, var(--color-border, #d1d5db) 35%, transparent);
+  color: var(--color-fg-primary, #111827);
+}
+
+.expandButton:focus-visible {
+  outline: 2px solid var(--grid-selection-border, #2563eb);
+  outline-offset: 1px;
+}
+
+.dialogContent {
+  width: min(36rem, calc(100vw - 2rem));
+  max-width: min(36rem, calc(100vw - 2rem));
+}
+
+.dialogContent > button {
+  top: 0.35rem;
+  right: 0.5rem;
+}
+
+.dialogBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 0;
+}
+
+.readView {
+  box-sizing: border-box;
+  margin: 0;
+  max-height: min(50vh, 24rem);
+  overflow: auto;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: 0.375rem;
+  background: var(--color-bg-secondary, #f9fafb);
+  white-space: pre-wrap;
+  word-break: break-word;
+  font: inherit;
+}
+
+.editor {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 12rem;
+  max-height: min(50vh, 24rem);
+  margin: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: 0.375rem;
+  background: var(--color-bg-primary, #fff);
+  color: inherit;
+  font: inherit;
+  line-height: 1.4;
+  resize: vertical;
+}
+
+.editor:focus {
+  outline: 2px solid var(--grid-selection-border, #2563eb);
+  outline-offset: 1px;
+}
+
+.dialogFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}

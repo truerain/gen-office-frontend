@@ -1,6 +1,85 @@
 # GenGrid 구현 로그
 
+## 2026-09-16
+
+### ModalEditor 인라인 width
+
+- .root { width:100%; min-width:0 }를 ModalEditor wrapper에 적용해 flex shrink를 막았다.
+- 관련 파일: ModalEditor.tsx, inlineEditorChrome.module.css
+
+### EditableTextareaCell chrome inset 높이
+
+- .chrome height를 --gen-grid-inline-field-height로 두고 root에서 세로 가운데 정렬. expand 버튼은 chrome 기준 absolute.
+- 관련 파일: EditableTextareaCell.module.css, EditableTextareaCell.tsx
+
+### EditableTextareaCell chrome/content 분리
+
+- .chrome(rowHeight fill + border + center) / .content(lineClamp)로 역할을 나눴다.
+- 관련 파일: EditableTextareaCell.tsx, EditableTextareaCell.module.css
+
+### textareaCell absolute fill
+
+- .td.textareaCell > span을 absolute inset:0으로 두고 EditableTextareaCell max-height를 --gen-grid-row-height로 캡해 행 높이 고정.
+- 관련 파일: GenGridBody.module.css, EditableTextareaCell.module.css
+
+### EditableTextareaCell 분리 + rowHeight 고정
+
+- EditableTextareaCell로 lineClamp/expand/Dialog를 옮기고 height/max-height: 100% + overflow clamp로 테이블 행이 커지지 않게 했다. EditableFieldCell은 단줄 chrome만 유지.
+- 관련 파일: EditableTextareaCell.tsx, EditableFieldCell.tsx, GenGridBody.module.css
+
+### EditableFieldCell disabled+multiline clamp
+
+- .disabled min-height가 .multiline max-height보다 커지던 문제를 .disabled:not(.multiline) / .disabled.multiline로 나눴다.
+- 관련 파일: EditableFieldCell.module.css
+
+### EditableFieldCell expand Dialog Close 위치
+
+- compact header 기준으로 Close(X) top을 0.35rem으로 올려 제목과 맞췄다.
+- 관련 파일: EditableFieldCell.module.css
+
 ## 2026-09-15
+
+### EditableFieldCell multiline 세로 가운데
+
+- lineClamp로 높이가 줄어든 multiline 필드가 위로 붙던 문제를 .rootMultiline align-items: center로 맞췄다.
+- 관련 파일: EditableFieldCell.module.css
+
+
+### EditableFieldCell lineClamp 높이
+
+- .multiline의 height: 100%를 제거하고 max-height: lineClamp × 1.35em + padding으로 잘린 줄이 보이지 않게 했다.
+- 관련 파일: EditableFieldCell.module.css
+
+
+### EditableFieldCell expand hover 표시
+
+- expand 버튼을 기본 숨김(opacity 0)하고 .rootExpandable:hover / :focus-within에서만 표시한다. padding-right도 동일 조건에서만 적용한다.
+- 관련 파일: EditableFieldCell.module.css
+
+
+### EditableFieldCell expand 버튼 overlay
+
+- expand 버튼을 flex 옆자리가 아니라 root absolute overlay로 배치하고, expandable field에 padding-right: 22px를 줬다.
+- 관련 파일: EditableFieldCell.module.css
+
+
+### overlay Enter → startEditing 재수정
+
+- Dialog textarea Enter가 셀로 버블되어 편집 시작·언마운트되던 문제에 data-gen-grid-editor-overlay closest 가드와 textarea stopPropagation을 추가했다. dist 재빌드 필요.
+- 관련 파일: EditableFieldCell.tsx, useCellEditing.ts
+
+
+### EditableFieldCell Dialog Enter 전파 차단
+
+- expand Dialog textarea에서 Enter가 React 포털 버블로 셀 startEditing을 트리거해 Dialog가 닫히던 문제를 DialogContent onKeyDown stopPropagation으로 수정했다.
+- 관련 파일: EditableFieldCell.tsx
+
+
+### EditableFieldCell multiline expand Dialog
+
+- multiline 표시를 line-clamp ellipsis로 바꾸고, expand 버튼으로 Dialog에서 전체 조회/편집(`writable` + `onCommit`)할 수 있게 했다.
+- DataGrid Demo에 Notes(textarea) 컬럼 예시를 추가했다.
+- 관련 파일: `EditableFieldCell.tsx`, `EditableFieldCell.module.css`, `apps/demo/.../DataGridPage.tsx`
 
 ### EditableFieldCell multiline 지원
 

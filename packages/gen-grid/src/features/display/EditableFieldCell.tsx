@@ -1,5 +1,5 @@
 // packages/gen-grid/src/features/display/EditableFieldCell.tsx
-// Opt-in display wrapper that draws an inset border for editable-looking cells.
+// Opt-in display wrapper that draws an inset border for editable-looking single-line cells.
 
 import type * as React from 'react';
 import styles from './EditableFieldCell.module.css';
@@ -13,11 +13,6 @@ export type EditableFieldCellProps = {
   className?: string;
   /** When true, render plain text without field chrome. */
   disabled?: boolean;
-  /**
-   * Fill the cell for textarea-style columns (top-aligned td).
-   * Uses pre-wrap and top content alignment instead of single-line chrome height.
-   */
-  multiline?: boolean;
 };
 
 function formatDisplayValue(value: unknown): string {
@@ -29,27 +24,14 @@ function formatDisplayValue(value: unknown): string {
 }
 
 export function EditableFieldCell(props: EditableFieldCellProps) {
-  const {
-    children,
-    value,
-    align = 'left',
-    className,
-    disabled = false,
-    multiline = false,
-  } = props;
+  const { children, value, align = 'left', className, disabled = false } = props;
   const content = children ?? formatDisplayValue(value);
   const alignClass =
     align === 'right' ? styles.alignRight : align === 'center' ? styles.alignCenter : styles.alignLeft;
 
   return (
     <div
-      className={[
-        styles.field,
-        alignClass,
-        multiline ? styles.multiline : '',
-        disabled ? styles.disabled : '',
-        className,
-      ]
+      className={[styles.field, alignClass, disabled ? styles.disabled : '', className]
         .filter(Boolean)
         .join(' ')}
     >

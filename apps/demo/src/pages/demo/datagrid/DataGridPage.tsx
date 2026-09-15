@@ -1,6 +1,12 @@
 import { useMemo, useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
-import { EditableFieldCell, GenGrid, ModalEditor, MonthEditor } from '@gen-office/gen-grid';
+import {
+  EditableFieldCell,
+  EditableTextareaCell,
+  GenGrid,
+  ModalEditor,
+  MonthEditor,
+} from '@gen-office/gen-grid';
 import type { ModalEditorSelection } from '@gen-office/gen-grid';
 import styles from './DataGridPage.module.css';
 
@@ -16,6 +22,7 @@ type Employee = {
 type DemoRow = {
   id: string;
   title: string;
+  notes: string;
   assigneeId: string;
   assigneeName: string;
   status: '' | 'Open' | 'In Progress' | 'Done';
@@ -32,10 +39,46 @@ const employees: Employee[] = [
 ];
 
 const initialRows: DemoRow[] = [
-  { id: 'T-1001', title: 'Monthly closing checklist', assigneeId: 'E1001', assigneeName: 'Olivia Harper', status: '', plannedMonth: '', updatedAt: '2026-04-01' },
-  { id: 'T-1002', title: 'Prepare launch memo', assigneeId: 'E1002', assigneeName: 'Noah Kim', status: 'In Progress', plannedMonth: '2026-05', updatedAt: '2026-04-03' },
-  { id: 'T-1003', title: 'Onboarding workflow review', assigneeId: 'E1003', assigneeName: 'Emma Park', status: 'Done', plannedMonth: '2026-03', updatedAt: '2026-03-29' },
-  { id: 'T-1004', title: 'Grid editor QA', assigneeId: 'E1004', assigneeName: 'Liam Choi', status: 'Open', plannedMonth: '2026-06', updatedAt: '2026-04-05' },
+  {
+    id: 'T-1001',
+    title: 'Monthly closing checklist',
+    notes: 'Prepare closing checklist.\nConfirm journal entries.\nShare draft with Finance.',
+    assigneeId: 'E1001',
+    assigneeName: 'Olivia Harper',
+    status: '',
+    plannedMonth: '',
+    updatedAt: '2026-04-01',
+  },
+  {
+    id: 'T-1002',
+    title: 'Prepare launch memo',
+    notes: 'Draft launch memo for sales kickoff and collect review comments from stakeholders.',
+    assigneeId: 'E1002',
+    assigneeName: 'Noah Kim',
+    status: 'In Progress',
+    plannedMonth: '2026-05',
+    updatedAt: '2026-04-03',
+  },
+  {
+    id: 'T-1003',
+    title: 'Onboarding workflow review',
+    notes: '',
+    assigneeId: 'E1003',
+    assigneeName: 'Emma Park',
+    status: 'Done',
+    plannedMonth: '2026-03',
+    updatedAt: '2026-03-29',
+  },
+  {
+    id: 'T-1004',
+    title: 'Grid editor QA',
+    notes: 'Line 1\nLine 2\nLine 3\nLine 4 — expand to view full notes.',
+    assigneeId: 'E1004',
+    assigneeName: 'Liam Choi',
+    status: 'Open',
+    plannedMonth: '2026-06',
+    updatedAt: '2026-04-05',
+  },
 ];
 
 const assigneeOptions: ModalEditorSelection<Employee>[] = employees.map((employee) => ({
@@ -69,7 +112,26 @@ function DataGridPage() {
         meta: {
           editable: true,
           editType: 'text',
-          renderCell: ({ value }) => <EditableFieldCell value={value} />,
+          renderCell: ({ value }) => <EditableFieldCell value={value} disabled={true} />,
+        },
+      },
+      {
+        id: 'notes',
+        header: 'Notes',
+        accessorKey: 'notes',
+        size: 260,
+        meta: {
+          editable: false,
+          editType: 'textarea',
+          renderCell: ({ value, commitValue }) => (
+            <EditableTextareaCell
+              value={value}
+              lineClamp={2}
+              writable={true}
+              title="Notes"
+              onCommit={commitValue}
+            />
+          ),
         },
       },
       {
@@ -230,7 +292,7 @@ function DataGridPage() {
             columns={columns}
             getRowId={(row) => row.id}
             dataVersion={rows.length}
-            rowHeight={36}
+            rowHeight={45}
             enablePinning={true}
             enableColumnSizing={true} 
             enableVirtualization={true}
