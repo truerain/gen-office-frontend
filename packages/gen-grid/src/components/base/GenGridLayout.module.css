@@ -12,6 +12,8 @@
   /* component sizing (theme 아님) */
   --gen-grid-header-height: 40px;
   --gen-grid-row-height: 36px;
+  /* EditableFieldCell / inline editor height: inset within the row */
+  --gen-grid-inline-field-height: calc(var(--gen-grid-row-height) - 14px);
 }
 
 /* 스크롤 컨테이너가 border/radius를 "유일하게" 책임지게 한다. */

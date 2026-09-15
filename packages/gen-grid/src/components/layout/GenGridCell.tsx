@@ -20,7 +20,7 @@ import { SELECTION_COLUMN_ID } from '../../features/row-selection/rowSelection';
 import { ROW_NUMBER_COLUMN_ID } from '../../features/row-number/useRowNumberColumn';
 import { useGenGridContext } from '../../core/context/GenGridProvider';
 import { focusGridCell } from '../../features/active-cell/cellDom';
-import { GEN_GRID_INLINE_EDITOR_HEIGHT_PX } from '../../features/editing/inlineEditorMetrics';
+import { GEN_GRID_INLINE_FIELD_HEIGHT_VAR } from '../../features/editing/inlineEditorMetrics';
 
 export type GenGridCellProps<TData> = {
   cell: Cell<TData, unknown>;
@@ -680,7 +680,7 @@ export function GenGridCell<TData>(props: GenGridCellProps<TData>) {
     };
     const commonEditorStyle: React.CSSProperties = {
       width: '100%',
-      height: GEN_GRID_INLINE_EDITOR_HEIGHT_PX,
+      height: GEN_GRID_INLINE_FIELD_HEIGHT_VAR,
       maxHeight: '100%',
       minHeight: 0,
       alignSelf: 'center',

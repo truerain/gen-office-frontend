@@ -2,12 +2,20 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
-## 2026-09-14
+## 2026-09-15
+
+### GenGrid EditableFieldCell 높이를 rowHeight에 연동
+
+- 고정 22px 대신 `--gen-grid-row-height` 기반 `--gen-grid-inline-field-height`로 EditableFieldCell과 인라인 에디터 높이를 맞췄다.
+- 관련 파일: `packages/gen-grid/src/components/base/GenGridLayout.module.css`, `EditableFieldCell.module.css`, `GenGridCell.tsx`
 
 ### GenGrid EditableFieldCell Active 셀 배경 가림 수정
 
 - EditableFieldCell 고정 흰 배경이 Active 셀 하이라이트를 가리던 문제를 transparent로 고쳤다.
-- 관련 파일: packages/gen-grid/src/features/display/EditableFieldCell.module.css\n
+- 관련 파일: `packages/gen-grid/src/features/display/EditableFieldCell.module.css`
+
+## 2026-09-14
+
 ### GenGrid 인라인 편집 input 높이 overflow 수정
 
 - 편집 모드 input이 셀 높이를 넘치던 문제를 22px compact chrome으로 맞췄다.

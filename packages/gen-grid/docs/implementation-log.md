@@ -1,11 +1,19 @@
 # GenGrid 구현 로그
 
-## 2026-09-14
+## 2026-09-15
+
+### EditableFieldCell / 인라인 에디터 높이를 rowHeight에 연동
+
+- `--gen-grid-inline-field-height: calc(var(--gen-grid-row-height) - 14px)`를 GenGrid root에 두고 표시·편집 chrome이 이를 쓰도록 했다.
+- 관련 파일: `GenGridLayout.module.css`, `EditableFieldCell.module.css`, `inlineEditorChrome.module.css`, `GenGridCell.tsx`, `inlineEditorMetrics.ts`
 
 ### EditableFieldCell 배경을 transparent로 변경
 
-- Active/hover/selected 셀 배경이 보이도록 고정 흰색(--grid-cell-bg) 대신 	ransparent를 사용한다.
-- 관련 파일: src/features/display/EditableFieldCell.module.css\n
+- Active/hover/selected 셀 배경이 보이도록 고정 흰색(`--grid-cell-bg`) 대신 `transparent`를 사용한다.
+- 관련 파일: `src/features/display/EditableFieldCell.module.css`
+
+## 2026-09-14
+
 ### 인라인 편집기 높이를 EditableFieldCell(22px)에 맞춤
 
 - 기본 에디터(`GenGridCell`)와 `ModalEditor`의 in-cell input 높이를 22px로 제한해 row height(예: 36px)를 넘치지 않게 했다.
