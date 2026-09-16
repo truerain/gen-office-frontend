@@ -1,5 +1,29 @@
 # UI 구현 로그
 
+## 2026-09-16
+
+### CustomModalInput render confirm
+
+- render context에 `confirm(next?)`를 추가해 Dialog 본문에서 즉시 확정(예: 행 더블클릭)할 수 있게 했다.
+- 관련 파일: CustomModalInput.tsx, CustomModalInput.types.ts
+
+### CustomModalInput modalWidth 추가
+
+- `modalWidth`를 SimpleDialog `initialWidth`(+ maxWidth)로 전달해 너비를 조절할 수 있게 했다.
+- 관련 파일: CustomModalInput.tsx, CustomModalInput.types.ts, SimpleDialog.tsx
+
+### CustomModalInput/SimpleDialog 본문 높이 보정
+
+- 고정 높이가 없을 때 SimpleDialog body의 `flex: 1 1 0`이 콘텐츠를 접히게 하던 문제를 수정했다.
+- CustomModalInput에 `modalHeight`(기본 360)를 두어 SimpleDialog `initialHeight`로 전달한다.
+- 관련 파일: SimpleDialog.tsx, CustomModalInput.tsx, CustomModalInput.types.ts, CustomModalInput.module.css
+
+### CustomModalInput 추가
+
+- ModalInput과 별도인 트리거+Dialog 셸을 추가했다. App은 render로 Dialog 본문만 주입하고, draft/확인/취소는 셸이 담당한다.
+- SimpleFilterBar 데모에 CustomModalInput 필드 예제를 연결했다.
+- 관련 파일: src/composed/CustomModalInput/*, src/index.ts, apps/demo/.../SimpleFilterBarDemoPage.tsx
+
 ## 2026-08-26
 
 ### Dialog Missing Description 경고 수정

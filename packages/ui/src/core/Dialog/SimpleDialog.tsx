@@ -430,6 +430,11 @@ export const SimpleDialog = forwardRef<
     resizeStateRef.current = null;
   }, [dimensions, isMaximized, minResizableHeight, minResizableWidth, position]);
 
+  // Fixed-height shells (initialHeight / resize / full) let the body fill leftover space.
+  // Auto-height shells must use flex-basis:auto so content is not collapsed by flex:1 1 0.
+  const hasFixedHeight =
+    Boolean(dimensions) || typeof initialHeight === 'number' || size === 'full';
+
   return (
     <Dialog {...props} onOpenChange={handleOpenChange}>
       <DialogContent
@@ -444,7 +449,10 @@ export const SimpleDialog = forwardRef<
           overflow: 'hidden',
           ...SIMPLE_DIALOG_SIZE_STYLES[size],
           ...(!dimensions && typeof initialWidth === 'number'
-            ? { width: `${Math.max(minResizableWidth, initialWidth)}px` }
+            ? {
+                width: `${Math.max(minResizableWidth, initialWidth)}px`,
+                maxWidth: `${Math.max(minResizableWidth, initialWidth)}px`,
+              }
             : {}),
           ...(!dimensions && typeof initialHeight === 'number'
             ? {
@@ -516,8 +524,8 @@ export const SimpleDialog = forwardRef<
         <DialogBody
           ref={setMergedBodyRef}
           style={{
-            flex: '1 1 0',
-            minHeight: 0,
+            flex: hasFixedHeight ? '1 1 0' : '1 1 auto',
+            minHeight: hasFixedHeight ? 0 : undefined,
             minWidth: 0,
             overflow: bodyScrollable ? 'auto' : 'hidden',
             position: 'relative',

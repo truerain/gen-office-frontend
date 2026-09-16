@@ -4,6 +4,46 @@
 
 ## 2026-09-16
 
+### AssigneeCustomDialogBody Name/Department 필터
+
+- GenGrid 위에 Name, Department Input 필터를 추가했다. multi 선택 시 필터로 숨긴 선택도 유지한다.
+- 관련 파일: AssigneeCustomDialogBody.tsx, AssigneeCustomDialogBody.module.css
+
+### CustomModalInput GenGrid multi 예제
+
+- AssigneeCustomDialogBody에 single/multi mode를 두고, SimpleFilterBarDemo에 customAssigneeIds 필드를 추가했다.
+- 관련 파일: AssigneeCustomDialogBody.tsx, SimpleFilterBarDemoPage.tsx
+
+### AssigneeCustomDialogBody 파일 분리
+
+- SimpleFilterBarDemo의 AssigneeCustomDialogBody를 전용 컴포넌트/CSS 파일로 분리했다.
+- 관련 파일: AssigneeCustomDialogBody.tsx, AssigneeCustomDialogBody.module.css, SimpleFilterBarDemoPage.tsx
+
+### CustomModalInput GenGrid 더블클릭 확정
+
+- CustomModalInput confirm API와 데모 GenGrid onRowDoubleClick을 연결했다.
+- 관련 파일: packages/ui/src/composed/CustomModalInput/*, apps/demo/.../SimpleFilterBarDemoPage.tsx
+
+### SimpleFilterBarDemo CustomModalInput GenGrid 선택
+
+- AssigneeCustomDialogBody 선택 영역을 부서 그룹 리스트에서 GenGrid 단일 선택으로 바꿨다.
+- 관련 파일: apps/demo/src/pages/demo/simple-filter-bar/SimpleFilterBarDemoPage.tsx, SimpleFilterBarDemoPage.module.css
+
+### CustomModalInput modalWidth
+
+- CustomModalInput에 modalWidth를 추가하고 SimpleDialog initialWidth/maxWidth에 연결했다.
+- 관련 파일: packages/ui/src/composed/CustomModalInput/*, packages/ui/src/core/Dialog/SimpleDialog.tsx
+
+### CustomModalInput Dialog 본문 높이 보정
+
+- SimpleDialog auto-height 접힘과 CustomModalInput 기본 modalHeight(360)를 반영했다.
+- 관련 파일: packages/ui/src/core/Dialog/SimpleDialog.tsx, packages/ui/src/composed/CustomModalInput/*
+
+### CustomModalInput (ui) + SimpleFilterBar 데모
+
+- `@gen-office/ui`에 CustomModalInput 셸을 추가하고, SimpleFilterBarDemo에 App Dialog 본문 연동 예제를 넣었다.
+- 관련 파일: packages/ui/src/composed/CustomModalInput/*, packages/ui/src/index.ts, apps/demo/src/pages/demo/simple-filter-bar/SimpleFilterBarDemoPage.tsx
+
 ### GenGrid ModalEditor 인라인 width 100%
 
 - ModalEditor 루트에 width:100%를 줘 editorWrap flex 안에서 셀 너비에 맞게 늘어나게 했다.

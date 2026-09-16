@@ -1,0 +1,31 @@
+/* apps/demo/src/pages/demo/simple-filter-bar/AssigneeCustomDialogBody.module.css
+ * Layout for the CustomModalInput GenGrid assignee picker body.
+ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.hint {
+  margin: 0;
+  flex: 0 0 auto;
+  font-size: 0.8125rem;
+  color: var(--color-fg-secondary);
+}
+
+.filters {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.grid {
+  flex: 1 1 auto;
+  min-height: 0;
+}

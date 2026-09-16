@@ -1,10 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  CustomModalInput,
   ModalInput,
   SimpleFilterBar,
   type FilterField,
   type ModalInputSelection,
 } from '@gen-office/ui';
+import {
+  AssigneeCustomDialogBody,
+  type EmployeeRow,
+} from './AssigneeCustomDialogBody';
 import styles from './SimpleFilterBarDemoPage.module.css';
 
 type EmployeeData = {
@@ -19,6 +24,8 @@ type DemoFilters = {
   statusList: string[];
   assigneeId: string;
   assigneeIds: string[];
+  customAssigneeId: string;
+  customAssigneeIds: string[];
 };
 
 const ALL_STATUS = 'ALL';
@@ -29,6 +36,8 @@ const defaultFilters: DemoFilters = {
   statusList: [],
   assigneeId: '',
   assigneeIds: [],
+  customAssigneeId: '',
+  customAssigneeIds: [],
 };
 
 const employeeItems: ModalInputSelection<EmployeeData>[] = [
@@ -105,6 +114,8 @@ const demoRows: DemoRow[] = [
 
 function fetchDemoRows(filters: DemoFilters): Promise<DemoRow[]> {
   const keyword = filters.keyword.trim().toLowerCase();
+  const customMulti = filters.customAssigneeIds;
+  const assigneeFilter = filters.customAssigneeId || filters.assigneeId;
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(
@@ -116,21 +127,39 @@ function fetchDemoRows(filters: DemoFilters): Promise<DemoRow[]> {
           const matchStatus = filters.status === ALL_STATUS || row.status === filters.status;
           const matchStatusMulti =
             filters.statusList.length === 0 || filters.statusList.includes(row.status);
-          const matchAssigneeSingle = !filters.assigneeId || row.assigneeId === filters.assigneeId;
+          const matchAssigneeSingle = !assigneeFilter || row.assigneeId === assigneeFilter;
           const matchAssigneeMulti =
             filters.assigneeIds.length === 0 || filters.assigneeIds.includes(row.assigneeId);
+          const matchCustomAssigneeMulti =
+            customMulti.length === 0 || customMulti.includes(row.assigneeId);
           return (
             matchKeyword &&
             matchStatus &&
             matchStatusMulti &&
             matchAssigneeSingle &&
-            matchAssigneeMulti
+            matchAssigneeMulti &&
+            matchCustomAssigneeMulti
           );
         })
       );
     }, 250);
   });
 }
+
+function formatAssigneeDisplay(ids: string[]): string {
+  if (ids.length === 0) return '';
+  const first = employeeItems.find((item) => item.value === ids[0]);
+  const firstLabel = first?.label ?? ids[0];
+  if (ids.length === 1) return firstLabel;
+  return `${firstLabel} +${ids.length - 1}`;
+}
+
+const employeeRows: EmployeeRow[] = employeeItems.map((item) => ({
+  id: item.value,
+  name: item.data?.name ?? item.label,
+  dept: item.data?.dept ?? item.description ?? '',
+  email: item.data?.email ?? '',
+}));
 
 function SimpleFilterBarDemoPage() {
   const [draftFilters, setDraftFilters] = useState<DemoFilters>(defaultFilters);
@@ -213,7 +242,7 @@ function SimpleFilterBarDemoPage() {
                   render: (item) => item.data?.dept ?? '-',
                 },
               ]}
-              confirmLabel='확인'
+              confirmLabel="확인"
               fullWidth
             />
           );
@@ -256,6 +285,88 @@ function SimpleFilterBarDemoPage() {
                 },
               ]}
               fullWidth
+            />
+          );
+        },
+      },
+    ];
+  }, []);
+
+  const customModalFilterFields = useMemo<FilterField<DemoFilters>[]>(() => {
+    return [
+      {
+        key: 'keyword',
+        title: 'Keyword',
+        type: 'search',
+        placeholder: 'Type keyword',
+        enterToSearch: true,
+        flex: 1,
+      },
+      {
+        key: 'customAssigneeId',
+        title: 'Assignee (Single)',
+        type: 'custom',
+        width: '320px',
+        flex: 0,
+        render: (value, onChange) => {
+          const id = String(value ?? '');
+          const selected = employeeItems.find((item) => item.value === id);
+          return (
+            <CustomModalInput
+              value={id}
+              onChange={(next) => onChange(next)}
+              displayValue={selected?.label ?? ''}
+              emptyValue=""
+              placeholder="Select assignee (custom dialog)"
+              title="Select Assignee"
+              confirmLabel="확인"
+              cancelLabel="취소"
+              size="md"
+              modalWidth={800}
+              modalHeight={600}
+              render={({ value: draft, onChange: setDraft, confirm }) => (
+                <AssigneeCustomDialogBody
+                  mode="single"
+                  value={draft}
+                  onChange={setDraft}
+                  confirm={confirm}
+                  rows={employeeRows}
+                />
+              )}
+            />
+          );
+        },
+      },
+      {
+        key: 'customAssigneeIds',
+        title: 'Assignees (Multi)',
+        type: 'custom',
+        width: '360px',
+        flex: 0,
+        render: (value, onChange) => {
+          const ids = Array.isArray(value) ? value.map(String) : [];
+          return (
+            <CustomModalInput
+              value={ids}
+              onChange={(next) => onChange(next)}
+              displayValue={formatAssigneeDisplay(ids)}
+              emptyValue={[]}
+              placeholder="Select assignees (custom dialog)"
+              title="Select Assignees"
+              confirmLabel="확인"
+              cancelLabel="취소"
+              size="md"
+              modalWidth={800}
+              modalHeight={600}
+              render={({ value: draft, onChange: setDraft, confirm }) => (
+                <AssigneeCustomDialogBody
+                  mode="multi"
+                  value={draft}
+                  onChange={setDraft}
+                  confirm={confirm}
+                  rows={employeeRows}
+                />
+              )}
             />
           );
         },
@@ -315,6 +426,34 @@ function SimpleFilterBarDemoPage() {
             {!loading && rows.length === 0 ? (
               <div className={styles.resultRow}>No results</div>
             ) : null}
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <h2>With CustomModalInput Field</h2>
+        <p className={styles.sectionDesc}>
+          App supplies a GenGrid dialog body (single/multi); CustomModalInput owns trigger, draft,
+          and confirm/cancel.
+        </p>
+        <div className={styles.card}>
+          <SimpleFilterBar
+            value={draftFilters}
+            fields={customModalFilterFields}
+            onChange={setDraftFilters}
+            onSearch={() => {
+              setDraftFilters((prev) => ({ ...prev }));
+            }}
+            searchLabel="Search"
+          />
+          <div className={styles.meta}>
+            customAssigneeId: {draftFilters.customAssigneeId || '(empty)'}
+          </div>
+          <div className={styles.meta}>
+            customAssigneeIds:{' '}
+            {draftFilters.customAssigneeIds.length > 0
+              ? draftFilters.customAssigneeIds.join(', ')
+              : '(empty)'}
           </div>
         </div>
       </section>

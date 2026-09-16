@@ -21,6 +21,12 @@
   font-size: 1.125rem;
 }
 
+.sectionDesc {
+  margin: -0.5rem 0 1rem 0;
+  font-size: 0.875rem;
+  color: var(--color-fg-secondary);
+}
+
 .card {
   padding: 1rem;
   background: var(--color-bg-primary);
