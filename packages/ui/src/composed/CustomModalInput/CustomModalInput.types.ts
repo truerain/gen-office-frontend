@@ -41,10 +41,21 @@ export type CustomModalInputProps<T> = {
   onClear?: () => void;
   confirmLabel?: string;
   cancelLabel?: string;
+  /**
+   * SimpleDialog size preset.
+   * When set, takes priority over `modalWidth` / `modalHeight`.
+   * When omitted, `modalWidth` / `modalHeight` are applied.
+   */
   size?: SimpleDialogSize;
-  /** Dialog content height in px. Passed to SimpleDialog as initialHeight. @default 360 */
+  /**
+   * Dialog content height in px.
+   * Used only when `size` is omitted. @default 360
+   */
   modalHeight?: number;
-  /** Dialog content width in px. Passed to SimpleDialog as initialWidth. */
+  /**
+   * Dialog content width in px.
+   * Used only when `size` is omitted.
+   */
   modalWidth?: number;
   open?: boolean;
   defaultOpen?: boolean;

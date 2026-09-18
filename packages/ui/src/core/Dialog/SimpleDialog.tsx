@@ -67,8 +67,10 @@ export interface SimpleDialogProps extends DialogProps {
   draggable?: boolean;
 
   /**
-   * Preset dialog size
-   * @default 'md'
+   * Preset dialog size.
+   * When omitted and `initialWidth` / `initialHeight` are set, size presets are skipped
+   * so pixel dimensions can apply without maxWidth from `md`.
+   * @default 'md' when no initialWidth/initialHeight are provided
    */
   size?: SimpleDialogSize;
 
@@ -134,7 +136,7 @@ export const SimpleDialog = forwardRef<
   footer,
   showClose = true,
   draggable = true,
-  size = 'md',
+  size: sizeProp,
   resizable = false,
   bodyScrollable = true,
   bodyRef,
@@ -146,6 +148,10 @@ export const SimpleDialog = forwardRef<
   onOpenChange,
   ...props
 }, ref) => {
+  const hasPixelSize =
+    typeof initialWidth === 'number' || typeof initialHeight === 'number';
+  // Skip default `md` when callers drive size via initialWidth/Height only.
+  const size = sizeProp ?? (hasPixelSize ? undefined : 'md');
   const isOpen = props.open ?? false;
   const contentRef = useRef<React.ElementRef<typeof DialogPrimitive.Content> | null>(null);
   const dragStateRef = useRef<{ pointerId: number; offsetX: number; offsetY: number } | null>(null);
@@ -447,7 +453,7 @@ export const SimpleDialog = forwardRef<
           flexDirection: 'column',
           gap: 0,
           overflow: 'hidden',
-          ...SIMPLE_DIALOG_SIZE_STYLES[size],
+          ...(size ? SIMPLE_DIALOG_SIZE_STYLES[size] : {}),
           ...(!dimensions && typeof initialWidth === 'number'
             ? {
                 width: `${Math.max(minResizableWidth, initialWidth)}px`,

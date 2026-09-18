@@ -2,6 +2,11 @@
 
 ## 2026-09-16
 
+### CustomModalInput size vs modalWidth/Height
+
+- size가 있으면 preset만 쓰고, 없으면 modalWidth/modalHeight를 적용한다. SimpleDialog도 initialWidth/Height만 있을 때 md preset을 건너뛴다.
+- 관련 파일: CustomModalInput.tsx, CustomModalInput.types.ts, SimpleDialog.tsx
+
 ### CustomModalInput render confirm
 
 - render context에 `confirm(next?)`를 추가해 Dialog 본문에서 즉시 확정(예: 행 더블클릭)할 수 있게 했다.

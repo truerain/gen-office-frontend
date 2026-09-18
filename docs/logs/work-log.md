@@ -4,6 +4,11 @@
 
 ## 2026-09-16
 
+### CustomModalInput size/modal 크기 우선순위
+
+- size 미지정 시 modalWidth/modalHeight가 적용되도록 CustomModalInput·SimpleDialog를 조정했다.
+- 관련 파일: packages/ui/src/composed/CustomModalInput/*, packages/ui/src/core/Dialog/SimpleDialog.tsx
+
 ### AssigneeCustomDialogBody Name/Department 필터
 
 - GenGrid 위에 Name, Department Input 필터를 추가했다. multi 선택 시 필터로 숨긴 선택도 유지한다.

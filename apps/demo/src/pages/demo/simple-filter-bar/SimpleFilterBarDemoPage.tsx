@@ -227,6 +227,7 @@ function SimpleFilterBarDemoPage() {
               selectedItem={selected}
               onSelectedItemChange={(selectedItem) => onChange(selectedItem?.value ?? '')}
               modalHeight={360}
+              modalWidth={1200}
               listColumns={[
                 { key: 'id', header: 'ID', width: '96px', render: (item) => item.value },
                 {
@@ -321,8 +322,7 @@ function SimpleFilterBarDemoPage() {
               title="Select Assignee"
               confirmLabel="확인"
               cancelLabel="취소"
-              size="md"
-              modalWidth={800}
+              modalWidth={1000}
               modalHeight={600}
               render={({ value: draft, onChange: setDraft, confirm }) => (
                 <AssigneeCustomDialogBody
@@ -355,7 +355,6 @@ function SimpleFilterBarDemoPage() {
               title="Select Assignees"
               confirmLabel="확인"
               cancelLabel="취소"
-              size="md"
               modalWidth={800}
               modalHeight={600}
               render={({ value: draft, onChange: setDraft, confirm }) => (

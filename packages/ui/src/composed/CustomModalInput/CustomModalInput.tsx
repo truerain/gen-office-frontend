@@ -36,7 +36,7 @@ export function CustomModalInput<T>({
   onClear,
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
-  size = 'md',
+  size,
   modalHeight = 360,
   modalWidth,
   open: openProp,
@@ -90,6 +90,8 @@ export function CustomModalInput<T>({
   const close = () => {
     setOpen(false);
   };
+
+  const useSizePreset = size !== undefined;
 
   return (
     <div className={cn(styles.root, fullWidth && styles.fullWidth, className)}>
@@ -147,9 +149,9 @@ export function CustomModalInput<T>({
         open={open}
         onOpenChange={setOpen}
         title={title}
-        size={size}
-        initialHeight={modalHeight}
-        initialWidth={modalWidth}
+        size={useSizePreset ? size : undefined}
+        initialHeight={useSizePreset ? undefined : modalHeight}
+        initialWidth={useSizePreset ? undefined : modalWidth}
         className={dialogClassName}
         footer={
           <div className={styles.footer}>
