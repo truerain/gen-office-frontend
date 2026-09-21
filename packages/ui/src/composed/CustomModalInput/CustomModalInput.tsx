@@ -37,7 +37,7 @@ export function CustomModalInput<T>({
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   size,
-  modalHeight = 360,
+  modalHeight,
   modalWidth,
   open: openProp,
   defaultOpen = false,
@@ -91,7 +91,9 @@ export function CustomModalInput<T>({
     setOpen(false);
   };
 
-  const useSizePreset = size !== undefined;
+  // Pixel dims take priority in SimpleDialog; default height only when size is omitted.
+  const resolvedModalHeight =
+    modalHeight !== undefined ? modalHeight : size === undefined ? 360 : undefined;
 
   return (
     <div className={cn(styles.root, fullWidth && styles.fullWidth, className)}>
@@ -149,9 +151,9 @@ export function CustomModalInput<T>({
         open={open}
         onOpenChange={setOpen}
         title={title}
-        size={useSizePreset ? size : undefined}
-        initialHeight={useSizePreset ? undefined : modalHeight}
-        initialWidth={useSizePreset ? undefined : modalWidth}
+        size={size}
+        initialHeight={resolvedModalHeight}
+        initialWidth={modalWidth}
         className={dialogClassName}
         footer={
           <div className={styles.footer}>

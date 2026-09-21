@@ -68,8 +68,8 @@ export interface SimpleDialogProps extends DialogProps {
 
   /**
    * Preset dialog size.
-   * When omitted and `initialWidth` / `initialHeight` are set, size presets are skipped
-   * so pixel dimensions can apply without maxWidth from `md`.
+   * When `initialWidth` / `initialHeight` are also set, those pixel values take priority
+   * over the preset's width/height/maxWidth/maxHeight.
    * @default 'md' when no initialWidth/initialHeight are provided
    */
   size?: SimpleDialogSize;
@@ -93,11 +93,13 @@ export interface SimpleDialogProps extends DialogProps {
 
   /**
    * Initial width used before user resize.
+   * Takes priority over `size` preset width/maxWidth when set.
    */
   initialWidth?: number;
 
   /**
    * Initial height used before user resize.
+   * Takes priority over `size` preset height/maxHeight when set.
    */
   initialHeight?: number;
 
@@ -441,6 +443,17 @@ export const SimpleDialog = forwardRef<
   const hasFixedHeight =
     Boolean(dimensions) || typeof initialHeight === 'number' || size === 'full';
 
+  const sizeStyles: React.CSSProperties = size ? { ...SIMPLE_DIALOG_SIZE_STYLES[size] } : {};
+  // Pixel dims win over size preset for the conflicting keys.
+  if (typeof initialWidth === 'number') {
+    delete sizeStyles.width;
+    delete sizeStyles.maxWidth;
+  }
+  if (typeof initialHeight === 'number') {
+    delete sizeStyles.height;
+    delete sizeStyles.maxHeight;
+  }
+
   return (
     <Dialog {...props} onOpenChange={handleOpenChange}>
       <DialogContent
@@ -453,7 +466,7 @@ export const SimpleDialog = forwardRef<
           flexDirection: 'column',
           gap: 0,
           overflow: 'hidden',
-          ...(size ? SIMPLE_DIALOG_SIZE_STYLES[size] : {}),
+          ...sizeStyles,
           ...(!dimensions && typeof initialWidth === 'number'
             ? {
                 width: `${Math.max(minResizableWidth, initialWidth)}px`,

@@ -4,6 +4,11 @@
 
 ## 2026-09-21
 
+### SimpleDialog initialWidth 우선 적용
+
+- size preset보다 initialWidth/initialHeight가 우선되도록 SimpleDialog와 CustomModalInput을 수정했다.
+- 관련 파일: packages/ui/src/core/Dialog/SimpleDialog.tsx, packages/ui/src/composed/CustomModalInput/*
+
 ### DataGridPage isRowSelectable 샘플
 
 - DataGrid 데모에서 Status가 Open/In Progress인 행만 체크박스 선택 가능하도록 isRowSelectable 예를 추가했다.

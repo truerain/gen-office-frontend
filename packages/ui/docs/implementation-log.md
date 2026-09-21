@@ -1,5 +1,12 @@
 # UI 구현 로그
 
+## 2026-09-21
+
+### SimpleDialog initialWidth 우선
+
+- size와 initialWidth/Height가 함께 있을 때 pixel 값이 size preset의 width/maxWidth(및 height)보다 우선하도록 수정했다. CustomModalInput도 modalWidth/Height를 size와 함께 전달한다.
+- 관련 파일: SimpleDialog.tsx, CustomModalInput.tsx, CustomModalInput.types.ts
+
 ## 2026-09-16
 
 ### CustomModalInput size vs modalWidth/Height
