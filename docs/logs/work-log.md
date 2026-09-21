@@ -2,6 +2,18 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-09-21
+
+### DataGridPage isRowSelectable 샘플
+
+- DataGrid 데모에서 Status가 Open/In Progress인 행만 체크박스 선택 가능하도록 isRowSelectable 예를 추가했다.
+- 관련 파일: apps/demo/src/pages/demo/datagrid/DataGridPage.tsx
+
+### GenGrid isRowSelectable
+
+- 행 조건 기반 체크박스 선택 API(isRowSelectable)를 GenGrid에 추가했다. Crud는 gridProps로 노출된다.
+- 관련 파일: packages/gen-grid/src/GenGrid.types.ts, packages/gen-grid/src/core/table/useGenGridTable.ts
+
 ## 2026-09-16
 
 ### CustomModalInput size/modal 크기 우선순위

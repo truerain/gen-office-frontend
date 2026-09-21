@@ -127,6 +127,11 @@ type CommonGridOptions<TData> = {
   rowStatusResolver?: (rowId: string) => 'clean' | 'created' | 'updated' | 'deleted';
   checkboxSelection?: boolean;
   checkboxSelectionMode?: 'all' | 'createdOnly';
+  /**
+   * Per-row checkbox selectability.
+   * Combined with `checkboxSelectionMode` (AND): createdOnly is checked first, then this predicate.
+   */
+  isRowSelectable?: (args: { row: TData; rowId: string }) => boolean;
   enableRowNumber?: boolean;
   enableActiveRowHighlight?: boolean;
   /** enable drag cell range selection */

@@ -64,6 +64,7 @@ export type GenGridTableProps<TData> = {
   // selection
   checkboxSelection?: boolean;
   checkboxSelectionMode?: 'all' | 'createdOnly';
+  isRowSelectable?: (args: { row: TData; rowId: string }) => boolean;
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: (next: RowSelectionState) => void;
 
@@ -239,6 +240,7 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
 
     checkboxSelection,
     checkboxSelectionMode,
+    isRowSelectable,
     rowSelection,
     onRowSelectionChange,
 
@@ -631,7 +633,13 @@ export function useGenGridTable<TData>(props: GenGridTableProps<TData>) {
       if (!checkboxSelection) return false;
       if (checkboxSelectionMode === 'createdOnly') {
         if (!rowStatusResolver) return false;
-        return rowStatusResolver(String(row.id)) === 'created';
+        if (rowStatusResolver(String(row.id)) !== 'created') return false;
+      }
+      if (isRowSelectable) {
+        return isRowSelectable({
+          row: row.original as TData,
+          rowId: String(row.id),
+        });
       }
       return true;
     },

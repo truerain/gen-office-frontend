@@ -1,5 +1,13 @@
 # GenGrid 구현 로그
 
+## 2026-09-21
+
+### isRowSelectable API
+
+- 행 조건으로 체크박스 선택 가능 여부를 정하는 isRowSelectable을 추가했다. checkboxSelectionMode(createdOnly)와 AND로 조합한다.
+- GenGridCrud는 gridProps 패스스루로 별도 변경 없이 사용 가능하다.
+- 관련 파일: GenGrid.types.ts, useGenGridTable.ts
+
 ## 2026-09-16
 
 ### ModalEditor 인라인 width

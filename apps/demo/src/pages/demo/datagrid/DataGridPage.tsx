@@ -258,6 +258,11 @@ function DataGridPage() {
             <li>Keyboard move: edit Updated At and press Tab.</li>
           </ol>
           <p className={styles.eventText}>Last date event: {lastDateEditEvent}</p>
+          <strong>isRowSelectable</strong>
+          <p className={styles.eventText}>
+            Checkbox is enabled only when Status is Open or In Progress. Done / empty rows are
+            disabled.
+          </p>
         </div>
         <div className={styles.gridWrap}>
           <GenGrid<DemoRow>
@@ -298,6 +303,7 @@ function DataGridPage() {
             enableVirtualization={true}
             enableRowNumber={true}
             checkboxSelection={true}
+            isRowSelectable={({ row }) => row.status === 'Open' || row.status === 'In Progress'}
             editOnActiveCell={false}
             keepEditingOnNavigate={true}
             noRowsMessage="No tasks"
