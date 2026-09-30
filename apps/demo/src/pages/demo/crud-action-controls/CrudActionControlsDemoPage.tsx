@@ -3,6 +3,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { SlidersHorizontal } from 'lucide-react';
 
 import { GenGridCrud } from '@gen-office/gen-grid-crud';
+import { Checkbox } from '@gen-office/ui';
 import { PageHeader } from '@/components/PageHeader/PageHeader';
 import type { PageComponentProps } from '@/app/config/componentRegistry.dynamic';
 
@@ -118,6 +119,7 @@ const unitLabelByValue: Record<UnitValue, string> = {
 export default function CrudActionControlsDemoPage(_props: PageComponentProps) {
   const [unit, setUnit] = useState<UnitValue>('1');
   const [excludeZero, setExcludeZero] = useState(false);
+  const [locked, setLocked] = useState(false);
 
   const viewRows = useMemo<ViewRow[]>(() => {
     const divisor = Number(unit);
@@ -219,7 +221,7 @@ export default function CrudActionControlsDemoPage(_props: PageComponentProps) {
     <div className={styles.page}>
       <PageHeader
         title="GenGridCrud Custom Action Controls"
-        description="ActionBar custom action style: combo / checkbox"
+        description="ActionBar custom action style: combo / checkbox / message"
         breadcrumbItems={[
           { label: 'UI Demo', icon: <SlidersHorizontal size={16} /> },
           { label: 'Custom Action Controls', icon: <SlidersHorizontal size={16} /> },
@@ -227,6 +229,14 @@ export default function CrudActionControlsDemoPage(_props: PageComponentProps) {
       />
       <div className={styles.content}>
         <div className={styles.summary}>
+          <label className={styles.lockToggle}>
+            <Checkbox
+              checked={locked}
+              onCheckedChange={(checked) => setLocked(checked === true)}
+              aria-label="Lock actions"
+            />
+            <span>액션 잠금 (버튼 → message 대체)</span>
+          </label>
           <span>단위: {unitLabelByValue[unit]}</span>
           <span>0 데이터 제외: {excludeZero ? 'ON' : 'OFF'}</span>
           <span>현재 행 수: {viewRows.length.toLocaleString()}</span>
@@ -242,43 +252,54 @@ export default function CrudActionControlsDemoPage(_props: PageComponentProps) {
             actionBar={{
               position: 'top',
               defaultStyle: 'icon',
-              includeBuiltIns: ['excel', 'columnReorder'],
+              includeBuiltIns: locked ? [] : ['excel', 'columnReorder'],
               renderTotalRows: ({ count, state }) => {
                 const positiveCount = state.viewData.filter((r) => r.amount > 0).length;
                 return `총 ${count}건 / 양수 ${positiveCount}건`;
               },
-              customActions: [
-                {
-                  key: 'exclude-zero',
-                  style: 'checkbox',
-                  side: 'right',
-                  order: 5,
-                  label: '0 데이터 제외',
-                  checked: excludeZero,
-                  onCheckedChange: setExcludeZero,
-                },
-                {
-                  key: 'unit',
-                  style: 'combo',
-                  side: 'right',
-                  order: 7,
-                  label: 'Unit',
-                  placeholder: '단위 선택',
-                  value: unit,
-                  itemStyle: { paddingInlineStart: '1rem' },
-                  triggerStyle: { minWidth: '5rem', width: '5rem' },
-                  options: [
-                    { value: '1', label: '0' },
-                    { value: '10', label: '10' },
-                    { value: '100', label: '100' },
+              customActions: locked
+                ? [
+                    {
+                      key: 'locked-reason',
+                      style: 'message',
+                      side: 'left',
+                      order: 10,
+                      label:
+                        '승인 완료(잠금) 상태에서는 수정·엑셀·컬럼 재배치를 사용할 수 없습니다. 화면을 좁히면 이 문구가 말줄임(...)으로 잘리는지 확인할 수 있습니다.',
+                    },
+                  ]
+                : [
+                    {
+                      key: 'exclude-zero',
+                      style: 'checkbox',
+                      side: 'right',
+                      order: 5,
+                      label: '0 데이터 제외',
+                      checked: excludeZero,
+                      onCheckedChange: setExcludeZero,
+                    },
+                    {
+                      key: 'unit',
+                      style: 'combo',
+                      side: 'right',
+                      order: 7,
+                      label: 'Unit',
+                      placeholder: '단위 선택',
+                      value: unit,
+                      itemStyle: { paddingInlineStart: '1rem' },
+                      triggerStyle: { minWidth: '5rem', width: '5rem' },
+                      options: [
+                        { value: '1', label: '0' },
+                        { value: '10', label: '10' },
+                        { value: '100', label: '100' },
+                      ],
+                      onValueChange: (value) => {
+                        if (value === '1' || value === '10' || value === '100') {
+                          setUnit(value);
+                        }
+                      },
+                    },
                   ],
-                  onValueChange: (value) => {
-                    if (value === '1' || value === '10' || value === '100') {
-                      setUnit(value);
-                    }
-                  },
-                },
-              ],
             }}
             gridProps={{
               height: '100%',

@@ -22,6 +22,15 @@
   font-size: 0.875rem;
 }
 
+.lockToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  user-select: none;
+  color: var(--color-fg-default);
+}
+
 .gridWrap {
   flex: 1 1 auto;
   min-height: 0;

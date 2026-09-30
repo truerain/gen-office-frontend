@@ -33,6 +33,8 @@ export type {
   CrudActionComboItem,
   CrudActionCheckboxValue,
   CrudActionCheckboxItem,
+  CrudActionMessageContent,
+  CrudActionMessageItem,
   CrudActionItem,
   CrudBuiltInActionKey,
   CrudValidationError,

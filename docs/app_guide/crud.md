@@ -169,6 +169,34 @@ Handle 요약:
 - `clearSelection()`: checkbox row selection 비우기.
 - `reset()`: pending 전부 폐기 (ActionBar reset과 동일).
 
+## 8) ActionBar `style: 'message'` (버튼 대체 사유 문구)
+
+목적:
+- 특정 상황에서 ActionBar 버튼을 모두 숨기고, 같은 자리에 사유 문구를 표시
+
+기본 처리:
+- `includeBuiltIns: []`로 built-in 버튼을 끈다
+- `customActions`에 `{ style: 'message', side: 'left', label: '...' }`만 둔다
+- 왼쪽 message는 남은 ActionBar 폭을 채우고 길면 ellipsis(문자열은 hover title)
+
+코드:
+
+```tsx
+actionBar={{
+  includeBuiltIns: locked ? [] : ['add', 'delete', 'save', 'filter'],
+  customActions: locked
+    ? [{
+        key: 'locked-reason',
+        style: 'message',
+        side: 'left',
+        label: '승인 완료 상태에서는 수정할 수 없습니다.',
+      }]
+    : [],
+}}
+```
+
+데모: `apps/demo/src/pages/demo/crud-action-controls/CrudActionControlsDemoPage.tsx`
+
 ## 관련 파일
 
 - `apps/demo/src/pages/admin/menu/MenuManagementPage.tsx`

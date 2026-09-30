@@ -1,5 +1,15 @@
 # GenGridCrud 구현 로그
 
+## 2026-09-30
+
+### ActionBar customActions style: 'message' 추가
+
+- 버튼 대신 사유 문구를 표시하는 `style: 'message'` 액션 타입을 추가했다.
+- 왼쪽 message가 보이면 title/total 이후 남은 ActionBar 폭을 채우고 초과분은 ellipsis 처리한다(문자열 label은 title 툴팁).
+- 버튼 전부 제거(`includeBuiltIns: []`) + message만 두는 잠금/사유 대체 패턴을 권장한다.
+- message는 Button이 아닌 span으로 렌더하며, 배경/hover 없이 plain text 스타일로 둔다. demo는 패키지 `dist`를 쓰므로 변경 후 `pnpm -C packages/gen-grid-crud build`가 필요하다.
+- 관련 파일: `src/GenGridCrud.types.ts`, `src/components/CrudActionBar.tsx`, `src/components/CrudActionBar.module.css`, `src/index.ts`, `apps/demo/.../CrudActionControlsDemoPage.tsx`
+
 ## 2026-08-28
 
 ### ActionBar renderTotalRows 커스텀 렌더러 함수 추가

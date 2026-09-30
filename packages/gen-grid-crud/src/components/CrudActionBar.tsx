@@ -22,6 +22,7 @@ import type {
   CrudActionCheckboxItem,
   CrudActionCheckboxValue,
   CrudActionItem,
+  CrudActionMessageContent,
   CrudBuiltInActionKey,
   CrudTotalRowsContext,
   CrudUiState,
@@ -82,6 +83,16 @@ function resolveCheckboxValue<TData>(
   if (typeof checked === 'function') return checked(ctx);
   if (typeof checked === 'boolean') return checked;
   return false;
+}
+
+function resolveMessageLabel<TData>(
+  label: CrudActionMessageContent<TData> | undefined,
+  ctx: CrudActionContext<TData>,
+  fallback: string
+): React.ReactNode {
+  if (typeof label === 'function') return label(ctx);
+  if (label != null) return label;
+  return fallback;
 }
 
 export function CrudActionBar<TData>(props: {
@@ -272,6 +283,11 @@ export function CrudActionBar<TData>(props: {
     [visibleActions]
   );
 
+  const hasLeftMessage = React.useMemo(
+    () => leftActions.some((action) => action.style === 'message'),
+    [leftActions]
+  );
+
   const totalRowsContent = React.useMemo(() => {
     const viewCount = state.viewData.length;
 
@@ -295,10 +311,37 @@ export function CrudActionBar<TData>(props: {
   }, [renderTotalRows, state, t, totalRowCount]);
 
   const renderAction = (action: CrudActionItem<TData>) => {
+    const disabled = resolveRule(action.disabled, false, ctx);
+
+    if (action.style === 'message') {
+      const labelNode = resolveMessageLabel(action.label, ctx, action.key);
+      const titleText = typeof labelNode === 'string' ? labelNode : undefined;
+      const wrapperClassName = [
+        styles.actionItem,
+        styles.messageItem,
+        action.itemClassName,
+      ]
+        .filter(Boolean)
+        .join(' ');
+      return (
+        <div key={action.key} className={wrapperClassName} style={action.itemStyle}>
+          <span
+            className={
+              disabled
+                ? `${styles.messageAction} ${styles.messageActionMuted}`
+                : styles.messageAction
+            }
+            title={titleText}
+          >
+            {labelNode}
+          </span>
+        </div>
+      );
+    }
+
     const style = action.style ?? actionButtonStyle;
     const labelNode = action.label ?? action.key;
     const ariaLabel = getLabelString(labelNode, action.key);
-    const disabled = resolveRule(action.disabled, false, ctx);
     const wrapperClassName = action.itemClassName
       ? `${styles.actionItem} ${action.itemClassName}`
       : styles.actionItem;
@@ -385,7 +428,11 @@ export function CrudActionBar<TData>(props: {
   };
 
   return (
-    <div className={[styles.root, className ?? ''].filter(Boolean).join(' ')}>
+    <div
+      className={[styles.root, hasLeftMessage ? styles.hasMessage : '', className ?? '']
+        .filter(Boolean)
+        .join(' ')}
+    >
       <div className={styles.leftActions}>
         {title && (
           <div className={`${styles.section} ${styles.title}`}>

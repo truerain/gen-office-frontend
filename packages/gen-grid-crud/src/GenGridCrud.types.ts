@@ -69,7 +69,7 @@ export type CrudActiveRowChangeEvent<TData> = {
 };
 
 export type CrudActionButtonStyle = 'text' | 'icon';
-export type CrudActionControlStyle = 'combo' | 'checkbox';
+export type CrudActionControlStyle = 'combo' | 'checkbox' | 'message';
 export type CrudActionStyle = CrudActionButtonStyle | CrudActionControlStyle;
 export type CrudActionSide = 'left' | 'right';
 export type CrudBuiltInActionKey =
@@ -215,10 +215,25 @@ export type CrudActionCheckboxItem<TData> = CrudActionBase<TData> & {
   onCheckedChange?: (checked: boolean, ctx: CrudActionContext<TData>) => void | Promise<void>;
 };
 
+export type CrudActionMessageContent<TData> =
+  | React.ReactNode
+  | ((ctx: CrudActionContext<TData>) => React.ReactNode);
+
+/**
+ * Non-interactive ActionBar text. Prefer `side: 'left'`.
+ * When visible on the left, fills remaining bar width and ellipsizes overflow.
+ */
+export type CrudActionMessageItem<TData> = Omit<CrudActionBase<TData>, 'label'> & {
+  style: 'message';
+  /** Display text. Function form resolves against action context. */
+  label?: CrudActionMessageContent<TData>;
+};
+
 export type CrudActionItem<TData> =
   | CrudActionButtonItem<TData>
   | CrudActionComboItem<TData>
-  | CrudActionCheckboxItem<TData>;
+  | CrudActionCheckboxItem<TData>
+  | CrudActionMessageItem<TData>;
 
 export type CrudTotalRowsContext<TData> = {
   /** Count of rows currently visible in the grid (state.viewData.length) */

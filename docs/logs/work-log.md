@@ -2,6 +2,14 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-09-30
+
+### ActionBar style: 'message' 추가
+
+- GenGridCrud customActions에 비버튼 사유 문구(`style: 'message'`)를 추가했다. 왼쪽 message는 남은 바 폭을 채우고 ellipsis 한다.
+- Custom Action Controls demo에 잠금 토글로 버튼 ↔ message 전환을 넣었다.
+- 관련: `packages/gen-grid-crud`, `apps/demo/.../CrudActionControlsDemoPage.tsx`, `docs/app_guide/crud.md`, `docs/gen-grid/layout-contract.md`
+
 ## 2026-09-21
 
 ### SimpleDialog initialWidth 우선 적용

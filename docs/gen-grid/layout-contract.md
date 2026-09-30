@@ -54,6 +54,12 @@ actionBar: {
 }
 ```
 
+## ActionBar message 액션
+- `customActions`에 `style: 'message'`를 두면 버튼이 아닌 문구를 표시한다.
+- `side: 'left'`(권장): title/total 뒤 남은 바 폭을 채우고 넘치면 ellipsis. 한 줄 유지.
+- 특정 상황에서 버튼을 모두 숨기고 사유만 보여 줄 때: `includeBuiltIns: []` + message 하나.
+- message가 없을 때 ActionBar는 기존처럼 content 폭 + 필요 시 가로 스크롤을 유지한다.
+
 ## 다단 헤더 관련 주의
 - 그룹 헤더(`colSpan > 1`)는 하위 리프 컬럼 너비 합으로 계산되어야 한다.
 - 그룹 헤더 폭이 1레벨 컬럼 폭으로 계산되면 정렬이 깨진다.
