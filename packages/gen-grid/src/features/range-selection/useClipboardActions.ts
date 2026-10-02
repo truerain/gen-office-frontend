@@ -20,8 +20,10 @@ export function useClipboardActions<TData>(args: {
   selectedRanges: SelectedRanges;
   activeCell: ActiveCell;
   onCellValueChange?: (coord: { rowId: string; columnId: string }, value: unknown) => void;
+  /** When true, paste is disabled (grid-level readonly). */
+  readonly?: boolean;
 }) {
-  const { table, rows, selectedRanges, activeCell, onCellValueChange } = args;
+  const { table, rows, selectedRanges, activeCell, onCellValueChange, readonly = false } = args;
   const lastSelectedRange = selectedRanges[selectedRanges.length - 1];
 
   const rangeBounds = React.useMemo(
@@ -40,12 +42,13 @@ export function useClipboardActions<TData>(args: {
   const copyBounds = rangeBounds ?? activeCellBounds;
   const canCopy = Boolean(copyBounds);
   const pasteStartCell = lastSelectedRange?.anchor ?? activeCell;
-  const canPaste = Boolean(pasteStartCell && onCellValueChange);
+  const canPaste = Boolean(pasteStartCell && onCellValueChange && !readonly);
 
   const rowById = React.useMemo(() => new Map(rows.map((row) => [row.id, row] as const)), [rows]);
 
   const canEditCell = React.useCallback(
     (rowId: string, columnId: string) => {
+      if (readonly) return false;
       if (SYSTEM_COLUMN_IDS.has(columnId)) return false;
       const column = table.getColumn(columnId);
       if (!column) return false;
@@ -58,7 +61,7 @@ export function useClipboardActions<TData>(args: {
       if (!meta?.editable && !meta?.renderEditor && !meta?.editType) return false;
       return true;
     },
-    [rowById, table]
+    [readonly, rowById, table]
   );
 
   const copyToClipboard = React.useCallback(

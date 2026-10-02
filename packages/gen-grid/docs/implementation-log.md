@@ -2,6 +2,12 @@
 
 ## 2026-10-02
 
+### ModalEditor 셀 클립보드 옵트인 (data-gen-grid-clipboard)
+
+- ModalEditor 루트에 `data-gen-grid-clipboard="cell"`을 두고, GenGridBase는 해당 영역에서 Ctrl+C/V를 interactive early-return 예외로 처리한다.
+- 그리드 `readonly`면 paste를 막도록 `useClipboardActions`에 `readonly`를 연결했다.
+- 관련 파일: `ModalEditor.tsx`, `GenGridBase.tsx`, `useClipboardActions.ts`
+
 ### ModalEditor 그리드 전용 suffix 위치 오버라이드
 
 - UI `Input.suffix` 공통값 대신, ModalInput `suffixClassName`으로 그리드 인라인 clear/검색 버튼 위치(`right`/`gap`)를 재정의한다.

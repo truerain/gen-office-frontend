@@ -4,6 +4,11 @@
 
 ## 2026-10-02
 
+### GenGrid ModalEditor 편집 중에도 셀 클립보드 허용
+
+- `data-gen-grid-clipboard="cell"` 옵트인으로 ModalEditor 트리거 포커스에서도 Ctrl+C/V가 그리드 클립보드로 가게 했다. 그리드 `readonly`면 paste는 계속 차단한다.
+- 관련 파일: `packages/gen-grid/src/features/editing/ModalEditor.tsx`, `GenGridBase.tsx`, `useClipboardActions.ts`
+
 ### GenGrid updateCell Partial merge (클립보드 코드명 동기화)
 
 - Paste/ModalEditor Partial 커밋이 `assigneeId`에 object로만 쌓이던 문제를 `updateCell`에서 행 merge로 고쳐, 코드와 코드명이 같이 반영되게 했다.

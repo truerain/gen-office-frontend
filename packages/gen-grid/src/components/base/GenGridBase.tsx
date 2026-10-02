@@ -361,6 +361,7 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
     selectedRanges,
     activeCell,
     onCellValueChange,
+    readonly: Boolean(readonlyProp),
   });
 
   const rangeStats = React.useMemo(() => {
@@ -614,12 +615,21 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
           if (e.defaultPrevented) return;
 
           const target = e.target as HTMLElement | null;
-          if (target?.closest('input,select,textarea,button,[contenteditable="true"]')) {
-            return;
-          }
-
           const isCtrlOrMeta = e.ctrlKey || e.metaKey;
           const key = e.key.toLowerCase();
+          const isClipboardShortcut = isCtrlOrMeta && (key === 'c' || key === 'v');
+          const allowsCellClipboard = Boolean(
+            target?.closest('[data-gen-grid-clipboard="cell"]')
+          );
+          const isInteractive = Boolean(
+            target?.closest('input,select,textarea,button,[contenteditable="true"]')
+          );
+
+          // Interactive controls keep native typing/paste, except editors that opt into
+          // cell clipboard (e.g. ModalEditor trigger via data-gen-grid-clipboard="cell").
+          if (isInteractive && !(allowsCellClipboard && isClipboardShortcut)) {
+            return;
+          }
 
           if (isCtrlOrMeta && key === 'c' && canCopy) {
             e.preventDefault();
@@ -642,7 +652,13 @@ export function GenGridBase<TData>(props: GenGridBaseProps<TData>) {
         onContextMenu={(e) => {
           const target = e.target as HTMLElement | null;
           if (!target) return;
-          if (target.closest('input,select,textarea,button,[contenteditable="true"]')) {
+          const allowsCellClipboard = Boolean(
+            target.closest('[data-gen-grid-clipboard="cell"]')
+          );
+          if (
+            target.closest('input,select,textarea,button,[contenteditable="true"]') &&
+            !allowsCellClipboard
+          ) {
             return;
           }
           const cell = target.closest('td[data-rowid][data-colid]') as HTMLElement | null;
