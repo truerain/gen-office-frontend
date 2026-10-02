@@ -122,6 +122,7 @@ export type GenGridColumnMeta = {
   /**
    * Clipboard paste resolver. Return `undefined` to skip the cell
    * (e.g. lookup code with zero or ambiguous matches).
+   * May be sync or async (e.g. remote master lookup).
    */
   parseClipboardValue?: (args: {
     text: string;
@@ -129,7 +130,7 @@ export type GenGridColumnMeta = {
     row: unknown;
     rowId: string;
     columnId: string;
-  }) => unknown | undefined;
+  }) => unknown | undefined | Promise<unknown | undefined>;
 
   // editor
   editType?: 'text' | 'number' | 'date' | 'select' | 'textarea' | 'checkbox';

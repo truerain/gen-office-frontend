@@ -123,6 +123,7 @@ declare module '@tanstack/react-table' {
     /**
      * Clipboard paste resolver. Return `undefined` to skip the cell
      * (e.g. lookup code with zero or ambiguous matches).
+     * May be sync or async (e.g. remote master lookup).
      */
     parseClipboardValue?: (args: {
       text: string;
@@ -130,7 +131,7 @@ declare module '@tanstack/react-table' {
       row: TData;
       rowId: string;
       columnId: string;
-    }) => unknown | undefined;
+    }) => unknown | undefined | Promise<unknown | undefined>;
     editType?: 'text' | 'number' | 'date' | 'select' | 'textarea' | 'checkbox';
     editOptions?: { label: string; value: string | number }[];
     getEditOptions?: (row: TData) => { label: string; value: string | number }[];

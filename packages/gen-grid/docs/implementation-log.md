@@ -2,6 +2,11 @@
 
 ## 2026-10-02
 
+### parseClipboardValue async 반환 타입 허용
+
+- 컬럼 meta `parseClipboardValue`가 `Promise`를 반환할 수 있도록 타입을 확장했다. 호출부는 기존 `await Promise.resolve(...)`로 동기/비동기를 모두 처리한다.
+- 관련 파일: `src/core/table/tanstack-table.ts`, `src/components/layout/utils.ts`
+
 ### ModalEditor 셀 클립보드 옵트인 (data-gen-grid-clipboard)
 
 - ModalEditor 루트에 `data-gen-grid-clipboard="cell"`을 두고, GenGridBase는 해당 영역에서 Ctrl+C/V를 interactive early-return 예외로 처리한다.

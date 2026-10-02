@@ -174,13 +174,13 @@ export function useClipboardActions<TData>(args: {
         const rawText = values[c] ?? '';
 
         if (typeof meta?.parseClipboardValue === 'function') {
-          const parsed = meta.parseClipboardValue({
+          const parsed = await Promise.resolve(meta.parseClipboardValue({
             text: rawText,
             value: targetRow.getValue(targetColumnId),
             row: targetRow.original,
             rowId: targetRow.id,
             columnId: targetColumnId,
-          });
+          }));
           if (parsed === undefined) continue;
           onCellValueChange({ rowId: targetRow.id, columnId: targetColumnId }, parsed);
           continue;
