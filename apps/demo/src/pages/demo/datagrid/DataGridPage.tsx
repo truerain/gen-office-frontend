@@ -165,6 +165,20 @@ function DataGridPage() {
               {row.assigneeId ? `${row.assigneeName} (${row.assigneeId})` : ''}
             </EditableFieldCell>
           ),
+          exportValue: ({ row }) => row.assigneeId ?? '',
+          parseClipboardValue: ({ text }: { text: string }) => {
+            const code = text.trim();
+            if (code === '') {
+              return { assigneeId: '', assigneeName: '' } satisfies Partial<DemoRow>;
+            }
+            const matches = employees.filter((employee) => employee.id === code);
+            if (matches.length !== 1) return undefined;
+            const employee = matches[0]!;
+            return {
+              assigneeId: employee.id,
+              assigneeName: employee.name,
+            } satisfies Partial<DemoRow>;
+          },
           renderEditor: (editor) => (
             <ModalEditor<DemoRow, Employee>
               editor={editor}
@@ -245,7 +259,10 @@ function DataGridPage() {
     <div className={styles.page}>
       <div className={styles.header}>
         <h1>DataGrid Component</h1>
-        <p>GenGrid editor sample using ModalEditor. Double-click the Assignee cell to open modal search.</p>
+        <p>
+          GenGrid editor sample using ModalEditor. Double-click the Assignee cell to open modal
+          search, or use Ctrl+C / Ctrl+V to copy and paste employee IDs.
+        </p>
       </div>
 
       <section className={styles.section}>
@@ -258,6 +275,12 @@ function DataGridPage() {
             <li>Keyboard move: edit Updated At and press Tab.</li>
           </ol>
           <p className={styles.eventText}>Last date event: {lastDateEditEvent}</p>
+          <strong>Assignee clipboard</strong>
+          <ol>
+            <li>Copy: select an Assignee cell and press Ctrl+C (copies employee ID code).</li>
+            <li>Paste: select another Assignee cell and press Ctrl+V (exact ID match only).</li>
+            <li>Unknown / ambiguous codes are skipped. Empty paste clears assignee.</li>
+          </ol>
           <strong>isRowSelectable</strong>
           <p className={styles.eventText}>
             Checkbox is enabled only when Status is Open or In Progress. Done / empty rows are
@@ -268,9 +291,8 @@ function DataGridPage() {
           <GenGrid<DemoRow>
             data={rows}
             onDataChange={(nextRows) => {
-              // Plain GenGrid stores commitValue on the edited column. When ModalEditor
-              // commits a Partial patch, flatten it onto assigneeId/assigneeName here
-              // (GenGridCrud would do the same via makePatch).
+              // Safety net: if a Partial was ever stored on assigneeId without merge,
+              // flatten it. Normal ModalEditor / clipboard paste now merges via updateCell.
               setRows(
                 nextRows.map((row) => {
                   const assigneeField = row.assigneeId as unknown;

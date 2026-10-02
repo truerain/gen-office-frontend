@@ -2,6 +2,19 @@
 
 이 문서는 리포지토리 수준의 소스 및 문서 변경 이력을 기록합니다.
 
+## 2026-10-02
+
+### GenGrid updateCell Partial merge (클립보드 코드명 동기화)
+
+- Paste/ModalEditor Partial 커밋이 `assigneeId`에 object로만 쌓이던 문제를 `updateCell`에서 행 merge로 고쳐, 코드와 코드명이 같이 반영되게 했다.
+- 관련 파일: `packages/gen-grid/src/features/editing/useGridEditing.ts`
+
+### GenGrid 클립보드 Lookup Paste + Copy
+
+- 컬럼 `parseClipboardValue`로 lookup 코드를 해석하고, 매칭 실패/모호하면 셀을 skip한다. `activeCell`만 있어도 Copy 가능하다.
+- DataGridPage Assignee는 `exportValue`(직원 ID)와 정확 ID 1건 `parseClipboardValue`로 Ctrl+C/V round-trip을 데모한다.
+- 관련 파일: `packages/gen-grid/src/features/range-selection/useClipboardActions.ts`, `tanstack-table.ts`, `utils.ts`, `apps/demo/.../DataGridPage.tsx`, `packages/gen-grid/docs/implementation-log.md`
+
 ## 2026-09-30
 
 ### ActionBar style: 'message' 추가

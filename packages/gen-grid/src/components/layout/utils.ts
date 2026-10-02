@@ -119,6 +119,17 @@ export type GenGridColumnMeta = {
     rowId: string;
     columnId: string;
   }) => unknown;
+  /**
+   * Clipboard paste resolver. Return `undefined` to skip the cell
+   * (e.g. lookup code with zero or ambiguous matches).
+   */
+  parseClipboardValue?: (args: {
+    text: string;
+    value: unknown;
+    row: unknown;
+    rowId: string;
+    columnId: string;
+  }) => unknown | undefined;
 
   // editor
   editType?: 'text' | 'number' | 'date' | 'select' | 'textarea' | 'checkbox';

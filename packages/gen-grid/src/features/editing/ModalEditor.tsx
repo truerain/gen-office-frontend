@@ -180,6 +180,7 @@ export function ModalEditor<TRow, TSelectionData = unknown>(
           fullWidth
           className={inlineEditorChrome.modalInputRoot}
           inputClassName={inlineEditorChrome.compactInput}
+          suffixClassName={inlineEditorChrome.modalInputSuffix}
           selectedItem={currentSelection}
           onSelectedItemChange={(selectedItem) => {
             const mappedValue = mapSingle(
@@ -223,6 +224,7 @@ export function ModalEditor<TRow, TSelectionData = unknown>(
           fullWidth
           className={inlineEditorChrome.modalInputRoot}
           inputClassName={inlineEditorChrome.compactInput}
+          suffixClassName={inlineEditorChrome.modalInputSuffix}
           selectedItems={currentSelections}
           onCommit={(selectedItems) => {
             const nextItems = selectedItems as ModalEditorSelection<TSelectionData>[];

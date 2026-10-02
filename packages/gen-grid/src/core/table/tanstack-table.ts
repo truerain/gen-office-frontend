@@ -120,6 +120,17 @@ declare module '@tanstack/react-table' {
       rowId: string;
       columnId: string;
     }) => unknown;
+    /**
+     * Clipboard paste resolver. Return `undefined` to skip the cell
+     * (e.g. lookup code with zero or ambiguous matches).
+     */
+    parseClipboardValue?: (args: {
+      text: string;
+      value: unknown;
+      row: TData;
+      rowId: string;
+      columnId: string;
+    }) => unknown | undefined;
     editType?: 'text' | 'number' | 'date' | 'select' | 'textarea' | 'checkbox';
     editOptions?: { label: string; value: string | number }[];
     getEditOptions?: (row: TData) => { label: string; value: string | number }[];

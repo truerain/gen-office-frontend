@@ -79,6 +79,7 @@ export function ModalInput<TData = unknown>(props: ModalInputProps<TData>) {
     listColumns,
     className,
     inputClassName,
+    suffixClassName,
     dialogClassName,
     listClassName,
     formatDisplayValue,
@@ -324,6 +325,7 @@ export function ModalInput<TData = unknown>(props: ModalInputProps<TData>) {
         required={required}
         fullWidth={fullWidth}
         className={inputClassName}
+        suffixClassName={suffixClassName}
         onFocus={() => {
           if (skipNextFocusOpenRef.current) {
             skipNextFocusOpenRef.current = false;

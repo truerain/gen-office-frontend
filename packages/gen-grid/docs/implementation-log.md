@@ -1,5 +1,28 @@
 # GenGrid 구현 로그
 
+## 2026-10-02
+
+### ModalEditor 그리드 전용 suffix 위치 오버라이드
+
+- UI `Input.suffix` 공통값 대신, ModalInput `suffixClassName`으로 그리드 인라인 clear/검색 버튼 위치(`right`/`gap`)를 재정의한다.
+- 관련 파일: `ModalInput.types.ts`, `ModalInput.tsx`, `ModalEditor.tsx`, `inlineEditorChrome.module.css`
+
+### ModalEditor clear 버튼 위치 미세 조정
+
+- 인라인 ModalEditor clear(×)를 검색 아이콘 쪽으로 3px 이동하고, clear+search 공간용 `padding-right`를 확보했다.
+- 관련 파일: `src/features/editing/inlineEditorChrome.module.css`
+
+### updateCell Partial row patch merge
+
+- ModalEditor / `parseClipboardValue`가 `{ assigneeId, assigneeName }` 같은 Partial을 커밋할 때, 편집 컬럼에 object를 넣지 않고 행에 merge하도록 `updateCell`을 바꿨다. 붙여넣기 시 코드명도 같이 갱신된다.
+- 관련 파일: `src/features/editing/useGridEditing.ts`
+
+### 클립보드 parseClipboardValue + activeCell Copy
+
+- 컬럼 meta에 `parseClipboardValue`를 추가했다. Paste 시 훅이 `undefined`를 반환하면 해당 셀을 건너뛴다(lookup 정확 1건 정책용).
+- range가 없어도 `activeCell`이 있으면 단일 셀 Copy가 되도록 Paste와 대칭화했다.
+- 관련 파일: `src/core/table/tanstack-table.ts`, `src/components/layout/utils.ts`, `src/features/range-selection/useClipboardActions.ts`
+
 ## 2026-09-21
 
 ### isRowSelectable API

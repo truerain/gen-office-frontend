@@ -1,3 +1,6 @@
+// packages/gen-grid/src/features/range-selection/useClipboardActions.ts
+// Clipboard copy/paste for range selection, with column meta export/parse hooks.
+
 import * as React from 'react';
 import type { Row, Table } from '@tanstack/react-table';
 import type { ActiveCell } from '../active-cell/types';
@@ -5,10 +8,10 @@ import type { SelectedRanges } from './types';
 import {
   parseClipboardGrid,
   resolveRangeBounds,
-  resolveRangeBoundsList,
   stringifyClipboardValue,
   SYSTEM_COLUMN_IDS,
   toClipboardCell,
+  type RangeBounds,
 } from './clipboard';
 
 export function useClipboardActions<TData>(args: {
@@ -25,12 +28,17 @@ export function useClipboardActions<TData>(args: {
     () => (lastSelectedRange ? resolveRangeBounds(table, lastSelectedRange) : null),
     [table, lastSelectedRange]
   );
-  const boundsList = React.useMemo(
-    () => resolveRangeBoundsList(table, selectedRanges),
-    [table, selectedRanges]
-  );
 
-  const canCopy = boundsList.length > 0;
+  const activeCellBounds = React.useMemo<RangeBounds | null>(() => {
+    if (!activeCell) return null;
+    return resolveRangeBounds(table, {
+      anchor: { rowId: activeCell.rowId, columnId: activeCell.columnId },
+      focus: { rowId: activeCell.rowId, columnId: activeCell.columnId },
+    });
+  }, [activeCell, table]);
+
+  const copyBounds = rangeBounds ?? activeCellBounds;
+  const canCopy = Boolean(copyBounds);
   const pasteStartCell = lastSelectedRange?.anchor ?? activeCell;
   const canPaste = Boolean(pasteStartCell && onCellValueChange);
 
@@ -55,11 +63,11 @@ export function useClipboardActions<TData>(args: {
 
   const copyToClipboard = React.useCallback(
     async (withHeader: boolean) => {
-      if (!rangeBounds) return;
+      if (!copyBounds) return;
 
       const lines: string[] = [];
       if (withHeader) {
-        const headerLine = rangeBounds.columnIds
+        const headerLine = copyBounds.columnIds
           .map((columnId) => {
             const column = table.getColumn(columnId);
             if (!column) return columnId;
@@ -74,10 +82,10 @@ export function useClipboardActions<TData>(args: {
         lines.push(headerLine);
       }
 
-      for (let rowIndex = rangeBounds.rowMin; rowIndex <= rangeBounds.rowMax; rowIndex++) {
+      for (let rowIndex = copyBounds.rowMin; rowIndex <= copyBounds.rowMax; rowIndex++) {
         const row = rows[rowIndex];
         if (!row) continue;
-        const line = rangeBounds.columnIds
+        const line = copyBounds.columnIds
           .map((columnId) => {
             const column = table.getColumn(columnId);
             const meta = (column?.columnDef.meta ?? {}) as any;
@@ -103,7 +111,7 @@ export function useClipboardActions<TData>(args: {
         // clipboard permission denied or unavailable
       }
     },
-    [rangeBounds, rows, table]
+    [copyBounds, rows, table]
   );
 
   const coercePastedValue = React.useCallback((raw: string, meta: any): unknown => {
@@ -160,7 +168,22 @@ export function useClipboardActions<TData>(args: {
 
         const column = table.getColumn(targetColumnId);
         const meta = (column?.columnDef.meta ?? {}) as any;
-        const nextValue = coercePastedValue(values[c] ?? '', meta);
+        const rawText = values[c] ?? '';
+
+        if (typeof meta?.parseClipboardValue === 'function') {
+          const parsed = meta.parseClipboardValue({
+            text: rawText,
+            value: targetRow.getValue(targetColumnId),
+            row: targetRow.original,
+            rowId: targetRow.id,
+            columnId: targetColumnId,
+          });
+          if (parsed === undefined) continue;
+          onCellValueChange({ rowId: targetRow.id, columnId: targetColumnId }, parsed);
+          continue;
+        }
+
+        const nextValue = coercePastedValue(rawText, meta);
         onCellValueChange({ rowId: targetRow.id, columnId: targetColumnId }, nextValue);
       }
     }

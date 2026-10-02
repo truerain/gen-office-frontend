@@ -52,6 +52,8 @@ type ModalInputBaseProps<TData = unknown> = {
   listColumns?: ModalInputListColumn<TData>[];
   className?: string;
   inputClassName?: string;
+  /** Optional class for the Input suffix wrapper (clear + trigger icons). */
+  suffixClassName?: string;
   dialogClassName?: string;
   listClassName?: string;
   formatDisplayValue?: (
